@@ -1,0 +1,7 @@
+{
+	"name": "framework",
+	"version": "1.0",
+	"main": "main",
+	"description": "Mobile Application Framework. Helper utilities and widgets for mobile development.",
+	"dojoBuild": "package.js"
+}

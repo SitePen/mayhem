@@ -1,0 +1,27 @@
+<div>
+	<div data-dojo-type="dojox/mobile/Heading"
+		 data-dojo-props="back: this.i18n.homeAction, href: '#/home'"
+		 data-dojo-attach-point="_titleHeading">
+
+		<button data-dojo-type="dojox/mobile/ToolBarButton" style="float: right"
+				data-dojo-attach-point="_newRecordButton"
+				data-dojo-props="icon: 'mblDomButtonWhitePlus'">${i18n.new}</button>
+		${title}
+	</div>
+
+	<div data-dojo-attach-point="_sortNode" class="sort">
+		<select data-dojo-attach-point="_sortSelect"
+			    data-dojo-attach-event="change: _sort"></select>
+	</div>
+	<div class="search">
+		<input type="search"
+			   placeholder="${i18n.searchPlaceholder}"
+			   data-dojo-type="dojox/mobile/TextBox"
+			   data-dojo-props="intermediateChanges: true"
+			   data-dojo-attach-event="onChange: _filter"
+			   data-dojo-attach-point="_searchBox">
+	</div>
+
+	<div data-dojo-type="framework/widget/grid/OnDemandGrid"
+		 data-dojo-attach-point="list"></div>
+</div>
