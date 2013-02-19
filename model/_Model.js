@@ -1,11 +1,12 @@
 define([
 	"dojo/_base/declare",
 	"dojo/_base/lang",
+	"dojo/_base/array",
 	"dojo/Stateful",
 	"dojo/when",
 	"dojo/i18n!../nls/validator",
 	"../validator/ValidationError"
-], function (declare, lang, Stateful, when, i18n, ValidationError) {
+], function (declare, lang, array, Stateful, when, i18n, ValidationError) {
 	return declare(Stateful, {
 		//	summary:
 		//		A base class for modelled data objects.
@@ -147,7 +148,7 @@ define([
 
 			var validators = this._validators;
 			for (var key in validators) {
-				if (fields && fields.indexOf(key) === -1) {
+				if (fields && array.indexOf(fields, key) === -1) {
 					continue;
 				}
 
@@ -166,7 +167,7 @@ define([
 						// Skip validators that are limited to certain scenarios and do not match the currently
 						// defined model scenario
 						if (validator.options.scenarios && validator.options.scenarios.length &&
-								validator.options.scenarios.indexOf(this.scenario) === -1) {
+								array.indexOf(validator.options.scenarios, this.scenario) === -1) {
 							continue;
 						}
 					}
