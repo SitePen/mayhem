@@ -20,7 +20,7 @@ define([
 		// Startup may only be called once per application
 		this.startup = function () { return dfd.promise; };
 
-		require([ config.moduleId ], function (Ui) {
+		(config.require || require)([ config.moduleId ], function (Ui) {
 			app.ui = new Ui({
 				id: 'main'
 			});
