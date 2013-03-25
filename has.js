@@ -7,5 +7,7 @@ define([ 'dojo/has', 'dojox/mobile/common' ], function (has, mobileCommon) {
 	has.add('phone', has('touch') && minimumWindowDimension < mobileCommon.tabletSize);
 	has.add('tablet', has('touch') && minimumWindowDimension >= mobileCommon.tabletSize);
 
+	has.add('debug', true);
+
 	return has;
 });
