@@ -2,92 +2,80 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'./has',
-	'./components/Component',
+	'./Component',
 	'dojo/Deferred',
+	'dojo/promise/all',
 	'dojo/request/util',
 	'require'
-], function (lang, declare, has, Component, Deferred, util, require) {
-	var defaultConfig = {
-		controllerPath: 'app/controllers',
-		defaultController: 'index',
-		modules: {
-			router: {
-				'moduleId': 'framework/components/Router'
-			}
-		}
-	};
-
+], function (lang, declare, has, Component, Deferred, whenAll, util, require) {
 	return declare(Component, {
-		//	controller: framework/components/Controller
-		//		The currently active controller.
-
 		postscript: function (kwArgs) {
-			// TODO: Stateful uses postscript to do this, and it seems like it cannot be modified with -chains-. But
-			// is it really impossible? Setting things twice is wasteful.
+			//	summary:
+			//		Replaces the configuration kwArgs object that gets passed to the constructor with one that
+			//		includes defaults and reapplies properties to the application instance.
 
-			this.set(util.deepCopy(lang.clone(defaultConfig), kwArgs));
+			this.set(util.deepCopy(this._getDefaultConfig(), kwArgs));
 		},
 
-		createUrl: function () {
-			//	summary:
-			//		Convenience function for generating the correct URL for a route.
+		_getDefaultConfig: function () {
+			// summary:
+			//		Provides the default configuration for the application. This is a function instead of an object
+			//		literal in order to allow subclasses to inherit and modify the default configuration, and to avoid
+			//		using lang.clone when creating a copy of the config for a new instance of an application since it
+			//		will attempt to blindly execute any `constructor` property it encounters.
+			//	returns: Object
 
-			var router = this.get('router');
-			return router.createUrl.apply(router, arguments);
+			return {
+				modules: {
+					router: {
+						constructor: 'framework/Router'
+					}
+				}
+			};
 		},
 
 		_loadModules: function () {
 			//	summary:
-			//		Loads application components and attaches them to the Application object.
+			//		Loads application components and attaches them to the application object.
+			//	tags:
+			//		protected
+			//	returns: dojo/promise/Promise
+			//		A promise that is resolved once all components are loaded and attached.
 
 			var self = this,
 				dfd = new Deferred(),
-				moduleKeys = [],
-				moduleIds = [];
+				lazyConstructors = {},
+				moduleIdsToLoad = [];
 
-			for (var k in this.modules) {
-				moduleKeys.push(k);
-
-				if (!this.modules[k].moduleId) {
-					throw new Error('Missing module ID for application component "' + k + '"');
+			for (var key in this.modules) {
+				if (typeof this.modules[key].constructor === 'string') {
+					lazyConstructors[key] = moduleIdsToLoad.push(this.modules[key].constructor) - 1;
 				}
-
-				moduleIds.push(this.modules[k].moduleId);
 			}
 
-			require(moduleIds, function () {
+			require(moduleIdsToLoad, function () {
 				try {
-					for (var i = 0, Module, module, key, config; (Module = arguments[i]); ++i) {
-						key = moduleKeys[i];
-
-						// want to keep original config intact to avoid any confusing changes in configuration keys;
+					for (var key in self.modules) {
+						// want to keep original config intact to avoid any confusing changes in original configuration;
 						// also want to add a reference to the app first (so it is set before others)
-						config = lang.mixin({ app: self }, self.modules[key]);
+						var config = lang.mixin({ app: self }, self.modules[key]);
 
-						// do not want to pass the 'moduleId' key to the module since it is supposed to be used only by
-						// Application to find the component, but it would be cool if it made its way to declaredClass
-						// for debugging.
-						config.declaredClass = config.moduleId;
-						delete config.moduleId;
-
-						module = new Module(config);
-						self.set(key, module);
-
-						if (key === 'ui') {
-							module.placeAt(config.placeAt || document.body);
+						if (key in lazyConstructors) {
+							config.constructor = arguments[lazyConstructors[key]];
 						}
-					}
 
-					// Ensure all modules are in place before starting them up
-					for (i = 0; (module = self.get(moduleKeys[i])); ++i) {
-						module.startup && module.startup();
+						var Module = config.constructor;
+
+						// this will already come from the prototype
+						delete config.constructor;
+
+						self.set(key, new Module(config));
 					}
 
 					dfd.resolve();
 				}
 				catch (error) {
 					dfd.reject(error);
-					throw error;
 				}
 			});
 
@@ -126,17 +114,14 @@ define([
 			return dfd.promise;
 		},
 
-		startup: function () {
+		startup: function (/**Object*/ options) {
 			//	summary:
 			//		Starts the application.
+			//	options:
+			//		Startup options. Available properties are:
+			//		* startModules (boolean, default: true) - Whether or not to start up injected modules automatically.
 			//	returns: dojo/promise/Promise
 			//		A promise that resolves once all application components have been loaded and started.
-
-			var promise;
-
-			this.startup = function () {
-				return promise;
-			};
 
 			if (has('debug')) {
 				this.on('error', function (event) {
@@ -144,7 +129,45 @@ define([
 				});
 			}
 
-			return promise = this._loadModules();
+			var promise = this._loadModules();
+
+			if (options.startModules !== false) {
+				promise = promise.then(lang.hitch(this, 'startupModules'));
+			}
+
+			this.startup = function () {
+				return promise;
+			};
+
+			return promise;
+		},
+
+		startupModules: function () {
+			//	summary:
+			//		Starts modules that were injected to the application object.
+			//	returns: framework/Application
+			//		The application instance.
+
+			var self = this,
+				promises = [],
+				promise;
+
+			for (var k in this.modules) {
+				promise = this[k].startup && this[k].startup();
+				if (promise && promise.then) {
+					promises.push(promise);
+				}
+			}
+
+			promise = whenAll(promises).then(function () {
+				return self;
+			});
+
+			this.startupModules = function () {
+				return promise;
+			};
+
+			return promise;
 		}
 	});
 });
