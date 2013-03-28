@@ -5,10 +5,21 @@ define([
 	'./Component'
 ], function (lang, declare, ioQuery, Component) {
 	return declare(Component, {
+		//	summary:
+		//		A Route is an object that provides round-trip serialising and parsing of route paths.
+
+		//	path: string
+		//		The path for this route.
 		path: null,
+
+		//	isCaseSensitive: boolean
+		//		Whether or not the path should be handled case-sensitively.
 		isCaseSensitive: true,
 
-		_isCaseSensitiveSetter: function (isCaseSensitive) {
+		_isCaseSensitiveSetter: function (/**boolean*/ isCaseSensitive) {
+			//	summary:
+			//		Sets the case-sensitivity flag on path processing regular expression patterns.
+
 			// TODO: It sure seems like Stateful should do this optimisation instead.
 			if (this.isCaseSensitive === isCaseSensitive) {
 				return isCaseSensitive;
@@ -33,7 +44,11 @@ define([
 			return this.isCaseSensitive = isCaseSensitive;
 		},
 
-		_pathSetter: function (path) {
+		_pathSetter: function (/**string*/ path) {
+			//	summary:
+			//		Disassembles a path specification into its consitutuent parts for use when parsing and serialising
+			//		route paths.
+
 			var parameterPattern = /<([^:]+):([^>]+)>/g,
 				realPathPattern = '^',
 				pathKeys = [],
@@ -65,18 +80,35 @@ define([
 			return this.path = path;
 		},
 
-		parse: function (path) {
+		test: function (/**string*/ path) {
 			//	summary:
-			//		Given a path, parse the arguments from the path and return them according to the routing
-			//		information.
+			//		Tests whether or not the given path matches this route.
+			//	returns: boolean
+
+			return this._pathPattern.test(path);
+		},
+
+		parse: function (/**string*/ path, /**Object*/ options) {
+			//	summary:
+			//		Given a path, parse the arguments from the path and return them according to the route's path
+			//		specification.
+			//	path:
+			//		The path to parse into a hash map.
+			//	options:
+			//		Options for generating the returned hash map. The available options are:
+			//		* coerce (boolean, default: true) - Whether or not to coerce numeric arguments to a native Number
+			//		  type.
 			//	returns: Object
+
+			options = options || {};
 
 			var match;
 			if ((match = this._pathPattern.exec(path))) {
 				var kwArgs = {};
 
-				for (var i = 0, j = this._pathKeys.length; i < j; ++i) {
-					kwArgs[this._pathKeys[i]] = match[i + 1];
+				for (var i = 0, j = this._pathKeys.length, value; i < j; ++i) {
+					value = match[i + 1];
+					kwArgs[this._pathKeys[i]] = isNaN(value) || options.coerce === false ? value : +value;
 				}
 
 				if (match[match.length - 1]) {
@@ -89,9 +121,11 @@ define([
 			return null;
 		},
 
-		serialize: function (kwArgs) {
+		serialize: function (/**Object*/ kwArgs) {
 			//	summary:
-			//		Return a path for the given hash map.
+			//		Return a path for the given hash map that corresponds to this route's path specification.
+			//	kwArgs:
+			//		A hash map of arguments to serialise into a path.
 			//	returns: string
 
 			var path = '',
