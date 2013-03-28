@@ -9,38 +9,58 @@ define([
 		isCaseSensitive: true,
 
 		_isCaseSensitiveSetter: function (isCaseSensitive) {
-			if (this._pathExpression) {
-				this._pathExpression = new RegExp(this._pathExpression.source, isCaseSensitive ? '' : 'i');
+			// TODO: It sure seems like Stateful should do this optimisation instead.
+			if (this.isCaseSensitive === isCaseSensitive) {
+				return isCaseSensitive;
+			}
+
+			var regExpFlags = isCaseSensitive ? '' : 'i';
+
+			if (this._pathPattern) {
+				this._pathPattern = new RegExp(this._pathPattern.source, regExpFlags);
+
+				for (var i = 0, j = this._pathParts.length, part; i < j; ++i) {
+					part = this._pathParts[i];
+
+					// These patterns are updated here instead of being generated every time someone calls serialize
+					// because calls to serialize are more common
+					if (part.pattern) {
+						part.pattern = new RegExp(part.pattern.source, regExpFlags);
+					}
+				}
 			}
 
 			return this.isCaseSensitive = isCaseSensitive;
 		},
 
 		_pathSetter: function (path) {
-			var match,
-				pathPatternRegExp = /<([^:]+):([^>]+)>/g,
-				pathExpression = '^',
-				pathKeys = this._pathKeys = [],
-				pathParts = this._pathParts = [],
+			var parameterPattern = /<([^:]+):([^>]+)>/g,
+				realPathPattern = '^',
+				pathKeys = [],
+				pathParts = [],
 				lastIndex = 0,
-				staticPart;
+				match,
+				staticPart,
+				regExpFlags = this.isCaseSensitive ? '' : 'i';
 
-			while ((match = pathPatternRegExp.exec(path))) {
+			while ((match = parameterPattern.exec(path))) {
 				pathKeys.push(match[1]);
 
 				staticPart = path.slice(lastIndex, match.index);
-				pathParts.push(staticPart, pathKeys.length - 1);
+				pathParts.push(staticPart, { key: match[1], pattern: new RegExp(match[2], regExpFlags) });
 
-				pathExpression += staticPart + '(' + match[2] + ')';
+				realPathPattern += staticPart + '(' + match[2] + ')';
 
 				lastIndex = match.index + match[0].length;
 			}
 
 			staticPart = path.slice(lastIndex);
-			pathExpression += staticPart + '\\?(.*)';
+			realPathPattern += staticPart + '(?:\\?(.*))?';
 			pathParts.push(staticPart);
 
-			this._pathExpression = new RegExp(pathExpression, this.isCaseSensitive ? '' : 'i');
+			this._pathKeys = pathKeys;
+			this._pathParts = pathParts;
+			this._pathPattern = new RegExp(realPathPattern, regExpFlags);
 
 			return this.path = path;
 		},
@@ -52,14 +72,16 @@ define([
 			//	returns: Object
 
 			var match;
-			if ((match = this._pathExpression.exec(path))) {
+			if ((match = this._pathPattern.exec(path))) {
 				var kwArgs = {};
 
 				for (var i = 0, j = this._pathKeys.length; i < j; ++i) {
 					kwArgs[this._pathKeys[i]] = match[i + 1];
 				}
 
-				lang.mixin(kwArgs, ioQuery.queryToObject(match[match.length - 1]));
+				if (match[match.length - 1]) {
+					lang.mixin(kwArgs, ioQuery.queryToObject(match[match.length - 1]));
+				}
 
 				return kwArgs;
 			}
@@ -73,25 +95,31 @@ define([
 			//	returns: string
 
 			var path = '',
-				key;
+				key,
+				pattern;
 
 			// avoid side-effects caused by deleting properties from the kwArgs object
 			kwArgs = lang.mixin({}, kwArgs);
 
 			for (var i = 0, j = this._pathParts.length, part; i < j; ++i) {
 				part = this._pathParts[i];
-				if (typeof part === 'number') {
-					key = this._pathKeys[part];
+				if (typeof part === 'string') {
+					path += part;
+				}
+				else {
+					key = part.key;
+					pattern = part.pattern;
 
 					if (!(key in kwArgs)) {
-						throw new Error('Missing required key "' + part + '"');
+						throw new Error('Missing required key "' + key + '"');
+					}
+
+					if (!pattern.test(kwArgs[key])) {
+						throw new Error('Key "' + key + '" does not match pattern ' + pattern);
 					}
 
 					path += kwArgs[key];
 					delete kwArgs[key];
-				}
-				else {
-					path += part;
 				}
 			}
 
