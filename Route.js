@@ -132,11 +132,13 @@ define([
 				key,
 				pattern;
 
-			// avoid side-effects caused by deleting properties from the kwArgs object
+			// if someone passes an object they probably do not expect it to lose several of its properties, but we
+			// delete properties from this object as they are processed
 			kwArgs = lang.mixin({}, kwArgs);
 
-			for (var i = 0, j = this._pathParts.length, part; i < j; ++i) {
-				part = this._pathParts[i];
+			for (var i = 0, j = this._pathParts.length; i < j; ++i) {
+				var part = this._pathParts[i];
+
 				if (typeof part === 'string') {
 					path += part;
 				}
