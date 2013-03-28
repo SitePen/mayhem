@@ -66,7 +66,7 @@ define([
 
 		'#serialize': function () {
 			assert.strictEqual(route.serialize({ foo: 'foo', bar: 1234, baz: 'hi' }), 'foo/1234/hi', 'serialized route should match path definition');
-			assert.strictEqual(route.serialize({ foo: 'foo', bar: 1234, baz: 'hi', blah: 'boobah' }), 'foo/1234/hi?blah=boobah', 'serialized route with extra arguments should match path definition');
+			assert.strictEqual(route.serialize({ foo: 'foo', bar: 1234, baz: 'hi', blah: 'biz', biz: 'blah' }), 'foo/1234/hi?blah=biz&biz=blah', 'serialized route with extra arguments should match path definition');
 
 			// TODO: Fix to use assert.throws
 			var thrown = false;
@@ -88,6 +88,41 @@ define([
 			}
 
 			assert.isTrue(thrown, 'attempting to serialize a path with non-matching arguments should throw');
+		},
+
+		'RegExp-like paths': function () {
+			var route = new Route({ path: '<foo:\\w+>\\d+' });
+			assert.isTrue(route.test('foo\\d+'), 'regular expressions outside capturing groups should be treated as string literals');
+		},
+
+		'multiple identical named identifiers': function () {
+			var route = new Route({ path: '<foo:\\w+>/<foo:\\w+>/<bar:\\w+>' });
+
+			assert.isTrue(route.test('foo/bar/baz'), 'basic test on path with MINIs should pass');
+
+			assert.deepEqual(
+				route.parse('foo/bar/baz'),
+				{ foo: [ 'foo', 'bar' ], bar: 'baz' },
+				'parsing path with MINIs should return an array for the MINI'
+			);
+
+			assert.deepEqual(
+				route.parse('foo/bar/baz?foo=blah&foo=biz'),
+				{ foo: [ 'foo', 'bar', 'blah', 'biz' ], bar: 'baz' },
+				'parsing path with MINIs with extra arguments should return an array for the MINI'
+			);
+
+			assert.strictEqual(
+				route.serialize({ foo: [ 'foo', 'bar' ], bar: 'baz' }),
+				'foo/bar/baz',
+				'serializing path with MINIs should return a path with MINI arguments in the correct order'
+			);
+
+			assert.strictEqual(
+				route.serialize({ foo: [ 'foo', 'bar', 'blah', 'biz' ], bar: 'baz' }),
+				'foo/bar/baz?foo=blah&foo=biz',
+				'serializing path with MINIs should return a path with MINI arguments in the correct order'
+			);
 		}
 	});
 });

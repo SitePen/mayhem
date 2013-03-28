@@ -6,14 +6,48 @@ define([
 ], function (lang, declare, ioQuery, Component) {
 	return declare(Component, {
 		//	summary:
-		//		A Route is an object that provides round-trip serialising and parsing of route paths.
+		//		A Route is an object that provides round-trip serialising and parsing of routes based on URL-like
+		//		path fragments.
+		//
+		//	example:
+		//		Basic usage:
+		//
+		//	|	var route = new Route({ path: '<view:foo|bar|baz>/<id:\\d+>' });
+		//	|	route.test('foo/1234'); // -> true
+		//	|	route.test('foo/'); // -> false (path must match fully)
+		//	|	route.test('bar/foo/1234'); // -> false (path must match from the start of the string)
+		//	|	route.parse('foo/1234'); // -> { view: 'foo', id: 1234 }
+		//	|	route.serialize({ view: 'foo', id: 1234 }); // -> 'foo/1234'
+		//	|	route.serialize({ view: 'foo' }); // -> throws error due to insufficient number of arguments
+		//	|	route.serialize({ view: 'foo', id: 1234, bar: true }); // -> 'foo/1234?bar=true'
+		//
+		//	example:
+		//		Multiple named capturing groups with the same identifier:
+		//
+		//	|	var route = new Route({ path: '<view:\\w+>/<view:\\w+>' });
+		//	|	route.parse('foo/bar'); // -> { view: [ 'foo', 'bar' ] }
+		//	|	route.serialize({ view: [ 'foo', 'bar' ] }); // -> 'foo/bar'
+		//	|	route.serialize({ view: [ 'foo' ] }); // -> throws error due to insufficient number of arguments
 
 		//	path: string
-		//		The path for this route.
+		//		The path that matches this Route. The path is a string that can contain named capturing groups using
+		//		the syntax `<identifier:pattern>`, where the regular expression given in `pattern` will be captured and
+		//		placed on the property labelled with `identifier`. Multiple named capturing groups with the same
+		//		identifier may be used (e.g. `<view:\\w+>/<view:\\w+>`), in which case the associated value will be an
+		//		array.
+		//
+		//		Do not use capturing groups (`()`) within regular expression patterns. This will break the Route.
+		//		Non-capturing groups (`(?:)`) may be used if necessary.
+		//
+		//		Routes are always matched from the start of the string, so cannot be used to find matches within the
+		//		middle of a path.
+		//
+		//		Any extra arbitrary arguments that are not explicitly defined as being part of a Route path are
+		//		provided using a standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 		path: null,
 
 		//	isCaseSensitive: boolean
-		//		Whether or not the path should be handled case-sensitively.
+		//		Whether or not the path should be case-sensitive.
 		isCaseSensitive: true,
 
 		_isCaseSensitiveSetter: function (/**boolean*/ isCaseSensitive) {
@@ -49,6 +83,15 @@ define([
 			//		Disassembles a path specification into its consitutuent parts for use when parsing and serialising
 			//		route paths.
 
+			function getStaticPart(/**number*/ start, /**number*/ end) {
+				//	summary:
+				//		Gets a part of the path string corresponding to the given start and end indexes and escapes it
+				//		for use within a regular expression.
+				//	returns: string
+
+				return path.slice(start, end).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+			}
+
 			var parameterPattern = /<([^:]+):([^>]+)>/g,
 				realPathPattern = '^',
 				pathKeys = [],
@@ -61,7 +104,9 @@ define([
 			while ((match = parameterPattern.exec(path))) {
 				pathKeys.push(match[1]);
 
-				staticPart = path.slice(lastIndex, match.index);
+				// static parts must always be string literals, not regular expressions, since it is not possible to
+				// generate a reverse path otherwise
+				staticPart = getStaticPart(lastIndex, match.index);
 				pathParts.push(staticPart, { key: match[1], pattern: new RegExp(match[2], regExpFlags) });
 
 				realPathPattern += staticPart + '(' + match[2] + ')';
@@ -69,7 +114,7 @@ define([
 				lastIndex = match.index + match[0].length;
 			}
 
-			staticPart = path.slice(lastIndex);
+			staticPart = getStaticPart(lastIndex);
 			realPathPattern += staticPart + '(?:\\?(.*))?';
 			pathParts.push(staticPart);
 
@@ -102,17 +147,42 @@ define([
 
 			options = options || {};
 
-			var match;
+			var key,
+				match;
+
 			if ((match = this._pathPattern.exec(path))) {
 				var kwArgs = {};
 
-				for (var i = 0, j = this._pathKeys.length, value; i < j; ++i) {
-					value = match[i + 1];
-					kwArgs[this._pathKeys[i]] = isNaN(value) || options.coerce === false ? value : +value;
+				for (var i = 0, j = this._pathKeys.length; i < j; ++i) {
+					key = this._pathKeys[i];
+
+					var value = match[i + 1];
+					value = isNaN(value) || options.coerce === false ? value : +value;
+
+					if (key in kwArgs) {
+						if (!(kwArgs[key] instanceof Array)) {
+							kwArgs[key] = [ kwArgs[key] ];
+						}
+
+						kwArgs[key].push(value);
+					}
+					else {
+						kwArgs[key] = value;
+					}
 				}
 
 				if (match[match.length - 1]) {
-					lang.mixin(kwArgs, ioQuery.queryToObject(match[match.length - 1]));
+					var extraArguments = ioQuery.queryToObject(match[match.length - 1]);
+					// a simple mixin won't work here because we need to combine extra arguments if they exist on the
+					// parsed kwArgs object instead of clobbering them
+					for (key in extraArguments) {
+						if (key in kwArgs) {
+							kwArgs[key] = [].concat(kwArgs[key], extraArguments[key]);
+						}
+						else {
+							kwArgs[key] = extraArguments[key];
+						}
+					}
 				}
 
 				return kwArgs;
@@ -128,13 +198,12 @@ define([
 			//		A hash map of arguments to serialise into a path.
 			//	returns: string
 
-			var path = '',
-				key,
-				pattern;
-
 			// if someone passes an object they probably do not expect it to lose several of its properties, but we
 			// delete properties from this object as they are processed
 			kwArgs = lang.mixin({}, kwArgs);
+
+			var path = '',
+				key;
 
 			for (var i = 0, j = this._pathParts.length; i < j; ++i) {
 				var part = this._pathParts[i];
@@ -144,18 +213,27 @@ define([
 				}
 				else {
 					key = part.key;
-					pattern = part.pattern;
 
 					if (!(key in kwArgs)) {
 						throw new Error('Missing required key "' + key + '"');
 					}
 
-					if (!pattern.test(kwArgs[key])) {
+					var value = kwArgs[key],
+						pattern = part.pattern;
+
+					if (value instanceof Array) {
+						value = value.shift();
+					}
+
+					if (!pattern.test(value)) {
 						throw new Error('Key "' + key + '" does not match pattern ' + pattern);
 					}
 
-					path += kwArgs[key];
-					delete kwArgs[key];
+					path += value;
+
+					if (!(kwArgs[key] instanceof Array) || kwArgs[key].length === 0) {
+						delete kwArgs[key];
+					}
 				}
 			}
 
