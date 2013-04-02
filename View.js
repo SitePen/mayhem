@@ -5,14 +5,12 @@ define([
 	'dijit/_WidgetBase'
 ], function (declare, array, lang, WidgetBase) {
 
-	// NOTE: names are just placeholders, they can be changed - concepts are all that matter.
 	var View = declare(WidgetBase, {
 
-		// ??? model or controller?  from the perspective of the view this is more like a model
-		//	model:
-		//		The model that this view reflects.  The model is also the context for data binding
+		//	viewModel:
+		//		The model that this view reflects.  The viewModel is also the context for data binding
 		//		in the template
-		model: null,
+		viewModel: null,
 
 		//	parentView: View
 		//		A reference to this view's parent view.
@@ -25,14 +23,14 @@ define([
 		//		then there can be no unnamed placeholder.
 		subViews: null,
 
-		//	render: function
-		//		A function that takes a context and a map of subViews and returns a domNode
+		//	template: framework/Template
+		//		A Template for rendering this view
 
 		buildRendering: function () {
-			// TODO: need to pass in bound objects for the model and subViews
+			// TODO: need to pass in bound objects for the viewModel and subViews
 			// get a domNode from the compiled template.  the template should manage the DOM based
 			// on mutations to the underlying data.
-			this.domNode = this.render(this.model, this.subViews);
+			this.domNode = this.template.render(this);
 
 			// TODO:
 			//	* attach points and attach events (maybe dijit/_AttachMixin)
