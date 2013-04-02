@@ -4,10 +4,11 @@ define([
 	'dojo/aspect',
 	'dojo/topic',
 	'dojo/hash',
-	'dojo/io-query',
+	'dojo/when',
+	'dojo/promise/all',
 	'./Component',
 	'./Route'
-], function (declare, lang, aspect, topic, hash, ioQuery, Component, Route) {
+], function (declare, lang, aspect, topic, hash, when, whenAll, Component, Route) {
 	// TODO: Make into its own class if this pans out
 	function RouteEvent(kwArgs) {
 		for (var k in kwArgs) {
@@ -21,7 +22,13 @@ define([
 		router: null,
 		paused: false,
 		cancelled: false,
+		isCancelable: false,
+		isPausable: false,
 		pause: function () {
+			if (!this.isPausable) {
+				throw new Error('Event is not pausable');
+			}
+
 			if (this.paused) {
 				return;
 			}
@@ -43,6 +50,10 @@ define([
 			this.router.resume();
 		},
 		cancel: function () {
+			if (!this.isCancelable) {
+				throw new Error('Event is not cancelable');
+			}
+
 			this.pause();
 			this.cancelled = true;
 		}
@@ -52,25 +63,41 @@ define([
 		//	defaultRoute: String?
 		//		Specifies default route to navigate to if no hash is initially set.
 
-		//	routes: Array
-		//		Array of arrays; each inner array contains 2 items, the first being
-		//		a string or RegExp for the pattern to register, and the second being
-		//		the module id of the controller to load.
+		//	routes: Object.<Route>
+		//		Hash map of routes, where the key is the unique ID of the route and the value is a Route object.
+
+		//	controllerPath: string
+		//		The default location for controllers.
+		controllerPath: 'app/controllers',
+
+		//	viewPath: string
+		//		The default location for views.
+		viewPath: 'app/views',
 
 		_oldPath: null,
 
-		_inPathChange: false,
+		_activeRoutes: null,
 
 		_routesSetter: function (routes) {
-			// TODO: Should be a StatefulArray
-			var _routes = [];
+			// TODO: Should be a Stateful?
+			var _routes = {};
 
-			for (var i = 0, j = routes.length, route; i < j; ++i) {
-				if (!(route instanceof Route)) {
-					route = new Route(typeof route === 'string' ? { path: route } : route);
+			var kwArgs;
+			for (var routeId in routes) {
+				kwArgs = routes[routeId];
+
+				if (typeof options === 'string') {
+					kwArgs = { path: kwArgs };
 				}
 
-				_routes.push(route);
+				kwArgs.id = routeId;
+
+				// If view or controller are explicitly set to null, then they are generated using a generic
+				// Controller or View component.
+				kwArgs.view === undefined && (kwArgs.view = routeId);
+				kwArgs.controller === undefined && (kwArgs.controller = routeId);
+
+				_routes[routeId] = new Route(kwArgs);
 			}
 
 			return this._routes = _routes;
@@ -85,56 +112,129 @@ define([
 			this.resume();
 		},
 
+		destroy: function () {
+			this.destroy = function () {};
+			this.pause();
+			this._activeRoutes = this._routes = null;
+		},
+
 		resume: function () {
+			//	summary:
+			//		Starts the router listening to hash changes.
+
 			if (!this._changeHandle) {
 				this._changeHandle = topic.subscribe('/dojo/hashchange', lang.hitch(this, '_handlePathChange'));
 			}
 		},
 
 		pause: function () {
+			//	summary:
+			//		Prevents the router from responding to any hash changes.
+
 			if (this._changeHandle) {
 				this._changeHandle.remove();
 				this._changeHandle = null;
 			}
 		},
 
+		go: function () {
+			//	summary:
+			//		Transitions to a new route.
+
+			if (!this._changeHandle) {
+				throw new Error('Router is paused');
+			}
+
+			hash(this.createUrl.apply(this, arguments));
+		},
+
+		normalizeId: function (id) {
+			//	summary:
+			//		Given a route ID, convert it to an appropriate value.
+		},
+
 		_handlePathChange: function (newPath) {
-			if (newPath !== this._oldPath) {
-				var i = 0,
-					event = new RouteEvent({
-						oldPath: this._oldPath,
-						newPath: newPath,
-						router: this
-					});
+			var oldPath = this._oldPath;
 
-				(function activateRoutes() {
-					for (var route; (route = this._routes[i]); ++i) {
-						if (route.test(newPath)) {
-							route.activate(event);
+			if (newPath !== oldPath) {
+				var event = new RouteEvent({
+					oldPath: oldPath,
+					newPath: newPath,
+					isCancelable: true,
+					isPausable: true,
+					router: this
+				});
 
-							if (event.cancelled) {
-								return;
-							}
+				var self = this,
+					routeIndexesToExit = [],
+					i = this._activeRoutes.length - 1;
 
-							if (event.paused) {
-								var handle = aspect.after(event, 'resume', function () {
-									handle.remove();
-									activateRoutes();
-								});
+				(function runExitTransition() {
+					var route;
+					while ((route = self._activeRoutes[i--])) {
+						// All routes are informed that a transition is about to occur so that any route may stop it
+						route.emit('beforeexit', event);
 
-								return;
-							}
+						if (event.cancelled) {
+							return;
+						}
+
+						// Only active routes that don't match the new path are actually removed even though all are
+						// notified
+						if (!route.test(newPath)) {
+							routeIndexesToExit.push(i);
+						}
+
+						if (event.paused) {
+							var handle = aspect.after(event, 'resume', function () {
+								handle.remove();
+								runExitTransition();
+							});
+							return;
 						}
 					}
+
+					when(self._exitRoutes(routeIndexesToExit)).then(function () {
+						return self._enterRoutes(newPath);
+					}).then(function () {
+						self.emit('idle', new RouteEvent({ oldPath: oldPath, newPath: newPath, router: self }));
+					});
 				}());
 			}
 		},
 
-		createUrl: function (path, params) {
-			params = ioQuery.objectToQuery(params);
-			params = params ? '?' + params : '';
+		_exitRoutes: function (routeIndexesToExit) {
+			var routeIndex,
+				exits = [];
 
-			return '#' + path + params;
+			while ((routeIndex = routeIndexesToExit.pop())) {
+				exits.push(this._activeRoutes[routeIndex].exit());
+				this._activeRoutes.splice(routeIndex, 1);
+			}
+
+			return whenAll(exits);
+		},
+
+		_enterRoutes: function (newPath) {
+			var entrances = [];
+
+			for (var routeId in this._routes) {
+				var route = this._routes[routeId];
+				if (route.test(newPath)) {
+					this._activeRoutes.push(route);
+					route.enter(newPath);
+				}
+			}
+
+			return whenAll(entrances);
+		},
+
+		createUrl: function (id, params) {
+			if (!this._routes[id]) {
+				throw new Error('Invalid route id "' + id + '"');
+			}
+
+			return '#' + this._routes[id].serialize(params);
 		}
 	});
 });
