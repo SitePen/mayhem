@@ -44,7 +44,7 @@ define([
 
 		dom: function (tag, attributes, childNodes) {
 			// TODO: bind the attributes
-			console.log('constructing', tag, attributes);
+			// TODO: handle data-dojo-*
 			var node = domConstruct.create(tag, attributes);
 
 			array.forEach(childNodes, function (child) {
@@ -91,13 +91,20 @@ define([
 			// same module would be leveraged by the build plugin to produce the compiled
 			// function exported by the AMD module that replaces this dependency.
 			require(['./template/compiler', 'dojo/text!' + id], function (compile, templateString) {
-				var templateNode = document.createElement('div');
+				var templateNode = document.createElement('div'),
+					render;
 
 				templateNode.innerHTML = compile.sanitize(templateString);
 
-				load(new Template(compile(templateNode, {
+				render = compile(templateNode, {
 					sourceUrl: moduleRequire.toUrl(id)
-				})));
+				});
+
+				// ensure any deps we found in the template will be pre-loaded.  as a bonus, deps
+				// can be relative!
+				moduleRequire(render.deps || [], function () {
+					load(new Template(render));
+				});
 			});
 		}
 	};
