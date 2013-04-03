@@ -16,14 +16,6 @@ define([
 			});
 		},
 
-		createUrl: function () {
-			//	summary:
-			//		Convenience function for generating the correct URL for a route.
-
-			var router = this.get('router');
-			return router.createUrl.apply(router, arguments);
-		},
-
 		startup: function (options) {
 			var self = this;
 
