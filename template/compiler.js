@@ -18,19 +18,46 @@ define([
 			NOTATION_NODE: 12
 		};
 
-	function processNodeList(list) {
+	function processAttributes(node) {
 		//	summary:
-		//		processes a list of DOM Nodes
+		//		Processes a list of Attribute Nodes
+		//	node:
+		//		The node containing the attributes to be processed.
 		//	returns: array
 		//		An array of AST nodes
 
-		var nodes = [],
+		var attributes = node.attributes,
+			nodes = [],
 			i = 0,
-			child;
+			child,
+			name,
+			value;
 
-		while ((child = list[i++])) {
-			// TODO oldie walks every attribute even if it isn't in the markup
-			nodes.push(new DOMNode(child));
+		while ((child = attributes[i++])) {
+			name = child.nodeName;
+			// oldie doesn't like you looking at nodeValue for some attributes
+			value = node.getAttribute(name);
+			// oldie walks every attribute even if it isn't in the markup
+			if (value != null) {
+				nodes.push(new AttributeNode(name, value));
+			}
+		}
+
+		return nodes;
+	}
+
+	function processChildren(node) {
+		//	summary:
+		//		Processes a node's childNodes and removes the children as they are processed
+		//	node: Node
+		//		The parent of the childNodes
+		//	returns: array
+		//		An array of AST nodes
+
+		var nodes = [];
+
+		while (node.childNodes.length) {
+			nodes.push(new DOMNode(node.removeChild(node.childNodes[0])));
 		}
 
 		return nodes;
@@ -49,18 +76,19 @@ define([
 		this.nodeType = node.nodeType;
 		this.nodeValue = processValue ? processContent(value) : value;
 
-		this.attributes = isElement ? processNodeList(node.attributes) : null;
-		this.childNodes = isElement ? processNodeList(node.childNodes) : null;
+		this.attributes = isElement ? processAttributes(node) : null;
+		this.childNodes = isElement ? processChildren(node) : null;
 
 		// maybe in the browser we can cloneNode on this rather than create a new one
 		// TODO: if there's no good way to pass this element to the render function then remove this
 		this.element = isElement ? node : null;
+	}
 
-		// as we traverse the elements, deconstruct the tree
-		// TODO: this is only needed if we're keeping the element
-		if (isElement && node.parentNode) {
-			node.parentNode.removeChild(node);
-		}
+	function AttributeNode(nodeName, nodeValue) {
+		this.type = 'AttributeNode';
+		this.nodeName = nodeName;
+		this.nodeType = Node.ATTRIBUTE_NODE;
+		this.nodeValue = nodeValue;
 	}
 
 	function sanitize(templateString) {
@@ -94,7 +122,7 @@ define([
 		// TODO: process the content into an ast
 		//var nodes = [];
 
-		return content;
+		return content.replace(/\r/g, '\\r').replace(/\n/g, '\\n');
 	}
 
 	function processAst(nodes, code) {
@@ -207,6 +235,9 @@ define([
 					buffer.push('])');
 
 					code.push(buffer.join(''));
+				}
+				if (node.nodeType === Node.TEXT_NODE) {
+					code.push('document.createTextNode("' + node.nodeValue + '")');
 				}
 			}
 		};
