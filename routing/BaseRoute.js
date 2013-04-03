@@ -2,7 +2,7 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'dojo/io-query',
-	'./Component'
+	'../Component'
 ], function (lang, declare, ioQuery, Component) {
 	return declare(Component, {
 		//	summary:

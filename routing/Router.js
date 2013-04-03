@@ -1,53 +1,19 @@
 define([
 	'dojo/_base/declare',
-	'dojo/_base/lang',
-	'dojo/topic',
-	'dojo/hash',
+	'dojo/_base/array',
 	'dojo/when',
 	'dojo/promise/all',
-	'./Component',
-	'./PausableEvented',
-	'./Route'
-], function (declare, lang, topic, hash, when, whenAll, Component, PausableEvented, Route) {
-	// TODO: Make into its own class if this pans out
-	function RouteEvent(kwArgs) {
-		for (var k in kwArgs) {
-			this[k] = kwArgs[k];
-		}
-	}
-	RouteEvent.prototype = {
-		constructor: RouteEvent,
-		oldPath: null,
-		newPath: null,
-		router: null,
-
-		pause: function () {
-			this.router.pause();
-			hash(this.oldPath, true);
-			this.router.resume();
-		},
-
-		resume: function () {
-			if (this.canceled) {
-				return;
-			}
-
-			this.router.pause();
-			hash(this.newPath);
-			this.router.resume();
-		},
-
-		preventDefault: function () {
-			// if paused, the path was already changed back to the old path and does not need to be changed again
-			if (!this.paused) {
-				this.router.pause();
-				hash(this.oldPath, true);
-				this.router.resume();
-			}
-		}
-	};
-
+	'../has',
+	'../Component',
+	'../PausableEvented',
+	'./Route',
+	'./RouteEvent'
+], function (declare, array, when, whenAll, has, Component, PausableEvented, Route, RouteEvent) {
 	return declare([ Component, PausableEvented ], {
+		//	summary:
+		//		The Router module is a base component designed to be extended and used with a path-based routing
+		//		mechanism, like a URL.
+
 		//	routes: Object.<Route>
 		//		Hash map of routes, where the key is the unique ID of the route and the value is a Route object.
 		//		Routes are nested by specifying IDs that correspond to paths.
@@ -64,10 +30,6 @@ define([
 		//		The default route when the application is loaded without an existing route.
 		defaultRoute: 'index',
 
-		//	pathPrefix: string
-		//		A prefix that is expected to exist on all URLs loaded through this router.
-		routePrefix: '!/',
-
 		//	notFoundRoute: string
 		//		The route to load when an unmatched route is loaded.
 		notFoundRoute: 'error',
@@ -82,7 +44,7 @@ define([
 
 		_routes: null,
 
-		_routesSetter: function (routeMap) {
+		_routesSetter: function (/**Object*/ routeMap) {
 			var routes = this._routes = [],
 				routeIds = this._routeIds = {};
 
@@ -103,7 +65,7 @@ define([
 				kwArgs.view === undefined && (kwArgs.view = routeId);
 				kwArgs.controller === undefined && (kwArgs.controller = routeId);
 
-				routeIds[routeId] = routes.push(new Route(kwArgs));
+				routeIds[routeId] = routes.push(new Route(kwArgs)) - 1;
 			}
 
 			// TODO: Better way to do defaults?
@@ -114,7 +76,7 @@ define([
 					path: '',
 					view: '/framework/view/ErrorView',
 					controller: null
-				}));
+				})) - 1;
 			}
 
 			return routeMap;
@@ -127,18 +89,30 @@ define([
 		startup: function () {
 			this.startup = this._routesSetter = function () {};
 			this.resume();
-
-			var initialRoute = hash();
-			if (!initialRoute) {
-				hash((initialRoute = this.routePrefix + this.defaultRoute), true);
-			}
-
-			this._handlePathChange(initialRoute);
 		},
 
 		destroy: function () {
+			//	summary:
+			//		Stops listening for any new hash changes, exits all active routes, destroys all registered routes.
+
 			this.destroy = function () {};
 			this.pause();
+
+			var route,
+				event = new RouteEvent({
+					oldPath: this._oldPath,
+					newPath: null,
+					router: this
+				});
+
+			while ((route = this._activeRoutes.pop())) {
+				route.exit(event);
+			}
+
+			while ((route = this._routes.pop())) {
+				route.destroy && route.destroy();
+			}
+
 			this._activeRoutes = this._routes = null;
 		},
 
@@ -146,40 +120,64 @@ define([
 			//	summary:
 			//		Starts the router responding to hash changes.
 
-			if (!this._changeHandle) {
-				this._changeHandle = topic.subscribe('/dojo/hashchange', lang.hitch(this, '_handlePathChange'));
+			if (has('debug')) {
+				throw new Error('Abstract method "resume" not implemented');
 			}
 		},
 
 		pause: function () {
 			//	summary:
-			//		Prevents the router from responding to any hash changes.
+			//		Stops the router from responding to any hash changes.
 
-			if (this._changeHandle) {
-				this._changeHandle.remove();
-				this._changeHandle = null;
+			if (has('debug')) {
+				throw new Error('Abstract method "pause" not implemented');
 			}
 		},
 
 		go: function () {
 			//	summary:
 			//		Transitions to a new route.
+			//	id: string
+			//		The route ID.
+			//	kwArgs: Object
+			//		Arguments to the route.
 
-			if (!this._changeHandle) {
-				throw new Error('Router is paused');
+			if (has('debug')) {
+				throw new Error('Abstract method "go" not implemented');
 			}
-
-			hash(this.createUrl.apply(this, arguments));
 		},
 
-		normalizeId: function (id) {
+		resetPath: function () {
+			//	summary:
+			//		Resets the path of the underlying state mechanism without triggering a routing update.
+			//	path: string
+			//		The path to set.
+			//	replace: boolean
+			//		Whether or not to replace the previous path in history with the provided path.
+
+			if (has('debug')) {
+				throw new Error('Abstract method "resetPath" not implemented');
+			}
+		},
+
+		createPath: function () {
+			//	summary:
+			//		Creates a unique identifier for the given route.
+			//	id: string
+			//		The route ID.
+			//	kwArgs: Object
+			//		Arguments for the route.
+			//	returns: string
+
+			if (has('debug')) {
+				throw new Error('Abstract method "createPath" not implemented');
+			}
+		},
+
+		normalizeId: function (/**string*/ id) {
 			//	summary:
 			//		Normalizes a string to a real ID value.
 			//	returns: string
-
-			if (id.indexOf(this.routePrefix) === 0) {
-				id = id.slice(this.routePrefix.length);
-			}
 
 			if (id === '') {
 				id = 'index';
@@ -192,9 +190,11 @@ define([
 			return id;
 		},
 
-		_handlePathChange: function (newPath) {
+		_handlePathChange: function (/**string*/ newPath) {
 			//	summary:
 			//		Activates and deactivates routes in response to a path change.
+			//	newPath:
+			//		The new path.
 
 			// TODO: Maybe this is the wrong name for this function
 			newPath = this.normalizeId(newPath);
@@ -237,7 +237,12 @@ define([
 			});
 		},
 
-		_exitRoutes: function (event) {
+		_exitRoutes: function (/**framework/routing/RouteEvent*/ event) {
+			//	summary:
+			//		Exits active routes that do not match the new path given in `event`.
+			//	returns: dojo/promise/Promise
+			//		A promise that is resolved once all matching routes have finished deactivating.
+
 			var activeRoutes = this._activeRoutes,
 				exits = [];
 
@@ -251,13 +256,21 @@ define([
 			return whenAll(exits);
 		},
 
-		_enterRoutes: function (event) {
+		_enterRoutes: function (/**framework/routing/RouteEvent*/ event) {
+			//	summary:
+			//		Enters routes that match the new path given in `event`.
+			//	returns: dojo/promise/Promise
+			//		A promise that is resolved once all matching routes have finished activating.
+
 			var entrances = [];
 
 			for (var i = 0, route; (route = this._routes[i]); ++i) {
 				if (route.test(event.newPath)) {
 					entrances.push(route.enter(event));
-					this._activeRoutes.push(route);
+
+					if (array.indexOf(this._activeRoutes, route) === -1) {
+						this._activeRoutes.push(route);
+					}
 				}
 			}
 
@@ -265,24 +278,13 @@ define([
 		},
 
 		_handleNotFoundRoute: function () {
-			var notFoundRoute = this._routes[this._routeIds[this.notFoundRoute]];
-			return when(notFoundRoute.enter(event));
-		},
-
-		createUrl: function (id, params) {
 			//	summary:
-			//		Creates a URL fragment that can be used to link to the given route ID.
-			//	returns: string
+			//		Handles not found routes by activating the not-found route.
+			//	returns: dojo/promise/Promise
 
-			id = this.normalizeId(id);
-
-			var route = this._routes[this._routeIds[id]];
-
-			if (!route) {
-				throw new Error('Invalid route id "' + id + '"');
-			}
-
-			return '#' + this.routePrefix + route.serialize(params);
+			var notFoundRoute = this._routes[this._routeIds[this.notFoundRoute]];
+			this._activeRoutes.push(notFoundRoute);
+			return when(notFoundRoute.enter(event));
 		}
 	});
 });

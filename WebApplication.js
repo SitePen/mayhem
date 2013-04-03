@@ -9,6 +9,9 @@ define([
 			//		Extends the default configuration with Web-app-specific
 			return util.deepCopy(this.inherited(arguments), {
 				modules: {
+					router: {
+						constructor: 'framework/routing/HashRouter'
+					},
 					ui: {
 						constructor: 'app/views/ApplicationView'
 					}
