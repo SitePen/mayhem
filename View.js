@@ -30,7 +30,9 @@ define([
 			// TODO: need to pass in bound objects for the viewModel and subViews
 			// get a domNode from the compiled template.  the template should manage the DOM based
 			// on mutations to the underlying data.
-			this.domNode = this.template.render(this);
+			if (this.template) {
+				this.domNode = this.template.render(this);
+			}
 
 			// TODO:
 			//	* attach points and attach events (maybe dijit/_AttachMixin)
