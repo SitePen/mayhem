@@ -28,7 +28,7 @@ define([
 			return {
 				modules: {
 					router: {
-						constructor: 'framework/Router'
+						constructor: 'framework/routing/NullRouter'
 					}
 				}
 			};
