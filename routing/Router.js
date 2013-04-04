@@ -14,9 +14,22 @@ define([
 		//		The Router module is a base component designed to be extended and used with a path-based routing
 		//		mechanism, like a URL.
 
-		//	routes: Object.<Route>
-		//		Hash map of routes, where the key is the unique ID of the route and the value is a Route object.
-		//		Routes are nested by specifying IDs that correspond to paths.
+		//	routes: Object.<Route|Object|string>
+		//		Hash map of routes, where the key is the unique ID of the route and the value is a Route object (or
+		//		subclass of Route), a hash map that is passed to the Route constructor, or a string that is used as the
+		//		`path` property for a new route.
+		//
+		//		Routes can be nested by specifying path-like route IDs, separated by a forward-slash. For example,
+		//		a route with the ID `foo/bar` would be a child of the route with the ID `foo`. Route nesting is
+		//		independent of path nesting, but typically the paths used for a route will correspond to the route
+		//		hierarchy, since parent routes for matched child routes are not currently activated when a child is
+		//		activated. Route nesting in this manner is necessary to load sub-views into parent views.
+		//
+		//		See `framework/routing/Route` for more information on available Route properties. By default, Router
+		//		will set the `path`, `view`, and `controller` properties to the ID of the route if they are not
+		//		explicitly set.
+		//
+		//		Once the router has been started, routes can no longer be changed.
 
 		//	controllerPath: string
 		//		The default location for controllers.
@@ -35,37 +48,45 @@ define([
 		notFoundRoute: 'error',
 
 		_oldPath: null,
-
 		_activeRoutes: null,
-
 		// TODO: If routes never needs to be used as an array, remove _routeIds and restore _routes to being a hash
 		// map.
 		_routeIds: null,
-
 		_routes: null,
 
 		_routesSetter: function (/**Object*/ routeMap) {
 			var routes = this._routes = [],
 				routeIds = this._routeIds = {};
 
-			var kwArgs;
+			var kwArgs,
+				route;
 			for (var routeId in routeMap) {
 				kwArgs = routeMap[routeId];
 
-				if (typeof kwArgs === 'string') {
-					kwArgs = { path: kwArgs };
+				if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(Route) : kwArgs instanceof Route) {
+					route = kwArgs;
+					route.id = routeId;
+				}
+				else {
+					if (typeof kwArgs === 'string') {
+						kwArgs = { path: kwArgs };
+					}
+
+					kwArgs.id = routeId;
+					kwArgs.router = this;
+
+					// Path might be the empty string, and this is OK, but it cannot be null or undefined
+					kwArgs.path == null && (kwArgs.path = routeId);
+
+					// If view or controller are explicitly set to null, then they are generated using a generic
+					// Controller or View component.
+					kwArgs.view === undefined && (kwArgs.view = routeId);
+					kwArgs.controller === undefined && (kwArgs.controller = routeId);
+
+					route = new Route(kwArgs);
 				}
 
-				kwArgs.id = routeId;
-				kwArgs.router = this;
-				kwArgs.path || (kwArgs.path = routeId);
-
-				// If view or controller are explicitly set to null, then they are generated using a generic
-				// Controller or View component.
-				kwArgs.view === undefined && (kwArgs.view = routeId);
-				kwArgs.controller === undefined && (kwArgs.controller = routeId);
-
-				routeIds[routeId] = routes.push(new Route(kwArgs)) - 1;
+				routeIds[routeId] = routes.push(route) - 1;
 			}
 
 			// TODO: Better way to do defaults?
@@ -79,6 +100,27 @@ define([
 				})) - 1;
 			}
 
+			// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
+			// spend a little time on it
+			linkParentRoutes: for (var i = 0; (route = routes[i]); ++i) {
+				var parentDelimiterIndex = route.id.lastIndexOf('/');
+				if (parentDelimiterIndex === -1) {
+					continue;
+				}
+
+				var parentRouteId = route.id.slice(0, parentDelimiterIndex);
+				for (var j = 0, parentRoute; (parentRoute = routes[j]); ++j) {
+					// TODO: If a route ID is an empty string, should it be considered as parent candidate?
+					// Right now it is, but I am not sure why someone would do this except as a mistake.
+					if (parentRoute.id === parentRouteId) {
+						route.parent = parentRoute;
+						continue linkParentRoutes;
+					}
+				}
+
+				console.warn('Could not find a parent route for ' + route.id);
+			}
+
 			return routeMap;
 		},
 
@@ -87,13 +129,16 @@ define([
 		},
 
 		startup: function () {
+			//	summary:
+			//		Starts listening for new path changes.
 			this.startup = this._routesSetter = function () {};
 			this.resume();
 		},
 
 		destroy: function () {
 			//	summary:
-			//		Stops listening for any new hash changes, exits all active routes, destroys all registered routes.
+			//		Stops listening for any new path changes, exits all active routes, and destroys all registered
+			//		routes.
 
 			this.destroy = function () {};
 			this.pause();
