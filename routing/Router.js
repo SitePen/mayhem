@@ -105,6 +105,7 @@ define([
 			linkParentRoutes: for (var i = 0; (route = routes[i]); ++i) {
 				var parentDelimiterIndex = route.id.lastIndexOf('/');
 				if (parentDelimiterIndex === -1) {
+					route.parent = this.app;
 					continue;
 				}
 

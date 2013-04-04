@@ -7,7 +7,8 @@ define([
 	return declare(Component, {
 		//	summary:
 		//		A Route is an object that provides round-trip serialising and parsing of routes based on URL-like
-		//		path fragments.
+		//		path fragments. The BaseRoute class is a base class for different Routes that provides functionality
+		//		for matching, parsing, and serializing paths on a route using a URL-like syntax.
 		//
 		//	example:
 		//		Basic usage:
