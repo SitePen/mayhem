@@ -58,6 +58,10 @@ define([
 			var routes = this._routes = [],
 				routeIds = this._routeIds = {};
 
+			if (!routeMap[this.notFoundRoute]) {
+				routeMap[this.notFoundRoute] = { controller: null, view: '/framework/views/ErrorView' };
+			}
+
 			var kwArgs,
 				route;
 			for (var routeId in routeMap) {
@@ -87,17 +91,6 @@ define([
 				}
 
 				routeIds[routeId] = routes.push(route) - 1;
-			}
-
-			// TODO: Better way to do defaults?
-			if (!routeIds[this.notFoundRoute]) {
-				routeIds[this.notFoundRoute] = routes.push(new Route({
-					id: this.notFoundRoute,
-					router: this,
-					path: '',
-					view: '/framework/view/ErrorView',
-					controller: null
-				})) - 1;
 			}
 
 			// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
@@ -323,7 +316,7 @@ define([
 			return whenAll(entrances);
 		},
 
-		_handleNotFoundRoute: function () {
+		_handleNotFoundRoute: function (/**framework/routing/RouteEvent*/ event) {
 			//	summary:
 			//		Handles not found routes by activating the not-found route.
 			//	returns: dojo/promise/Promise

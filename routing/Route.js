@@ -3,8 +3,9 @@ define([
 	'dojo/Deferred',
 	'dojo/when',
 	'./BaseRoute',
+	'../has',
 	'require'
-], function (declare, Deferred, when, BaseRoute, require) {
+], function (declare, Deferred, when, BaseRoute, has, require) {
 	// TODO: Rename BaseRoute to Route and rename this guy to PathRoute or something?
 
 	return declare(BaseRoute, {
@@ -55,6 +56,8 @@ define([
 			//		Activates this route, instantiating view and controller components and placing them into any
 			//		parent route's view.
 
+			has('debug') && console.log('entering', this.id);
+
 			var self = this,
 				dfd = new Deferred();
 
@@ -76,6 +79,8 @@ define([
 			//	summary:
 			//		Deactivates the route, disconnecting any subviews within the route's view and removing the view
 			//		from its parent.
+
+			has('debug') && console.log('exiting', this.id);
 
 			var handle;
 			while((handle = this._subViewHandles.pop())) {

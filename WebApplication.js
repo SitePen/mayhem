@@ -20,7 +20,7 @@ define([
 		},
 
 		place: function (view, placeholder) {
-			this.ui.addSubView(view, placeholder);
+			return this.ui.addSubView(view, placeholder);
 		},
 
 		startup: function (options) {
