@@ -31,7 +31,9 @@ define([
 			// get a domNode from the compiled template.  the template should manage the DOM based
 			// on mutations to the underlying data.
 			if (this.template) {
-				this.domNode = this.template.render(this);
+				// the template will automatically set('domNode', node) when it can and will
+				/// potentially replace the domNode in response to changes in viewModel
+				this.template.render(this);
 			}
 
 			// TODO:
@@ -42,6 +44,16 @@ define([
 			// the knowledge of the individual blocks that might need to be re-rendered based on
 			// changes in data.
 			this.inherited(arguments);
+		},
+
+		_setDomNodeAttr: function (node) {
+			var domNode = this.domNode;
+
+			if (domNode && domNode.parentNode) {
+				domNode.parentNode.replaceChild(node, domNode);
+			}
+
+			this._set('domNode', node);
 		},
 
 		// TODO: do we still need removeSubView as a public API since this returns a handle?

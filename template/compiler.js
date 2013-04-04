@@ -1,8 +1,8 @@
 define([
 	'dojo/_base/array',
 	'./parse',
-	'./createRender'
-], function (array, parse, createRender) {
+	'./ast/Renderers'
+], function (array, parse, Renderers) {
 
 	function processAst(nodes, state) {
 		//	summary:
@@ -77,23 +77,24 @@ define([
 		return render;
 	}
 
-	function compiler(element, options) {
+	function compiler(element, astRoot) {
 		//	summary:
 		//		Walks the DOM element, generates the AST and produces a compiled function.  The
 		//		element passed in will not be included as part of the AST.
 		//	element: Element
-		//		A DOM Element that contains the parsed DOM representing the template.
-		//	options:
-		//		TODO: do we need any options?
+		//		A DOM Element that contains the parsed DOM representing the template.  The element
+		//		passed in should be a wrapper element - it will be discarded.
+		//	astRoot:
+		//		This contains any metadata associated with the AST.  The `program` property will
+		//		be populated with the parsed AST nodes.
 
-		options = options || {};
+		astRoot = astRoot || {};
 
-		// the element passed in should be a wrapper element that will be discarded
-		var ast = parse(element);
+		astRoot.program = (astRoot.program || []).concat(parse(element));
 
 		// XXX: for now, shortcircuit the compiled function but come back to it once we have more
 		// pieces working together.
-		return createRender(ast);
+		return new Renderers.Root(astRoot);
 
 		// using the reference to compiler.compile here so someone could potentially replace it
 		//return compiler.compile(ast, options);
@@ -119,6 +120,7 @@ define([
 		});
 	}
 
+	// TODO: generators are going to be stale for a while...
 	var generators = {
 			//	summary:
 			//		A map of AST node types -> to code generator function
@@ -167,11 +169,8 @@ define([
 
 				code.push(buffer.join(''));
 			},
-			'DOMNode': function (node, state) {
-				if (node.nodeType === 3) {
-					processAst(node.nodeValue, state);
-					//code.push('document.createTextNode("' + node.nodeValue + '")');
-				}
+			'TextNode': function (node, state) {
+				processAst(node.program, state);
 			},
 			'ContentNode': function (node, state) {
 				// TODO: sanitize the content... content.replace(/\r/g, '\\r').replace(/\n/g, '\\n')

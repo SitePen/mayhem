@@ -1,10 +1,11 @@
 define([
 	'require',
 	'dojo/_base/array',
+	'dojo/_base/lang',
 	'dojo/dom-construct',
 	'dojo/on',
 	'dojo/aspect'
-], function (require, array, domConstruct, on, aspect) {
+], function (require, array, lang, domConstruct, on, aspect) {
 	// in addition to this plugin, there should be a counterpart for the build system that will
 	// compile the strings, output an AMD module that exports the compiled template, and updates
 	// module ids in the reference module to replace the whole "framework/template!./some/module"
@@ -18,10 +19,8 @@ define([
 	//		'framework/Template!./template/View'
 
 
-	function Template(render, options) {
-		options = options || {};
-		// ...
-		this.render = render;
+	function Template(renderer) {
+		lang.mixin(this, renderer);
 	}
 
 	Template.prototype = {
@@ -99,6 +98,8 @@ define([
 				render = compile(templateNode, {
 					sourceUrl: moduleRequire.toUrl(id)
 				});
+
+				// TODO: cache the results based on sourceUrl
 
 				// ensure any deps we found in the template will be pre-loaded.  as a bonus, deps
 				// can be relative!
