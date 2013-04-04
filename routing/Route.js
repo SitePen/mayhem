@@ -51,10 +51,17 @@ define([
 				value.charAt(0).toUpperCase() + value.slice(1) + property.charAt(0).toUpperCase() + property.slice(1);
 		},
 
-		enter: function () {
+		enter: function (event) {
 			//	summary:
 			//		Activates this route, instantiating view and controller components and placing them into any
 			//		parent route's view.
+
+			function setRouteInfo(event) {
+				var kwArgs = self.parse(event.newPath);
+				has('debug') && console.log('new route info', kwArgs);
+				self._controllerInstance.set('routeInfo', { route: self, args: kwArgs });
+				return dfd.promise;
+			}
 
 			has('debug') && console.log('entering', this.id);
 
@@ -66,11 +73,14 @@ define([
 				this._resolveModuleId('controller')
 			], function (View, Controller) {
 				return when(self._instantiateComponents(View, Controller)).then(function () {
+					setRouteInfo(event);
 					dfd.resolve();
 				}, function () {
 					dfd.reject();
 				});
 			});
+
+			this.enter = setRouteInfo;
 
 			return dfd.promise;
 		},
@@ -85,6 +95,15 @@ define([
 			var handle;
 			while((handle = this._subViewHandles.pop())) {
 				handle.remove();
+			}
+		},
+
+		destroy: function () {
+			this.inherited(arguments);
+
+			if (this._viewInstance) {
+				this._viewInstance.destroyRecursive();
+				this._controllerInstance.destroy && this._controllerInstance.destroy();
 			}
 		},
 

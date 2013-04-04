@@ -1,3 +1,6 @@
-define([], function () {
-	return function () {};
+define([
+	'dojo/_base/declare',
+	'./Component'
+], function (declare, Component) {
+	return declare(Component);
 });
