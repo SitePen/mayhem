@@ -108,7 +108,7 @@ define([
 				placeholder = subViews[location || name];
 				index = array.indexOf(placeholder, view);
 				if (index > -1) {
-					array.splice(index, 1);
+					placeholder.splice(index, 1);
 					return;
 				}
 				if (location) {
