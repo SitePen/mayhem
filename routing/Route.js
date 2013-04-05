@@ -67,6 +67,8 @@ define([
 			//		parent route's view.
 
 			function setRouteInfo(event) {
+				has('debug') && console.log('entering', self.id);
+
 				var kwArgs = {};
 
 				for (var k in self) {
@@ -81,12 +83,12 @@ define([
 
 				lang.mixin(kwArgs, self.parse(event.newPath));
 
-				has('debug') && console.log('new route info', kwArgs);
+				has('debug') && console.log('new route info for', self.id, kwArgs);
 				self._controllerInstance.set('routeInfo', kwArgs);
 				return dfd.promise;
 			}
 
-			has('debug') && console.log('entering', this.id);
+			has('debug') && console.log('preparing', this.id);
 
 			var self = this,
 				dfd = new Deferred();

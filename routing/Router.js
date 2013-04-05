@@ -69,7 +69,7 @@ define([
 
 				if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(Route) : kwArgs instanceof Route) {
 					route = kwArgs;
-					route.id = routeId;
+					route.set('id', routeId);
 				}
 				else {
 					if (typeof kwArgs === 'string') {
@@ -79,8 +79,10 @@ define([
 					kwArgs.id = routeId;
 					kwArgs.router = this;
 
-					// Path might be the empty string, and this is OK, but it cannot be null or undefined
-					kwArgs.path == null && (kwArgs.path = routeId);
+					// Path might be the empty string, and this is OK, but it cannot be null or undefined. Then,
+					// because of the way path nesting works, only the last part of the route identifier is used as
+					// the default path; the remainder is picked up when the parent relationship is established
+					kwArgs.path == null && (kwArgs.path = routeId.replace(/^.*\//, ''));
 
 					// If view or controller are explicitly set to null, then they are generated using a generic
 					// Controller or View component.
@@ -98,22 +100,24 @@ define([
 			linkParentRoutes: for (var i = 0; (route = routes[i]); ++i) {
 				var parentDelimiterIndex = route.id.lastIndexOf('/');
 				if (parentDelimiterIndex === -1) {
-					route.parent = this.app;
+					// TODO: It feels weird to say the parent of a root route is the app, but it is the easiest way
+					// to place views into the main application view
+					route.set('parent', this.app);
 					continue;
 				}
 
 				var parentRouteId = route.id.slice(0, parentDelimiterIndex);
 				for (var j = 0, parentRoute; (parentRoute = routes[j]); ++j) {
-					// TODO: If a route ID is an empty string, should it be considered as parent candidate?
-					// Right now it is, but I am not sure why someone would do this except as a mistake.
 					if (parentRoute.id === parentRouteId) {
-						route.parent = parentRoute;
-						route.path = parentRoute.path + '/' + route.path;
+						route.set({
+							parent: parentRoute,
+							path: parentRoute.path + '/' + route.path
+						});
 						continue linkParentRoutes;
 					}
 				}
 
-				console.warn('Could not find a parent route for ' + route.id);
+				throw new Error('Could not find a parent route for ' + route.id);
 			}
 
 			return routeMap;
