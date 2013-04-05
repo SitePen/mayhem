@@ -1,0 +1,3 @@
+define([
+	'./routing/BaseRoute'
+], function () {});

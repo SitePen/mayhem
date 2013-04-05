@@ -1,15 +1,15 @@
 define([
 	'teststack!object',
 	'teststack/assert',
-	'../Route'
-], function (registerSuite, assert, Route) {
+	'../../routing/BaseRoute'
+], function (registerSuite, assert, BaseRoute) {
 	var route;
 
 	registerSuite({
-		name: 'Route',
+		name: 'BaseRoute',
 
 		setup: function () {
-			route = new Route({ path: '<foo:foo>/<bar:\\d+>/<baz:\\w+>' });
+			route = new BaseRoute({ path: '<foo:foo>/<bar:\\d+>/<baz:\\w+>' });
 		},
 
 		'#test': function () {
@@ -91,12 +91,12 @@ define([
 		},
 
 		'RegExp-like paths': function () {
-			var route = new Route({ path: '<foo:\\w+>\\d+' });
+			var route = new BaseRoute({ path: '<foo:\\w+>\\d+' });
 			assert.isTrue(route.test('foo\\d+'), 'regular expressions outside capturing groups should be treated as string literals');
 		},
 
 		'multiple identical named identifiers': function () {
-			var route = new Route({ path: '<foo:\\w+>/<foo:\\w+>/<bar:\\w+>' });
+			var route = new BaseRoute({ path: '<foo:\\w+>/<foo:\\w+>/<bar:\\w+>' });
 
 			assert.isTrue(route.test('foo/bar/baz'), 'basic test on path with MINIs should pass');
 

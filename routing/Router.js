@@ -59,7 +59,7 @@ define([
 				routeIds = this._routeIds = {};
 
 			if (!routeMap[this.notFoundRoute]) {
-				routeMap[this.notFoundRoute] = { controller: null, view: '/framework/views/ErrorView' };
+				routeMap[this.notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
 			}
 
 			var kwArgs,
@@ -108,6 +108,7 @@ define([
 					// Right now it is, but I am not sure why someone would do this except as a mistake.
 					if (parentRoute.id === parentRouteId) {
 						route.parent = parentRoute;
+						route.path = parentRoute.path + '/' + route.path;
 						continue linkParentRoutes;
 					}
 				}
@@ -125,6 +126,7 @@ define([
 		startup: function () {
 			//	summary:
 			//		Starts listening for new path changes.
+
 			this.startup = this._routesSetter = function () {};
 			this.resume();
 		},

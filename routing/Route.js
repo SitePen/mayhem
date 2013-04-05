@@ -1,14 +1,24 @@
 define([
 	'dojo/_base/declare',
+	'dojo/_base/lang',
 	'dojo/Deferred',
 	'dojo/when',
 	'./BaseRoute',
 	'../has',
 	'require'
-], function (declare, Deferred, when, BaseRoute, has, require) {
+], function (declare, lang, Deferred, when, BaseRoute, has, require) {
 	// TODO: Rename BaseRoute to Route and rename this guy to PathRoute or something?
 
 	return declare(BaseRoute, {
+		//	id: string
+		//		The unique identifier for this route.
+		id: null,
+
+		//	parent: framework/routing/Route|framework/Application
+		//		The parent route of this route. If no parent route exists, parent will be set to the main Application
+		//		instance.
+		parent: null,
+
 		//	view: string|null
 		//		The name of a view which, when transformed using the expression
 		//		`router.viewPath + '/' + toUpperCamelCase(route.view) + 'View'`,
@@ -57,9 +67,22 @@ define([
 			//		parent route's view.
 
 			function setRouteInfo(event) {
-				var kwArgs = self.parse(event.newPath);
+				var kwArgs = {};
+
+				for (var k in self) {
+					// Custom properties on the route should be provided to the controller, but not private or
+					// default properties since those are only relevant to the route itself
+					if (k.charAt(0) === '_' || (k in self.constructor.prototype)) {
+						continue;
+					}
+
+					kwArgs[k] = self[k];
+				}
+
+				lang.mixin(kwArgs, self.parse(event.newPath));
+
 				has('debug') && console.log('new route info', kwArgs);
-				self._controllerInstance.set('routeInfo', { route: self, args: kwArgs });
+				self._controllerInstance.set('routeInfo', kwArgs);
 				return dfd.promise;
 			}
 
