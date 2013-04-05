@@ -29,7 +29,8 @@ define([], function () {
 
 		this.type = 'AttributeNode';
 		this.nodeName = nodeName;
-		this.program = processContent(nodeValue);
+		// attribute values are always unescaped
+		this.program = processContent(nodeValue, true);
 	}
 
 	function DOMNode(node) {
@@ -54,9 +55,24 @@ define([], function () {
 		//	summary:
 		//		A constructor for an AST node that represents an identifier
 
+		var bound = path.indexOf('@') === 0,
+			inverse;
+
+		if (bound) {
+			path = path.slice(1);
+		}
+
+		inverse = path.indexOf('!') === 0;
+
+		if (inverse) {
+			path = path.slice(1);
+		}
+
 		this.type = 'IdNode';
 		this.path = path;
 		this.escaped = !unescaped;
+		this.bound = bound;
+		this.inverse = inverse;
 	}
 
 	function parse(node) {
@@ -87,7 +103,7 @@ define([], function () {
 		return ast;
 	}
 
-	function processContent(content) {
+	function processContent(content, forceUnescaped) {
 		//	summary:
 		//		Parses a string of content into the AST that represents that content
 		//	content: string
@@ -112,7 +128,7 @@ define([], function () {
 				lastIndex = codeSelector.lastIndex;
 				leftOverChars = content.slice(lastIndex);
 				// TODO: we will support more than just identifiers but for now assume just ids
-				nodes.push(new IdNode(exec[3], exec[2] === '!'));
+				nodes.push(new IdNode(exec[3], exec[2] === '!' || forceUnescaped));
 			}
 		}
 
