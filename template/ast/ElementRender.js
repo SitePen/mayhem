@@ -4,17 +4,22 @@ define([
 ], function (Renderers, bind) {
 
 	function ElementRender(astNode) {
+		//	summary:
+		//		Manages the rendering and updating of a DOM Element
+		//	astNode:
+		//		The AST node that describes this Element
+
 		var i,
 			length,
-			attributes = astNode.attributes,
-			attributeRenderers = this.attributes = [];
+			astAttributes = astNode.attributes,
+			attributes = this.attributes = [];
 
 		this.nodeName = astNode.nodeName;
 
 		this.program = new Renderers.Program(astNode.program);
 
-		for (i = 0, length = attributes.length; i < length; i++) {
-			attributeRenderers.push(new Renderers.AttributeNode(attributes[i]));
+		for (i = 0, length = astAttributes.length; i < length; i++) {
+			attributes.push(new Renderers.AttributeNode(astAttributes[i]));
 		}
 	}
 
@@ -22,6 +27,13 @@ define([
 		constructor: ElementRender,
 
 		render: function (context, template) {
+			//	summary:
+			//		Generates a DOM element and renders the attributes and childNodes.
+			//	context:
+			//		The context for resolving references to variables
+			//	template: framework/Template
+			//	returns: DOMElement
+
 			// TODO: cloneNode
 			var element = this.element || (this.element = template.dom(this.nodeName)),
 				childNodes = this.program.render(context, template, element),
@@ -29,11 +41,15 @@ define([
 				i,
 				length;
 
+			// render the attributes
 			for (i = 0, length = attributes.length; i < length; i++) {
 				attributes[i].render(context, template, element);
 			}
 
-			// TODO: empty the previous children
+			// empty the children (in case we're using an existing element)
+			template.emptyNode(element);
+
+			// render the children into the element
 			for (i = 0, length = childNodes.length; i < length; i++) {
 				bind.when(childNodes[i], function (child) {
 					element.appendChild(child);
