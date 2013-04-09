@@ -64,9 +64,10 @@ define([
 		enter: function (event) {
 			//	summary:
 			//		Activates this route, instantiating view and controller components and placing them into any
-			//		parent route's view.
+			//		parent route's view. Whenever a route is activated, state information from the route is provided
+			//		to the controller by setting its `routeState` property.
 
-			function setRouteInfo(event) {
+			function setRouteState(event) {
 				has('debug') && console.log('entering', self.id);
 
 				var kwArgs = {};
@@ -83,8 +84,8 @@ define([
 
 				lang.mixin(kwArgs, self.parse(event.newPath));
 
-				has('debug') && console.log('new route info for', self.id, kwArgs);
-				self._controllerInstance.set('routeInfo', kwArgs);
+				has('debug') && console.log('new route state for', self.id, kwArgs);
+				self._controllerInstance.set('routeState', kwArgs);
 				return dfd.promise;
 			}
 
@@ -98,14 +99,14 @@ define([
 				this._resolveModuleId('controller')
 			], function (View, Controller) {
 				return when(self._instantiateComponents(View, Controller)).then(function () {
-					setRouteInfo(event);
+					setRouteState(event);
 					dfd.resolve();
 				}, function () {
 					dfd.reject();
 				});
 			});
 
-			this.enter = setRouteInfo;
+			this.enter = setRouteState;
 
 			return dfd.promise;
 		},
