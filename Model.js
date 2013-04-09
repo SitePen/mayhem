@@ -1,12 +1,22 @@
 define([
-	"dojo/_base/declare",
-	"dojo/_base/lang",
-	"dojo/_base/array",
-	"dojo/Stateful",
-	"dojo/when",
-	"dojo/i18n!../nls/validator",
-	"../validator/ValidationError"
-], function (declare, lang, array, Stateful, when, i18n, ValidationError) {
+	'dojo/_base/declare',
+	'dojo/_base/lang',
+	'dojo/_base/array',
+	'dojo/Stateful',
+	'dojo/Deferred',
+	'dojo/when',
+	'dojo/i18n!./nls/validator',
+	'./validator/ValidationError',
+	'./StatefulArray'
+], function (declare, lang, array, Stateful, Deferred, when, i18n, ValidationError, StatefulArray) {
+	var getObjectKeys = Object.keys || function (object) {
+		var keys = [];
+		for (var key in object) {
+			keys.push(key);
+		}
+		return keys;
+	};
+
 	return declare(Stateful, {
 		//	summary:
 		//		A base class for modelled data objects.
@@ -56,7 +66,7 @@ define([
 		//		apply to this model. There are two standard values for scenario,
 		//		"insert" and "update", but it can be set to any arbitrary value
 		//		for more complex validation scenarios.
-		scenario: "insert",
+		scenario: 'insert',
 
 		constructor: function (params) {
 			this._errors = {};
@@ -77,7 +87,7 @@ define([
 			}
 
 			if (!this.store) {
-				throw new Error("Missing store");
+				throw new Error('Missing store');
 			}
 
 			// When putting to the store, the store *must* call commit on the
@@ -96,7 +106,7 @@ define([
 			//	summary:
 			//		Commits the currently state of the object.
 
-			this.scenario = "update";
+			this.scenario = 'update';
 			for (var k in this._schema) {
 				this._committedValues[k] = this[k];
 			}
@@ -108,25 +118,25 @@ define([
 			//		and remove any error conditions for the given key when
 			//		its value is set.
 
-			if (typeof key === "object") {
+			if (typeof key === 'object') {
 				this.inherited(arguments);
 			}
 			else if (key in this._schema) {
 				var DataType = this._schema[key];
 
-				if (DataType === "string") {
-					value = "" + value;
+				if (DataType === 'string') {
+					value = '' + value;
 				}
-				else if (DataType === "number") {
+				else if (DataType === 'number') {
 					value = +value;
 				}
-				else if (DataType === "boolean") {
+				else if (DataType === 'boolean') {
 					// value && value.length check is because dijit/_FormMixin
 					// returns an array for checkboxes; an array coerces to true,
 					// but an empty array should be set as false
-					value = (value === "false" || value === "0" || Array.isArray(value) && !value.length) ? false : !!value;
+					value = (value === 'false' || value === '0' || Array.isArray(value) && !value.length) ? false : !!value;
 				}
-				else if (typeof DataType === "function" && !(value instanceof DataType)) {
+				else if (typeof DataType === 'function' && !(value instanceof DataType)) {
 					value = new DataType(value);
 				}
 
@@ -141,45 +151,76 @@ define([
 			//	fields:
 			//		If provided, only the fields listed in the array will be
 			//		validated.
-			//	returns: boolean
-			//		Whether or not the model is in a valid state.
+			//	returns: dojo/promise/Promise
+			//		A promise that resolves to a boolean indicating whether or not the model is in a valid state.
 
 			this.clearErrors();
 
-			var validators = this._validators;
-			for (var key in validators) {
-				if (fields && array.indexOf(fields, key) === -1) {
-					continue;
-				}
+			var self = this,
+				dfd = new Deferred(),
+				validators = this._validators,
+				validatorKeys = getObjectKeys(validators),
+				i = 0;
 
-				var fieldValidators = validators[key];
-				for (var i = 0, validator, value; (validator = fieldValidators[i]); ++i) {
-					// The value is retrieved fresh on each iteration because a validator might change it
-					value = this.get(key);
+			(function validateNextField() {
+				function runNextValidator() {
+					var validator = fieldValidators[j++];
+
+					// end of list of validators for this field reached
+					if (!validator) {
+						validateNextField();
+						return;
+					}
+
+					var value = self.get(key);
 
 					if (validator.options) {
 						// Simply skip validators that are defined as allowing empty fields when the value is
 						// empty (null, undefined, or empty string)
-						if (validator.options.allowEmpty && (value == null || value === "")) {
-							continue;
+						if (validator.options.allowEmpty && (value == null || value === '')) {
+							runNextValidator();
+							return;
 						}
 
 						// Skip validators that are limited to certain scenarios and do not match the currently
 						// defined model scenario
 						if (validator.options.scenarios && validator.options.scenarios.length &&
 								array.indexOf(validator.options.scenarios, this.scenario) === -1) {
-							continue;
+							runNextValidator();
+							return;
 						}
 					}
 
-					// If a validator returns false, we stop processing any other validators on this field
-					if (validator.validate(this, key, value) === false) {
-						break;
-					}
+					// If a validator returns false, we stop processing any other validators on this field;
+					// if there is an error, validation processing halts
+					when(validator.validate(self, key, value)).then(function (continueProcessing) {
+						if (continueProcessing === false) {
+							validateNextField();
+						}
+						else {
+							runNextValidator();
+						}
+					}, function (error) {
+						dfd.reject(error);
+					});
 				}
-			}
 
-			return this.isValid();
+				var key = validatorKeys[i++],
+					fieldValidators = validators[key],
+					j = 0;
+
+				if (!fieldValidators) {
+					dfd.resolve(self.isValid());
+				}
+				else if (fields && array.indexOf(fields, key) === -1) {
+					validateNextField();
+				}
+				else {
+					runNextValidator();
+				}
+			}());
+
+			return dfd.promise;
 		},
 
 		isValid: function () {
@@ -194,8 +235,10 @@ define([
 				key;
 
 			for (key in this._errors) {
-				isValid = false;
-				break;
+				if (this._errors[key].length) {
+					isValid = false;
+					break;
+				}
 			}
 
 			return isValid;
@@ -210,7 +253,7 @@ define([
 			//		The error.
 
 			if (!(key in this._errors)) {
-				this._errors[key] = [];
+				this._errors[key] = new StatefulArray();
 			}
 			this._errors[key].push(error);
 		},
@@ -226,13 +269,20 @@ define([
 			//		is returned where the key is the field name and the value
 			//		is the array of `ValidationError`s.
 
-			return key ? (this._errors[key] || []) : this._errors;
+			// Empty StatefulArray needs to be generated immediately so that anyone trying to get errors for a field
+			// will be able to retain a reference and get errors as they appear/disappear
+			return key ? (this._errors[key] = this._errors[key] || new StatefulArray()) : this._errors;
 		},
 
 		clearErrors: function () {
 			//	summary:
 			//		Clears all errors currently set on the model.
-			this._errors = {};
+
+			var array;
+			for (var key in this._errors) {
+				array = this._errors[key];
+				array.splice(0, array.get('length'));
+			}
 		}
 	});
 });

@@ -50,7 +50,7 @@ define({
 	},
 
 	// Non-functional test suite(s) to run in each browser
-	suites: [ 'framework/test/routing' ],
+	suites: [ 'framework/test/routing', 'framework/test/Model' ],
 
 	// Functional test suite(s) to run in each browser once non-functional tests are completed
 	functionalSuites: [ ],
