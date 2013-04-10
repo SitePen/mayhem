@@ -106,5 +106,18 @@ define([
 			expect(propertySetterCalled).to.be.true;
 			expect(valuePassedToSetter).to.equal('expectedValue');
 		});
+
+		bdd.it('should call remove() on all the handles it owns when the widget is destroyed', function () {
+			var removeCounter = 3,
+				handle = { remove: function () { removeCounter--; } };
+
+			widget = new Widget();
+
+			for (var i = 0; i < removeCounter; i++) { widget.own(handle); }
+
+			expect(removeCounter).to.equal(3);
+			widget.destroy();
+			expect(removeCounter).to.equal(0);
+		});
 	});
 });

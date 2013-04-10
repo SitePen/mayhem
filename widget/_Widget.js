@@ -11,17 +11,19 @@ define([
 		//		The root of this widget's DOM representation.
 		domNode: null,
 
+		_ownedHandles: null,
+
 		// TODO: srcNodeRef is a poor name. Think of a better name.
-		/*=====
-		constructor: function (propertiesToMixIn, srcNodeRef) {
+		constructor: function (/*propertiesToMixIn, srcNodeRef*/) {
 			// summary:
 			//		Create the widget.
 			// propertiesToMixin: Object|null?
 			//		The properties that will be mixed into this widget.
 			// srcNodeRef: DomNode|String?
 			//		A reference to a DOM node to replace with this widget.
+
+			this._ownedHandles = [];
 		},
-		=====*/
 
 		postscript: function (propertiesToMixIn, srcNodeRef) {
 			this._create(propertiesToMixIn);
@@ -57,8 +59,23 @@ define([
 		destroy: function () {
 			// summary:
 			//		Destroy the widget.
+			// description:
+			//		This method destroys the widget and frees associated resources.
 			delete this.domNode.widget;
 			domConstruct.destroy(this.domNode);
+
+			// Clean up owned handles
+			while (this._ownedHandles.length > 0) {
+				this._ownedHandles.pop().remove();
+			}
+		},
+
+		own: function (handle) {
+			// summary:
+			//		Takes ownership of a handle with a remove() method.
+			// handle: Object
+			//		A handle object with a remove() method.
+			this._ownedHandles.push(handle);
 		}
 	});
 });
