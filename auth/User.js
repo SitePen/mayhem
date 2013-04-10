@@ -1,7 +1,7 @@
 define([
 	'dojo/_base/declare',
-	'./has',
-	'./Component'
+	'../has',
+	'../Component'
 ], function (declare, has, Component) {
 	return declare(Component, {
 		//	summary:
@@ -84,7 +84,7 @@ define([
 			//		Sets properties on the defined state object if the property being modified does not exist on the
 			//		User object.
 
-			if (key in this || '_' + key + 'Setter' in this) {
+			if (typeof key !== 'string' || key in this || '_' + key + 'Setter' in this) {
 				this.inherited(arguments);
 			}
 			else if (this.state) {
