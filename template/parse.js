@@ -1,36 +1,39 @@
-define([], function () {
+define([
+	'dojo/_base/array',
+	'dojo/string',
+	'./peg/parser'
+], function (array, string, peg) {
 
 	function ElementNode(node) {
 		//	summary:
 		//		constructor for an AST node that represents a DOM Element
 
-		this.type = 'ElementNode';
+		this.type = 'Element';
 		this.nodeName = node.nodeName.toLowerCase();
 
 		this.attributes = processAttributes(node);
-		this.program = parse(node);
+		this.program = parseNode(node);
 
 		// in the browser we can cloneNode on this rather than create a new one
 		// TODO: if there's no good way to pass this element to the render function then remove this
-		this.element = node;
+		this.node = node;
 	}
 
 	function TextNode(node) {
 		//	summary:
 		//		constructor for an AST node that represents a non-Element DOM Node
 
-		this.type = 'TextNode';
-		this.program = processContent(node.nodeValue);
+		this.type = 'Text';
+		this.program = peg.parse(node.nodeValue);
 	}
 
 	function AttributeNode(nodeName, nodeValue) {
 		//	summary:
 		//		A constructor for an AST node that represents a Node Attribute
 
-		this.type = 'AttributeNode';
+		this.type = 'Attribute';
 		this.nodeName = nodeName;
-		// attribute values are always unescaped
-		this.program = processContent(nodeValue, true);
+		this.program = peg.parse(nodeValue);
 	}
 
 	function DOMNode(node) {
@@ -43,39 +46,118 @@ define([], function () {
 		this.nodeType = node.nodeType;
 	}
 
-	function ContentNode(content) {
-		//	summary:
-		//		A constructor for an AST node that represents plain content
+	function BlockNode(block, astRoot) {
+		this.type = 'Block';
 
-		this.type = 'ContentNode';
-		this.content = content;
+		// since domConstruct.toDom sometimes returns a fragment and sometimes a node, we'll
+		// wrap the content so we know what we're working with
+		var wrapper = astRoot.toDom('<div></div>'),
+			node = astRoot.toDom(block.content);
+
+		wrapper.appendChild(node);
+
+		this.content = parseNode(wrapper);
+		this.blocks = array.map(block.blocks, function (block) {
+			return new BlockNode(block, astRoot);
+		});
+		// placeholders shouldn't need any further processing
+		this.placeholders = block.placeholders;
+		this.uid = block.uid;
+		// TODO: inverse and any other properties we need to handle
 	}
 
-	function IdNode(path, unescaped) {
-		//	summary:
-		//		A constructor for an AST node that represents an identifier
+	function parse(templateString, astRoot) {
+		var program = peg.parse(templateString);
 
-		var bound = path.indexOf('@') === 0,
-			inverse;
+		// the ProgramNode is just a placeholder for statements so we don't need to keep it around
+		program = processStatements(program.statements);
 
-		if (bound) {
-			path = path.slice(1);
+		if (astRoot.program) {
+			console.warn('unexpected program in astRoot', astRoot);
 		}
 
-		inverse = path.indexOf('!') === 0;
-
-		if (inverse) {
-			path = path.slice(1);
-		}
-
-		this.type = 'IdNode';
-		this.path = path;
-		this.escaped = !unescaped;
-		this.bound = bound;
-		this.inverse = inverse;
+		astRoot.program = new BlockNode(program, astRoot);
 	}
 
-	function parse(node) {
+	function processStatements(statements) {
+		var statement,
+			content,
+			uid,
+			program,
+			inverse,
+			blocks = [],
+			placeholders = {},
+			output = {
+				content: '',
+				blocks: blocks,
+				placeholders: placeholders
+			};
+
+		while ((statement = statements.shift())) {
+			switch (statement.type) {
+			// TODO: ideally the parser would be able to ignore variables during this pass so that
+			// we don't have to reconstruct them for the next (post-DOM) pass.
+			case 'Variable':
+				// reconstruct the variable for parsing later
+				content = '<%' +
+					(statement.unescaped ? '! ' : ' ') +
+					(statement.bound ? '@' : '') +
+					(statement.inverted ? '!' : '') +
+					statement.id +
+					'%>';
+
+				// collapse variables into content statements
+				output.content += content;
+				break;
+			// collapse multiple content/variable blocks into a single content block
+			case 'Content':
+				output.content += statement.content;
+				break;
+			// store placeholder statements in the placeholders map
+			case 'Placeholder':
+				// add a script tag with a unique id so we can locate where to place this later
+				uid = getUid();
+				output.content += string.substitute(SCRIPT_TEMPLATE, { uid: uid });
+
+				// store the uid on the statement so we can correlate it to the script tag
+				statement.uid = uid;
+
+				// TODO: throw an error if something has already used that name?
+				// add to the available placeholders in this template.
+				placeholders[statement.name] = statement;
+				break;
+			// keep a list of block statements and recursively process the statements of their programs
+			case 'Block':
+				// add a script tag so we can locate where to place this block
+				uid = getUid();
+				output.content += string.substitute(SCRIPT_TEMPLATE, { uid: uid });
+
+				// store the uid on the statement so we can correlate to the script tag
+				statement.uid = uid;
+
+				// recurse into the block to process it's statements
+				program = statement.program;
+				if (program) {
+					statement.program = processStatements(program.statements);
+				}
+				inverse = statement.inverse;
+				if (inverse) {
+					statement.inverse = processStatements(inverse.statements);
+				}
+
+				// add this to the list of blocks for this section of content
+				blocks.push(statement);
+				break;
+			default:
+				// hopefully we don't get here
+				console.warn('unexpected statement type', statement.type, statement);
+			}
+		}
+
+		return output;
+	}
+
+	function parseNode(node) {
 		//	summary:
 		//		Processes a node's childNodes and removes the children as they are processed
 		//	node: Node
@@ -101,42 +183,6 @@ define([], function () {
 		}
 
 		return ast;
-	}
-
-	function processContent(content, forceUnescaped) {
-		//	summary:
-		//		Parses a string of content into the AST that represents that content
-		//	content: string
-		//		A string of text to be parsed based on our templating syntax
-		//	returns: array
-		//		An array of AST nodes
-
-		var exec,
-			lastIndex = 0,
-			leftOverChars = content,
-			codeSelector = parse.codeSelector,
-			nodes = [];
-
-		while ((exec = codeSelector.exec(content))) {
-			// the first capture is to see if this delim was escaped.  if this was escaped, we need
-			// to include this match as content and keep iterating.
-			if (!exec[1]) {
-				// do we need to create a ContentNode?
-				if (exec.index > lastIndex) {
-					nodes.push(new ContentNode(content.slice(lastIndex, exec.index)));
-				}
-				lastIndex = codeSelector.lastIndex;
-				leftOverChars = content.slice(lastIndex);
-				// TODO: we will support more than just identifiers but for now assume just ids
-				nodes.push(new IdNode(exec[3], exec[2] === '!' || forceUnescaped));
-			}
-		}
-
-		if (leftOverChars) {
-			nodes.push(new ContentNode(leftOverChars));
-		}
-
-		return nodes;
 	}
 
 	function processAttributes(node) {
@@ -167,6 +213,14 @@ define([], function () {
 		return ast;
 	}
 
+	function getUid() {
+		return uidPrefix + uid++;
+	}
+
+	function randomChar() {
+		return String.fromCharCode(97 + Math.round(Math.random() * 26));
+	}
+
 	// oldie doesn't have Node - we could maybe reduce or remove this though
 	var Node = typeof Node !== 'undefined' ? Node : {
 			ELEMENT_NODE: 1,
@@ -181,9 +235,10 @@ define([], function () {
 			DOCUMENT_TYPE_NODE: 10,
 			DOCUMENT_FRAGMENT_NODE: 11,
 			NOTATION_NODE: 12
-		};
-
-	parse.codeSelector = /(\\?)[<\xbf]%([!=])\s*([\s\S]+?)\s*%[>\xbf]/g;
+		},
+		uid = 0,
+		uidPrefix = randomChar() + randomChar() + randomChar(),
+		SCRIPT_TEMPLATE = '<script id="${uid}-start"></script><script id="${uid}-end"></script>';
 
 	return parse;
 });

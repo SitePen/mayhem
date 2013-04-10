@@ -4,8 +4,9 @@ define([
 	'dojo/_base/lang',
 	'dojo/dom-construct',
 	'dojo/on',
-	'dojo/aspect'
-], function (require, array, lang, domConstruct, on, aspect) {
+	'dojo/aspect',
+	'dojo/string'
+], function (require, array, lang, domConstruct, on, aspect, string) {
 	// in addition to this plugin, there should be a counterpart for the build system that will
 	// compile the strings, output an AMD module that exports the compiled template, and updates
 	// module ids in the reference module to replace the whole "framework/template!./some/module"
@@ -62,8 +63,7 @@ define([
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')
 				.replace(/\"/g, '&quot;')
-				.replace(/'/g, '&#039;')
-				.replace(/\//g, '&#047;');
+				.replace(/'/g, '&#039;');
 		},
 
 		toDom: domConstruct.toDom,
@@ -102,19 +102,18 @@ define([
 			// same module would be leveraged by the build plugin to produce the compiled
 			// function exported by the AMD module that replaces this dependency.
 			require(['./template/compiler', 'dojo/text!' + id], function (compile, templateString) {
-				var templateNode = document.createElement('div'),
-					render;
 
-				templateNode.innerHTML = compile.sanitize(templateString);
-
-				render = compile(templateNode, {
-					sourceUrl: moduleRequire.toUrl(id)
-				});
+				var render = compile(string.trim(templateString), {
+						sourceUrl: moduleRequire.toUrl(id),
+						toDom: domConstruct.toDom
+					});
 
 				// TODO: cache the results based on sourceUrl
 
-				// ensure any deps we found in the template will be pre-loaded.  as a bonus, deps
-				// can be relative!
+				// ensure any deps we found in the template will be pre-loaded.
+				// TODO: relative deps will be loaded relative to the View that uses this template.
+				// it would be more intutive to make deps relative to the template. ids should be
+				// adjusted to work like that.
 				moduleRequire(render.deps || [], function () {
 					load(new Template(render));
 				});

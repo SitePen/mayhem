@@ -2,37 +2,37 @@ define([
 	'dbind/bind'
 ], function (bind) {
 
-	function IdRender(astNode) {
+	function VariableRender(astNode) {
 		//	summary:
-		//		Manages the rendering of an AST node that represents and Identifier
+		//		Manages the rendering of an AST node that represents a variable
 		//	astNode:
-		//		The AST node describing the Identifier
+		//		The AST node describing the variable
 
-		var path = astNode.path;
+		var id = astNode.id;
 
-		this.path = path;
-		this.segments = path.split('.');
+		this.id = id;
+		this.segments = id.split('.');
 		this.bound = astNode.bound;
-		this.escaped = astNode.escaped;
-		this.inverse = astNode.inverse;
+		this.unescaped = astNode.unescaped;
+		this.inverted = astNode.inverted;
 	}
 
-	IdRender.prototype = {
-		constructor: IdRender,
+	VariableRender.prototype = {
+		constructor: VariableRender,
 
 		render: function (context, template) {
 			//	summary:
-			//		Resolves an Identifier based on the context and returns the value.
+			//		Resolves a variable based on the context and returns the value.
 			//	context:
-			//		The context to be used to resolve the identifier.
+			//		The context to be used to resolve the variable.
 			//	template: framework/Template
 			//	returns:
-			//		The value of that Identifier based on the context
+			//		The value of that variable based on the context
 
 			var segments = this.segments.slice(),
 				bound = this.bound,
-				inverse = this.inverse,
-				escaped = this.escaped,
+				inverted = this.inverted,
+				unescaped = this.unescaped,
 				property;
 
 			if (bound) {
@@ -49,14 +49,14 @@ define([
 			}
 
 			return bind(function (value) {
-				if (inverse) {
+				if (inverted) {
 					value = !value;
 				}
 
 				// TODO: this coercion probably isn't working right
 				value = value == null ? '' :  value;
 
-				if (escaped) {
+				if (!unescaped && typeof value === 'string') {
 					// TODO: unescaped values are not coerced to a string.  is this right?  somehow
 					// for attribute values, we need to know when an attribute like hidden should be
 					// removed rather than be an empty string
@@ -76,5 +76,5 @@ define([
 		}
 	};
 
-	return IdRender;
+	return VariableRender;
 });
