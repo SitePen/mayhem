@@ -1,8 +1,9 @@
 define([
 	'dojo/_base/declare',
 	'dojo/Stateful',
-	'dojo/dom-construct'
-], function (declare, Stateful, domConstruct) {
+	'dojo/dom-construct',
+	'dojo/dom-style'
+], function (declare, Stateful, domConstruct, domStyle) {
 	return declare(Stateful, {
 		// summary:
 		//		The base class of all widgets.
@@ -76,6 +77,15 @@ define([
 			// handle: Object
 			//		A handle object with a remove() method.
 			this._ownedHandles.push(handle);
+		},
+
+		// TODO: Revisit this. It is strange since it's not really a setter; though, it is nice to be able to specify styles in the properties passed to the constructor.
+		_styleSetter: function (kwStyleArgs) {
+			// summary:
+			//		Applies the specified styles to the widget.
+			// kwStyleArgs: Object
+			//		A hash of styles to set for the widget.
+			domStyle.set(this.domNode, kwStyleArgs);
 		}
 	});
 });

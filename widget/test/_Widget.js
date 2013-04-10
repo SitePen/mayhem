@@ -119,5 +119,21 @@ define([
 			widget.destroy();
 			expect(removeCounter).to.equal(0);
 		});
+
+		bdd.it('should apply styles to its DOM node', function () {
+			var expectedBackgroundColor = 'green',
+				expectedTextAlign = 'left';
+
+			widget = new Widget({
+				style: {
+					backgroundColor: expectedBackgroundColor,
+					textAlign: expectedTextAlign
+				}
+			});
+
+			var style = widget.domNode.style;
+			expect(style.backgroundColor).to.equal(expectedBackgroundColor);
+			expect(style.textAlign).to.equal(expectedTextAlign);
+		});
 	});
 });
