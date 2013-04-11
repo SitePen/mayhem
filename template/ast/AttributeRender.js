@@ -10,7 +10,7 @@ define([
 		//		The AST Node that describes this attribute
 
 		this.nodeName = astNode.nodeName;
-		this.program = new Renderers.Program(astNode.program.statements);
+		this.program = new Renderers.Program(astNode.program);
 	}
 
 	AttributeRender.prototype = {

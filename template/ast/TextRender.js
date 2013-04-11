@@ -9,7 +9,7 @@ define([
 		//	astNode:
 		//		The AST node describing this Text Node.
 
-		this.program = new Renderers.Program(astNode.program.statements);
+		this.program = new Renderers.Program(astNode.program);
 	}
 
 	TextRender.prototype = {

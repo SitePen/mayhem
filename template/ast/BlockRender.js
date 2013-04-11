@@ -3,42 +3,35 @@ define([
 	'dbind/bind'
 ], function (Renderers, bind) {
 
-	function BlockRender(program) {
+	function BlockRender(block) {
 		//	summary:
 		//		Manages the rendering and updating of a BlockNode
-		//	program:
+		//	astNode:
 		//		The AST program that describes this Block
 
-		var programPlaceholders = program.placeholders,
-			placeholders = {},
-			node,
-			k;
+		this.isInverse = block.isInverse;
 
-		for (k in programPlaceholders) {
-			node = programPlaceholders[k];
-			placeholders[k] = new Renderers[node.type](node);
+		var inverse = block.inverse;
+		this.program = new Renderers.Program(block.program);
+
+		if (inverse) {
+			this.inverse = new Renderers.Program(inverse);
 		}
-
-		this.content = new Renderers.Program(program.content);
-		this.blocks = new Renderers.Program(program.blocks);
-		this.placeholders = placeholders;
 	}
 
 	BlockRender.prototype = {
 		constructor: BlockRender,
 
-		render: function (context, template) {
+		render: function () {
 			//	summary:
 			//		TODOC
 			//	context:
 			//		The context for resolving references to variables
 			//	template: framework/Template
 			//	returns: DOMElement
+			var program = this.isInverse ? this.inverse : this.program;
 
-			console.log('BlockRender#render');
-
-			// TODO: render the blocks and placeholders
-			return this.content.render(context, template);
+			return program.render.apply(program, arguments);
 		},
 
 		unrender: function (node) {

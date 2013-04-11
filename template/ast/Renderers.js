@@ -8,7 +8,9 @@ define([
 	'./ContentRender',
 	'./VariableRender',
 	'./BlockRender',
-	'./PlaceholderRender'
+	'./PlaceholderRender',
+	'./SlotRender',
+	'./StatementsRender'
 ], function (
 	exports,
 	RootRender,
@@ -19,7 +21,9 @@ define([
 	ContentRender,
 	VariableRender,
 	BlockRender,
-	PlaceholderRender
+	PlaceholderRender,
+	SlotRender,
+	StatementsRender
 ) {
 	exports.Root = RootRender;
 	exports.Program = ProgramRender;
@@ -30,4 +34,6 @@ define([
 	exports.Variable = VariableRender;
 	exports.Block = BlockRender;
 	exports.Placeholder = PlaceholderRender;
+	exports.Slot = SlotRender;
+	exports.Statements = StatementsRender;
 });
