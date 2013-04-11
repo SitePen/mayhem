@@ -43,6 +43,16 @@ define([
 			expect(widget.domNode).to.equal(expectedDomNode);
 		});
 
+		bdd.it('should assign a widget id if none is provided', function () {
+			widget = new Widget();
+			expect(widget.id).to.not.be.null;
+		});
+
+		bdd.it('should use a provided widget id in the event one is provided', function () {
+			widget = new Widget({ id: 'expectedId' });
+			expect(widget.id).to.equal('expectedId');
+		});
+
 		bdd.it('should add a .widget property to domNode during creation', function () {
 			widget = new Widget();
 			expect(widget.domNode.widget).to.equal(widget);

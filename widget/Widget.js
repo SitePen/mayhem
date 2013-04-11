@@ -21,12 +21,18 @@ define([
 		this.bubbles = false;
 	};
 
+	var nextWidgetIdCounter = 0;
+
 	var base = Stateful;
 	/*=====base = [ base, Evented ];=====*/
 
 	return declare(base, {
 		// summary:
 		//		The base class of all widgets.
+
+		// id: [readonly] String
+		// 		The widget identifier
+		id: null,
 
 		// domNode: [readonly] DomNode
 		//		The root of this widget's DOM representation.
@@ -62,6 +68,11 @@ define([
 			// 		Complete widget instantiation.
 			// tags:
 			//		private
+
+			if (this.id === null) {
+				this.id = 'mayhem-widget-' + (nextWidgetIdCounter++);
+			}
+
 			this._create(propertiesToMixIn);
 			this.domNode.widget = this;
 
