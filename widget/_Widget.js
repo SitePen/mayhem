@@ -1,10 +1,13 @@
 define([
+	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'dojo/Stateful',
+	'dojo/on',
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class'
-], function (declare, Stateful, domConstruct, domStyle, domClass) {
+], function (lang, declare, Stateful, on, domConstruct, domStyle, domClass) {
+	// TODO: Rename _Widget to Widget. No more underhanded underscores messin up our game.
 	return declare(Stateful, {
 		// summary:
 		//		The base class of all widgets.
@@ -22,7 +25,7 @@ define([
 		_ownedHandles: null,
 
 		// TODO: srcNodeRef is a poor name. Think of a better name.
-		constructor: function (/*propertiesToMixIn, srcNodeRef*/) {
+		constructor: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
 			// summary:
 			//		Create the widget.
 			// propertiesToMixin: Object|null?
@@ -33,7 +36,11 @@ define([
 			this._ownedHandles = [];
 		},
 
-		postscript: function (propertiesToMixIn, srcNodeRef) {
+		postscript: function (/*Object|null?*/ propertiesToMixIn, /*DomNode|String?*/ srcNodeRef) {
+			// summary:
+			// 		Complete widget instantiation.
+			// tags:
+			//		private
 			this._create(propertiesToMixIn);
 			this.domNode.widget = this;
 
@@ -45,10 +52,10 @@ define([
 			}
 		},
 
-		_create: function () {
+		_create: function (/*=====propertiesToMixIn=====*/) {
 			// summary:
 			// 		Create the widget's DOM representation.
-			// propertiesToMixIn: Object|null?
+			// propertiesToMixin: Object|null?
 			//		The properties that will be mixed into this widget.
 			// tags:
 			//		protected
@@ -57,12 +64,13 @@ define([
 			}
 		},
 
-		/*=====
 		startup: function () {
 			// summary:
 			//		Perform initialization after the widget is added to the DOM.
+
+			// Do nothing. This method is provided because startup() is assumed to exist on all widget instances.
 		},
-		=====*/
+
 
 		destroy: function () {
 			// summary:
@@ -78,12 +86,12 @@ define([
 			}
 		},
 
-		own: function (handle) {
+		// TODO: test varargs nature of own().
+		own: function (/*Object...*/) {
 			// summary:
-			//		Take ownership of a handle with a remove() method.
-			// handle: Object
-			//		A handle object with a remove() method.
-			this._ownedHandles.push(handle);
+			//		Takes ownership of one or more handles.
+			var ownedHandles = this._ownedHandles;
+			ownedHandles.push.apply(ownedHandles, arguments);
 		},
 
 		// TODO: Revisit this. It is strange since it's not really a setter; though, it is nice to be able to specify styles in the properties passed to the constructor.
@@ -112,6 +120,35 @@ define([
 				domClass.add(this.domNode, className);
 			}
 			this.className = className;
+		},
+
+		// TODO: test Widget.on()
+		on: function (/*String|Function*/ type, /*Function*/ handler) {
+			// summary:
+			//		Add a handler for the specified event type.
+			// description:
+			//		This method adds an event handler for the specified event type.
+			//		When the handler is called, `this` refers to the widget.
+			// type:
+			//		The event type to listen for
+			// handler:
+			//		The function that is called when the specified event occurs
+			// returns: Object
+			//		An object with a remove() method to remove the event handler
+			var handle = on.parse(this.domNode, type, lang.hitch(this, handler));
+			this.own(handle);
+			return handle;
+		},
+
+		// TODO: test Widget.emit()
+		emit: function (/*String*/ type, /*Function*/ event) {
+			// summary:
+			//		Emit a widget event.
+			// type:
+			// 		The event type
+			// event:
+			//		The event to emit
+			on.emit(this.domNode, type, event);
 		}
 	});
 });
