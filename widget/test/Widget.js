@@ -62,6 +62,7 @@ define([
 			expect(parentNode.firstChild).to.equal(nodeToReplace);
 
 			widget = new Widget(null, nodeToReplace);
+			widget.startup();
 
 			// Verify that there is still only one child and that the child is now the widget's DOM node.
 			expect(parentNode.childNodes.length).to.equal(1);
@@ -73,6 +74,7 @@ define([
 
 			expect(parentNode.childNodes.length).to.equal(0);
 			parentNode.appendChild(widget.domNode);
+			widget.startup();
 			expect(parentNode.childNodes.length).to.equal(1);
 			widget.destroy();
 			expect(parentNode.childNodes.length).to.equal(0);

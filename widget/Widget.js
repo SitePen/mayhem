@@ -70,7 +70,6 @@ define([
 			// Do nothing. This method is provided because startup() is assumed to exist on all widget instances.
 		},
 
-
 		destroy: function () {
 			// summary:
 			//		Destroy the widget.
@@ -147,6 +146,8 @@ define([
 			// 		The event type
 			// event:
 			//		The event to emit
+			// tags:
+			// 		protected
 			on.emit(this.domNode, type, event);
 		}
 	});
