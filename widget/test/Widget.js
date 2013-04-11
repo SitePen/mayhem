@@ -1,16 +1,13 @@
 define([
 	'teststack!bdd',
 	'teststack/chai!expect',
-	'../_Widget',
+	'../Widget',
 	'dojo/dom-construct',
 	'dojo/dom-class',
 	'dojo/_base/declare'
-], function (bdd, expect, _Widget, domConstruct, domClass, declare) {
+], function (bdd, expect, Widget, domConstruct, domClass, declare) {
 
-	// Reference the _Widget constructor without an underscore to avoid otherwise desirable linter errors.
-	var Widget = _Widget;
-
-	bdd.describe('_Widget', function () {
+	bdd.describe('Widget', function () {
 
 		var parentNode,
 			widget;

@@ -7,7 +7,6 @@ define([
 	'dojo/dom-style',
 	'dojo/dom-class'
 ], function (lang, declare, Stateful, on, domConstruct, domStyle, domClass) {
-	// TODO: Rename _Widget to Widget. No more underhanded underscores messin up our game.
 	return declare(Stateful, {
 		// summary:
 		//		The base class of all widgets.
