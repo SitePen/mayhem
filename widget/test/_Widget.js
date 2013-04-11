@@ -21,9 +21,8 @@ define([
 
 		bdd.afterEach(function () {
 			if (widget) {
-				//TODO: Figure out why this results in only 2 tests being reported yet with no errors.
-				//widget.destroy();
-				//widget = null;
+				widget.destroy();
+				widget = null;
 			}
 			domConstruct.destroy(parentNode);
 			parentNode = null;
