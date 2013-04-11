@@ -1,15 +1,16 @@
 define([
 	'./Renderers',
-	'dbind/bind'
-], function (Renderers, bind) {
+	'dbind/bind',
+	'dojo/_base/array'
+], function (Renderers, bind, array) {
 
 	function PlaceholderRender(program) {
 		//	summary:
-		//		Manages the rendering and updating of a BlockNode
+		//		Manages the rendering and updating of a Placeholder
 		//	astNode:
 		//		The AST node that describes this Block
 
-		console.log('PlaceholderRender', arguments);
+		this.name = program.name;
 	}
 
 	PlaceholderRender.prototype = {
@@ -23,7 +24,11 @@ define([
 			//	template: framework/Template
 			//	returns: DOMElement
 
-			console.log('PlaceholderRender#render');
+			return bind(function () {
+				return array.map([].slice.call(arguments), function (subView) {
+					return subView.domNode;
+				});
+			}).to(template.subViews.get(this.name));
 		},
 
 		unrender: function (node) {
