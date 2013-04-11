@@ -24,16 +24,19 @@ define([
 				content = template.root.slots[uid];
 
 			// render template.root.slots[this.uid] into this slot
-			return bind(function (node) {
-				var parent = open.parentNode;
+			return bind(function () {
+				var parent = open.parentNode,
+					nodes = [].slice.call(arguments);
 
-				if (node) {
-					template.placeNode(node, open, 'after');
+				if (nodes.length) {
+					while (nodes.length) {
+						template.placeNode(nodes.shift(), close, 'before');
+					}
 				}
 				else {
-					while ((node = open.nextSibling) && node !== close) {
+					while (open.nextSibling !== close) {
 						// TODO: should we empty the node?
-						parent.removeChild(node);
+						parent.removeChild(open.nextSibling);
 					}
 				}
 				return parent;

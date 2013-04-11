@@ -38,8 +38,11 @@ define([
 
 			var template = this;
 
+			// TODO: StatefulPropertyBinding#get doesn't work so we need to do this
+			this.subViews = bind(view.get('subViews'));
+
 			// use a bound context so that if the viewModel property of the view changes, we react
-			bind(view).get('viewModel').receive(function (context) {
+			bind(view, 'viewModel').receive(function (context) {
 				var root = template.root,
 					node = view.domNode;
 
