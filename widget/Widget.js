@@ -1,13 +1,30 @@
 define([
 	'dojo/_base/lang',
+	'dojo/aspect',
 	'dojo/_base/declare',
 	'dojo/Stateful',
-	'dojo/on',
+	/*====='dojo/Evented',=====*/
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class'
-], function (lang, declare, Stateful, on, domConstruct, domStyle, domClass) {
-	return declare(Stateful, {
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ domConstruct, domStyle, domClass) {
+
+	function WidgetEvent(type, target, eventProperties) {
+		lang.mixin(this, eventProperties);
+		this.type = type;
+		this.target = target;
+	}
+	WidgetEvent.prototype.preventDefault = function () {
+		this.cancelable = false;
+	};
+	WidgetEvent.prototype.stopPropagation = function () {
+		this.bubbles = false;
+	};
+
+	var base = Stateful;
+	/*=====base = [ base, Evented ];=====*/
+
+	return declare(base, {
 		// summary:
 		//		The base class of all widgets.
 
@@ -23,6 +40,10 @@ define([
 		//		The collection of handles owned by this widget.
 		_ownedHandles: null,
 
+		// _eventHandlerMap: Object
+		//		A map of event type to event handlers.
+		_eventHandlerMap: null,
+
 		// TODO: srcNodeRef is a poor name. Think of a better name.
 		constructor: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
 			// summary:
@@ -33,6 +54,7 @@ define([
 			//		A reference to a DOM node to replace with this widget.
 
 			this._ownedHandles = [];
+			this._eventHandlerMap = {};
 		},
 
 		postscript: function (/*Object|null?*/ propertiesToMixIn, /*DomNode|String?*/ srcNodeRef) {
@@ -119,7 +141,6 @@ define([
 			this.className = className;
 		},
 
-		// TODO: test Widget.on()
 		on: function (/*String|Function*/ type, /*Function*/ handler) {
 			// summary:
 			//		Add a handler for the specified event type.
@@ -132,13 +153,13 @@ define([
 			//		The function that is called when the specified event occurs
 			// returns: Object
 			//		An object with a remove() method to remove the event handler
-			var handle = on.parse(this.domNode, type, lang.hitch(this, handler));
+
+			var handle = aspect.after(this._eventHandlerMap, 'on' + type, handler, true);
 			this.own(handle);
 			return handle;
 		},
 
-		// TODO: test Widget.emit()
-		emit: function (/*String*/ type, /*Function*/ event) {
+		emit: function (/*String*/ type, /*Object*/ event) {
 			// summary:
 			//		Emit a widget event.
 			// type:
@@ -147,7 +168,21 @@ define([
 			//		The event to emit
 			// tags:
 			// 		protected
-			on.emit(this.domNode, type, event);
+
+			event = new WidgetEvent(this, type, event);
+
+			var domNode = this.domNode,
+				widget,
+				handler;
+			do {
+				widget = domNode.widget;
+				handler = widget && widget._eventHandlerMap['on' + type];
+				if (handler) {
+					handler.call(widget, event);
+				}
+			} while (event && event.bubbles && (domNode = domNode.parentNode));
+
+			return event.cancelable && event;
 		}
 	});
 });

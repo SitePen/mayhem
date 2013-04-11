@@ -150,5 +150,112 @@ define([
 			expect(domClass.contains(widget.domNode, 'unexpectedClassName')).to.be.false;
 			expect(domClass.contains(widget.domNode, 'expectedClassName')).to.be.true;
 		});
+
+		bdd.it('should add an event handler with on()', function () {
+			widget = new Widget();
+
+			var eventHandlerCalled = false;
+			widget.on('expected-event', function () {
+				eventHandlerCalled = true;
+			});
+			widget.emit('expected-event', {});
+			expect(eventHandlerCalled).to.be.true;
+		});
+
+		bdd.it('should call event handler with the widget as \'this\'', function () {
+			widget = new Widget();
+
+			widget.on('expected-event', function () {
+				expect(this).to.equal(widget);
+			});
+			widget.emit('expected-event', {});
+		});
+
+		// Widget for testing bubbling events.
+		var NestedWidget = declare(Widget, {
+			_nestedWidget: null,
+			_create: function () {
+				this.inherited(arguments);
+
+				// Add a div between the two widgets to make sure events can bubble
+				// up through HTML elements not associated with widgets.
+				var anotherDiv = domConstruct.create('div');
+				this.domNode.appendChild(anotherDiv);
+
+				this._nestedWidget = new Widget();
+				anotherDiv.appendChild(this._nestedWidget.domNode);
+			},
+			destroy: function () {
+				this._nestedWidget.destroy();
+				this.inherited(arguments);
+			}
+		});
+
+		bdd.it('should bubble emitted events', function () {
+			widget = new NestedWidget();
+
+			var eventBubbled = false;
+			widget.on('expected-event', function () {
+				eventBubbled = true;
+			});
+			widget._nestedWidget.emit('expected-event', { bubbles: true });
+
+			expect(eventBubbled).to.be.true;
+		});
+
+		bdd.it('should call event handler with current widget as \'this\' for bubbled events', function () {
+			widget = new NestedWidget();
+
+			var expectedHandlerContext = widget,
+				actualHandlerContext;
+			widget.on('expected-event', function () {
+				actualHandlerContext = this;
+			});
+			widget._nestedWidget.emit('expected-event', { bubbles: true });
+
+			expect(actualHandlerContext).to.equal(expectedHandlerContext);
+		});
+
+		bdd.it('should no longer call handlers after they have been removed', function () {
+			widget = new Widget();
+
+			var handlerCalled = false;
+			var handle = widget.on('expected-event', function () {
+				handlerCalled = true;
+			});
+			widget.emit('expected-event');
+			expect(handlerCalled).to.be.true;
+
+			handle.remove();
+			handlerCalled = false;
+			widget.emit('expected-event');
+			expect(handlerCalled).to.be.false;
+		});
+
+		bdd.it('should stop bubbling an event when event.stopPropagation() is called', function () {
+			widget = new NestedWidget();
+
+			var eventBubbled = false;
+			widget.on('expected-event', function () {
+				eventBubbled = true;
+			});
+			widget._nestedWidget.on('expected-event', function (event) {
+				event.stopPropagation();
+			});
+			widget._nestedWidget.emit('expected-event', { bubbles: true });
+
+			expect(eventBubbled).to.be.false;
+		});
+
+		bdd.it('should return false from emit() if an event is canceled with preventDefault()', function () {
+			widget = new Widget();
+
+			widget.on('expected-event', function (event) {
+				event.preventDefault();
+			});
+			var emitReturnValue = widget.emit('expected-event', { cancelable: true });
+
+			expect(emitReturnValue).to.be.false;
+		});
 	});
 });
