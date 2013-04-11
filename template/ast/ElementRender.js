@@ -19,7 +19,7 @@ define([
 		this.program = new Renderers.Program(astNode.program);
 
 		for (i = 0, length = astAttributes.length; i < length; i++) {
-			attributes.push(new Renderers.AttributeNode(astAttributes[i]));
+			attributes.push(new Renderers.Attribute(astAttributes[i]));
 		}
 	}
 

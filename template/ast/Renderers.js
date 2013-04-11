@@ -6,7 +6,9 @@ define([
 	'./AttributeRender',
 	'./TextRender',
 	'./ContentRender',
-	'./IdRender'
+	'./VariableRender',
+	'./BlockRender',
+	'./PlaceholderRender'
 ], function (
 	exports,
 	RootRender,
@@ -15,13 +17,17 @@ define([
 	AttributeRender,
 	TextRender,
 	ContentRender,
-	IdRender
+	VariableRender,
+	BlockRender,
+	PlaceholderRender
 ) {
 	exports.Root = RootRender;
 	exports.Program = ProgramRender;
-	exports.ElementNode = ElementRender;
-	exports.AttributeNode = AttributeRender;
-	exports.TextNode = TextRender;
-	exports.ContentNode = ContentRender;
-	exports.IdNode = IdRender;
+	exports.Element = ElementRender;
+	exports.Attribute = AttributeRender;
+	exports.Text = TextRender;
+	exports.Content = ContentRender;
+	exports.Variable = VariableRender;
+	exports.Block = BlockRender;
+	exports.Placeholder = PlaceholderRender;
 });

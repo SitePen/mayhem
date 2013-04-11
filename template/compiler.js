@@ -4,6 +4,30 @@ define([
 	'./ast/Renderers'
 ], function (array, parse, Renderers) {
 
+	function compiler(templateString, astRoot) {
+		//	summary:
+		//		Parses the templateString to produce an AST.  Based on that AST, a tree of renderers
+		//		is generated.
+		//	templateString: string
+		//		The string representation of the template.
+		//	astRoot:
+		//		This contains any metadata associated with the AST.  The `program` property will
+		//		be populated with the parsed AST nodes.  This object has the following properties:
+		//		* toDom (function): See dojo/dom-construct::toDom
+		//		* sourceUrl? (string): A source URL for the compiled function
+
+		parse(templateString, astRoot);
+
+		// XXX: for now, shortcircuit the compiled function but come back to it once we have more
+		// pieces working together.
+		return new Renderers.Root(astRoot);
+
+		// using the reference to compiler.compile here so someone could potentially replace it
+		//return compiler.compile(ast, options);
+	}
+
+	// TODO: code generation is going to be stale for a while...
+
 	function processAst(nodes, state) {
 		//	summary:
 		//		Walks the AST and generates code based on the generators available
@@ -77,50 +101,6 @@ define([
 		return render;
 	}
 
-	function compiler(element, astRoot) {
-		//	summary:
-		//		Walks the DOM element, generates the AST and produces a compiled function.  The
-		//		element passed in will not be included as part of the AST.
-		//	element: Element
-		//		A DOM Element that contains the parsed DOM representing the template.  The element
-		//		passed in should be a wrapper element - it will be discarded.
-		//	astRoot:
-		//		This contains any metadata associated with the AST.  The `program` property will
-		//		be populated with the parsed AST nodes.
-
-		astRoot = astRoot || {};
-
-		astRoot.program = (astRoot.program || []).concat(parse(element));
-
-		// XXX: for now, shortcircuit the compiled function but come back to it once we have more
-		// pieces working together.
-		return new Renderers.Root(astRoot);
-
-		// using the reference to compiler.compile here so someone could potentially replace it
-		//return compiler.compile(ast, options);
-	}
-
-	function sanitize(templateString) {
-		//	summary:
-		//		Our delimiters are <%= and %> but oldie thinks these are DOM nodes so we translate
-		//		those to something that works.
-
-		// first, we look for anything that matches our target delims and we escape it so it doesn't
-		// get tokenized later.
-		return templateString.replace(/(\xbf)/g, '\\$1')
-
-		// next, replace the '<' and '>' with '\xbf' unless the opening tag was escaped as '\<%'
-		.replace(parse.codeSelector, function (match, escapedDelim, blockType, code) {
-			if (escapedDelim) {
-				return match;
-			}
-			else {
-				return '\xbf%' + blockType + code + '%\xbf';
-			}
-		});
-	}
-
-	// TODO: generators are going to be stale for a while...
 	var generators = {
 			//	summary:
 			//		A map of AST node types -> to code generator function
@@ -181,7 +161,6 @@ define([
 			}
 		};
 
-	compiler.sanitize = sanitize;
 	compiler.compile = compile;
 
 	return compiler;

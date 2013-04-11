@@ -14,18 +14,17 @@ define([
 		//		* program (array): An array of AST nodes
 
 		var program = astRoot.program,
-			url = astRoot.sourceUrl || 'unkown location',
-			root = program[0];
-
-		if (program.length > 1) {
-			// TODO: we could possibly return a document fragment if there was more than one
-			// top-level node but for now we'll say we don't support it.
-			throw new Error('More than one top-level node specified in "' + url + '"');
-		}
+			content = program.content,
+			url = astRoot.sourceUrl || 'unknown location';
 
 		console.log('creating RootRender for', astRoot);
 
-		this.root = new Renderers[root.type](root);
+		// if this program controls more than a single DOM node then we currently have an error
+		if (content.length > 1) {
+			throw new Error('Attempt to render more than one DOM Element at "' + url + '"');
+		}
+
+		this.root = new Renderers[program.type](program);
 	}
 
 	RootRender.prototype = {
@@ -42,13 +41,16 @@ define([
 			// use a bound context so that if the viewModel property of the view changes, we react
 			bind(view).get('viewModel').receive(function (context) {
 				var root = template.root,
-					node = view.domNode;
+					node = view.domNode,
+					result;
 
 				// if we are re-rendering then we should clean up the previous rendering
 				root.unrender(node);
 
+				result = root.render(context, template);
+
 				// let the view know circumstances have changed. hopefully no bled has been shed
-				view.set('domNode', root.render(context, template));
+				view.set('domNode', result[0]);
 			});
 		},
 
