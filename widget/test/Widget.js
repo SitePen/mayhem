@@ -112,7 +112,7 @@ define([
 
 			widget = new Widget();
 
-			for (var i = 0; i < removeCounter; i++) { widget.own(handle); }
+			widget.own(handle, handle, handle);
 
 			expect(removeCounter).to.equal(3);
 			widget.destroy();

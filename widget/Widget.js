@@ -84,7 +84,6 @@ define([
 			}
 		},
 
-		// TODO: test varargs nature of own().
 		own: function (/*Object...*/) {
 			// summary:
 			//		Takes ownership of one or more handles.
