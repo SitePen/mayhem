@@ -12,7 +12,7 @@ define([
 		this.nodeName = node.nodeName.toLowerCase();
 
 		this.attributes = processAttributes(node);
-		this.program = parseNode(node);
+		this.statements = parseNode(node);
 
 		// in the browser we can cloneNode on this rather than create a new one
 		// TODO: if there's no good way to pass this element to the render function then remove this
@@ -24,6 +24,7 @@ define([
 		//		constructor for an AST node that represents a non-Element DOM Node
 
 		this.type = 'Text';
+		// TODO: handle parsing empty strings
 		this.program = peg.parse(node.nodeValue);
 	}
 
@@ -33,6 +34,7 @@ define([
 
 		this.type = 'Attribute';
 		this.nodeName = nodeName;
+		// TODO: handle parsing empty strings
 		this.program = peg.parse(nodeValue);
 	}
 
@@ -46,52 +48,66 @@ define([
 		this.nodeType = node.nodeType;
 	}
 
-	function BlockNode(block, astRoot) {
-		this.type = 'Block';
+	function ProgramNode(program, astRoot) {
+		this.type = 'Program';
 
 		// since domConstruct.toDom sometimes returns a fragment and sometimes a node, we'll
 		// wrap the content so we know what we're working with
 		var wrapper = astRoot.toDom('<div></div>'),
-			node = astRoot.toDom(block.content);
+			statements = processStatements(program.statements, astRoot),
+			inverse = program.inverse,
+			node = astRoot.toDom(statements.content);
 
 		wrapper.appendChild(node);
 
-		this.content = parseNode(wrapper);
-		this.blocks = array.map(block.blocks, function (block) {
-			return new BlockNode(block, astRoot);
-		});
-		// placeholders shouldn't need any further processing
-		this.placeholders = block.placeholders;
-		this.uid = block.uid;
-		// TODO: inverse and any other properties we need to handle
+		this.statements = parseNode(wrapper);
+		this.slots = statements.slots;
+
+		if (inverse) {
+			inverse = processStatements(inverse, astRoot);
+			astRoot.empty(wrapper);
+			node = astRoot.toDom(inverse.content);
+			wrapper.appendChild(node);
+			this.inverse = {
+				statements: parseNode(wrapper),
+				slots: inverse.slots
+			};
+		}
+	}
+
+	function BlockNode(block, astRoot) {
+		var inverse = block.inverse;
+
+		this.type = 'Block';
+		this.isInverse = block.isInverse;
+		this.program = new ProgramNode(block.program, astRoot);
+		if (inverse) {
+			this.inverse = new ProgramNode(block.inverse, astRoot);
+		}
+	}
+
+	function SlotNode(uid) {
+		this.type = 'Slot';
+		this.uid = uid;
 	}
 
 	function parse(templateString, astRoot) {
 		var program = peg.parse(templateString);
 
-		// the ProgramNode is just a placeholder for statements so we don't need to keep it around
-		program = processStatements(program.statements);
-
-		if (astRoot.program) {
-			console.warn('unexpected program in astRoot', astRoot);
-		}
-
-		astRoot.program = new BlockNode(program, astRoot);
+		return new ProgramNode(program, astRoot);
 	}
 
-	function processStatements(statements) {
+	function processStatements(statements, astRoot) {
+		statements = statements.slice();
+
 		var statement,
 			content,
-			uid,
-			program,
-			inverse,
-			blocks = [],
-			placeholders = {},
+			slots = {},
 			output = {
 				content: '',
-				blocks: blocks,
-				placeholders: placeholders
-			};
+				slots: slots
+			},
+			uid;
 
 		while ((statement = statements.shift())) {
 			switch (statement.type) {
@@ -115,38 +131,21 @@ define([
 				break;
 			// store placeholder statements in the placeholders map
 			case 'Placeholder':
-				// add a script tag with a unique id so we can locate where to place this later
 				uid = getUid();
+				// add a script tag with a unique id so we can locate where to place this later
 				output.content += string.substitute(SCRIPT_TEMPLATE, { uid: uid });
 
-				// store the uid on the statement so we can correlate it to the script tag
-				statement.uid = uid;
-
-				// TODO: throw an error if something has already used that name?
-				// add to the available placeholders in this template.
-				placeholders[statement.name] = statement;
+				// add this placeholder to our slots
+				slots[uid] = statement;
 				break;
 			// keep a list of block statements and recursively process the statements of their programs
 			case 'Block':
-				// add a script tag so we can locate where to place this block
 				uid = getUid();
+				// add a script tag so we can locate where to place this block
 				output.content += string.substitute(SCRIPT_TEMPLATE, { uid: uid });
 
-				// store the uid on the statement so we can correlate to the script tag
-				statement.uid = uid;
-
-				// recurse into the block to process it's statements
-				program = statement.program;
-				if (program) {
-					statement.program = processStatements(program.statements);
-				}
-				inverse = statement.inverse;
-				if (inverse) {
-					statement.inverse = processStatements(inverse.statements);
-				}
-
-				// add this to the list of blocks for this section of content
-				blocks.push(statement);
+				// add this block to our slots
+				slots[uid] = new BlockNode(statement, astRoot);
 				break;
 			default:
 				// hopefully we don't get here
@@ -172,7 +171,12 @@ define([
 			child = node.removeChild(node.childNodes[0]);
 			switch (child.nodeType) {
 			case Node.ELEMENT_NODE:
-				ast.push(new ElementNode(child));
+				if (child.nodeName.toLowerCase() === 'script' && child.type === 'mayhem/slot') {
+					ast.push(new SlotNode(child.getAttribute('data-uid')));
+				}
+				else {
+					ast.push(new ElementNode(child));
+				}
 				break;
 			case Node.TEXT_NODE:
 				ast.push(new TextNode(child));
@@ -214,11 +218,7 @@ define([
 	}
 
 	function getUid() {
-		return uidPrefix + uid++;
-	}
-
-	function randomChar() {
-		return String.fromCharCode(97 + Math.round(Math.random() * 26));
+		return 'uid' + uid++;
 	}
 
 	// oldie doesn't have Node - we could maybe reduce or remove this though
@@ -236,9 +236,8 @@ define([
 			DOCUMENT_FRAGMENT_NODE: 11,
 			NOTATION_NODE: 12
 		},
-		uid = 0,
-		uidPrefix = randomChar() + randomChar() + randomChar(),
-		SCRIPT_TEMPLATE = '<script id="${uid}-start"></script><script id="${uid}-end"></script>';
+		SCRIPT_TEMPLATE = '<script type="mayhem/slot" data-uid="${uid}"></script>',
+		uid = 0;
 
 	return parse;
 });

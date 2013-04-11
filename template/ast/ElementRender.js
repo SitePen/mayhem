@@ -16,7 +16,7 @@ define([
 
 		this.nodeName = astNode.nodeName;
 
-		this.program = new Renderers.Program(astNode.program);
+		this.statements = new Renderers.Statements(astNode.statements);
 
 		for (i = 0, length = astAttributes.length; i < length; i++) {
 			attributes.push(new Renderers.Attribute(astAttributes[i]));
@@ -36,7 +36,7 @@ define([
 
 			// TODO: cloneNode
 			var element = this.element || (this.element = template.dom(this.nodeName)),
-				childNodes = this.program.render(context, template, element),
+				childNodes = this.statements.render(context, template, element),
 				attributes = this.attributes,
 				i,
 				length;

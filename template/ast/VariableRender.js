@@ -64,7 +64,7 @@ define([
 				}
 
 				return value;
-			}).to([context]);
+			}).to(context);
 		},
 
 		unrender: function () {

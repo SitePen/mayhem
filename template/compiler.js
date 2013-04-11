@@ -16,7 +16,7 @@ define([
 		//		* toDom (function): See dojo/dom-construct::toDom
 		//		* sourceUrl? (string): A source URL for the compiled function
 
-		parse(templateString, astRoot);
+		astRoot.program = parse(templateString, astRoot);
 
 		// XXX: for now, shortcircuit the compiled function but come back to it once we have more
 		// pieces working together.

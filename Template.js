@@ -68,6 +68,7 @@ define([
 
 		toDom: domConstruct.toDom,
 		emptyNode: domConstruct.empty,
+		placeNode: domConstruct.place,
 
 		bind: function () {
 			// ...

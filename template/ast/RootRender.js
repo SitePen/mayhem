@@ -14,13 +14,13 @@ define([
 		//		* program (array): An array of AST nodes
 
 		var program = astRoot.program,
-			content = program.content,
+			statements = program.statements,
 			url = astRoot.sourceUrl || 'unknown location';
 
 		console.log('creating RootRender for', astRoot);
 
 		// if this program controls more than a single DOM node then we currently have an error
-		if (content.length > 1) {
+		if (statements.length > 1) {
 			throw new Error('Attempt to render more than one DOM Element at "' + url + '"');
 		}
 
@@ -41,16 +41,18 @@ define([
 			// use a bound context so that if the viewModel property of the view changes, we react
 			bind(view).get('viewModel').receive(function (context) {
 				var root = template.root,
-					node = view.domNode,
-					result;
+					node = view.domNode;
 
 				// if we are re-rendering then we should clean up the previous rendering
 				root.unrender(node);
 
-				result = root.render(context, template);
-
 				// let the view know circumstances have changed. hopefully no bled has been shed
-				view.set('domNode', result[0]);
+				bind(root.render(context, template)).receive(function (nodes) {
+					if (nodes.length > 1) {
+						console.warn('uh-oh... too many DOM nodes', nodes);
+					}
+					view.set('domNode', nodes[0]);
+				});
 			});
 		},
 
