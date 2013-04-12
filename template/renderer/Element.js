@@ -1,7 +1,8 @@
 define([
 	'./Renderers',
-	'dbind/bind'
-], function (Renderers, bind) {
+	'dbind/bind',
+	'dojo/dom-construct'
+], function (Renderers, bind, domConstruct) {
 
 	function ElementRenderer(astNode) {
 		//	summary:
@@ -18,18 +19,13 @@ define([
 	ElementRenderer.prototype = {
 		constructor: ElementRenderer,
 
-		render: function (view, context, template) {
+		render: function () {
 			//	summary:
 			//		Generates a DOM element and renders the attributes and childNodes.
-			//	view:
-			//		The view being rendered
-			//	context:
-			//		The context for resolving references to variables
-			//	template: framework/Template
 			//	returns: DOMElement
 
 			// TODO: cloneNode
-			var element = this.element || (this.element = template.domCreate(this.nodeName)),
+			var element = this.element || (this.element = domConstruct.create(this.nodeName)),
 				args = [].slice.call(arguments, 0, 3).concat(element),
 				statements = this.statements,
 				attributes = this.attributes,
@@ -42,7 +38,7 @@ define([
 
 			// empty the children (in case we're using an existing element)
 			// TODO: should this be a call to unrender? is it even needed?
-			template.emptyNode(element);
+			domConstruct.empty(element);
 
 			// render the children into the element
 			for (i = 0, length = childNodes.length; i < length; i++) {

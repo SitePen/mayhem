@@ -1,7 +1,8 @@
 define([
 	'./Renderers',
-	'dbind/bind'
-], function (Renderers, bind) {
+	'dbind/bind',
+	'dojo/dom-construct'
+], function (Renderers, bind, domConstruct) {
 
 	function SlotRenderer(astNode) {
 		//	summary:
@@ -23,7 +24,7 @@ define([
 
 			// generate a start and end script block
 			var uid = this.uid,
-				frag = template.toDom('<script data-uid="' + uid + '-open"></script><script data-uid="' + uid + '-close"></script>'),
+				frag = domConstruct.toDom('<script data-uid="' + uid + '-open"></script><script data-uid="' + uid + '-close"></script>'),
 				open = frag.firstChild,
 				close = frag.lastChild,
 				// find the renderer that occupies this slot
@@ -38,7 +39,7 @@ define([
 					while (nodes.length) {
 						// since the closing tag is a known reference point, start at the beginning
 						// of the list of nodes and insert each one before the close script.
-						template.placeNode(nodes.shift(), close, 'before');
+						domConstruct.place(nodes.shift(), close, 'before');
 					}
 				}
 				else {

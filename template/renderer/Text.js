@@ -1,7 +1,8 @@
 define([
 	'./Renderers',
-	'dbind/bind'
-], function (Renderers, bind) {
+	'dbind/bind',
+	'dojo/dom-construct'
+], function (Renderers, bind, domConstruct) {
 
 	function TextRenderer(astNode) {
 		//	summary:
@@ -15,7 +16,7 @@ define([
 	TextRenderer.prototype = {
 		constructor: TextRenderer,
 
-		render: function (view, context, template) {
+		render: function () {
 			//	summary:
 			//		Renders the program of this AST node and returns the DOM representation of that
 			//		text.
@@ -26,7 +27,7 @@ define([
 			var program = this.program;
 
 			return bind(function () {
-				return template.toDom([].join.call(arguments, ''));
+				return domConstruct.toDom([].join.call(arguments, ''));
 			}).to(program.render.apply(program, arguments));
 		},
 
