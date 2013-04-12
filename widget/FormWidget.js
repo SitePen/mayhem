@@ -4,6 +4,9 @@ define([
 	'dojo/dom-class'
 ], function (declare, Widget, domClass) {
 	return declare(Widget, {
+		// summary:
+		//		The base class for all form widgets.
+
 		// name: String
 		// 		The name of the form widget
 		name: null,

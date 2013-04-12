@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Mayhem Widget Test</title>
+	<link rel='stylesheet' href='../../dijit/themes/claro/claro.css'
+</head>
+<body class='claro'>
+	<script>
+
+	var dojoConfig = {
+		baseUrl: '../..',
+		packages: [
+			'dojo',
+			'dijit',
+			{
+				name: 'widget',
+				location: 'framework/widget'
+			},
+			'framework'
+		]
+	};
+
+	</script>
+	<script src='../../dojo/dojo.js'></script>
+	<script>
+
+	require([
+		'widget/Button',
+		'dojo/domReady!'
+	], function(Button) {
+		var button = new Button({
+			label: "Button"
+		});
+		document.body.appendChild(button.domNode);
+		button.startup();
+	});
+
+	</script>
+</body>
+</html>
