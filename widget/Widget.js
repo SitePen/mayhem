@@ -6,10 +6,12 @@ define([
 	/*====='dojo/Evented',=====*/
 	'dojo/dom-construct',
 	'dojo/dom-style',
-	'dojo/dom-class'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ domConstruct, domStyle, domClass) {
+	'dojo/dom-class',
+	'dojo/on'
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ domConstruct, domStyle, domClass, on) {
 
 	function WidgetEvent(type, target, eventProperties) {
+		// TODO: This will mixin DOM events' preventDefault and stopPropagation method. Do they need bound to the original event?
 		lang.mixin(this, eventProperties);
 		this.type = type;
 		this.target = target;
@@ -44,11 +46,21 @@ define([
 
 		// _ownedHandles: Array
 		//		The collection of handles owned by this widget.
+		// tags:
+		//		private
 		_ownedHandles: null,
 
-		// _eventHandlerMap: Object
-		//		A map of event type to event handlers.
-		_eventHandlerMap: null,
+		// _eventListenerMap: Object
+		//		A map of event listeners by event type.
+		// tags:
+		//		private
+		_eventListenerMap: null,
+
+		// _domEventProxies: Object
+		//		A map of DOM event proxies by event type.
+		// tags:
+		//		private
+		_domEventProxies: null,
 
 		// TODO: srcNodeRef is a poor name. Think of a better name.
 		constructor: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
@@ -60,7 +72,8 @@ define([
 			//		A reference to a DOM node to replace with this widget.
 
 			this._ownedHandles = [];
-			this._eventHandlerMap = {};
+			this._eventListenerMap = {};
+			this._domEventProxies = {};
 		},
 
 		postscript: function (/*Object|null?*/ propertiesToMixIn, /*DomNode|String?*/ srcNodeRef) {
@@ -152,22 +165,75 @@ define([
 			this.className = className;
 		},
 
-		on: function (/*String|Function*/ type, /*Function*/ handler) {
+		_registerDomEventProxy: function (/*String*/ type) {
 			// summary:
-			//		Add a handler for the specified event type.
+			//		Register the need for a DOM event proxy that proxies DOM events to widget events.
 			// description:
-			//		This method adds an event handler for the specified event type.
-			//		When the handler is called, `this` refers to the widget.
+			//		This method registers the need for a DOM event listener to emit those events as widget events.
+			//		When the event is emitted by the DOM, the widget emits a corresponding widget event.
+			//		No matter how many listeners are registered for the widget event,
+			//		only one listener is ever registered per DOM event. Once all corresponding widget
+			//		event listeners have been removed, the corresponding DOM event listener is removed as well.
+			// type:
+			//		The event type.
+			// returns: Object
+			//		An object with a remove() method to unregister for the event proxy.
+			// tags:
+			//		private
+			var domEventProxies = this._domEventProxies,
+				widget = this;
+
+			var domEventProxy = domEventProxies[type];
+			if (!domEventProxy) {
+				domEventProxy = domEventProxies[type] = {
+					referenceCount: 0,
+					proxyHandle: on(widget.domNode, type, function (event) {
+						widget.emit(type, event);
+					}),
+					handle: {
+						remove: function () {
+							domEventProxy.referenceCount--;
+							if (domEventProxy.referenceCount === 0) {
+								domEventProxy.proxyHandle.remove();
+								delete domEventProxies[type];
+							}
+						}
+					}
+				};
+			}
+
+			domEventProxy.referenceCount++;
+
+			return domEventProxy.handle;
+		},
+
+		// TODO: Test DOM event bubbling and canceling
+		on: function (/*String|Function*/ type, /*Function*/ listener) {
+			// summary:
+			//		Add a listener for the specified event type.
+			// description:
+			//		This method adds an event listener for the specified event type.
+			//		When the listener is called, `this` refers to the widget.
 			// type:
 			//		The event type to listen for
-			// handler:
+			// listener:
 			//		The function that is called when the specified event occurs
 			// returns: Object
-			//		An object with a remove() method to remove the event handler
+			//		An object with a remove() method to remove the event listener
 
-			var handle = aspect.after(this._eventHandlerMap, 'on' + type, handler, true);
-			this.own(handle);
-			return handle;
+			var domListenerHandle = this._registerDomEventProxy(type),
+				widgetListenerHandle = aspect.after(this._eventListenerMap, 'on' + type, listener, true),
+				aggregateHandleRemoved = false,
+				aggregateHandle = {
+					remove: function () {
+						if (!aggregateHandleRemoved) {
+							domListenerHandle.remove();
+							widgetListenerHandle.remove();
+						}
+					}
+				};
+			this.own(aggregateHandle);
+			return aggregateHandle;
 		},
 
 		emit: function (/*String*/ type, /*Object*/ event) {
@@ -184,12 +250,12 @@ define([
 
 			var domNode = this.domNode,
 				widget,
-				handler;
+				listener;
 			do {
 				widget = domNode.widget;
-				handler = widget && widget._eventHandlerMap['on' + type];
-				if (handler) {
-					handler.call(widget, event);
+				listener = widget && widget._eventListenerMap['on' + type];
+				if (listener) {
+					listener.call(widget, event);
 				}
 			} while (event && event.bubbles && (domNode = domNode.parentNode));
 

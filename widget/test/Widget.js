@@ -4,8 +4,10 @@ define([
 	'../Widget',
 	'dojo/dom-construct',
 	'dojo/dom-class',
-	'dojo/_base/declare'
-], function (bdd, expect, Widget, domConstruct, domClass, declare) {
+	'dojo/_base/declare',
+	'dojo/aspect',
+	'dojo/domReady!'
+], function (bdd, expect, Widget, domConstruct, domClass, declare, aspect) {
 
 	bdd.describe('Widget', function () {
 
@@ -161,18 +163,18 @@ define([
 			expect(domClass.contains(widget.domNode, 'expectedClassName')).to.be.true;
 		});
 
-		bdd.it('should add an event handler with on()', function () {
+		bdd.it('should add an event listener with widget.on()', function () {
 			widget = new Widget();
 
-			var eventHandlerCalled = false;
+			var eventListenerCalled = false;
 			widget.on('expected-event', function () {
-				eventHandlerCalled = true;
+				eventListenerCalled = true;
 			});
 			widget.emit('expected-event', {});
-			expect(eventHandlerCalled).to.be.true;
+			expect(eventListenerCalled).to.be.true;
 		});
 
-		bdd.it('should call event handler with the widget as \'this\'', function () {
+		bdd.it('should call event listener with the widget as \'this\'', function () {
 			widget = new Widget();
 
 			widget.on('expected-event', function () {
@@ -213,33 +215,33 @@ define([
 			expect(eventBubbled).to.be.true;
 		});
 
-		bdd.it('should call event handler with current widget as \'this\' for bubbled events', function () {
+		bdd.it('should call event listener with current widget as \'this\' for bubbled events', function () {
 			widget = new NestedWidget();
 
-			var expectedHandlerContext = widget,
-				actualHandlerContext;
+			var expectedListenerContext = widget,
+				actualListenerContext;
 			widget.on('expected-event', function () {
-				actualHandlerContext = this;
+				actualListenerContext = this;
 			});
 			widget._nestedWidget.emit('expected-event', { bubbles: true });
 
-			expect(actualHandlerContext).to.equal(expectedHandlerContext);
+			expect(actualListenerContext).to.equal(expectedListenerContext);
 		});
 
-		bdd.it('should no longer call handlers after they have been removed', function () {
+		bdd.it('should no longer call listeners after they have been removed', function () {
 			widget = new Widget();
 
-			var handlerCalled = false;
+			var listenerCalled = false;
 			var handle = widget.on('expected-event', function () {
-				handlerCalled = true;
+				listenerCalled = true;
 			});
 			widget.emit('expected-event');
-			expect(handlerCalled).to.be.true;
+			expect(listenerCalled).to.be.true;
 
 			handle.remove();
-			handlerCalled = false;
+			listenerCalled = false;
 			widget.emit('expected-event');
-			expect(handlerCalled).to.be.false;
+			expect(listenerCalled).to.be.false;
 		});
 
 		bdd.it('should stop bubbling an event when event.stopPropagation() is called', function () {
@@ -255,6 +257,35 @@ define([
 			widget._nestedWidget.emit('expected-event', { bubbles: true });
 
 			expect(eventBubbled).to.be.false;
+		});
+
+		bdd.it('should emit DOM events if a listener is registered for them', function () {
+			widget = new Widget();
+
+			var emittedClick = false;
+			widget.on('click', function () {
+				emittedClick = true;
+			});
+			widget.domNode.click();
+			expect(emittedClick).to.be.true;
+		});
+
+		bdd.it('should stop emitting DOM events once all listeners have been removed', function () {
+			widget = new Widget();
+
+			var handle = widget.on('click', function () {});
+
+			var calledEmit = false;
+			aspect.before(widget, 'emit', function () { calledEmit = true; });
+
+			widget.domNode.click();
+			expect(calledEmit).to.be.true;
+
+			handle.remove();
+
+			calledEmit = false;
+			widget.domNode.click();
+			expect(calledEmit).to.be.false;
 		});
 
 		bdd.it('should return false from emit() if an event is canceled with preventDefault()', function () {
