@@ -2,7 +2,7 @@ define([
 	'dbind/bind'
 ], function (bind) {
 
-	function VariableRender(astNode) {
+	function VariableRenderer(astNode) {
 		//	summary:
 		//		Manages the rendering of an AST node that represents a variable
 		//	astNode:
@@ -17,8 +17,8 @@ define([
 		this.inverted = astNode.inverted;
 	}
 
-	VariableRender.prototype = {
-		constructor: VariableRender,
+	VariableRenderer.prototype = {
+		constructor: VariableRenderer,
 
 		render: function (context, template) {
 			//	summary:
@@ -76,5 +76,5 @@ define([
 		}
 	};
 
-	return VariableRender;
+	return VariableRenderer;
 });

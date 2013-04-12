@@ -2,7 +2,7 @@ define([
 	'./Renderers'
 ], function (Renderers) {
 
-	function ProgramRender(program) {
+	function ProgramRenderer(program) {
 		//	summary:
 		//		Constructor for an object that manages the rendering of a "program"
 		//	program:
@@ -34,8 +34,8 @@ define([
 		}
 	}
 
-	ProgramRender.prototype = {
-		constructor: ProgramRender,
+	ProgramRenderer.prototype = {
+		constructor: ProgramRenderer,
 
 		render: function () {
 			//	summary:
@@ -58,5 +58,5 @@ define([
 		}
 	};
 
-	return ProgramRender;
+	return ProgramRenderer;
 });

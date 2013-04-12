@@ -10,7 +10,9 @@ define([
 	'./Block',
 	'./Placeholder',
 	'./Slot',
-	'./Statements'
+	'./Statements',
+	'./DojoType',
+	'./DojoProp'
 ], function (
 	exports,
 	Root,
@@ -23,7 +25,9 @@ define([
 	Block,
 	Placeholder,
 	Slot,
-	Statements
+	Statements,
+	DojoType,
+	DojoProp
 ) {
 	exports.Root = Root;
 	exports.Program = Program;
@@ -36,4 +40,6 @@ define([
 	exports.Placeholder = Placeholder;
 	exports.Slot = Slot;
 	exports.Statements = Statements;
+	exports.DojoType = DojoType;
+	exports.DojoProp = DojoProp;
 });

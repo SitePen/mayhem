@@ -1,6 +1,6 @@
 define([], function () {
 
-	function ContentRender(astNode) {
+	function ContentRenderer(astNode) {
 		//	summary:
 		//		Manages the rendering of content that is just plain text.
 		//	astNode:
@@ -9,8 +9,8 @@ define([], function () {
 		this.content = astNode.content;
 	}
 
-	ContentRender.prototype = {
-		constructor: ContentRender,
+	ContentRenderer.prototype = {
+		constructor: ContentRenderer,
 
 		render: function () {
 			//	summary:
@@ -30,5 +30,5 @@ define([], function () {
 		}
 	};
 
-	return ContentRender;
+	return ContentRenderer;
 });

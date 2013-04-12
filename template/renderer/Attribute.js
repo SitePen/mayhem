@@ -3,7 +3,7 @@ define([
 	'dbind/bind'
 ], function (Renderers, bind) {
 
-	function AttributeRender(astNode) {
+	function AttributeRenderer(astNode) {
 		//	summary:
 		//		Manages the rendering and updating of an Element's attribute
 		//	astNode:
@@ -13,8 +13,8 @@ define([
 		this.program = new Renderers.Program(astNode.program);
 	}
 
-	AttributeRender.prototype = {
-		constructor: AttributeRender,
+	AttributeRenderer.prototype = {
+		constructor: AttributeRenderer,
 
 		render: function (context, template, element) {
 			//	summary:
@@ -64,5 +64,5 @@ define([
 		}
 	};
 
-	return AttributeRender;
+	return AttributeRenderer;
 });

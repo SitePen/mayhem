@@ -4,7 +4,7 @@ define([
 	'dojo/_base/array'
 ], function (Renderers, bind, array) {
 
-	function PlaceholderRender(program) {
+	function PlaceholderRenderer(program) {
 		//	summary:
 		//		Manages the rendering and updating of a Placeholder
 		//	program:
@@ -13,8 +13,8 @@ define([
 		this.name = program.name;
 	}
 
-	PlaceholderRender.prototype = {
-		constructor: PlaceholderRender,
+	PlaceholderRenderer.prototype = {
+		constructor: PlaceholderRenderer,
 
 		render: function (context, template) {
 			//	summary:
@@ -41,5 +41,5 @@ define([
 		}
 	};
 
-	return PlaceholderRender;
+	return PlaceholderRenderer;
 });

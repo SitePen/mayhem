@@ -4,7 +4,43 @@ define([
 	'./peg/parser'
 ], function (array, string, peg) {
 
-	function ElementNode(node) {
+	function domAttributeProcessor(name, value) {
+		//	summary:
+		//		Processes attributes of DOM nodes
+		return new AttributeNode(name, value);
+	}
+
+	function dojoTypeAttributeProcessor(name, value) {
+		//	summary:
+		//		Processes attributes of DOM nodes that have a data-dojo-type attribute
+
+		var nodes = [],
+			props,
+			k;
+
+		if (name === 'data-dojo-props') {
+			// decompose the value into separate attributes
+			try {
+				// this is essentially dojo/_base/json.fromJson
+				/*jshint evil:true*/
+				props = eval('({' + value + '})');
+			}
+			catch (e) {
+				throw new Error(e.toString() + ' in data-dojo-props="' + value + '"');
+			}
+
+			for (k in props) {
+				nodes.push(new DojoPropNode(k, props[k]));
+			}
+
+			return nodes;
+		}
+		else {
+			return new DojoPropNode(name, value);
+		}
+	}
+
+	function ElementNode(node, statements) {
 		//	summary:
 		//		constructor for an AST node that represents a DOM Element
 		//	node: Element
@@ -13,8 +49,8 @@ define([
 		this.type = 'Element';
 		this.nodeName = node.nodeName.toLowerCase();
 
-		this.attributes = processAttributes(node);
-		this.statements = parseNode(node);
+		this.attributes = processAttributes(node, domAttributeProcessor);
+		this.statements = statements;
 
 		// in the browser we can cloneNode on this rather than create a new one
 		// TODO: if there's no good way to pass this element to the render function then remove this
@@ -76,11 +112,18 @@ define([
 		var wrapper = options.toDom('<div></div>'),
 			statements = processStatements(program.statements, options),
 			inverse = program.inverse,
-			node = options.toDom(statements.content);
+			node = options.toDom(statements.content),
+			found = {},
+			tree;
 
 		wrapper.appendChild(node);
 
-		this.statements = parseNode(wrapper);
+		tree = parseNode(wrapper);
+		this.statements = tree.ast;
+		this.deps = array.filter(tree.deps, function (dep) {
+			return !found[dep] && (found[dep] = true);
+		});
+
 		this.slots = statements.slots;
 
 		if (inverse) {
@@ -123,6 +166,22 @@ define([
 
 		this.type = 'Slot';
 		this.uid = uid;
+	}
+
+	function DojoTypeNode(dojoType, node) {
+		this.type = 'DojoType';
+
+		this.dojoType = dojoType;
+		this.dojoProps = processAttributes(node, dojoTypeAttributeProcessor);
+		// TODO: recurse into the children of this node... and figure out what to do about that :/
+	}
+
+	function DojoPropNode(name, value) {
+		this.type = 'DojoProp';
+
+		this.name = name;
+		// TODO: handle parsing empty strings
+		this.program = peg.parse(value);
 	}
 
 	function parse(templateString, options) {
@@ -216,10 +275,16 @@ define([
 		//		Processes a node's childNodes and removes the children as they are processed
 		//	node: Node
 		//		The parent of the childNodes
-		//	returns: array
-		//		An array of AST nodes
+		//	returns:
+		//		An object with the following properties:
+		//		* ast (array): An array of AST nodes
+		//		* deps (array): An array of module ids collected from data-dojo-type attributes
 
 		var ast = [],
+			// deps will not have unique ids, the list should be filtered before being used
+			deps = [],
+			tree,
+			dojoType,
 			child;
 
 		while (node.childNodes.length) {
@@ -229,8 +294,16 @@ define([
 				if (child.nodeName.toLowerCase() === 'script' && child.type === 'mayhem/slot') {
 					ast.push(new SlotNode(child.getAttribute('data-uid')));
 				}
+				else if (child.hasAttribute('data-dojo-type')) {
+					dojoType = child.getAttribute('data-dojo-type');
+					child.removeAttribute('data-dojo-type');
+					deps.push(dojoType);
+					ast.push(new DojoTypeNode(dojoType, child));
+				}
 				else {
-					ast.push(new ElementNode(child));
+					tree = parseNode(child);
+					ast.push(new ElementNode(child, tree.ast));
+					deps = deps.concat(tree.deps);
 				}
 				break;
 			case Node.TEXT_NODE:
@@ -241,14 +314,22 @@ define([
 			}
 		}
 
-		return ast;
+		return {
+			deps: deps,
+			ast: ast
+		};
 	}
 
-	function processAttributes(node) {
+	function processAttributes(node, processor) {
 		//	summary:
 		//		Processes a list of Attribute Nodes
-		//	node:
+		//	node: Element
 		//		The node containing the attributes to be processed.
+		//	processor: function
+		//		A function that takes the following arguments:
+		//		* name (string): the attribute name
+		//		* value (string): the value of the attribute
+		//		and returns an array or single instance of AST nodes
 		//	returns: array
 		//		An array of AST nodes
 
@@ -265,7 +346,7 @@ define([
 			value = node.getAttribute(name);
 			// oldie walks every attribute even if it isn't in the markup
 			if (value != null) {
-				ast.push(new AttributeNode(name, value));
+				ast = ast.concat(processor(name, value));
 			}
 		}
 

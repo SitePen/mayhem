@@ -2,7 +2,7 @@ define([
 	'./Renderers'
 ], function (Renderers) {
 
-	function BlockRender(block) {
+	function BlockRenderer(block) {
 		//	summary:
 		//		Manages the rendering and updating of a BlockNode
 		//	block:
@@ -18,8 +18,8 @@ define([
 		}
 	}
 
-	BlockRender.prototype = {
-		constructor: BlockRender,
+	BlockRenderer.prototype = {
+		constructor: BlockRenderer,
 
 		render: function () {
 			//	summary:
@@ -39,5 +39,5 @@ define([
 		}
 	};
 
-	return BlockRender;
+	return BlockRenderer;
 });

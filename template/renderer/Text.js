@@ -3,7 +3,7 @@ define([
 	'dbind/bind'
 ], function (Renderers, bind) {
 
-	function TextRender(astNode) {
+	function TextRenderer(astNode) {
 		//	summary:
 		//		Manages the rendering of an AST node that was parsed as a Text Node.
 		//	astNode:
@@ -12,8 +12,8 @@ define([
 		this.program = new Renderers.Program(astNode.program);
 	}
 
-	TextRender.prototype = {
-		constructor: TextRender,
+	TextRenderer.prototype = {
+		constructor: TextRenderer,
 
 		render: function (context, template) {
 			//	summary:
@@ -37,5 +37,5 @@ define([
 		}
 	};
 
-	return TextRender;
+	return TextRenderer;
 });

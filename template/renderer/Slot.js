@@ -3,7 +3,7 @@ define([
 	'dbind/bind'
 ], function (Renderers, bind) {
 
-	function SlotRender(astNode) {
+	function SlotRenderer(astNode) {
 		//	summary:
 		//		Manages the rendering and updating of a Slot
 		//	astNode:
@@ -12,8 +12,8 @@ define([
 		this.uid = astNode.uid;
 	}
 
-	SlotRender.prototype = {
-		constructor: SlotRender,
+	SlotRenderer.prototype = {
+		constructor: SlotRenderer,
 
 		render: function (context, template) {
 			//	summary:
@@ -62,5 +62,5 @@ define([
 		}
 	};
 
-	return SlotRender;
+	return SlotRenderer;
 });
