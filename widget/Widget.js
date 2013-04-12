@@ -165,11 +165,15 @@ define([
 			this.className = className;
 		},
 
-		_registerDomEventProxy: function (/*String*/ type) {
+		_addInternalEventListener: function (type, listener) {
+			on(this.domNode, type, listener);
+		},
+
+		_registerInternalEventProxy: function (/*String*/ type) {
 			// summary:
-			//		Register the need for a DOM event proxy that proxies DOM events to widget events.
+			//		Register the need for an internal event proxy that proxies events from internal components to widget events.
 			// description:
-			//		This method registers the need for a DOM event listener to emit those events as widget events.
+			//		This method registers the need for a internal event listener to emit those events as widget events.
 			//		When the event is emitted by the DOM, the widget emits a corresponding widget event.
 			//		No matter how many listeners are registered for the widget event,
 			//		only one listener is ever registered per DOM event. Once all corresponding widget
@@ -187,7 +191,7 @@ define([
 			if (!domEventProxy) {
 				domEventProxy = domEventProxies[type] = {
 					referenceCount: 0,
-					proxyHandle: on(widget.domNode, type, function (event) {
+					proxyHandle: this._addInternalEventListener(type, function (event) {
 						widget.emit(type, event);
 					}),
 					handle: {
@@ -221,13 +225,13 @@ define([
 			// returns: Object
 			//		An object with a remove() method to remove the event listener
 
-			var domListenerHandle = this._registerDomEventProxy(type),
+			var internalListenerHandle = this._registerInternalEventProxy(type),
 				widgetListenerHandle = aspect.after(this._eventListenerMap, 'on' + type, listener, true),
 				aggregateHandleRemoved = false,
 				aggregateHandle = {
 					remove: function () {
 						if (!aggregateHandleRemoved) {
-							domListenerHandle.remove();
+							internalListenerHandle.remove();
 							widgetListenerHandle.remove();
 						}
 					}
@@ -236,7 +240,7 @@ define([
 			return aggregateHandle;
 		},
 
-		emit: function (/*String*/ type, /*Object*/ event) {
+		emit: function (/*String*/ type, /*Object?*/ event) {
 			// summary:
 			//		Emit a widget event.
 			// type:
@@ -246,18 +250,20 @@ define([
 			// tags:
 			// 		protected
 
-			event = new WidgetEvent(this, type, event);
-
-			var domNode = this.domNode,
+			var bubbleSynthetically = event && event.bubbles && !(event instanceof window.Event),
+				domNode = this.domNode,
 				widget,
 				listener;
+
+			event = new WidgetEvent(this, type, event);
+
 			do {
 				widget = domNode.widget;
 				listener = widget && widget._eventListenerMap['on' + type];
 				if (listener) {
 					listener.call(widget, event);
 				}
-			} while (event && event.bubbles && (domNode = domNode.parentNode));
+			} while (bubbleSynthetically && (domNode = domNode.parentNode));
 
 			return event.cancelable && event;
 		}

@@ -288,6 +288,17 @@ define([
 			expect(calledEmit).to.be.false;
 		});
 
+		bdd.it('should not bubble DOM events', function () {
+			widget = new NestedWidget();
+
+			var bubbledByWidget = false;
+			aspect.before(widget, 'emit', function () { bubbledByWidget = true; });
+			widget._nestedWidget.on('click', function () {});
+			widget._nestedWidget.domNode.click();
+
+			expect(bubbledByWidget).to.be.false;
+		});
+
 		bdd.it('should return false from emit() if an event is canceled with preventDefault()', function () {
 			widget = new Widget();
 
