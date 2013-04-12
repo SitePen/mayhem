@@ -38,25 +38,15 @@ define([
 			//		  placeholders and the values are ordered arrays of Views that are to be located
 			//		  in those placeholders
 
-			console.log('rendering', view);
+			// a default implementation that should be overridden
 			return document.createElement('div');
-		},
-
-		dom: function (tag, attributes, childNodes) {
-			// TODO: bind the attributes
-			// TODO: handle data-dojo-*
-			var node = domConstruct.create(tag, attributes);
-
-			array.forEach(childNodes, function (child) {
-				node.appendChild(child);
-			});
-
-			return node;
 		},
 
 		on: on,
 
 		aspect: aspect,
+
+		domCreate: domConstruct.create,
 
 		htmlEscape: function (str) {
 			return str.replace(/&/g, '&amp;')
@@ -70,20 +60,13 @@ define([
 		emptyNode: domConstruct.empty,
 		placeNode: domConstruct.place,
 
-		bind: function () {
-			// ...
-		},
-
-		unbind: function () {
-			// ...
-		},
-
 		destroy: function () {
-			// ..
+			// TODO:
 		}
 	};
 
-	var includesExtension = /\..*$/;
+	var includesExtension = /\..*$/,
+		templateCache = {};
 
 	Template.load = function (id, moduleRequire, load) {
 		//	summary:
@@ -91,10 +74,24 @@ define([
 
 		// for templates without an extension, treat them like an AMD dependency.  this implies a
 		// compiled template
+
+		function complete(renderer) {
+			var template = new Template(renderer);
+
+			templateCache[sourceUrl] = template;
+
+			load(template);
+		}
+
+		var sourceUrl = moduleRequire.toUrl(id),
+			cachedTemplate = templateCache[sourceUrl];
+
+		if (cachedTemplate) {
+			return load(cachedTemplate);
+		}
+
 		if (!includesExtension.test(id)) {
-			moduleRequire([id], function (render) {
-				load(new Template(render));
-			});
+			moduleRequire([id], complete);
 		}
 		// templates with extensions are treated like a text file.
 		// we lazy-load the compiler so that we don't need to include it after a build.
@@ -104,19 +101,19 @@ define([
 			// function exported by the AMD module that replaces this dependency.
 			require(['./template/compiler', 'dojo/text!' + id], function (compile, templateString) {
 
-				var render = compile(string.trim(templateString), {
+				var renderer = compile(string.trim(templateString), {
 						sourceUrl: moduleRequire.toUrl(id),
 						toDom: domConstruct.toDom
 					});
 
-				// TODO: cache the results based on sourceUrl
+				// TODO: cache the results based on sourceUrl?
 
 				// ensure any deps we found in the template will be pre-loaded.
 				// TODO: relative deps will be loaded relative to the View that uses this template.
 				// it would be more intutive to make deps relative to the template. ids should be
 				// adjusted to work like that.
-				moduleRequire(render.deps || [], function () {
-					load(new Template(render));
+				moduleRequire(renderer.deps || [], function () {
+					complete(renderer);
 				});
 			});
 		}
