@@ -32,11 +32,11 @@ define([
 			this.domNode.appendChild(childWidget.domNode);
 		},
 
-		_removeChildFromDom: function(childWidget) {
+		_removeChildFromDom: function (childWidget) {
 			var domNode = childWidget.domNode,
 				parentNode = domNode.parentNode;
 
-			if(parentNode) {
+			if (parentNode) {
 				parentNode.removeChild(domNode);
 			}
 		},
@@ -55,16 +55,16 @@ define([
 
 		// NOTE: I'm not sure it is necessary or desirable to support external iteration of child widgets.
 		forEachChild: function (perChildCallback) {
-			for(var key in this) {
-				if(this.isOwnProperty(key)) {
-					itemCallback(this[key]);
+			for (var key in this) {
+				if (this.isOwnProperty(key)) {
+					perChildCallback(this[key]);
 				}
 			}
 		},
 
-		destroy: function() {
+		destroy: function () {
 			var container = this;
-			this.forEachChild(function(childWidget) {
+			this.forEachChild(function (childWidget) {
 				container.removeChild(childWidget);
 				childWidget.destroy();
 			});
