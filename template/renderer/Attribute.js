@@ -16,9 +16,11 @@ define([
 	AttributeRenderer.prototype = {
 		constructor: AttributeRenderer,
 
-		render: function (context, template, element) {
+		render: function (view, context, template, element) {
 			//	summary:
 			//		Sets or removes an attribute on an Element.
+			//	view:
+			//		The view being rendered
 			//	context:
 			//		The context used to resolve logic
 			//	template: framework/Template
@@ -28,7 +30,8 @@ define([
 			//		The output of rendering the program of this node.
 
 			var attribute = this.nodeName,
-				values = this.program.render(context, template);
+				program = this.program,
+				values = program.render.apply(program, arguments);
 
 			bind(values).receive(function (values) {
 				// if there's just one thing, treat it as the value.  this gives us the chance

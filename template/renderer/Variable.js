@@ -20,7 +20,7 @@ define([
 	VariableRenderer.prototype = {
 		constructor: VariableRenderer,
 
-		render: function (context, template) {
+		render: function (view, context, template) {
 			//	summary:
 			//		Resolves a variable based on the context and returns the value.
 			//	context:

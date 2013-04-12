@@ -52,7 +52,7 @@ define([
 				root.unrender(node);
 
 				// let the view know circumstances have changed. hopefully no bled has been shed
-				bind(root.render(context, template)).receive(function (nodes) {
+				bind(root.render(view, context, template)).receive(function (nodes) {
 					if (nodes.length > 1) {
 						console.warn('uh-oh... too many DOM nodes', nodes);
 					}
