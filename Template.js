@@ -56,12 +56,6 @@ define([
 		//	* ...and more
 		// we can refactor and remove them from here and we should put htmlEscape in a module to be
 		// used by the renderers too.
-		on: on,
-
-		aspect: aspect,
-
-		domCreate: domConstruct.create,
-
 		htmlEscape: function (str) {
 			return str.replace(/&/g, '&amp;')
 				.replace(/</g, '&lt;')
@@ -69,10 +63,6 @@ define([
 				.replace(/\"/g, '&quot;')
 				.replace(/'/g, '&#039;');
 		},
-
-		toDom: domConstruct.toDom,
-		emptyNode: domConstruct.empty,
-		placeNode: domConstruct.place,
 
 		destroy: function () {
 			// TODO:
