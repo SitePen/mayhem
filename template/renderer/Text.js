@@ -15,7 +15,7 @@ define([
 	TextRenderer.prototype = {
 		constructor: TextRenderer,
 
-		render: function (context, template) {
+		render: function (view, context, template) {
 			//	summary:
 			//		Renders the program of this AST node and returns the DOM representation of that
 			//		text.
@@ -23,9 +23,11 @@ define([
 			//		Document fragment, unless it's a single node in which case it returns the node
 			//		itself.
 
+			var program = this.program;
+
 			return bind(function () {
 				return template.toDom([].join.call(arguments, ''));
-			}).to(this.program.render(context, template));
+			}).to(program.render.apply(program, arguments));
 		},
 
 		unrender: function () {

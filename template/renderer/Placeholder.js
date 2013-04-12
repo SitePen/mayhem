@@ -16,9 +16,11 @@ define([
 	PlaceholderRenderer.prototype = {
 		constructor: PlaceholderRenderer,
 
-		render: function (context, template) {
+		render: function (view, context, template) {
 			//	summary:
 			//		TODOC:
+			//	view:
+			//		The view being rendered
 			//	context:
 			//		The context for resolving references to variables
 			//	template: framework/Template

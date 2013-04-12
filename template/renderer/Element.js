@@ -18,9 +18,11 @@ define([
 	ElementRenderer.prototype = {
 		constructor: ElementRenderer,
 
-		render: function (context, template) {
+		render: function (view, context, template) {
 			//	summary:
 			//		Generates a DOM element and renders the attributes and childNodes.
+			//	view:
+			//		The view being rendered
 			//	context:
 			//		The context for resolving references to variables
 			//	template: framework/Template
@@ -28,12 +30,15 @@ define([
 
 			// TODO: cloneNode
 			var element = this.element || (this.element = template.domCreate(this.nodeName)),
-				childNodes = this.statements.render(context, template, element),
+				args = [].slice.call(arguments, 0, 3).concat(element),
+				statements = this.statements,
+				attributes = this.attributes,
+				childNodes = statements.render.apply(statements, args),
 				i,
 				length;
 
 			// render the attributes
-			this.attributes.render(context, template, element);
+			attributes.render.apply(attributes, args);
 
 			// empty the children (in case we're using an existing element)
 			// TODO: should this be a call to unrender? is it even needed?

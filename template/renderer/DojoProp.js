@@ -16,25 +16,23 @@ define([
 	DojoPropRenderer.prototype = {
 		constructor: DojoPropRenderer,
 
-		render: function (context, template) {
+		render: function () {
 			//	summary:
 			//		Resolves the value for a dojo property
-			//	context:
-			//		The context used to resolve logic
-			//	template: framework/Template
 			//	returns:
 			//		An object with the following properties
 			//		* name: the name of the property
 			//		* value: the value of the property
 
-			var name = this.name;
+			var name = this.name,
+				program = this.program;
 
 			return bind(function (value) {
 				return {
 					name: name,
 					value: value
 				};
-			}).to(this.program.render(context, template));
+			}).to(program.render.apply(program, arguments));
 		},
 
 		unrender: function () {
