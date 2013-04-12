@@ -3,28 +3,20 @@ define([
 	'dbind/bind'
 ], function (Renderers, bind) {
 
-	function ElementRender(astNode) {
+	function ElementRenderer(astNode) {
 		//	summary:
 		//		Manages the rendering and updating of a DOM Element
 		//	astNode:
 		//		The AST node that describes this Element
 
-		var i,
-			length,
-			astAttributes = astNode.attributes,
-			attributes = this.attributes = [];
-
 		this.nodeName = astNode.nodeName;
 
 		this.statements = new Renderers.Statements(astNode.statements);
-
-		for (i = 0, length = astAttributes.length; i < length; i++) {
-			attributes.push(new Renderers.Attribute(astAttributes[i]));
-		}
+		this.attributes = new Renderers.Statements(astNode.attributes);
 	}
 
-	ElementRender.prototype = {
-		constructor: ElementRender,
+	ElementRenderer.prototype = {
+		constructor: ElementRenderer,
 
 		render: function (context, template) {
 			//	summary:
@@ -37,14 +29,11 @@ define([
 			// TODO: cloneNode
 			var element = this.element || (this.element = template.domCreate(this.nodeName)),
 				childNodes = this.statements.render(context, template, element),
-				attributes = this.attributes,
 				i,
 				length;
 
 			// render the attributes
-			for (i = 0, length = attributes.length; i < length; i++) {
-				attributes[i].render(context, template, element);
-			}
+			this.attributes.render(context, template, element);
 
 			// empty the children (in case we're using an existing element)
 			// TODO: should this be a call to unrender? is it even needed?
@@ -70,5 +59,5 @@ define([
 		}
 	};
 
-	return ElementRender;
+	return ElementRenderer;
 });

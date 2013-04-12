@@ -2,7 +2,7 @@ define([
 	'./Renderers'
 ], function (Renderers) {
 
-	function StatementsRender(program) {
+	function StatementsRenderer(program) {
 		//	summary:
 		//		Constructor for an object that manages the rendering of a list of AST nodes
 		//	program:
@@ -25,8 +25,8 @@ define([
 		}
 	}
 
-	StatementsRender.prototype = {
-		constructor: StatementsRender,
+	StatementsRenderer.prototype = {
+		constructor: StatementsRenderer,
 
 		render: function () {
 			//	summary:
@@ -55,5 +55,5 @@ define([
 		}
 	};
 
-	return StatementsRender;
+	return StatementsRenderer;
 });

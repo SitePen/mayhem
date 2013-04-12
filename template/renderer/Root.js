@@ -4,7 +4,7 @@ define([
 	'./Renderers'
 ], function (array, bind, Renderers) {
 
-	function RootRender(astRoot) {
+	function RootRenderer(astRoot) {
 		//	summary:
 		//		A renderer for the root of an AST.  It is intended that an instance of this should
 		//		be mixed into Template.
@@ -17,8 +17,7 @@ define([
 			statements = program.statements,
 			url = astRoot.sourceUrl || 'unknown location';
 
-		// TODO: find the deps and pass them along...
-		//this.deps = this.deps || [];
+		this.deps = program.deps;
 
 		// if this program controls more than a single DOM node then we currently have an error
 		// because dijit/_Widget needs a single domNode
@@ -29,8 +28,8 @@ define([
 		this.root = new Renderers[program.type](program);
 	}
 
-	RootRender.prototype = {
-		constructor: RootRender,
+	RootRenderer.prototype = {
+		constructor: RootRenderer,
 
 		render: function (view) {
 			//	summary:
@@ -79,5 +78,5 @@ define([
 		}
 	};
 
-	return RootRender;
+	return RootRenderer;
 });
