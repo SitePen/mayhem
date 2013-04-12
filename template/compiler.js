@@ -1,7 +1,7 @@
 define([
 	'dojo/_base/array',
 	'./parse',
-	'./ast/Renderers'
+	'./renderer/Renderers'
 ], function (array, parse, Renderers) {
 
 	function compiler(templateString, astRoot) {
@@ -13,7 +13,7 @@ define([
 		//	astRoot:
 		//		This contains any metadata associated with the AST.  The `program` property will
 		//		be populated with the parsed AST nodes.  This object has the following properties:
-		//		* toDom (function): See dojo/dom-construct::toDom
+		//		* toDom (function): See dojo/dom-construct.toDom
 		//		* sourceUrl? (string): A source URL for the compiled function
 
 		astRoot.program = parse(templateString, astRoot);

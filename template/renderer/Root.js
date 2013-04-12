@@ -17,9 +17,11 @@ define([
 			statements = program.statements,
 			url = astRoot.sourceUrl || 'unknown location';
 
-		console.log('creating RootRender for', astRoot);
+		// TODO: find the deps and pass them along...
+		//this.deps = this.deps || [];
 
 		// if this program controls more than a single DOM node then we currently have an error
+		// because dijit/_Widget needs a single domNode
 		if (statements.length > 1) {
 			throw new Error('Attempt to render more than one DOM Element at "' + url + '"');
 		}
@@ -38,7 +40,8 @@ define([
 
 			var template = this;
 
-			// TODO: StatefulPropertyBinding#get doesn't work so we need to do this
+			// TODO: StatefulPropertyBinding#get doesn't work so we need to do this rather than
+			// this.subViews = bind(view).get('subViews');
 			this.subViews = bind(view.get('subViews'));
 
 			// use a bound context so that if the viewModel property of the view changes, we react

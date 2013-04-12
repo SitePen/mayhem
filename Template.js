@@ -42,6 +42,20 @@ define([
 			return document.createElement('div');
 		},
 
+		unrender: function (view) {
+			//	summary:
+			//		Deconstructs the rendering of a template.
+			//	view:
+			//		The view to be unrendered.
+		},
+
+		// TODO: i think it's ok if the renderers directly depend on any of the following:
+		//	* dojo/on
+		//	* dojo/aspect
+		//	* dojo/dom-construct
+		//	* ...and more
+		// we can refactor and remove them from here and we should put htmlEscape in a module to be
+		// used by the renderers too.
 		on: on,
 
 		aspect: aspect,

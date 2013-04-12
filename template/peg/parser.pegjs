@@ -57,6 +57,7 @@
 	}
 }
 
+// TODO: we want to preserve whitespace at the beginning and end
 start
 	= __ program:program __ { return program; }
 

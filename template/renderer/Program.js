@@ -10,6 +10,7 @@ define([
 
 		var sourceSlots = program.slots,
 			inverse = program.inverse,
+			// TODO: do these slots work for nested slots/blocks/programs?
 			slots = this.slots = {},
 			slot,
 			k;
@@ -25,6 +26,9 @@ define([
 			sourceSlots = inverse.slots;
 			for (k in sourceSlots) {
 				slot = sourceSlots[k];
+				// since each slot should have unique ids per template, we can merge the statements
+				// and inverse slots and put them in one location so that logic further along
+				// doesn't need to understand if we are in the inverse branch or not.
 				slots[k] = new Renderers[slot.type](slot);
 			}
 		}

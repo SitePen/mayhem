@@ -7,7 +7,7 @@ define([
 	function PlaceholderRender(program) {
 		//	summary:
 		//		Manages the rendering and updating of a Placeholder
-		//	astNode:
+		//	program:
 		//		The AST node that describes this Block
 
 		this.name = program.name;
@@ -18,11 +18,12 @@ define([
 
 		render: function (context, template) {
 			//	summary:
-			//		TODOC
+			//		TODOC:
 			//	context:
 			//		The context for resolving references to variables
 			//	template: framework/Template
-			//	returns: DOMElement
+			//	returns:
+			//		TODOC:
 
 			return bind(function () {
 				return array.map([].slice.call(arguments), function (subView) {

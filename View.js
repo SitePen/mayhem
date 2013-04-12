@@ -27,9 +27,6 @@ define([
 		//		A Template for rendering this view
 
 		buildRendering: function () {
-			// TODO: need to pass in bound objects for the viewModel and subViews
-			// get a domNode from the compiled template.  the template should manage the DOM based
-			// on mutations to the underlying data.
 			if (this.template) {
 				// the template will automatically set('domNode', node) when it can and will
 				/// potentially replace the domNode in response to changes in viewModel
@@ -115,6 +112,14 @@ define([
 					return;
 				}
 			}
+		},
+
+		destroyRendering: function () {
+			if (this.template) {
+				this.template.unrender(this);
+			}
+
+			this.inherited(arguments);
 		}
 	});
 

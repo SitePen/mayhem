@@ -7,6 +7,8 @@ define([
 	function ElementNode(node) {
 		//	summary:
 		//		constructor for an AST node that represents a DOM Element
+		//	node: Element
+		//		The Element to be represented in the AST.
 
 		this.type = 'Element';
 		this.nodeName = node.nodeName.toLowerCase();
@@ -21,7 +23,9 @@ define([
 
 	function TextNode(node) {
 		//	summary:
-		//		constructor for an AST node that represents a non-Element DOM Node
+		//		constructor for an AST node that represents a Text DOM Node
+		//	node: DOM Node
+		//		The Text Node to be represented in the AST
 
 		this.type = 'Text';
 		// TODO: handle parsing empty strings
@@ -30,7 +34,12 @@ define([
 
 	function AttributeNode(nodeName, nodeValue) {
 		//	summary:
-		//		A constructor for an AST node that represents a Node Attribute
+		//		A constructor for an AST node that represents a DOM Node Attribute
+		//	nodeName: string
+		//		The name of the attribute.
+		//	nodeValue: string
+		//		The value of the attribute.  This string will be parsed for templating syntax.
+		//		Templating blocks cannot be used in the value of an attribute.
 
 		this.type = 'Attribute';
 		this.nodeName = nodeName;
@@ -42,21 +51,32 @@ define([
 		//	summary:
 		//		Constructor for an AST node that represents DOM Nodes that don't have alternative
 		//		specific AST nodes.
+		//	node: DOM Node
+		//		The DOM Node to be represented in the AST
 
+		// TODO: these AST nodes are currently discarded.  if they are never used then stop creating them.
 		this.type = 'DOMNode';
 		this.nodeName = node.nodeName;
 		this.nodeType = node.nodeType;
 	}
 
-	function ProgramNode(program, astRoot) {
+	function ProgramNode(program, options) {
+		//	summary:
+		//		A constructor for an AST node that represents a program
+		//	program:
+		//		The templating syntax AST.
+		//	options:
+		//		An object with the following property:
+		//		* toDom (function): see dojo/dom-construct.toDom
+
 		this.type = 'Program';
 
 		// since domConstruct.toDom sometimes returns a fragment and sometimes a node, we'll
 		// wrap the content so we know what we're working with
-		var wrapper = astRoot.toDom('<div></div>'),
-			statements = processStatements(program.statements, astRoot),
+		var wrapper = options.toDom('<div></div>'),
+			statements = processStatements(program.statements, options),
 			inverse = program.inverse,
-			node = astRoot.toDom(statements.content);
+			node = options.toDom(statements.content);
 
 		wrapper.appendChild(node);
 
@@ -64,9 +84,9 @@ define([
 		this.slots = statements.slots;
 
 		if (inverse) {
-			inverse = processStatements(inverse, astRoot);
-			astRoot.empty(wrapper);
-			node = astRoot.toDom(inverse.content);
+			inverse = processStatements(inverse, options);
+			options.empty(wrapper);
+			node = options.toDom(inverse.content);
 			wrapper.appendChild(node);
 			this.inverse = {
 				statements: parseNode(wrapper),
@@ -75,29 +95,64 @@ define([
 		}
 	}
 
-	function BlockNode(block, astRoot) {
+	function BlockNode(block, options) {
+		//	summary:
+		//		A constructor for an AST node that represents a block of content
+		//	block:
+		//		A templating syntax Block node.
+		//	options:
+		//		An object with the following property:
+		//		* toDom (function): see dojo/dom-construct.toDom
+
 		var inverse = block.inverse;
 
 		this.type = 'Block';
 		this.isInverse = block.isInverse;
-		this.program = new ProgramNode(block.program, astRoot);
+		this.program = new ProgramNode(block.program, options);
 		if (inverse) {
-			this.inverse = new ProgramNode(block.inverse, astRoot);
+			this.inverse = new ProgramNode(block.inverse, options);
 		}
 	}
 
 	function SlotNode(uid) {
+		//	summary:
+		//		A constructor for an AST node that represents a slot in the template.  Slots may
+		//		contain blocks or placeholders.
+		//	uid:
+		//		A unique identifier for this slot.  Identifiers only need to be unique per template.
+
 		this.type = 'Slot';
 		this.uid = uid;
 	}
 
-	function parse(templateString, astRoot) {
+	function parse(templateString, options) {
+		//	summary:
+		//		Parses a string and returns an AST representing the program for that template.
+		//	templateString: string
+		//		The string of the template to be parsed
+		//	options:
+		//		An object with the following property:
+		//		* toDom (function): see dojo/dom-construct.toDom
+
 		var program = peg.parse(templateString);
 
-		return new ProgramNode(program, astRoot);
+		return new ProgramNode(program, options);
 	}
 
-	function processStatements(statements, astRoot) {
+	function processStatements(statements, options) {
+		//	summary:
+		//		Processes a list of statements
+		//	statements:
+		//		The list of statements to be processed
+		//	options:
+		//		An object with the following property:
+		//		* toDom (function): see dojo/dom-construct.toDom
+		//	returns:
+		//		An object with the following properties:
+		//		* content (string): content to be be parsed as DOM
+		//		* slots (object): a map of uid -> AST node that represents the slots found in the
+		//		template
+
 		statements = statements.slice();
 
 		var statement,
@@ -145,7 +200,7 @@ define([
 				output.content += string.substitute(SCRIPT_TEMPLATE, { uid: uid });
 
 				// add this block to our slots
-				slots[uid] = new BlockNode(statement, astRoot);
+				slots[uid] = new BlockNode(statement, options);
 				break;
 			default:
 				// hopefully we don't get here

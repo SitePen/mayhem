@@ -1,13 +1,12 @@
 define([
-	'./Renderers',
-	'dbind/bind'
-], function (Renderers, bind) {
+	'./Renderers'
+], function (Renderers) {
 
 	function BlockRender(block) {
 		//	summary:
 		//		Manages the rendering and updating of a BlockNode
-		//	astNode:
-		//		The AST program that describes this Block
+		//	block:
+		//		The AST node that describes this Block
 
 		this.isInverse = block.isInverse;
 
@@ -24,11 +23,8 @@ define([
 
 		render: function () {
 			//	summary:
-			//		TODOC
-			//	context:
-			//		The context for resolving references to variables
-			//	template: framework/Template
-			//	returns: DOMElement
+			//		TODOC:
+
 			var program = this.isInverse ? this.inverse : this.program;
 
 			return program.render.apply(program, arguments);

@@ -35,7 +35,7 @@ define([
 			//	returns: DOMElement
 
 			// TODO: cloneNode
-			var element = this.element || (this.element = template.dom(this.nodeName)),
+			var element = this.element || (this.element = template.domCreate(this.nodeName)),
 				childNodes = this.statements.render(context, template, element),
 				attributes = this.attributes,
 				i,
@@ -47,11 +47,13 @@ define([
 			}
 
 			// empty the children (in case we're using an existing element)
+			// TODO: should this be a call to unrender? is it even needed?
 			template.emptyNode(element);
 
 			// render the children into the element
 			for (i = 0, length = childNodes.length; i < length; i++) {
 				bind.when(childNodes[i], function (child) {
+					// TODO: this won't maintain proper order
 					element.appendChild(child);
 				});
 			}
