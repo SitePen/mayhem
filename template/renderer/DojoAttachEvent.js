@@ -10,6 +10,7 @@ define([
 		//		The AST Node that describes this attach event
 
 		this.events = astNode.events;
+		this.isAction = astNode.isAction;
 	}
 
 	DojoAttachEventRender.prototype = {
@@ -32,7 +33,7 @@ define([
 
 			while ((event = events[i++])) {
 				// TODO: proper management of this handle
-				on(obj, event[0], lang.hitch(view, event[1]));
+				on(obj, event[0], lang.hitch(this.isAction ? context : view, event[1]));
 			}
 		},
 

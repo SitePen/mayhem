@@ -9,10 +9,12 @@ define([
 		//		Processes attributes of DOM nodes
 
 		switch (name) {
-		case 'data-dojo-attach-point':
+		case dataDojoAttachPoint:
 			return new DojoAttachPointNode(value);
-		case 'data-dojo-attach-event':
+		case dataDojoAttachEvent:
 			return new DojoAttachEventNode(value);
+		case dataAction:
+			return new DojoAttachEventNode(value, true);
 		default:
 			return new AttributeNode(name, value);
 		}
@@ -26,7 +28,7 @@ define([
 			props,
 			k;
 
-		if (name === 'data-dojo-props') {
+		if (name === dataDojoProps) {
 			// decompose the value into separate attributes
 			try {
 				// this is essentially dojo/_base/json.fromJson
@@ -180,13 +182,17 @@ define([
 		this.type = 'DojoType';
 
 		this.dojoType = dojoType;
-		if (node.hasAttribute('data-dojo-attach-point')) {
-			this.attachPoint = new DojoAttachPointNode(node.getAttribute('data-dojo-attach-point'));
-			node.removeAttribute('data-dojo-attach-point');
+		if (node.hasAttribute(dataDojoAttachPoint)) {
+			this.attachPoint = new DojoAttachPointNode(node.getAttribute(dataDojoAttachPoint));
+			node.removeAttribute(dataDojoAttachPoint);
 		}
-		if (node.hasAttribute('data-dojo-attach-event')) {
-			this.attachEvent = new DojoAttachEventNode(node.getAttribute('data-dojo-attach-event'));
-			node.removeAttribute('data-dojo-attach-event');
+		if (node.hasAttribute(dataDojoAttachEvent)) {
+			this.attachEvent = new DojoAttachEventNode(node.getAttribute(dataDojoAttachEvent));
+			node.removeAttribute(dataDojoAttachEvent);
+		}
+		if (node.hasAttribute(dataAction)) {
+			this.attachAction = new DojoAttachEventNode(node.getAttribute(dataAction), true);
+			node.removeAttribute(dataAction);
 		}
 		this.dojoProps = processAttributes(node, dojoTypeAttributeProcessor);
 		// TODO: recurse into the children of this node... and figure out what to do about that :/
@@ -205,7 +211,7 @@ define([
 		this.points = string.trim(value).split(/\s*,\s*/);
 	}
 
-	function DojoAttachEventNode(value) {
+	function DojoAttachEventNode(value, isAction) {
 		this.type = 'DojoAttachEvent';
 		var pairs = string.trim(value).split(/\s*,\s*/),
 			pair,
@@ -216,6 +222,7 @@ define([
 		}
 
 		this.events = events;
+		this.isAction = !!isAction;
 	}
 
 	function parse(templateString, options) {
@@ -328,9 +335,9 @@ define([
 				if (child.nodeName.toLowerCase() === 'script' && child.type === 'mayhem/slot') {
 					ast.push(new SlotNode(child.getAttribute('data-uid')));
 				}
-				else if (child.hasAttribute('data-dojo-type')) {
-					dojoType = child.getAttribute('data-dojo-type');
-					child.removeAttribute('data-dojo-type');
+				else if (child.hasAttribute(dataDojoType)) {
+					dojoType = child.getAttribute(dataDojoType);
+					child.removeAttribute(dataDojoType);
 					deps.push(dojoType);
 					ast.push(new DojoTypeNode(dojoType, child));
 				}
@@ -407,7 +414,14 @@ define([
 			NOTATION_NODE: 12
 		},
 		SCRIPT_TEMPLATE = '<script type="mayhem/slot" data-uid="${uid}"></script>',
-		uid = 0;
+		uid = 0,
+		// these are here primarily to make it easy to update the code
+		dataDojoType = 'data-dojo-type',
+		dataDojoProps = 'data-dojo-props',
+		dataDojoAttachPoint = 'data-dojo-attach-point',
+		dataDojoAttachEvent = 'data-dojo-attach-event',
+		dataAction = 'data-action',
+		;
 
 	return parse;
 });

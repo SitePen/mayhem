@@ -10,7 +10,8 @@ define([
 		//		The AST node describing the content to be rendered
 
 		var attachPoint = astNode.attachPoint,
-			attachEvent = astNode.attachEvent;
+			attachEvent = astNode.attachEvent,
+			attachAction = astNode.attachAction;
 
 		this.dojoType = astNode.dojoType;
 		this.dojoProps = new Renderers.Statements(astNode.dojoProps);
@@ -19,6 +20,9 @@ define([
 		}
 		if (attachEvent) {
 			this.attachEvent = new Renderers.DojoAttachEvent(attachEvent);
+		}
+		if (attachAction) {
+			this.attachAction = new Renderers.DojoAttachEvent(attachAction);
 		}
 	}
 
@@ -41,6 +45,7 @@ define([
 				dojoProps = this.dojoProps,
 				attachPoint = this.attachPoint,
 				attachEvent = this.attachEvent,
+				attachAction = this.attachAction,
 				args = [].slice.call(arguments, 0, 3),
 				widget,
 				props = bind(function () {
@@ -67,6 +72,9 @@ define([
 					}
 					if (attachEvent) {
 						attachEvent.render.apply(attachEvent, args.concat(widget));
+					}
+					if (attachAction) {
+						attachAction.render.apply(attachAction, args.concat(widget));
 					}
 				}
 
