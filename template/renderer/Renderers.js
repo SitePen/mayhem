@@ -12,7 +12,9 @@ define([
 	'./Slot',
 	'./Statements',
 	'./DojoType',
-	'./DojoProp'
+	'./DojoProp',
+	'./DojoAttachPoint',
+	'./DojoAttachEvent'
 ], function (
 	exports,
 	Root,
@@ -27,7 +29,9 @@ define([
 	Slot,
 	Statements,
 	DojoType,
-	DojoProp
+	DojoProp,
+	DojoAttachPoint,
+	DojoAttachEvent
 ) {
 	exports.Root = Root;
 	exports.Program = Program;
@@ -42,4 +46,6 @@ define([
 	exports.Statements = Statements;
 	exports.DojoType = DojoType;
 	exports.DojoProp = DojoProp;
+	exports.DojoAttachPoint = DojoAttachPoint;
+	exports.DojoAttachEvent = DojoAttachEvent;
 });

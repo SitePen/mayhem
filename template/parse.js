@@ -7,7 +7,15 @@ define([
 	function domAttributeProcessor(name, value) {
 		//	summary:
 		//		Processes attributes of DOM nodes
-		return new AttributeNode(name, value);
+
+		switch (name) {
+		case 'data-dojo-attach-point':
+			return new DojoAttachPointNode(value);
+		case 'data-dojo-attach-event':
+			return new DojoAttachEventNode(value);
+		default:
+			return new AttributeNode(name, value);
+		}
 	}
 
 	function dojoTypeAttributeProcessor(name, value) {
@@ -172,6 +180,14 @@ define([
 		this.type = 'DojoType';
 
 		this.dojoType = dojoType;
+		if (node.hasAttribute('data-dojo-attach-point')) {
+			this.attachPoint = new DojoAttachPointNode(node.getAttribute('data-dojo-attach-point'));
+			node.removeAttribute('data-dojo-attach-point');
+		}
+		if (node.hasAttribute('data-dojo-attach-event')) {
+			this.attachEvent = new DojoAttachEventNode(node.getAttribute('data-dojo-attach-event'));
+			node.removeAttribute('data-dojo-attach-event');
+		}
 		this.dojoProps = processAttributes(node, dojoTypeAttributeProcessor);
 		// TODO: recurse into the children of this node... and figure out what to do about that :/
 	}
@@ -182,6 +198,24 @@ define([
 		this.name = name;
 		// TODO: handle parsing empty strings
 		this.program = peg.parse(value);
+	}
+
+	function DojoAttachPointNode(value) {
+		this.type = 'DojoAttachPoint';
+		this.points = string.trim(value).split(/\s*,\s*/);
+	}
+
+	function DojoAttachEventNode(value) {
+		this.type = 'DojoAttachEvent';
+		var pairs = string.trim(value).split(/\s*,\s*/),
+			pair,
+			events = [];
+
+		while ((pair = string.trim(pairs.shift() || ''))) {
+			events.push(pair.indexOf(':') ? pair.split(/\s*:\s*/) : [pair, pair]);
+		}
+
+		this.events = events;
 	}
 
 	function parse(templateString, options) {
