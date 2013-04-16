@@ -7,8 +7,8 @@ define([
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class',
-	'dojo/on'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ domConstruct, domStyle, domClass, on) {
+	'./eventManager'
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ domConstruct, domStyle, domClass, eventManager) {
 
 	function WidgetEvent(type, target, eventProperties) {
 		// TODO: This will mixin DOM events' preventDefault and stopPropagation method. Do they need bound to the original event?
@@ -165,52 +165,6 @@ define([
 			this.className = className;
 		},
 
-		_addInternalEventListener: function (type, listener) {
-			on(this.domNode, type, listener);
-		},
-
-		_registerInternalEventProxy: function (/*String*/ type) {
-			// summary:
-			//		Register the need for an internal event proxy that proxies events from internal components to widget events.
-			// description:
-			//		This method registers the need for a internal event listener to emit those events as widget events.
-			//		When the event is emitted by the DOM, the widget emits a corresponding widget event.
-			//		No matter how many listeners are registered for the widget event,
-			//		only one listener is ever registered per DOM event. Once all corresponding widget
-			//		event listeners have been removed, the corresponding DOM event listener is removed as well.
-			// type:
-			//		The event type.
-			// returns: Object
-			//		An object with a remove() method to unregister for the event proxy.
-			// tags:
-			//		private
-			var domEventProxies = this._domEventProxies,
-				widget = this;
-
-			var domEventProxy = domEventProxies[type];
-			if (!domEventProxy) {
-				domEventProxy = domEventProxies[type] = {
-					referenceCount: 0,
-					proxyHandle: this._addInternalEventListener(type, function (event) {
-						widget.emit(type, event);
-					}),
-					handle: {
-						remove: function () {
-							domEventProxy.referenceCount--;
-							if (domEventProxy.referenceCount === 0) {
-								domEventProxy.proxyHandle.remove();
-								delete domEventProxies[type];
-							}
-						}
-					}
-				};
-			}
-
-			domEventProxy.referenceCount++;
-
-			return domEventProxy.handle;
-		},
-
 		// TODO: Test DOM event bubbling and canceling
 		on: function (/*String|Function*/ type, /*Function*/ listener) {
 			// summary:
@@ -225,19 +179,7 @@ define([
 			// returns: Object
 			//		An object with a remove() method to remove the event listener
 
-			var internalListenerHandle = this._registerInternalEventProxy(type),
-				widgetListenerHandle = aspect.after(this._eventListenerMap, 'on' + type, listener, true),
-				aggregateHandleRemoved = false,
-				aggregateHandle = {
-					remove: function () {
-						if (!aggregateHandleRemoved) {
-							internalListenerHandle.remove();
-							widgetListenerHandle.remove();
-						}
-					}
-				};
-			this.own(aggregateHandle);
-			return aggregateHandle;
+			return eventManager.add(this, type, listener);
 		},
 
 		emit: function (/*String*/ type, /*Object?*/ event) {
@@ -250,22 +192,7 @@ define([
 			// tags:
 			// 		protected
 
-			var bubbleSynthetically = event && event.bubbles && !(event instanceof window.Event),
-				domNode = this.domNode,
-				widget,
-				listener;
-
-			event = new WidgetEvent(this, type, event);
-
-			do {
-				widget = domNode.widget;
-				listener = widget && widget._eventListenerMap['on' + type];
-				if (listener) {
-					listener.call(widget, event);
-				}
-			} while (bubbleSynthetically && (domNode = domNode.parentNode));
-
-			return event.cancelable && event;
+			return eventManager.emit(this, type, event);
 		}
 	});
 });
