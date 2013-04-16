@@ -48,7 +48,7 @@ define([
 				moduleIdsToLoad = [];
 
 			for (var key in this.modules) {
-				if (typeof this.modules[key].constructor === 'string') {
+				if (this.modules[key] && typeof this.modules[key].constructor === 'string') {
 					lazyConstructors[key] = moduleIdsToLoad.push(this.modules[key].constructor) - 1;
 				}
 			}
@@ -56,6 +56,10 @@ define([
 			require(moduleIdsToLoad, function () {
 				try {
 					for (var key in self.modules) {
+						if (self.modules[key] == null) {
+							continue;
+						}
+
 						// want to keep original config intact to avoid any confusing changes in original configuration;
 						// also want to add a reference to the app first (so it is set before others)
 						var config = lang.mixin({ app: self }, self.modules[key]);
