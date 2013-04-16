@@ -39,6 +39,10 @@ define([
 		//		The default location for views.
 		viewPath: 'app/views',
 
+		//	templatePath: string
+		//		The default location for templates.
+		templatePath: '../Template!app/views',
+
 		//	defaultRoute: string
 		//		The default route when the application is loaded without an existing route.
 		defaultRoute: 'index',
@@ -84,11 +88,7 @@ define([
 					// the default path; the remainder is picked up when the parent relationship is established
 					kwArgs.path == null && (kwArgs.path = routeId.replace(/^.*\//, ''));
 
-					// If view or controller are explicitly set to null, then they are generated using a generic
-					// Controller or View component.
-					kwArgs.view === undefined && (kwArgs.view = routeId);
-					kwArgs.controller === undefined && (kwArgs.controller = routeId);
-
+					this._fixUpRouteArguments(kwArgs);
 					route = new Route(kwArgs);
 				}
 
@@ -121,6 +121,52 @@ define([
 			}
 
 			return routeMap;
+		},
+
+		_fixUpRouteArguments: function (kwArgs) {
+			//	summary:
+			//		Transforms route view/template/controller arguments to complete module IDs.
+
+			var suffixes = {
+				view: 'View',
+				template: 'View.html',
+				controller: 'Controller'
+			};
+
+			function resolve(/**string*/ value) {
+				//	summary:
+				//		Converts a shorthand reference to a valid constructor-style module ID.
+				//		e.g. `foo -> Foo`, `foo/bar -> foo/Bar`
+				//	returns: string
+
+				return value.replace(/(^|\/)([a-z])([^\/]*)$/, function () {
+					return arguments[1] + arguments[2].toUpperCase() + arguments[3];
+				});
+			}
+
+			var routeId = kwArgs.id,
+				resolvedRouteId = resolve(routeId);
+
+			for (var key in { controller: 1, view: 1, template: 1 }) {
+				var value = kwArgs[key];
+
+				// undefined controller and template default to computing the ID based on the route ID
+				if (value === undefined && key !== 'view') {
+					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId + suffixes[key];
+				}
+				// undefined view, or null values for any property, default to a generic component ID
+				else if (value == null) {
+					kwArgs[key] = 'framework/' + suffixes[key];
+				}
+				// values starting with a forward-slash are treated as pre-computed IDs
+				else if (value.charAt(0) === '/') {
+					kwArgs[key] = value.slice(1);
+				}
+				// all other values are transformed into an absolute module ID using the value as-is
+				else {
+					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolve(value) + suffixes[key];
+				}
+			}
 		},
 
 		constructor: function () {

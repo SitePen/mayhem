@@ -19,6 +19,14 @@ define([
 		//		instance.
 		parent: null,
 
+		//	controller: string|null
+		//		The name of a controller which, when transformed using the expression
+		//		`router.controllerPath + '/' + toUpperCamelCase(route.controller) + 'Controller'`,
+		//		provides a module ID that points to a module whose value is a `framework/Controller`.
+		//		If the string starts with a `/`, it will be treated as an absolute module ID and not transformed.
+		//		If null, a generic Controller object will be used for this route instead.
+		controller: null,
+
 		//	view: string|null
 		//		The name of a view which, when transformed using the expression
 		//		`router.viewPath + '/' + toUpperCamelCase(route.view) + 'View'`,
@@ -27,13 +35,16 @@ define([
 		//		If null, a generic View object will be used for this route instead.
 		view: null,
 
-		//	controller: string
-		//		The name of a controller which, when transformed using the expression
-		//		`router.controllerPath + '/' + toUpperCamelCase(route.controller) + 'Controller'`,
-		//		provides a module ID that points to a module whose value is a `framework/Controller`.
-		//		If the string starts with a `/`, it will be treated as an absolute module ID and not transformed.
-		//		If null, a generic Controller object will be used for this route instead.
-		controller: null,
+		//	template: string
+		//		The name of a template which, when transformed using the expression
+		//		`router.viewPath + '/' + toUpperCamelCase(route.template) + 'View.html'`,
+		//		provides a path to a Mayhem template.
+		//		If the string starts with a '/', it will be treated as an absolute path and not transformed.
+		template: null,
+
+		//	placeholder: string
+		//		The ID of the placeholder in the parent route's view that this route's view should be injected into.
+		placeholder: 'default',
 
 		//	router: framework/routing/Router
 		//		The router to which this route belongs.
@@ -45,23 +56,7 @@ define([
 			this._subViewHandles = [];
 		},
 
-		_resolveModuleId: function (/**string*/ property) {
-			//	summary:
-			//		Converts view and controller shorthand module references to a valid module ID.
-			//	returns: string
-
-			var value = this[property];
-
-			if (value === null) {
-				return 'framework/' + property.charAt(0).toUpperCase() + property.slice(1);
-			}
-
-			return value.charAt(0) === '/' ? value.slice(1) :
-				this.router.get(property + 'Path') + '/' +
-				value.charAt(0).toUpperCase() + value.slice(1) + property.charAt(0).toUpperCase() + property.slice(1);
-		},
-
-		enter: function (event) {
+		enter: function (/**framework/routing/RouteEvent*/ event) {
 			//	summary:
 			//		Activates this route, instantiating view and controller components and placing them into any
 			//		parent route's view. Whenever a route is activated, state information from the route is provided
@@ -95,10 +90,11 @@ define([
 				dfd = new Deferred();
 
 			require([
-				this._resolveModuleId('view'),
-				this._resolveModuleId('controller')
-			], function (View, Controller) {
-				return when(self._instantiateComponents(View, Controller)).then(function () {
+				this.view,
+				this.controller,
+				this.template
+			], function (View, Controller, template) {
+				return when(self._instantiateComponents(View, Controller, template)).then(function () {
 					setRouteState(event);
 					dfd.resolve();
 				}, function () {
@@ -137,9 +133,9 @@ define([
 			return this._viewInstance.addSubView(view, placeholderId);
 		},
 
-		_instantiateComponents: function (View, Controller) {
+		_instantiateComponents: function (View, Controller, template) {
 			var controller = this._controllerInstance = new Controller();
-			this._viewInstance = new View({ controller: controller });
+			this._viewInstance = new View({ template: template, controller: controller });
 			this._subViewHandles.push(this.parent.place(this._viewInstance, this.placeholder));
 
 			return this._viewInstance.startup();
