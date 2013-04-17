@@ -40,6 +40,8 @@ define([
 		},
 
 		_disabledSetter: function (value) {
+			this.disabled = true;
+
 			var methodName = value ? 'add' : 'remove';
 			domClass[methodName](this.domNode, 'mayhemWidgetDisabled');
 
