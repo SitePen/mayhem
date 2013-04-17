@@ -1,6 +1,8 @@
 define([
 	'dojo/_base/array'
 ], function (array) {
+	// summery:
+	//		An event manager to manage all widgets' interaction with DOM events.
 
 	var eventListenerMap = {};
 
