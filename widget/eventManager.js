@@ -1,37 +1,27 @@
 define([
-	'dojo/_base/array',
-	'dojo/on'
-], function (array, on) {
+	'dojo/_base/array'
+], function (array) {
 
-	var eventNormalizationMap = {
-		focus: 'focusin',
-		blur: 'focusout'
-	};
-
-	var widgetListenerMaps = {};
 	var eventListenerMap = {};
 
-	function hasWidgetListeners(eventType) {
-		var widgetListenerMap = widgetListenerMaps[eventType];
-		if (widgetListenerMap) {
-			for (var widgetId in widgetListenerMap) {
-				return true;
-			}
-		}
+	function getTargetWidget(domEvent) {
+		// summary:
+		//		Find the nearest encapsulating widget of a DOM event.
 
-		return false;
-	}
-
-	function getTargetWidget(event) {
-		var domNode = event.target;
+		var domNode = domEvent.target;
 		do {
-			if (domNode.widget) { return true; }
+			if (domNode.widget) { return domNode.widget; }
 		} while ((domNode = domNode.parentNode));
+
+		return undefined;
 	}
 
 	function findWidgetAncestry(widget) {
+		// summary:
+		//		Find a widget's ancestry, including the widget itself
+
 		var ancestry = [ widget ];
-		for (var domNode = widget.parentNode; domNode; domNode = domNode.parentNode) {
+		for (var domNode = widget.domNode.parentNode; domNode; domNode = domNode.parentNode) {
 			if (domNode.widget) {
 				ancestry.push(domNode.widget);
 			}
@@ -39,11 +29,14 @@ define([
 		return ancestry;
 	}
 
-	function addCoreEventListener(eventType) {
+	function addRootEventListener(eventType) {
+		// summary:
+		//		Add an event listener to the document root to listen for all events in the document.
+
 		var listener = function (event) {
-			var widgetTarget = getTargetWidget(event);
-			if (widgetTarget) {
-				return emitEvent(eventType, event);
+			var targetWidget = getTargetWidget(event);
+			if (targetWidget) {
+				return eventManager.emit(targetWidget, eventType, event);
 			}
 		};
 
@@ -52,119 +45,185 @@ define([
 		} else if (document.attachEvent)  {
 			document.attachEvent('on' + eventType, listener);
 		} else {
-			throw new Error('Unable to add an event listener.');
+			throw new Error('Unable to add an event listener for event type ' + eventType);
 		}
 
 		return listener;
 	}
 
-	function removeCoreEventListener(eventType, listener) {
+	function removeRootEventListener(eventType, listener) {
+		// summary:
+		//		Remove an event listener from the document root.
+
 		if (document.removeEventListener) {
-			document.addEventListener(eventType, listener, true);
+			document.removeEventListener(eventType, listener, true);
 		} else if (document.detachEvent)  {
-			document.attachEvent('on' + eventType, listener);
+			document.detachEvent('on' + eventType, listener);
 		} else {
-			throw new Error('Unable to remove an event listener.');
+			throw new Error('Unable to remove an event listener for event type ' + eventType);
 		}
 	}
 
-	function emitEvent(targetWidget, eventType, eventData) {
-		var widgetListenerMap = widgetListenerMap[eventType];
+	function requestWidgetListenerMap(eventType) {
+		// summary:
+		//		Request the widget listener map for the specified event type.
 
-		// short-circuit if we have no possible listeners
-		if (!widgetListenerMap) { return; }
-
-		var reservedKeys = { target: 1, preventDefault: 1, stopImmediatePropagation: 1 };
-		var widgetEvent = { };
-		for (var key in eventData) {
-			if (eventData.hasOwnProperty(key) && !(key in reservedKeys)) {
-				widgetEvent[key] = eventData[key];
-			}
+		// ensure there is a root listener for this type of event.
+		if (!eventListenerMap[eventType]) {
+			eventListenerMap[eventType] = addRootEventListener(eventType);
+			eventListenerMap[eventType].widgetListenerMap = {};
 		}
-
-		widgetEvent.target = targetWidget;
-
-		var canBubble = !!event.bubbles;
-		if (canBubble) {
-			widgetEvent.stopImmediatePropagation = function () {
-				canBubble = false;
-			};
-		}
-
-		var canceled = false;
-		if (event.preventDefault) {
-			widgetEvent.preventDefault = function () {
-				event.preventDefault();
-				canceled = true;
-			};
-		}
-
-		var relevantWidgets = canBubble ? findWidgetAncestry(targetWidget) : [ targetWidget ];
-
-		do {
-			var widget = relevantWidgets.shift(),
-				widgetListeners = widgetListenerMap[widget.id];
-
-			if (widgetListeners) {
-				array.forEach(widgetListeners, function (listener) {
-					listener.call(widget, widgetEvent);
-				});
-			}
-		} while (canBubble && relevantWidgets.length > 0);
-
-		return !canceled;
+		return eventListenerMap[eventType].widgetListenerMap;
 	}
 
-	return {
-		add: function (widget, eventType, listener) {
-			var widgetId = widget.id;
+	function releaseWidgetListenerMap(eventType) {
+		// summary:
+		// 		Release the widget listener map for the specified event type.
 
-			eventType = eventNormalizationMap[eventType] || eventType;
+		var widgetListenerMap = eventListenerMap[eventType].widgetListenerMap;
 
-			// ensure there is a core listener for this type of event.
-			if (!eventListenerMap[eventType]) {
-				eventListenerMap[eventType] = addCoreEventListener(eventType);
-			}
+		// check if there are any widget listeners left in the map
+		var hasWidgetListeners = false;
+		for (var widgetId in widgetListenerMap) {
+			// hack: using widgetId to avoid linter error about unreferenced variable. A better approach is welcome.
+			widgetId = widgetId;
+			hasWidgetListeners = true;
+			break;
+		}
 
-			var widgetListenerMap = widgetListenerMaps[eventType];
-			if (!widgetListenerMap) {
-				widgetListenerMap = widgetListenerMaps[eventType] = {};
-			}
+		// remove the root listener if it is no longer needed
+		if (!hasWidgetListeners) {
+			removeRootEventListener(eventType, eventListenerMap[eventType]);
+			delete eventListenerMap[eventType];
+		}
+	}
 
-			var widgetListeners = widgetListenerMap[widgetId];
-			if (!widgetListeners) {
-				widgetListeners = widgetListenerMap[widgetId] = [];
-			}
+	function addWidgetListener(widget, eventType, listener) {
+		// summary:
+		//		Add a listener for the specified widget and event type.
 
-			widgetListeners.push(listener);
+		var widgetListenerMap = requestWidgetListenerMap(eventType),
+			widgetListeners = widgetListenerMap[widget.id];
+		if (!widgetListeners) {
+			widgetListeners = widgetListenerMap[widget.id] = [];
+		}
 
-			var removed = false;
-			return {
-				remove: function () {
-					if (!removed) {
-						var listenerIndex = array.indexOf(widgetListeners, listener);
-						if (listenerIndex >= 0) {
-							if (widgetListeners.length === 1) {
-								delete widgetListenerMap[widgetId];
-								if (!hasWidgetListeners(eventType)) {
-									removeCoreEventListener(eventType, eventListenerMap[eventType]);
-									delete eventListenerMap[eventType];
-								}
-							} else {
-								widgetListeners.splice(listenerIndex, 1);
-							}
-						} else {
-							throw new Error(
-								'Unable to find listener to remove for widget ' + widgetId + ' and event ' + eventType
-							);
-						}
+		widgetListeners.push(listener);
 
-						removed = true;
-					}
+		var removed = false;
+		return {
+			remove: function () {
+				if (!removed) {
+					removeWidgetListener(widget, eventType, listener);
+					removed = true;
 				}
-			};
-		},
+			}
+		};
+	}
 
-		emit: emitEvent
+	function removeWidgetListener(widget, eventType, listener) {
+		// summary:
+		// 		Remove a listener for the specified widget and event type
+
+		var widgetListenerMap = eventListenerMap[eventType].widgetListenerMap,
+			widgetListeners = widgetListenerMap[widget.id],
+			listenerIndex = array.indexOf(widgetListeners, listener);
+
+		if (listenerIndex >= 0) {
+			widgetListeners.splice(listenerIndex, 1);
+		} else {
+			throw new Error(
+				'Unable to find listener to remove for widget ' + widget.id + ' and event ' + eventType
+			);
+		}
+
+		// remove the widget's entry in the map if it has no more listeners
+		if (widgetListeners.length === 0) {
+			delete widgetListenerMap[widget.id];
+		}
+		releaseWidgetListenerMap(eventType);
+	}
+
+	var eventManager = {
+		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
+		add: function (widget, /*String*/ eventType, /*Function*/ listener) {
+			// summary:
+			//		Add an event listener for the specified type and widget
+			// widget:
+			//		The widget to listen on
+			// eventType:
+			//		The event type to listen for
+			// listener:
+			//		The listener to be called when the event occurs
+			var eventNormalizationMap = {
+				focus: 'focusin',
+				blur: 'focusout'
+			};
+			eventType = eventNormalizationMap[eventType] || eventType;
+			return addWidgetListener(widget, eventType, listener);
+		},
+		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
+		emit: function (targetWidget, /*String*/ eventType, /*Object?*/ eventData) {
+			// summary:
+			//		Emit an event
+			// targetWidget:
+			//		The widget targetted by the event
+			// eventType:
+			//		The type of event
+			// eventData:
+			// 		Data associated with the event
+
+			var rootEventListener = eventListenerMap[eventType];
+
+			// short-circuit if we have no possible listeners
+			if (!rootEventListener) { return; }
+
+			// create the widget event based on the event data
+			eventData = eventData || {};
+			var reservedKeys = { target: 1, preventDefault: 1, stopPropagation: 1 };
+			var widgetEvent = { };
+			for (var key in eventData) {
+				if (eventData.hasOwnProperty(key) && !(key in reservedKeys)) {
+					widgetEvent[key] = eventData[key];
+				}
+			}
+			widgetEvent.target = targetWidget;
+			widgetEvent.type = eventType;
+
+			var canBubble = !!widgetEvent.bubbles;
+			if (canBubble) {
+				widgetEvent.stopPropagation = function () {
+					canBubble = false;
+				};
+			}
+
+			var canceled = false;
+			if (widgetEvent.cancelable) {
+				widgetEvent.preventDefault = function () {
+					if (eventData.preventDefault) {
+						eventData.preventDefault();
+					}
+					canceled = true;
+				};
+			}
+
+			var widgetListenerMap = rootEventListener.widgetListenerMap,
+				relevantWidgets = canBubble ? findWidgetAncestry(targetWidget) : [ targetWidget ];
+
+			do {
+				var widget = relevantWidgets.shift(),
+					widgetListeners = widgetListenerMap[widget.id];
+
+				if (widgetListeners) {
+					array.forEach(widgetListeners, function (listener) {
+						listener.call(widget, widgetEvent);
+					});
+				}
+			} while (canBubble && relevantWidgets.length > 0);
+
+			return !canceled;
+		}
 	};
+
+	return eventManager;
 });

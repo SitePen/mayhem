@@ -1,7 +1,7 @@
 define([
 	'teststack!bdd',
 	'teststack/chai!expect',
-	'../Widget',
+	'../../widget/Widget',
 	'dojo/dom-construct',
 	'dojo/dom-class',
 	'dojo/_base/declare',
@@ -183,52 +183,7 @@ define([
 			widget.emit('expected-event', {});
 		});
 
-		// Widget for testing bubbling events.
-		var NestedWidget = declare(Widget, {
-			_nestedWidget: null,
-			_create: function () {
-				this.inherited(arguments);
-
-				// Add a div between the two widgets to make sure events can bubble
-				// up through HTML elements not associated with widgets.
-				var anotherDiv = domConstruct.create('div');
-				this.domNode.appendChild(anotherDiv);
-
-				this._nestedWidget = new Widget();
-				anotherDiv.appendChild(this._nestedWidget.domNode);
-			},
-			destroy: function () {
-				this._nestedWidget.destroy();
-				this.inherited(arguments);
-			}
-		});
-
-		bdd.it('should bubble emitted events', function () {
-			widget = new NestedWidget();
-
-			var eventBubbled = false;
-			widget.on('expected-event', function () {
-				eventBubbled = true;
-			});
-			widget._nestedWidget.emit('expected-event', { bubbles: true });
-
-			expect(eventBubbled).to.be.true;
-		});
-
-		bdd.it('should call event listener with current widget as \'this\' for bubbled events', function () {
-			widget = new NestedWidget();
-
-			var expectedListenerContext = widget,
-				actualListenerContext;
-			widget.on('expected-event', function () {
-				actualListenerContext = this;
-			});
-			widget._nestedWidget.emit('expected-event', { bubbles: true });
-
-			expect(actualListenerContext).to.equal(expectedListenerContext);
-		});
-
-		bdd.it('should no longer call listeners after they have been removed', function () {
+		bdd.it('should no longer call a listener after it has been removed', function () {
 			widget = new Widget();
 
 			var listenerCalled = false;
@@ -242,72 +197,6 @@ define([
 			listenerCalled = false;
 			widget.emit('expected-event');
 			expect(listenerCalled).to.be.false;
-		});
-
-		bdd.it('should stop bubbling an event when event.stopPropagation() is called', function () {
-			widget = new NestedWidget();
-
-			var eventBubbled = false;
-			widget.on('expected-event', function () {
-				eventBubbled = true;
-			});
-			widget._nestedWidget.on('expected-event', function (event) {
-				event.stopPropagation();
-			});
-			widget._nestedWidget.emit('expected-event', { bubbles: true });
-
-			expect(eventBubbled).to.be.false;
-		});
-
-		bdd.it('should emit DOM events if a listener is registered for them', function () {
-			widget = new Widget();
-
-			var emittedClick = false;
-			widget.on('click', function () {
-				emittedClick = true;
-			});
-			widget.domNode.click();
-			expect(emittedClick).to.be.true;
-		});
-
-		bdd.it('should stop emitting DOM events once all listeners have been removed', function () {
-			widget = new Widget();
-
-			var handle = widget.on('click', function () {});
-
-			var calledEmit = false;
-			aspect.before(widget, 'emit', function () { calledEmit = true; });
-
-			widget.domNode.click();
-			expect(calledEmit).to.be.true;
-
-			handle.remove();
-
-			calledEmit = false;
-			widget.domNode.click();
-			expect(calledEmit).to.be.false;
-		});
-
-		bdd.it('should not bubble DOM events', function () {
-			widget = new NestedWidget();
-
-			var bubbledByWidget = false;
-			aspect.before(widget, 'emit', function () { bubbledByWidget = true; });
-			widget._nestedWidget.on('click', function () {});
-			widget._nestedWidget.domNode.click();
-
-			expect(bubbledByWidget).to.be.false;
-		});
-
-		bdd.it('should return false from emit() if an event is canceled with preventDefault()', function () {
-			widget = new Widget();
-
-			widget.on('expected-event', function (event) {
-				event.preventDefault();
-			});
-			var emitReturnValue = widget.emit('expected-event', { cancelable: true });
-
-			expect(emitReturnValue).to.be.false;
 		});
 	});
 });
