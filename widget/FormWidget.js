@@ -30,7 +30,7 @@ define([
 		//		The value of the control at startup, used as as the initial widget value on reset.
 		// tags:
 		//		private
-		_initialValue: null,
+		_valueAtStartup: null,
 
 		_nameSetter: function (value) {
 			this.name = value;
