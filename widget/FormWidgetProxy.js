@@ -24,6 +24,7 @@ define([
 		_create: function (propertiesToMixIn) {
 			this._proxiedWidget = new this.WidgetToProxy(propertiesToMixIn);
 			this.domNode = this._proxiedWidget.domNode;
+			this.inherited(arguments);
 		},
 
 		startup: function () {
@@ -36,7 +37,7 @@ define([
 		_disabledSetter: createProxiedSetter('disabled'),
 
 		on: function (type, listener) {
-			// NOTE: I'm concerned that this breaks expectations of the overall widget API.
+			// NOTE: This breaks expectations of the overall widget API.
 			// Whether an event type bubbles should be constant over the widget library,
 			// not dependent on whether the widget uses a Dijit under the covers.
 			var dijitOnMap = this._proxiedWidget.constructor._onMap;

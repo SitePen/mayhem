@@ -31,6 +31,11 @@ define([
 			}
 		});
 
+		bdd.it('should mark itself with a formWidget CSS class', function () {
+			widget = new TestWidget();
+			expect(domClass.contains(widget.domNode, 'formWidget')).to.be.true;
+		});
+
 		bdd.it('should support a name property', function () {
 			widget = new TestWidget();
 

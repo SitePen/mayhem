@@ -32,6 +32,11 @@ define([
 		//		private
 		_valueAtStartup: null,
 
+		_create: function () {
+			this.inherited(arguments);
+			domClass.add(this.domNode, 'formWidget');
+		},
+
 		_nameSetter: function (value) {
 			this.name = value;
 			if (this._controlNode !== null) {

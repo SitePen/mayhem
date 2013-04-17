@@ -9,7 +9,7 @@ define([
 
 		_create: function () {
 			this.inherited(arguments);
-			domClass.add(this.domNode, 'mayhemButton');
+			domClass.add(this.domNode, 'buttonWidget');
 		}
 	});
 });

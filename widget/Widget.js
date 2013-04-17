@@ -107,6 +107,8 @@ define([
 			if (this.domNode === null) {
 				this.domNode = domConstruct.create('div');
 			}
+
+			domClass.add(this.domNode, 'widget');
 		},
 
 		startup: function () {
