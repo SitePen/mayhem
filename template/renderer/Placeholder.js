@@ -1,8 +1,7 @@
 define([
 	'./Renderers',
 	'dbind/bind',
-	'dojo/_base/array'
-], function (Renderers, bind, array) {
+], function (Renderers, bind) {
 
 	function PlaceholderRenderer(program) {
 		//	summary:
@@ -28,9 +27,18 @@ define([
 			//		TODOC:
 
 			return bind(function () {
-				return array.map([].slice.call(arguments), function (subView) {
-					return subView.domNode;
-				});
+				var subViews = [].slice.call(arguments),
+					output = [],
+					subView;
+
+				while (subViews.length) {
+					subView = subViews.shift();
+					if (subView && subView.domNode) {
+						output.push(subView.domNode);
+					}
+				}
+
+				return output;
 			}).to(template.subViews.get(this.name));
 		},
 
