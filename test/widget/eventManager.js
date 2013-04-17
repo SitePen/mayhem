@@ -88,7 +88,31 @@ define([
 			eventManager.emit(widget, 'expected-event', {});
 		});
 
-		bdd.it('should bubble emitted events', function () {
+		bdd.it('should define a boolean .bubbles property on all emitted events', function () {
+			widget = new Widget();
+
+			var emittedEvent;
+			widget.on('expected-event', function (event) {
+				emittedEvent = event;
+			});
+			widget.emit('expected-event');
+			expect(emittedEvent).to.be.an('object');
+			expect(emittedEvent.bubbles).to.be.a('boolean');
+		});
+
+		bdd.it('should define a boolean .cancelable property on all emitted events', function () {
+			widget = new Widget();
+
+			var emittedEvent;
+			widget.on('expected-event', function (event) {
+				emittedEvent = event;
+			});
+			widget.emit('expected-event');
+			expect(emittedEvent).to.be.an('object');
+			expect(emittedEvent.cancelable).to.be.a('boolean');
+		});
+
+		bdd.it('should bubble bubblable events', function () {
 			widget = new NestedWidget();
 
 			var eventBubbled = false;

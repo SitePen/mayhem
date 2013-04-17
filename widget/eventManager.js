@@ -192,6 +192,12 @@ define([
 			widgetEvent.target = targetWidget;
 			widgetEvent.type = eventType;
 
+			// make sure event.bubbles is a boolean value
+			widgetEvent.bubbles = !!eventData.bubbles;
+
+			// make sure event.cancelable is a boolean value
+			widgetEvent.cancelable = !!eventData.cancelable;
+
 			var canBubble = !!widgetEvent.bubbles;
 			if (canBubble) {
 				widgetEvent.stopPropagation = function () {
