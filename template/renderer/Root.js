@@ -41,6 +41,7 @@ define([
 
 			// TODO: StatefulPropertyBinding#get doesn't work so we need to do this rather than
 			// this.subViews = bind(view).get('subViews');
+			// see https://github.com/kriszyp/dbind/issues/11
 			this.subViews = bind(view.get('subViews'));
 
 			// use a bound context so that if the viewModel property of the view changes, we react

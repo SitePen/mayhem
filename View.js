@@ -75,6 +75,10 @@ define([
 
 			placeholder.push(view);
 
+			// XXX: an ugly hack to work around the lack of observable array mutations
+			// and also https://github.com/kriszyp/dbind/issues/11
+			this.template.render(this);
+
 			return {
 				remove: lang.hitch(this, 'removeSubView', view, destination)
 			};
