@@ -1,7 +1,8 @@
 define([
 	'dojo/_base/declare',
+	'dojo/aspect',
 	'./FormWidget'
-], function (declare, FormWidget) {
+], function (declare, aspect, FormWidget) {
 
 	function createProxiedSetter(propertyName) {
 		return function (value) {
@@ -32,6 +33,23 @@ define([
 
 		_nameSetter: createProxiedSetter('name'),
 		_valueSetter: createProxiedSetter('value'),
-		_disabledSetter: createProxiedSetter('disabled')
+		_disabledSetter: createProxiedSetter('disabled'),
+
+		on: function (type, listener) {
+			// NOTE: I'm concerned that this breaks expectations of the overall widget API.
+			// Whether an event type bubbles should be constant over the widget library,
+			// not dependent on whether the widget uses a Dijit under the covers.
+			var dijitOnMap = this._proxiedWidget.constructor._onMap;
+			if (typeof type === 'string' && dijitOnMap[type]) {
+				// There is a Dijit method for this event type. Defer event handling to this Dijit in this case.
+				var aspectHandle = aspect.after(dijitOnMap, type, function (event) {
+					listener.call(this, event);
+				});
+				this.own(aspectHandle);
+				return aspectHandle;
+			} else {
+				return this.inherited(arguments);
+			}
+		}
 	});
 });
