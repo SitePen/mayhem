@@ -15,6 +15,10 @@ define([
 		//		The value of the form widget
 		value: null,
 
+		// tabIndex: Number
+		//		The widget's place in the tab order
+		tabIndex: 0,
+
 		// disabled: Boolean
 		//		Whether or not the form widget is disabled
 		disabled: false,
@@ -37,11 +41,26 @@ define([
 			domClass.add(this.domNode, 'formWidget');
 		},
 
+		postscript: function (propertiesToMixIn, srcNodeRef) {
+			// Apply default tabIndex if none is specified.
+			propertiesToMixIn = propertiesToMixIn || {};
+			if (!('tabIndex' in propertiesToMixIn)) {
+				propertiesToMixIn.tabIndex = this.tabIndex;
+			}
+
+			this.inherited(arguments, [ propertiesToMixIn, srcNodeRef ]);
+		},
+
 		_nameSetter: function (value) {
 			this.name = value;
 			if (this._controlNode !== null) {
 				this._controlNode.name = value;
 			}
+		},
+
+		_tabIndexSetter: function (value) {
+			this.tabIndex = value;
+			this.domNode.tabIndex = value;
 		},
 
 		_disabledSetter: function (value) {
@@ -64,6 +83,12 @@ define([
 			// summary:
 			//		Reset the widget to its value at startup.
 			this.set('value', this._valueAtStartup);
+		},
+
+		focus: function () {
+			// summary:
+			//		Set focus on this widget
+			this.domNode.focus();
 		}
 	});
 });

@@ -9,10 +9,12 @@ define([
 	bdd.describe('FormWidget', function () {
 
 		var parentNode,
+			placeholderNode,
 			widget;
 
 		bdd.beforeEach(function () {
 			parentNode = domConstruct.create('div', null, document.body);
+			placeholderNode = domConstruct.create('div', null, parentNode);
 		});
 
 		bdd.afterEach(function () {
@@ -22,6 +24,7 @@ define([
 			}
 			domConstruct.destroy(parentNode);
 			parentNode = null;
+			placeholderNode = null;
 		});
 
 		var TestWidget = declare(FormWidget, {
@@ -52,6 +55,14 @@ define([
 			expect(widget.get('value')).to.equal('expected-value');
 		});
 
+		bdd.it('should support a tabIndex property', function () {
+			var expectedTabIndex = 42;
+			widget = new TestWidget({ tabIndex: expectedTabIndex });
+			expect(widget).to.have.property('tabIndex');
+			expect(widget.get('tabIndex')).to.equal(expectedTabIndex);
+			expect(widget.domNode.tabIndex).to.equal(expectedTabIndex);
+		});
+
 		bdd.it('should support a disabled property', function () {
 			widget = new TestWidget();
 
@@ -70,10 +81,9 @@ define([
 		});
 
 		bdd.it('should reset to its value at startup when reset() is called', function () {
-			widget = new TestWidget({ value: 'initial-value' });
+			widget = new TestWidget({ value: 'initial-value' }, placeholderNode);
 
 			widget.set('value', 'value-at-startup');
-			parentNode.appendChild(widget.domNode);
 			widget.startup();
 
 			widget.set('value', 'new-value');
@@ -81,6 +91,46 @@ define([
 
 			widget.reset();
 			expect(widget.get('value')).to.equal('value-at-startup');
+		});
+
+		bdd.it('should set focus on itself when focus() is called', function () {
+			widget = new TestWidget(null, placeholderNode);
+			widget.startup();
+
+			expect(document.activeElement).to.not.equal(widget.domNode);
+			widget.focus();
+			expect(document.activeElement).to.equal(widget.domNode);
+		});
+
+		bdd.it('should emit a focus event when focused', function () {
+			widget = new TestWidget(null, placeholderNode);
+			widget.startup();
+
+			var emittedFocusEvent;
+			widget.on('focus', function (event) {
+				emittedFocusEvent = event;
+			});
+			widget.focus();
+			expect(emittedFocusEvent).to.not.be.undefined;
+			expect(emittedFocusEvent.type).to.equal('focus');
+		});
+
+		bdd.it('should emit a blur event when it loses focus', function () {
+			widget = new TestWidget(null, placeholderNode);
+			widget.startup();
+
+			var anElementToTakeFocus = domConstruct.create('div', { tabindex: 0 });
+			parentNode.appendChild(anElementToTakeFocus);
+
+			widget.focus();
+			var emittedBlurEvent;
+			widget.on('blur', function (event) {
+				emittedBlurEvent = event;
+			});
+
+			anElementToTakeFocus.focus();
+			expect(emittedBlurEvent).to.not.be.undefined;
+			expect(emittedBlurEvent.type).to.equal('blur');
 		});
 	});
 });

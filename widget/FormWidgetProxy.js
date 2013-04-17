@@ -35,6 +35,7 @@ define([
 		_nameSetter: createProxiedSetter('name'),
 		_valueSetter: createProxiedSetter('value'),
 		_disabledSetter: createProxiedSetter('disabled'),
+		_tabIndexSetter: createProxiedSetter('tabIndex'),
 
 		on: function (type, listener) {
 			// NOTE: This breaks expectations of the overall widget API.
@@ -51,6 +52,10 @@ define([
 			} else {
 				return this.inherited(arguments);
 			}
+		},
+
+		focus: function () {
+			this._proxiedWidget.focus();
 		}
 	});
 });
