@@ -420,8 +420,7 @@ define([
 		dataDojoProps = 'data-dojo-props',
 		dataDojoAttachPoint = 'data-dojo-attach-point',
 		dataDojoAttachEvent = 'data-dojo-attach-event',
-		dataAction = 'data-action',
-		;
+		dataAction = 'data-action';
 
 	return parse;
 });

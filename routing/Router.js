@@ -29,6 +29,9 @@ define([
 		//		will set the `path`, `view`, and `controller` properties to the ID of the route if they are not
 		//		explicitly set.
 		//
+		//		For the moment, routes must only be set after the `controllerPath`, `viewPath`, and `templatePath` have
+		//		been set to their correct values.
+		//
 		//		Once the router has been started, routes can no longer be changed.
 
 		//	controllerPath: string
@@ -123,15 +126,10 @@ define([
 			return routeMap;
 		},
 
-		_fixUpRouteArguments: function (kwArgs) {
+		_fixUpRouteArguments: function (/**Object*/ kwArgs) {
 			//	summary:
-			//		Transforms route view/template/controller arguments to complete module IDs.
-
-			var suffixes = {
-				view: 'View',
-				template: 'View.html',
-				controller: 'Controller'
-			};
+			//		Transforms route view/template/controller arguments to complete module IDs. Directly modifies
+			//		the passed object.
 
 			function resolve(/**string*/ value) {
 				//	summary:
@@ -143,6 +141,12 @@ define([
 					return arguments[1] + arguments[2].toUpperCase() + arguments[3];
 				});
 			}
+
+			var suffixes = {
+				view: 'View',
+				template: 'View.html',
+				controller: 'Controller'
+			};
 
 			var routeId = kwArgs.id,
 				resolvedRouteId = resolve(routeId);

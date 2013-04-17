@@ -135,7 +135,7 @@ define([
 
 		_instantiateComponents: function (View, Controller, template) {
 			var controller = this._controllerInstance = new Controller();
-			this._viewInstance = new View({ template: template, controller: controller });
+			this._viewInstance = new View({ template: template, viewModel: controller });
 			this._subViewHandles.push(this.parent.place(this._viewInstance, this.placeholder));
 
 			return this._viewInstance.startup();

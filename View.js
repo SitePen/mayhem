@@ -26,6 +26,10 @@ define([
 		//	template: framework/Template
 		//		A Template for rendering this view
 
+		constructor: function () {
+			this.subViews = {};
+		},
+
 		buildRendering: function () {
 			if (this.template) {
 				// the template will automatically set('domNode', node) when it can and will

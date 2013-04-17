@@ -13,7 +13,8 @@ define([
 						constructor: 'framework/routing/HashRouter'
 					},
 					ui: {
-						constructor: 'app/views/ApplicationView'
+						constructor: 'app/views/ApplicationView',
+						viewModel: this
 					}
 				}
 			});
