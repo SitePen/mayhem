@@ -179,7 +179,9 @@ define([
 			// returns: Object
 			//		An object with a remove() method to remove the event listener
 
-			return eventManager.add(this, type, listener);
+			var handle = (typeof type === 'function') ? type(this, listener) : eventManager.add(this, type, listener);
+			this.own(handle);
+			return handle;
 		},
 
 		emit: function (/*String*/ type, /*Object?*/ event) {
