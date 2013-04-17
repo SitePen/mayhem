@@ -198,5 +198,20 @@ define([
 			widget.emit('expected-event');
 			expect(listenerCalled).to.be.false;
 		});
+
+		bdd.it('should support extension event types with widget.on()', function () {
+			widget = new Widget();
+			function listener() {}
+
+			var extensionEventCalled = false;
+			function extensionEvent(passedWidget, passedListener) {
+				extensionEventCalled = true;
+				expect(passedWidget).to.equal(widget);
+				expect(passedListener).to.equal(listener);
+			}
+
+			widget.on(extensionEvent, listener);
+			expect(extensionEventCalled).to.be.true;
+		});
 	});
 });
