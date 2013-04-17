@@ -99,7 +99,7 @@ define([
 			};
 		}
 
-		var relevantWidgets = canBubble ? findWidgetAncestry(widgetEvent) : [ targetWidget ];
+		var relevantWidgets = canBubble ? findWidgetAncestry(targetWidget) : [ targetWidget ];
 
 		do {
 			var widget = relevantWidgets.shift(),
