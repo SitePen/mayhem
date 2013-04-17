@@ -5,6 +5,10 @@ define([
 	//		An event manager to manage all widgets' interaction with DOM events.
 
 	var eventListenerMap = {};
+	var eventNormalizationMap = {
+		focus: 'focusin',
+		blur: 'focusout'
+	};
 
 	function getTargetWidget(domEvent) {
 		// summary:
@@ -35,6 +39,8 @@ define([
 		// summary:
 		//		Add an event listener to the document root to listen for all events in the document.
 
+		var normalizedEventType = eventNormalizationMap[eventType] || eventType;
+
 		var listener = function (event) {
 			var targetWidget = getTargetWidget(event);
 			if (targetWidget) {
@@ -43,11 +49,11 @@ define([
 		};
 
 		if (document.addEventListener) {
-			document.addEventListener(eventType, listener, true);
+			document.addEventListener(normalizedEventType, listener, true);
 		} else if (document.attachEvent)  {
-			document.attachEvent('on' + eventType, listener);
+			document.attachEvent('on' + normalizedEventType, listener);
 		} else {
-			throw new Error('Unable to add an event listener for event type ' + eventType);
+			throw new Error('Unable to add an event listener for event type ' + normalizedEventType);
 		}
 
 		return listener;
@@ -57,12 +63,14 @@ define([
 		// summary:
 		//		Remove an event listener from the document root.
 
+		var normalizedEventType = eventNormalizationMap[eventType] || eventType;
+
 		if (document.removeEventListener) {
-			document.removeEventListener(eventType, listener, true);
+			document.removeEventListener(normalizedEventType, listener, true);
 		} else if (document.detachEvent)  {
-			document.detachEvent('on' + eventType, listener);
+			document.detachEvent('on' + normalizedEventType, listener);
 		} else {
-			throw new Error('Unable to remove an event listener for event type ' + eventType);
+			throw new Error('Unable to remove an event listener for event type ' + normalizedEventType);
 		}
 	}
 
@@ -157,11 +165,7 @@ define([
 			//		The event type to listen for
 			// listener:
 			//		The listener to be called when the event occurs
-			var eventNormalizationMap = {
-				focus: 'focusin',
-				blur: 'focusout'
-			};
-			eventType = eventNormalizationMap[eventType] || eventType;
+			
 			return addWidgetListener(widget, eventType, listener);
 		},
 		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
