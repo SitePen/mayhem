@@ -21,8 +21,8 @@ define([
 		//		The proxied widget.
 		_proxiedWidget: null,
 
-		_create: function (propertiesToMixIn) {
-			this._proxiedWidget = new this.WidgetToProxy(propertiesToMixIn);
+		_create: function (propertiesToMixIn, srcNodeRef) {
+			this._proxiedWidget = new this.WidgetToProxy(propertiesToMixIn, srcNodeRef);
 			this.domNode = this._proxiedWidget.domNode;
 			this.inherited(arguments);
 		},

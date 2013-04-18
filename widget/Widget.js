@@ -4,11 +4,12 @@ define([
 	'dojo/_base/declare',
 	'dojo/Stateful',
 	/*====='dojo/Evented',=====*/
+	'dojo/dom',
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class',
 	'./eventManager'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ domConstruct, domStyle, domClass, eventManager) {
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, eventManager) {
 
 	function WidgetEvent(type, target, eventProperties) {
 		// TODO: This will mixin DOM events' preventDefault and stopPropagation method. Do they need bound to the original event?
@@ -72,18 +73,22 @@ define([
 				this.id = 'mayhem-widget-' + (nextWidgetIdCounter++);
 			}
 
-			this._create(propertiesToMixIn);
+			this._create(propertiesToMixIn, srcNodeRef);
 			this.domNode.widget = this;
 
 			// Call inherited postscript so dojo/Stateful can mix in properties.
 			this.inherited(arguments);
 
-			if (srcNodeRef) {
+			// Replace reference node after widget is fully initialized so
+			// we only modify the DOM on successful construction.
+			// TODO: Remove the ancestry checks when no longer proxying to Dijits. They are baggage.
+			srcNodeRef = dom.byId(srcNodeRef);
+			if (srcNodeRef && srcNodeRef.parentNode && !dom.isDescendant(srcNodeRef, this.domNode)) {
 				domConstruct.place(this.domNode, srcNodeRef, 'replace');
 			}
 		},
 
-		_create: function (/*=====propertiesToMixIn=====*/) {
+		_create: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
 			// summary:
 			// 		Create the widget's DOM representation.
 			// propertiesToMixin: Object|null?
