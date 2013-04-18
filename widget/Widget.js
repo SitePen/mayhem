@@ -50,18 +50,6 @@ define([
 		//		private
 		_ownedHandles: null,
 
-		// _eventListenerMap: Object
-		//		A map of event listeners by event type.
-		// tags:
-		//		private
-		_eventListenerMap: null,
-
-		// _domEventProxies: Object
-		//		A map of DOM event proxies by event type.
-		// tags:
-		//		private
-		_domEventProxies: null,
-
 		// TODO: srcNodeRef is a poor name. Think of a better name.
 		constructor: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
 			// summary:
@@ -72,8 +60,6 @@ define([
 			//		A reference to a DOM node to replace with this widget.
 
 			this._ownedHandles = [];
-			this._eventListenerMap = {};
-			this._domEventProxies = {};
 		},
 
 		postscript: function (/*Object|null?*/ propertiesToMixIn, /*DomNode|String?*/ srcNodeRef) {
