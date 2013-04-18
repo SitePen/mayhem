@@ -1,5 +1,5 @@
 define([
-	'./desktop/Button'
+	'./loader!Button'
 ], function (Button) {
 	return Button;
 });
