@@ -75,9 +75,9 @@ define([
 		bdd.it('should add a disabled-related CSS class when widget.disabled is true', function () {
 			widget = new TestWidget();
 
-			expect(domClass.contains(widget.domNode, 'mayhemWidgetDisabled')).to.be.false;
+			expect(domClass.contains(widget.domNode, 'widgetDisabled')).to.be.false;
 			widget.set('disabled', true);
-			expect(domClass.contains(widget.domNode, 'mayhemWidgetDisabled')).to.be.true;
+			expect(domClass.contains(widget.domNode, 'widgetDisabled')).to.be.true;
 		});
 
 		bdd.it('should reset to its value at startup when reset() is called', function () {

@@ -67,7 +67,7 @@ define([
 			this.disabled = true;
 
 			var methodName = value ? 'add' : 'remove';
-			domClass[methodName](this.domNode, 'mayhemWidgetDisabled');
+			domClass[methodName](this.domNode, 'widgetDisabled');
 
 			if (this._controlNode !== null) {
 				this._controlNode.disabled = value;
