@@ -93,6 +93,8 @@ define([
 			// 		Create the widget's DOM representation.
 			// propertiesToMixin: Object|null?
 			//		The properties that will be mixed into this widget.
+			// srcNodeRef: DomNode|String?
+			//		A DOM reference point for this widget's construction
 			// tags:
 			//		protected
 			if (this.domNode === null) {
