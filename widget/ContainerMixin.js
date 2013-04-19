@@ -20,6 +20,11 @@ define([
 			// I'm not sure yet whether that is something that will occur
 			// in practice with these containers.
 			selectionTestNode.appendChild(widget.domNode);
+
+			// Select only direct children
+			if (!/^\s*>\s*/.test(selectionCriteria)) {
+				selectionCriteria = '>' + selectionCriteria;
+			}
 			return query(selectionCriteria, selectionTestNode).length > 0;
 		}
 		finally {
@@ -96,10 +101,9 @@ define([
 
 		// NOTE: I'm not sure it is necessary or desirable to support external iteration of child widgets.
 		forEachChild: function (perChildCallback) {
-			for (var key in this._childMap) {
-				if (this.isOwnProperty(key)) {
-					perChildCallback(this[key]);
-				}
+			var childMap = this._childMap;
+			for (var key in childMap) {
+				perChildCallback(childMap[key]);
 			}
 		},
 
