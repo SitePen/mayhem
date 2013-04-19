@@ -16,7 +16,7 @@ define([
 	AttributeRenderer.prototype = {
 		constructor: AttributeRenderer,
 
-		render: function (view, context, template, element) {
+		render: function () {
 			//	summary:
 			//		Sets or removes an attribute on an Element.
 			//	view:
@@ -26,36 +26,26 @@ define([
 			//	template: framework/Template
 			//	element: DOMElement
 			//		The DOM Element this attribute is associated with.
-			//	returns: array
-			//		The output of rendering the program of this node.
+			//	returns: object
+			//		An object with the following properties:
+			//		* name (string): The name of the attribute
+			//		* value (string): The value of the attribute
 
 			var attribute = this.nodeName,
-				program = this.program,
-				values = program.render.apply(program, arguments);
+				program = this.program;
 
-			bind(values).receive(function (values) {
-				// if there's just one thing, treat it as the value.  this gives us the chance
-				// to have a false value and remove an attribute based on that.
-				// if there's more than one thing, they are joined together as a string to form
-				// a single value
+			return bind.when(program.render.apply(program, arguments), function (values) {
+				// values are joined together as a string to form a single value
 				var value = values.join('');
 
-				// TODO: this coercion probably isn't working right.
-				// coerce representations of true to an empty string and false to be false
+				// TODO: this coercion isn't right.
 				value = value === 'true' ? '' : value === 'false' ? false : value;
 
-				// some attributes need to be removed rather than set to an empty string
-				if (value === false) {
-					element.removeAttribute(attribute);
-				}
-				else {
-					element.setAttribute(attribute, value);
-				}
-
-				return value;
+				return {
+					name: attribute,
+					value: value
+				};
 			});
-
-			return values;
 		},
 
 		unrender: function () {

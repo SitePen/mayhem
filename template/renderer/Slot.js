@@ -24,33 +24,45 @@ define([
 
 			// generate a start and end script block
 			var uid = this.uid,
-				frag = domConstruct.toDom('<script data-uid="' + uid + '-open"></script><script data-uid="' + uid + '-close"></script>'),
-				open = frag.firstChild,
-				close = frag.lastChild,
 				// find the renderer that occupies this slot
-				content = template.root.slots[uid];
+				content = template.root.slots[uid],
+				// get the view-specific slot data
+				slots = view._slots || (view._slots = {}),
+				slot = slots[uid] || (slots[uid] = {}),
+				open = slot._openNode,
+				close = slot._closeNode,
+				frag;
+
+			if (!open) {
+				frag = domConstruct.toDom('<script data-uid="' + uid + '-open"></script><script data-uid="' + uid + '-close"></script>');
+				// stash the script nodes for this slot on the view so we can retrieve as needed
+				slot._openNode = open = frag.firstChild;
+				slot._closeNode = close = frag.lastChild;
+			}
 
 			// render the content into this slot
-			return bind(function () {
+			return bind.when(content.render.apply(content, arguments), function (nodes) {
 				var parent = open.parentNode,
-					nodes = [].slice.call(arguments);
+					i = 0,
+					length = nodes && nodes.length;
 
-				if (nodes.length) {
-					while (nodes.length) {
+				if (length) {
+					while ((i < length) && parent) {
 						// since the closing tag is a known reference point, start at the beginning
 						// of the list of nodes and insert each one before the close script.
-						domConstruct.place(nodes.shift(), close, 'before');
+						parent.insertBefore(nodes[i++], close);
 					}
 				}
 				else {
-					// TODO: should we be doing this every time even when we have nodes to add?
-					while (open.nextSibling !== close) {
+					// TODO: should we be doing this every time? even when we have nodes to add?
+					while (open.nextSibling !== close && parent) {
 						// TODO: should we empty the removed node?
 						parent.removeChild(open.nextSibling);
 					}
 				}
+
 				return parent;
-			}).to(content.render.apply(content, arguments));
+			});
 		},
 
 		unrender: function (node) {

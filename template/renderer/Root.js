@@ -13,17 +13,9 @@ define([
 		//		properties:
 		//		* program (array): An array of AST nodes
 
-		var program = astRoot.program,
-			statements = program.statements,
-			url = astRoot.sourceUrl || 'unknown location';
+		var program = astRoot.program;
 
 		this.deps = program.deps;
-
-		// if this program controls more than a single DOM node then we currently have an error
-		// because dijit/_Widget needs a single domNode
-		if (statements.length > 1) {
-			throw new Error('Attempt to render more than one DOM Element at "' + url + '"');
-		}
 
 		this.root = new Renderers[program.type](program);
 	}
@@ -39,27 +31,16 @@ define([
 
 			var template = this;
 
-			// TODO: StatefulPropertyBinding#get doesn't work so we need to do this rather than
-			// this.subViews = bind(view).get('subViews');
-			// see https://github.com/kriszyp/dbind/issues/11
-			this.subViews = bind(view.get('subViews'));
-
 			// use a bound context so that if the viewModel property of the view changes, we react
-			bind(view, 'viewModel').receive(function (context) {
-				var root = template.root,
-					node = view.domNode;
+			return bind(function (context) {
+				var root = template.root;
 
 				// if we are re-rendering then we should clean up the previous rendering
-				root.unrender(node);
+				root.unrender(view.domNode);
 
-				// let the view know circumstances have changed. hopefully no bled has been shed
-				bind(root.render(view, context, template)).receive(function (nodes) {
-					if (nodes.length > 1) {
-						console.warn('uh-oh... too many DOM nodes', nodes);
-					}
-					view.set('domNode', nodes[0]);
-				});
-			});
+				// return the rendering as the transformed value
+				return root.render(view, context, template);
+			}).to(view, 'viewModel');
 		},
 
 		unrender: function (view) {

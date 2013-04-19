@@ -15,31 +15,29 @@ define([
 	PlaceholderRenderer.prototype = {
 		constructor: PlaceholderRenderer,
 
-		render: function (view, context, template) {
+		render: function (view) {
 			//	summary:
 			//		TODOC:
 			//	view:
 			//		The view being rendered
-			//	context:
-			//		The context for resolving references to variables
-			//	template: framework/Template
-			//	returns:
-			//		TODOC:
+			//	returns: Element[]
+			//		An array of DOM nodes.
 
-			return bind(function () {
-				var subViews = [].slice.call(arguments),
-					output = [],
-					subView;
+			var subViews = view.subViews || {};
+			return bind.when(subViews[this.name], function (subViews) {
+				var output = [],
+					nodes,
+					subView,
+					i = 0;
 
-				while (subViews.length) {
-					subView = subViews.shift();
-					if (subView && subView.domNode) {
-						output.push(subView.domNode);
-					}
+				while (subViews && (subView = subViews[i++])) {
+					subView.render();
+					nodes = subView.nodes || [];
+					output = output.concat(nodes);
 				}
 
 				return output;
-			}).to(template.subViews.get(this.name));
+			});
 		},
 
 		unrender: function (node) {

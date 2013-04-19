@@ -26,9 +26,9 @@ define([
 
 			var program = this.program;
 
-			return bind(function () {
-				return domConstruct.toDom([].join.call(arguments, ''));
-			}).to(program.render.apply(program, arguments));
+			return bind.when(program.render.apply(program, arguments), function (statements) {
+				return domConstruct.toDom(statements.join(''));
+			});
 		},
 
 		unrender: function () {

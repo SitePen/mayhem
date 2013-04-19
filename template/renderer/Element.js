@@ -26,29 +26,48 @@ define([
 
 			// TODO: cloneNode
 			var element = this.element || (this.element = domConstruct.create(this.nodeName)),
-				args = [].slice.call(arguments, 0, 3).concat(element),
 				statements = this.statements,
-				attributes = this.attributes,
-				childNodes = statements.render.apply(statements, args),
-				i,
-				length;
+				attributes = this.attributes;
 
-			// render the attributes
-			attributes.render.apply(attributes, args);
+			return bind.when(statements.render.apply(statements, arguments), function (childNodes) {
+				var i = 0,
+					length = childNodes.length;
 
-			// empty the children (in case we're using an existing element)
-			// TODO: should this be a call to unrender? is it even needed?
-			domConstruct.empty(element);
+				// render the attributes
+				bind.when(attributes.render.apply(attributes, arguments), function (attributes) {
+					var i = 0,
+						length = attributes.length,
+						attribute,
+						name,
+						value;
 
-			// render the children into the element
-			for (i = 0, length = childNodes.length; i < length; i++) {
-				bind.when(childNodes[i], function (child) {
-					// TODO: this won't maintain proper order
-					element.appendChild(child);
+					while (i < length) {
+						attribute = attributes[i++];
+						name = attribute.name;
+						value = attribute.value;
+
+						// false values indicate that an attribute should be removed
+						if (value === false) {
+							element.removeAttribute(name);
+						}
+						else {
+							element.setAttribute(name, value);
+						}
+					}
 				});
-			}
 
-			return element;
+
+				// empty the children (in case we're using an existing element)
+				// TODO: should this be a call to unrender? is it even needed?
+				domConstruct.empty(element);
+
+				// place the children into the element
+				while (i < length) {
+					element.appendChild(childNodes[i++]);
+				}
+
+				return element;
+			});
 		},
 
 		unrender: function (node) {

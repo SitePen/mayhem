@@ -2,10 +2,11 @@ define([
 	'dojo/_base/declare',
 	'dojo/_base/array',
 	'dojo/_base/lang',
-	'dijit/_WidgetBase'
-], function (declare, array, lang, WidgetBase) {
+	'dbind/bind',
+	'./Component'
+], function (declare, array, lang, bind, Component) {
 
-	var View = declare(WidgetBase, {
+	var View = declare(Component, {
 
 		//	viewModel:
 		//		The model that this view reflects.  The viewModel is also the context for data binding
@@ -26,31 +27,85 @@ define([
 		//	template: framework/Template
 		//		A Template for rendering this view
 
-		buildRendering: function () {
-			if (this.template) {
-				// the template will automatically set('domNode', node) when it can and will
-				/// potentially replace the domNode in response to changes in viewModel
-				this.template.render(this);
-			}
+		// TODO: add a setter for template that tears down any existing template and renders the new one
 
-			// TODO:
-			//	* attach points and attach events (maybe dijit/_AttachMixin)
-			//	* widget parsing (maybe parse each block in the template after it renders)
-			//
-			// these might make the most sense to do them in the compiled template where it has
-			// the knowledge of the individual blocks that might need to be re-rendered based on
-			// changes in data.
-			this.inherited(arguments);
+		//	nodes: Element[]
+		//		An array of nodes representing the top level of the hierarchy of DOM nodes
+		//		controlled by this View.
+
+		render: function () {
+			//	summary:
+			//		Renders this View based on it's template.  As a result of this, the nodes
+			//		property will be set.
+
+			var view = this;
+
+			if (this.template) {
+				// render the template to get back the list of nodes
+				bind.when(this.template.render(this), function (nodes) {
+					var currentNodes = view.nodes || [],
+						firstNode = currentNodes[0],
+						lastNode = currentNodes[currentNodes.length - 1],
+						// we will move the parentNode to a document fragment
+						parentNode = firstNode && firstNode.parentNode,
+						// we need to know where to put the parentNode back
+						parentSibling = parentNode && parentNode.nextSibling,
+						parentParent = parentNode && parentNode.parentNode,
+						parentFrag,
+						i = 0,
+						length = nodes.length;
+
+					// if the view already has a firstNode.parentNode then we need to remove all the
+					// nodes.
+					if (parentNode && firstNode !== nodes[0]) {
+						// move parentNode to a document fragment first since we will add/remove
+						// multiple nodes most likely
+						parentFrag = document.createDocumentFragment();
+						parentFrag.appendChild(parentNode);
+
+						// remove the previous nodes but leave the firstNode there as a point of
+						// reference for insertBefore when adding the new nodes
+						while (firstNode !== lastNode) {
+							lastNode = lastNode.previousSibling;
+							parentNode.removeChild(lastNode.nextSibling);
+						}
+
+						// add the new nodes
+						while (i < length) {
+							parentNode.insertBefore(nodes[i++], firstNode);
+						}
+
+						// we're done with the firstNode now, so remove it
+						parentNode.removeChild(firstNode);
+
+						if (parentParent) {
+							// we can put the parentNode back in the document now
+							parentParent.insertBefore(parentNode, parentSibling);
+						}
+					}
+
+					// now that everything is in place we'll set the new values for nodes
+					view.set('nodes', nodes);
+				});
+			}
 		},
 
-		_setDomNodeAttr: function (node) {
-			var domNode = this.domNode;
+		placeAt: function (node) {
+			// TODO: this currently only supports our nodes being placed as child nodes of the
+			// provided node.  besides the placeholder renderer, this is also the only way to
+			// trigger rendering of a view.  in practice, this whole method only matters for the top
+			// view since everything is connected as sub-views after that.
+			this.render();
 
-			if (domNode && domNode.parentNode) {
-				domNode.parentNode.replaceChild(node, domNode);
+			var nodes = this.nodes || [],
+				i = 0,
+				length = nodes.length;
+
+			while (i < length) {
+				node.appendChild(nodes[i++]);
 			}
 
-			this._set('domNode', node);
+			return this;
 		},
 
 		// TODO: do we still need removeSubView as a public API since this returns a handle?
@@ -77,7 +132,7 @@ define([
 
 			// XXX: an ugly hack to work around the lack of observable array mutations
 			// and also https://github.com/kriszyp/dbind/issues/11
-			this.template.render(this);
+			this.render();
 
 			return {
 				remove: lang.hitch(this, 'removeSubView', view, destination)
@@ -118,10 +173,17 @@ define([
 			}
 		},
 
+		startup: function () {
+			// TODO: for now, placeAt is all we need so this method is just stubbed out
+			console.warn('View#startup is not be needed. currently it does... nothing');
+		},
+
+		// TODO: work this into the View lifecycle now that we've removed _WidgetBase
 		destroyRendering: function () {
 			if (this.template) {
 				this.template.unrender(this);
 			}
+			this.nodes = null;
 
 			this.inherited(arguments);
 		}
