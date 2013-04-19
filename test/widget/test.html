@@ -22,17 +22,66 @@
 
 	</script>
 	<script src='../../../dojo/dojo.js'></script>
+
+	<button id='button' name='button'>Button</button>
+	
+	<input id='checkbox1' name='checkbox1' type='checkbox' value='checkbox-value' checked>
+	<label for='checkbox1'>Check me!</label>
+
+	<input id='radiobutton1' name='radiobutton' type='radio' value='radio-value1' checked>
+	<label for='radiobutton1'>One</label>
+
+	<input id='radiobutton2' name='radiobutton' type='radio' value='radio-value2'>
+	<label for='radiobutton2'>Two</label>
+
+	<input id='radiobutton3' name='radiobutton' type='radio' value='radio-value2'>
+	<label for='radiobutton3'>Three</label>
+
+	<input id='textbox1' name='textbox1' type='text'>
+
 	<script>
 
 	require([
 		'widget/Button',
+		'widget/CheckBox',
+		'widget/RadioButton',
+		'widget/TextBox',
 		'dojo/domReady!'
-	], function(Button) {
-		var button = new Button({
-			label: "Button"
-		});
-		document.body.appendChild(button.domNode);
+	], function(Button, CheckBox, RadioButton, TextBox) {
+		var body = document.body;
+
+		var button = new Button({}, 'button');
 		button.startup();
+
+		var button2 = new Button({
+			name: 'button2',
+			value: 'woot',
+			label: 'Button2'
+		});
+		body.insertBefore(button2.domNode, button.domNode.nextSibling);
+		button2.startup();
+
+		var checkBox = new CheckBox(null, 'checkbox1');
+		
+		checkBox.startup();
+
+		var radioButton1 = new RadioButton(null, 'radiobutton1');
+		radioButton1.startup();
+
+		var radioButton2 = new RadioButton(null, 'radiobutton2');
+		radioButton2.startup();
+
+		var radioButton3 = new RadioButton(null, 'radiobutton3');
+		radioButton3.startup();
+
+		var textBox = new TextBox(null, 'textbox1');
+
+		function createListener(eventType) {
+			return function(event) { console.log(eventType, event); };
+		}
+		for(var eventType in { input: 1, change: 1, focus: 1, blur: 1 }) {
+			textBox.on(eventType, createListener(eventType));
+		}
 	});
 
 	</script>
