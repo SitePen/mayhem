@@ -46,7 +46,10 @@ define([
 		},
 
 		// NOTE: This appears to be the interface we require if we're to support ShadowDOM-like insertion points. No more inserting by index.
-		//addChild: function (childWidget, positionSpecifier, nodeRef) {
+		// The idea is to provide a relative position specifier so the container knows where to add the child in the insertion point.
+		// If the position specifier requires a sibling point of reference, a reference widget may be provided as the third argument.
+		// TODO: Implement this richer interface.
+		//addChild: function (childWidget, positionSpecifier, referenceWidget) {
 		// Using a simpler interface for an initial append-only implementation
 		addChild: function (childWidget) {
 			this._addChildToDom(childWidget);
