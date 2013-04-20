@@ -1,10 +1,9 @@
 define([
-	"dojo/_base/declare",
 	"dojo/_base/lang",
 	"dojo/errors/create",
 	"dojo/string",
 	"dojo/i18n!../nls/validator"
-], function (declare, lang, createError, stringUtil, i18n) {
+], function (lang, createError, stringUtil, i18n) {
 	function ValidationError(message, options) {
 		this.options = options;
 	}

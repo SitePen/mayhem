@@ -6,7 +6,7 @@ define([
 	'dojo/Deferred',
 	'dojo/when',
 	'dojo/i18n!./nls/validator',
-	'./validator/ValidationError',
+	'./validators/ValidationError',
 	'./StatefulArray'
 ], function (declare, lang, array, Stateful, Deferred, when, i18n, ValidationError, StatefulArray) {
 	var getObjectKeys = Object.keys || function (object) {

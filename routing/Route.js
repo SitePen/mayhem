@@ -65,7 +65,7 @@ define([
 			function setRouteState(event) {
 				has('debug') && console.log('entering', self.id);
 
-				var kwArgs = {};
+				var kwArgs = { id: self.id };
 
 				for (var k in self) {
 					// Custom properties on the route should be provided to the controller, but not private or
@@ -129,13 +129,28 @@ define([
 			}
 		},
 
-		place: function (view, placeholderId) {
+		place: function (/**framework/View*/ view, /**string?*/ placeholderId) {
+			//	summary:
+			//		Places a sub-view into the view for this route at the placeholder given in `placeholderId`.
+			//	view:
+			//		The sub-view to place.
+			//	placeholderId:
+			//		The placeholder in which it should be placed. If not provided, defaults to `default`.
+
 			return this._viewInstance.addSubView(view, placeholderId);
 		},
 
 		_instantiateComponents: function (View, Controller, template) {
-			var controller = this._controllerInstance = new Controller();
-			this._viewInstance = new View({ template: template, viewModel: controller });
+			var controller = this._controllerInstance = new Controller({
+				app: this.app
+			});
+
+			this._viewInstance = new View({
+				app: this.app,
+				template: template,
+				viewModel: controller
+			});
+
 			this._subViewHandles.push(this.parent.place(this._viewInstance, this.placeholder));
 
 			return this._viewInstance.startup();

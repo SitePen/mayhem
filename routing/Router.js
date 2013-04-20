@@ -76,7 +76,10 @@ define([
 
 				if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(Route) : kwArgs instanceof Route) {
 					route = kwArgs;
-					route.set('id', routeId);
+					route.set({
+						id: routeId,
+						app: this.app
+					});
 				}
 				else {
 					if (typeof kwArgs === 'string') {
@@ -85,6 +88,7 @@ define([
 
 					kwArgs.id = routeId;
 					kwArgs.router = this;
+					kwArgs.app = this.app;
 
 					// Path might be the empty string, and this is OK, but it cannot be null or undefined. Then,
 					// because of the way path nesting works, only the last part of the route identifier is used as
