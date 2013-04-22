@@ -201,8 +201,7 @@ define([
 		_initDomListenerProxy: function (domEventType, widgetEventType) {
 			widgetEventType = widgetEventType || domEventType;
 
-			var self = this,
-				handle = on(this.domNode, domEventType, function (event) {
+			return on(this.domNode, domEventType, lang.hitch(this, function (event) {
 				// The Widget event system needs to take responsibility for bubbling;
 				// otherwise, an inner widget and an outer widget will receive the same
 				// DOM event and both emit bubbling widget events.
@@ -210,10 +209,8 @@ define([
 					event.stopPropagation();
 				}
 
-				return self.emit(widgetEventType, event);
-			});
-			this.own(handle);
-			return handle;
+				return this.emit(widgetEventType, event);
+			}));
 		},
 
 		_pointerdownInitListener: function () {
