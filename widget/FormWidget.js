@@ -134,26 +134,6 @@ define([
 			}
 		},
 
-		// TODO: Pick a better name.
-		_applyChangeFromUser: function (newValue) {
-			if (this.value !== newValue) {
-				this.set('value', newValue);
-				this.emit('input', { bubbles: true });
-				this._appliedUserChange = true;
-			}
-		},
-
-		_rememberValueOnFocus: function () {
-			this._valueAtFocus = this.get('value');
-		},
-
-		_reportChangeFromUserOnBlur: function () {
-			if (this._appliedUserChange && this.get('value') !== this._valueAtFocus) {
-				this._appliedUserChange = false;
-				this.emit('change');
-			}
-		},
-
 		startup: function () {
 			this.inherited(arguments);
 			this._valueAtStartup = this.get('value');
@@ -186,5 +166,17 @@ define([
 		_changeInitListener: function () {
 			return this._initDomListenerProxy('change');
 		}
+
+		// onFocus:
+		//		When the widget gets the focus.
+
+		// onBlur:
+		//		When the widget loses the focus.
+
+		// onInput:
+		// 		When the user changes the value of a widget while it has focus.
+
+		// onChange:
+		//		When the widget loses focus and the user has changed the value.
 	});
 });
