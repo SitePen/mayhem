@@ -8,15 +8,18 @@ define([
 
 	// TODO: Name this better.
 	function SharedListener(initializeSharedListener) {
-		var sharedListenerHandle = initializeSharedListener();
-
 		this.listeners = [];
-		this.remove = function () {
-			sharedListenerHandle && sharedListenerHandle.remove();
-			this.dead = true;
-		};
+
+		if (initializeSharedListener) {
+			this._sharedListenerHandle = initializeSharedListener();
+		}
 	}
 	SharedListener.prototype = {
+		listeners: null,
+		_sharedListenerHandle: null,
+		remove: function () {
+			this._sharedListenerHandle && this._sharedListenerHandle.remove();
+		},
 		addListener: function (listener) {
 			this.listeners.push(listener);
 		},
@@ -29,12 +32,7 @@ define([
 			} else {
 				throw new Error('Unable to find listener to remove');
 			}
-
-			if (listeners.length === 0) {
-				this.remove();
-			}
-		},
-		dead: false
+		}
 	};
 
 	function findWidgetAncestry(widget) {
@@ -78,7 +76,7 @@ define([
 		}
 	}
 
-	function addWidgetListener(widget, eventType, initializeSharedListener, listener) {
+	function addWidgetListener(widget, eventType, listener, initializeSharedListener) {
 		// summary:
 		//		Add a listener for the specified widget and event type.
 
@@ -95,7 +93,8 @@ define([
 			remove: function () {
 				if (!removed) {
 					sharedListener.removeListener(listener);
-					if (sharedListener.dead) {
+					if (sharedListener.listeners.length === 0) {
+						sharedListener.remove();
 						delete widgetListenerMap[widget.id];
 					}
 
@@ -108,20 +107,20 @@ define([
 
 	var eventManager = {
 		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
-		add: function (widget, /*String*/ eventType, /*Function*/ initializeSharedListener, /*Function*/ listener) {
+		add: function (widget, /*String*/ eventType, /*Function*/ listener, /*Function?*/ initializeSharedListener) {
 			// summary:
 			//		Add an event listener for the specified type and widget
 			// widget:
 			//		The widget to listen on
 			// eventType:
 			//		The event type to listen for
-			// initializeSharedListener:
-			//		Used to initialize a shared listener if there isn't already a shared listener
-			//		for the specified widget and event.
 			// listener:
 			//		The listener to be called when the event occurs
+			// initializeSharedListener:
+			//		Called when initializing a shared listener to encapsulate the widget initialization
+			//		required to start emitting the event.
 
-			return addWidgetListener(widget, eventType, initializeSharedListener, listener);
+			return addWidgetListener(widget, eventType, listener, initializeSharedListener);
 		},
 		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
 		emit: function (targetWidget, /*String*/ eventType, /*Object?*/ eventData) {

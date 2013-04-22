@@ -167,35 +167,35 @@ define([
 			widget = new Widget();
 
 			var eventListenerCalled = false;
-			widget.on('click', function () {
+			widget.on('expected-event', function () {
 				eventListenerCalled = true;
 			});
-			widget.emit('click');
+			widget.emit('expected-event');
 			expect(eventListenerCalled).to.be.true;
 		});
 
 		bdd.it('should call event listener with the widget as \'this\'', function () {
 			widget = new Widget();
 
-			widget.on('click', function () {
+			widget.on('expected-event', function () {
 				expect(this).to.equal(widget);
 			});
-			widget.emit('click');
+			widget.emit('expected-event');
 		});
 
 		bdd.it('should no longer call a listener after it has been removed', function () {
 			widget = new Widget();
 
 			var listenerCalled = false;
-			var handle = widget.on('click', function () {
+			var handle = widget.on('expected-event', function () {
 				listenerCalled = true;
 			});
-			widget.emit('click');
+			widget.emit('expected-event');
 			expect(listenerCalled).to.be.true;
 
 			handle.remove();
 			listenerCalled = false;
-			widget.emit('click');
+			widget.emit('expected-event');
 			expect(listenerCalled).to.be.false;
 		});
 	});

@@ -175,16 +175,11 @@ define([
 			// returns: Object
 			//		An object with a remove() method to remove the event listener
 
-			// TODO: What is a better naming convention?
-			var listenerInitMethod = '_' + type + 'InitListener';
+			// TODO: What is a better naming convention?	
+			var listenerInitMethod = '_' + type + 'InitListener',
+				initializeSharedListener = (listenerInitMethod in this) ? lang.hitch(this, listenerInitMethod) : undefined;
 
-			if (!(listenerInitMethod in this)) {
-				throw new Error('"' + type + '" event is not supported by this widget.');
-			}
-
-			var initializeSharedListener =  lang.hitch(this, listenerInitMethod);
-
-			var handle = eventManager.add(this, type, initializeSharedListener, listener);
+			var handle = eventManager.add(this, type, listener, initializeSharedListener);
 			this.own(handle);
 			return handle;
 		},
