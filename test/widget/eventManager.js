@@ -16,6 +16,8 @@ define([
 			widget,
 			listenerHandles = [];
 
+		function initSharedListenerNoOp() { /* do nothing */ }
+
 		bdd.beforeEach(function () {
 			parentNode = domConstruct.create('div', null, document.body);
 		});
@@ -63,7 +65,8 @@ define([
 			widget = new Widget();
 
 			var eventListenerCalled = false;
-			eventManager.add(widget, 'expected-event', function () {
+
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {
 				eventListenerCalled = true;
 			});
 			eventManager.emit(widget, 'expected-event', {});
@@ -73,7 +76,7 @@ define([
 		bdd.it('should call event listener with the widget as \'this\'', function () {
 			widget = new Widget();
 
-			eventManager.add(widget, 'expected-event', function () {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {
 				expect(this).to.equal(widget);
 			});
 			eventManager.emit(widget, 'expected-event', {});
@@ -82,7 +85,7 @@ define([
 		bdd.it('should reflect the type of an emitted event in the event\'s type property', function () {
 			widget = new Widget();
 
-			eventManager.add(widget, 'expected-event', function (event) {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function (event) {
 				expect(event.type).to.equal('expected-event');
 			});
 			eventManager.emit(widget, 'expected-event', {});
@@ -92,10 +95,10 @@ define([
 			widget = new Widget();
 
 			var emittedEvent;
-			widget.on('expected-event', function (event) {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function (event) {
 				emittedEvent = event;
 			});
-			widget.emit('expected-event');
+			eventManager.emit(widget, 'expected-event');
 			expect(emittedEvent).to.be.an('object');
 			expect(emittedEvent.bubbles).to.be.a('boolean');
 		});
@@ -104,10 +107,10 @@ define([
 			widget = new Widget();
 
 			var emittedEvent;
-			widget.on('expected-event', function (event) {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function (event) {
 				emittedEvent = event;
 			});
-			widget.emit('expected-event');
+			eventManager.emit(widget, 'expected-event');
 			expect(emittedEvent).to.be.an('object');
 			expect(emittedEvent.cancelable).to.be.a('boolean');
 		});
@@ -116,7 +119,7 @@ define([
 			widget = new NestedWidget();
 
 			var eventBubbled = false;
-			eventManager.add(widget, 'expected-event', function () {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {
 				eventBubbled = true;
 			});
 			eventManager.emit(widget._innerWidget, 'expected-event', { bubbles: true });
@@ -129,7 +132,7 @@ define([
 
 			var expectedListenerContext = widget,
 				actualListenerContext;
-			eventManager.add(widget, 'expected-event', function () {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {
 				actualListenerContext = this;
 			});
 			eventManager.emit(widget._innerWidget, 'expected-event', { bubbles: true });
@@ -141,7 +144,7 @@ define([
 			widget = new Widget();
 
 			var listenerCalled = false;
-			var handle = eventManager.add(widget, 'expected-event', function () {
+			var handle = eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {
 				listenerCalled = true;
 			});
 			eventManager.emit(widget, 'expected-event');
@@ -157,10 +160,10 @@ define([
 			widget = new NestedWidget();
 
 			var eventBubbled = false;
-			eventManager.add(widget, 'expected-event', function () {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {
 				eventBubbled = true;
 			});
-			eventManager.add(widget._innerWidget, 'expected-event', function (event) {
+			eventManager.add(widget._innerWidget, 'expected-event', initSharedListenerNoOp, function (event) {
 				event.stopPropagation();
 			});
 			eventManager.emit(widget._innerWidget, 'expected-event', { bubbles: true });
@@ -168,52 +171,60 @@ define([
 			expect(eventBubbled).to.be.false;
 		});
 
-		bdd.it('should emit DOM events if a listener is registered for them', function () {
+		bdd.it('should call the initializeSharedListener function when when adding the first listener for a widget\'s event', function () {
 			widget = new Widget();
-			document.body.appendChild(widget.domNode);
-			widget.startup();
 
-			var emittedClick = false;
-			eventManager.add(widget, 'click', function () {
-				emittedClick = true;
-			});
-			widget.domNode.click();
+			var calledSharedListener = false;
+			function initializeSharedListener() {
+				calledSharedListener = true;
+			}
+			function listenerNoOp() {}
 
-			expect(emittedClick).to.be.true;
+			eventManager.add(widget, 'some-event', initializeSharedListener, listenerNoOp);
+			expect(calledSharedListener).to.be.true;
 		});
 
-		bdd.it('should stop emitting DOM events once all listeners have been removed', function () {
+		bdd.it('should not call the initializeSharedListener function when adding additional listeners for a widget\'s event', function () {
 			widget = new Widget();
-			document.body.appendChild(widget.domNode);
-			widget.startup();
 
-			var handle = eventManager.add(widget, 'click', function () {});
-
-			var calledEmit = false;
-			var aspectHandle;
-			try {
-				aspectHandle = aspect.before(eventManager, 'emit', function () {
-					calledEmit = true;
-				});
-
-				widget.domNode.click();
-				expect(calledEmit).to.be.true;
-
-				handle.remove();
-
-				calledEmit = false;
-				widget.domNode.click();
-				expect(calledEmit).to.be.false;
+			var calledSharedListener = false;
+			function initializeSharedListener() {
+				calledSharedListener = true;
 			}
-			finally {
-				aspectHandle.remove();
+			function listenerNoOp() {}
+
+			eventManager.add(widget, 'some-event', initializeSharedListener, listenerNoOp);
+			expect(calledSharedListener).to.be.true;
+			calledSharedListener = false;
+			eventManager.add(widget, 'some-event', initializeSharedListener, listenerNoOp);
+			expect(calledSharedListener).to.be.false;
+		});
+
+		bdd.it('should call the shared listener\'s remove() when all listeners have been removed', function () {
+			widget = new Widget();
+
+			var calledSharedListenerRemove = false;
+			function initializeSharedListener() {
+				return {
+					remove: function () { calledSharedListenerRemove = true; }
+				};
 			}
+			function listenerNoOp() {}
+
+			var listenerHandle1 = eventManager.add(widget, 'some-event', initializeSharedListener, listenerNoOp),
+				listenerHandle2 = eventManager.add(widget, 'some-event', initializeSharedListener, listenerNoOp);
+
+			expect(calledSharedListenerRemove).to.be.false;
+			listenerHandle1.remove();
+			expect(calledSharedListenerRemove).to.be.false;
+			listenerHandle2.remove();
+			expect(calledSharedListenerRemove).to.be.true;
 		});
 
 		bdd.it('should return false from emit() if an event is canceled', function () {
 			widget = new Widget();
 
-			eventManager.add(widget, 'expected-event', function (event) {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function (event) {
 				event.preventDefault();
 			});
 			var emitReturnValue = eventManager.emit(widget, 'expected-event', { cancelable: true });
@@ -224,7 +235,7 @@ define([
 		bdd.it('should return true from emit() if a cancelable event is not canceled', function () {
 			widget = new Widget();
 
-			eventManager.add(widget, 'expected-event', function () {});
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function () {});
 			var emitReturnValue = eventManager.emit(widget, 'expected-event', { cancelable: true });
 
 			expect(emitReturnValue).to.be.true;
@@ -234,7 +245,7 @@ define([
 			widget = new Widget();
 
 			var preventDefaultCalled = false;
-			eventManager.add(widget, 'expected-event', function (event) {
+			eventManager.add(widget, 'expected-event', initSharedListenerNoOp, function (event) {
 				event.preventDefault();
 			});
 			eventManager.emit(widget, 'expected-event', {

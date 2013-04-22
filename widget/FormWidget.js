@@ -128,6 +128,18 @@ define([
 			// summary:
 			//		Set focus on this widget
 			this.domNode.focus();
+		},
+
+		_focusInitListener: function () {
+			return this._initListener('focusin', lang.hitch(this, function () {
+				this.emit('focus');
+			}));
+		},
+
+		_blurInitListener: function () {
+			return this._initListener('focusout', lang.hitch(this, function () {
+				this.emit('blur');
+			}));
 		}
 	});
 });

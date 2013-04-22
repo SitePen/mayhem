@@ -8,8 +8,10 @@ define([
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class',
+	'dojo/on',
+	'./pointer',
 	'./eventManager'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, eventManager) {
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, on, pointer, eventManager) {
 
 	function WidgetEvent(type, target, eventProperties) {
 		// TODO: This will mixin DOM events' preventDefault and stopPropagation method. Do they need bound to the original event?
@@ -160,7 +162,6 @@ define([
 			this.className = className;
 		},
 
-		// TODO: Test DOM event bubbling and canceling
 		on: function (/*String|Function*/ type, /*Function*/ listener) {
 			// summary:
 			//		Add a listener for the specified event type.
@@ -174,7 +175,16 @@ define([
 			// returns: Object
 			//		An object with a remove() method to remove the event listener
 
-			var handle = (typeof type === 'function') ? type(this, listener) : eventManager.add(this, type, listener);
+			// TODO: What is a better naming convention?
+			var listenerInitMethod = '_' + type + 'InitListener';
+
+			if (!(listenerInitMethod in this)) {
+				throw new Error('"' + type + '" event is not supported by this widget.');
+			}
+
+			var initializeSharedListener =  lang.hitch(this, listenerInitMethod);
+
+			var handle = eventManager.add(this, type, initializeSharedListener, listener);
 			this.own(handle);
 			return handle;
 		},
@@ -190,6 +200,49 @@ define([
 			// 		protected
 
 			return eventManager.emit(this, type, event);
+		},
+
+		// TODO: Determine supported interface for all pointer events.
+		_initListener: function (eventType, internalListener) {
+			var handle = on(this.domNode, eventType, internalListener);
+			this.own(handle);
+			return handle;
+		},
+
+		_pointerdownInitListener: function () {
+			return this._initListener(pointer.down, lang.hitch(this, 'emit', 'pointerdown'));
+		},
+
+		_pointerupInitListener: function () {
+			return this._initListener(pointer.up, lang.hitch(this, 'emit', 'pointerup'));
+		},
+
+		_pointercancelInitListener: function () {
+			return this._initListener(pointer.cancel, lang.hitch(this, 'emit', 'pointercancel'));
+		},
+
+		_pointermoveInitListener: function () {
+			return this._initListener(pointer.move, lang.hitch(this, 'emit', 'pointermove'));
+		},
+
+		_pointeroverInitListener: function () {
+			return this._initListener(pointer.over, lang.hitch(this, 'emit', 'pointerover'));
+		},
+
+		_pointeroutInitListener: function () {
+			return this._initListener(pointer.out, lang.hitch(this, 'emit', 'pointerout'));
+		},
+
+		_pointerenterInitListener: function () {
+			return this._initListener(pointer.enter, lang.hitch(this, 'emit', 'pointerenter'));
+		},
+
+		_pointerleaveInitListener: function () {
+			return this._initListener(pointer.leave, lang.hitch(this, 'emit', 'pointerleave'));
+		},
+
+		_clickInitListener: function () {
+			return this._initListener('click', lang.hitch(this, 'emit', 'click'));
 		}
 	});
 });

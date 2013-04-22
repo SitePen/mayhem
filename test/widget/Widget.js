@@ -167,51 +167,36 @@ define([
 			widget = new Widget();
 
 			var eventListenerCalled = false;
-			widget.on('expected-event', function () {
+			widget.on('click', function () {
 				eventListenerCalled = true;
 			});
-			widget.emit('expected-event', {});
+			widget.emit('click');
 			expect(eventListenerCalled).to.be.true;
 		});
 
 		bdd.it('should call event listener with the widget as \'this\'', function () {
 			widget = new Widget();
 
-			widget.on('expected-event', function () {
+			widget.on('click', function () {
 				expect(this).to.equal(widget);
 			});
-			widget.emit('expected-event', {});
+			widget.emit('click');
 		});
 
 		bdd.it('should no longer call a listener after it has been removed', function () {
 			widget = new Widget();
 
 			var listenerCalled = false;
-			var handle = widget.on('expected-event', function () {
+			var handle = widget.on('click', function () {
 				listenerCalled = true;
 			});
-			widget.emit('expected-event');
+			widget.emit('click');
 			expect(listenerCalled).to.be.true;
 
 			handle.remove();
 			listenerCalled = false;
-			widget.emit('expected-event');
+			widget.emit('click');
 			expect(listenerCalled).to.be.false;
-		});
-
-		bdd.it('should support extension event types with widget.on()', function () {
-			widget = new Widget();
-			function listener() {}
-
-			var extensionEventCalled = false;
-			function extensionEvent(passedWidget, passedListener) {
-				extensionEventCalled = true;
-				expect(passedWidget).to.equal(widget);
-				expect(passedListener).to.equal(listener);
-			}
-
-			widget.on(extensionEvent, listener);
-			expect(extensionEventCalled).to.be.true;
 		});
 	});
 });
