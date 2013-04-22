@@ -198,46 +198,58 @@ define([
 		},
 
 		// TODO: Determine supported interface for all pointer event objects.
-		_initListener: function (eventType, internalListener) {
-			var handle = on(this.domNode, eventType, internalListener);
+		_initDomListenerProxy: function (domEventType, widgetEventType) {
+			widgetEventType = widgetEventType || domEventType;
+
+			var self = this,
+				handle = on(this.domNode, domEventType, function (event) {
+				// The Widget event system needs to take responsibility for bubbling;
+				// otherwise, an inner widget and an outer widget will receive the same
+				// DOM event and both emit bubbling widget events.
+				if (event.bubbles) {
+					event.stopPropagation();
+				}
+
+				return self.emit(widgetEventType, event);
+			});
 			this.own(handle);
 			return handle;
 		},
 
 		_pointerdownInitListener: function () {
-			return this._initListener(pointer.down, lang.hitch(this, 'emit', 'pointerdown'));
+			return this._initDomListenerProxy(pointer.down, 'pointerdown');
 		},
 
 		_pointerupInitListener: function () {
-			return this._initListener(pointer.up, lang.hitch(this, 'emit', 'pointerup'));
+			return this._initDomListenerProxy(pointer.up, 'pointerup');
 		},
 
 		_pointercancelInitListener: function () {
-			return this._initListener(pointer.cancel, lang.hitch(this, 'emit', 'pointercancel'));
+			return this._initDomListenerProxy(pointer.cancel, 'pointercancel');
 		},
 
 		_pointermoveInitListener: function () {
-			return this._initListener(pointer.move, lang.hitch(this, 'emit', 'pointermove'));
+			return this._initDomListenerProxy(pointer.move, 'pointermove');
 		},
 
 		_pointeroverInitListener: function () {
-			return this._initListener(pointer.over, lang.hitch(this, 'emit', 'pointerover'));
+			return this._initDomListenerProxy(pointer.over, 'pointerover');
 		},
 
 		_pointeroutInitListener: function () {
-			return this._initListener(pointer.out, lang.hitch(this, 'emit', 'pointerout'));
+			return this._initDomListenerProxy(pointer.out, 'pointerout');
 		},
 
 		_pointerenterInitListener: function () {
-			return this._initListener(pointer.enter, lang.hitch(this, 'emit', 'pointerenter'));
+			return this._initDomListenerProxy(pointer.enter, 'pointerenter');
 		},
 
 		_pointerleaveInitListener: function () {
-			return this._initListener(pointer.leave, lang.hitch(this, 'emit', 'pointerleave'));
+			return this._initDomListenerProxy(pointer.leave, 'pointerleave');
 		},
 
 		_clickInitListener: function () {
-			return this._initListener('click', lang.hitch(this, 'emit', 'click'));
+			return this._initDomListenerProxy('click');
 		}
 	});
 });

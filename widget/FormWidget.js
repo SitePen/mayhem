@@ -3,8 +3,49 @@ define([
 	'dojo/_base/lang',
 	'./Widget',
 	'dojo/on',
-	'dojo/dom-class'
-], function (declare, lang, Widget, on, domClass) {
+	'dojo/dom-class',
+	'dojo/has',
+	'dojo/dom-construct'
+], function (declare, lang, Widget, on, domClass, has, domConstruct) {
+
+	has.add('dom-input-event', function () {
+		var inputElement = domConstruct.create('input'),
+			supportsInputEvent = 'oninput' in inputElement;
+		domConstruct.destroy(inputElement);
+		return supportsInputEvent;
+	});
+
+	// TODO: Test this on browsers that don't support the input event.
+	function inputExtensionEvent(targetNode, listener) {
+		if (has('dom-input-event')) {
+			return on(targetNode, 'input', listener);
+		}
+		else {
+			var handles = [],
+				aggregateHandle = {
+					remove: function () {
+						while (handles.length > 0) { handles.pop.remove(); }
+					}
+				},
+				eventNames = [
+					'cut',
+					'paste',
+					'keypress',
+					'drop'
+				];
+
+			try {
+				for (var i = 0; i < eventNames.length; i++) {
+					handles.push(on(targetNode, eventNames[i], listener));
+				}
+				return aggregateHandle;
+			} catch (e) {
+				aggregateHandle.remove();
+				throw e;
+			}
+		}
+	}
+
 	return declare(Widget, {
 		// summary:
 		//		The base class for all form widgets.
@@ -131,15 +172,19 @@ define([
 		},
 
 		_focusInitListener: function () {
-			return this._initListener('focusin', lang.hitch(this, function () {
-				this.emit('focus');
-			}));
+			return this._initDomListenerProxy('focusin', 'focus');
 		},
 
 		_blurInitListener: function () {
-			return this._initListener('focusout', lang.hitch(this, function () {
-				this.emit('blur');
-			}));
+			return this._initDomListenerProxy('focusout', 'blur');
+		},
+
+		_inputInitListener: function () {
+			return this._initDomListenerProxy(inputExtensionEvent, 'input');
+		},
+
+		_changeInitListener: function () {
+			return this._initDomListenerProxy('change');
 		}
 	});
 });

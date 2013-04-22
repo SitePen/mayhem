@@ -2,12 +2,13 @@ define([
 	'teststack!bdd',
 	'teststack/chai!expect',
 	'../../widget/Widget',
+	'./helpers/NestedWidget',
 	'dojo/dom-construct',
 	'dojo/dom-class',
 	'dojo/_base/declare',
 	'dojo/aspect',
 	'dojo/domReady!'
-], function (bdd, expect, Widget, domConstruct, domClass, declare, aspect) {
+], function (bdd, expect, Widget, NestedWidget, domConstruct, domClass, declare) {
 
 	bdd.describe('Widget', function () {
 
@@ -197,6 +198,26 @@ define([
 			listenerCalled = false;
 			widget.emit('expected-event');
 			expect(listenerCalled).to.be.false;
+		});
+
+		bdd.it('should stop DOM event bubbling when emitting a corresponding bubbling widget event', function () {
+			widget = new NestedWidget();
+			parentNode.appendChild(widget.domNode);
+			widget.startup();
+
+			var outerListenerCallCount = 0,
+				innerListenerCallCount = 0;
+			function outerListener() { outerListenerCallCount++; }
+			function innerListener() { innerListenerCallCount++; }
+
+			widget.on('click', outerListener);
+			widget._innerWidget.on('click', innerListener);
+			widget._innerWidget.domNode.click();
+
+			// Expect each listener to have been called once.
+			// If the outer widget had received the DOM event, it would have emitted an additional 'click' event.
+			expect(outerListenerCallCount).to.equal(1);
+			expect(innerListenerCallCount).to.equal(1);
 		});
 	});
 });

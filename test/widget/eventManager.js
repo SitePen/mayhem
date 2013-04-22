@@ -3,12 +3,13 @@ define([
 	'teststack/chai!expect',
 	'../../widget/eventManager',
 	'../../widget/Widget',
+	'./helpers/NestedWidget',
 	'dojo/dom-construct',
 	'dojo/dom-class',
 	'dojo/_base/declare',
 	'dojo/aspect',
 	'dojo/domReady!'
-], function (bdd, expect, eventManager, Widget, domConstruct, domClass, declare, aspect) {
+], function (bdd, expect, eventManager, Widget, NestedWidget, domConstruct, domClass, declare, aspect) {
 
 	bdd.describe('eventManager', function () {
 
@@ -36,26 +37,6 @@ define([
 
 			while (listenerHandles.length > 0) {
 				listenerHandles.shift().remove();
-			}
-		});
-
-		// Widget for testing bubbling events.
-		var NestedWidget = declare(Widget, {
-			_innerWidget: null,
-			_create: function () {
-				this.inherited(arguments);
-
-				// Add a div between the two widgets to make sure events can bubble
-				// up through HTML elements not associated with widgets.
-				var anotherDiv = domConstruct.create('div');
-				this.domNode.appendChild(anotherDiv);
-
-				this._innerWidget = new Widget();
-				anotherDiv.appendChild(this._innerWidget.domNode);
-			},
-			destroy: function () {
-				this._innerWidget.destroy();
-				this.inherited(arguments);
 			}
 		});
 
