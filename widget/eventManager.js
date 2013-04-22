@@ -75,35 +75,6 @@ define([
 		}
 	}
 
-	function addWidgetListener(widget, eventType, listener, initializeSharedListener) {
-		// summary:
-		//		Add a listener for the specified widget and event type.
-
-		var widgetListenerMap = requestWidgetListenerMap(eventType),
-			sharedListener = widgetListenerMap[widget.id];
-		if (!sharedListener) {
-			sharedListener = widgetListenerMap[widget.id] = new SharedListener(initializeSharedListener);
-		}
-
-		sharedListener.addListener(listener);
-
-		var removed = false;
-		return {
-			remove: function () {
-				if (!removed) {
-					sharedListener.removeListener(listener);
-					if (sharedListener.listeners.length === 0) {
-						sharedListener.remove();
-						delete widgetListenerMap[widget.id];
-					}
-
-					releaseWidgetListenerMap(eventType);
-					removed = true;
-				}
-			}
-		};
-	}
-
 	var eventManager = {
 		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
 		add: function (widget, /*String*/ eventType, /*Function*/ listener, /*Function?*/ initializeSharedListener) {
@@ -119,7 +90,29 @@ define([
 			//		Called when initializing a shared listener to encapsulate the widget initialization
 			//		required to start emitting the event.
 
-			return addWidgetListener(widget, eventType, listener, initializeSharedListener);
+			var widgetListenerMap = requestWidgetListenerMap(eventType),
+			sharedListener = widgetListenerMap[widget.id];
+			if (!sharedListener) {
+				sharedListener = widgetListenerMap[widget.id] = new SharedListener(initializeSharedListener);
+			}
+
+			sharedListener.addListener(listener);
+
+			var removed = false;
+			return {
+				remove: function () {
+					if (!removed) {
+						sharedListener.removeListener(listener);
+						if (sharedListener.listeners.length === 0) {
+							sharedListener.remove();
+							delete widgetListenerMap[widget.id];
+						}
+
+						releaseWidgetListenerMap(eventType);
+						removed = true;
+					}
+				}
+			};
 		},
 		// TODO: I'm not sure how to document with package-specific types. Learn and annotate these parameters.
 		emit: function (targetWidget, /*String*/ eventType, /*Object?*/ eventData) {
