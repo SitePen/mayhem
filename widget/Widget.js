@@ -197,7 +197,7 @@ define([
 			return eventManager.emit(this, type, event);
 		},
 
-		// TODO: Determine supported interface for all pointer events.
+		// TODO: Determine supported interface for all pointer event objects.
 		_initListener: function (eventType, internalListener) {
 			var handle = on(this.domNode, eventType, internalListener);
 			this.own(handle);

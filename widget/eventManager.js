@@ -6,7 +6,6 @@ define([
 
 	var eventListenerMap = {};
 
-	// TODO: Name this better.
 	function SharedListener(initializeSharedListener) {
 		this.listeners = [];
 
