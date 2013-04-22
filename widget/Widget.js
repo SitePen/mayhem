@@ -235,5 +235,37 @@ define([
 		_clickInitListener: function () {
 			return this._initDomListenerProxy('click');
 		}
+
+		// onPointerdown:
+		//		When a pointer enters the active buttons state.
+
+		// onPointerup:
+		//		When a pointer leaves the active buttons state.
+
+		// onPointercancel:
+		//		When a pointer is unlikely to continue producing events.
+
+		// onPointermove:
+		//		When a pointer changes coordinates, button state, pressure, tilt, or contact geometry (e.g., width and height)
+
+		// onPointerover:
+		//		When a pointer is moved into the hit test boundaries of a widget
+		//		and before emitting pointerdown on a device that does not support hover.
+
+		// onPointerout:
+		//		When a pointer is moved out of the hit test boundaries of a widget,
+		//		after emitting pointerup for a device that does not support hover,
+		//		and after emitting pointercancel.
+
+		// onPointerenter:
+		//		When a pointer is moved into the hit test boundaries of a widget,
+		//		including as a result of pointerdown on a device that does not support hover.
+
+		// onPointerleave:
+		// 		When a pointer is moved off of the hit test boundaries of a widget,
+		//		including as a result of pointerup on a device that does not support hover.
+
+		// onClick:
+		//		When the widget is clicked.
 	});
 });
