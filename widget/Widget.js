@@ -13,19 +13,6 @@ define([
 	'./eventManager'
 ], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, on, pointer, eventManager) {
 
-	function WidgetEvent(type, target, eventProperties) {
-		// TODO: This will mixin DOM events' preventDefault and stopPropagation method. Do they need bound to the original event?
-		lang.mixin(this, eventProperties);
-		this.type = type;
-		this.target = target;
-	}
-	WidgetEvent.prototype.preventDefault = function () {
-		this.cancelable = false;
-	};
-	WidgetEvent.prototype.stopPropagation = function () {
-		this.bubbles = false;
-	};
-
 	var nextWidgetIdCounter = 0;
 
 	var base = Stateful;
