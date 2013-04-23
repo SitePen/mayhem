@@ -83,7 +83,12 @@ define([
 			//	summary:
 			//		Reverts the object to its currently committed state.
 
-			this.set(this._committedValues);
+			// Keys must be retrieved from `this._schema` because if all defaults were not explicitly specified for
+			// the schema, `this._committedValues` will not have keys for all available fields, and therefore not all
+			// available fields will be reverted
+			for (var k in this._schema) {
+				this.set(k, this._committedValues[k]);
+			}
 		},
 
 		commit: function () {
@@ -92,7 +97,7 @@ define([
 
 			this.scenario = 'update';
 			for (var k in this._schema) {
-				this._committedValues[k] = this[k];
+				this._committedValues[k] = this.get(k);
 			}
 		},
 
@@ -106,22 +111,25 @@ define([
 				this.inherited(arguments);
 			}
 			else if (key in this._schema) {
-				var DataType = this._schema[key];
+				// all fields should be allowed to be set to null or undefined regardless of their expected data type
+				if (value != null) {
+					var DataType = this._schema[key];
 
-				if (DataType === 'string') {
-					value = '' + value;
-				}
-				else if (DataType === 'number') {
-					value = +value;
-				}
-				else if (DataType === 'boolean') {
-					// value && value.length check is because dijit/_FormMixin
-					// returns an array for checkboxes; an array coerces to true,
-					// but an empty array should be set as false
-					value = (value === 'false' || value === '0' || value instanceof Array && !value.length) ? false : !!value;
-				}
-				else if (typeof DataType === 'function' && !(value instanceof DataType)) {
-					value = new DataType(value);
+					if (DataType === 'string') {
+						value = '' + value;
+					}
+					else if (DataType === 'number') {
+						value = +value;
+					}
+					else if (DataType === 'boolean') {
+						// value && value.length check is because dijit/_FormMixin
+						// returns an array for checkboxes; an array coerces to true,
+						// but an empty array should be set as false
+						value = (value === 'false' || value === '0' || value instanceof Array && !value.length) ? false : !!value;
+					}
+					else if (typeof DataType === 'function' && !(value instanceof DataType)) {
+						value = new DataType(value);
+					}
 				}
 
 				this.inherited(arguments, [ key, value ]);

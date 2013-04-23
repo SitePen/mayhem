@@ -13,7 +13,17 @@ define([
 				boolean: 'boolean',
 				object: Object,
 				array: Array,
-				any: null
+				any: null,
+				accessor: 'string'
+			},
+
+			_accessorGetter: function () {
+				return this._accessor;
+			},
+
+			_accessorSetter: function (value) {
+				this._accessor = value;
+				return value;
 			}
 		}))();
 
@@ -24,7 +34,8 @@ define([
 			object: { foo: 'foo' },
 			array: [ 'foo', 'bar' ],
 			any: 'foo',
-			invalid: 'foo'
+			invalid: 'foo',
+			accessor: 'foo'
 		});
 
 		return model;
@@ -44,6 +55,7 @@ define([
 			assert.deepEqual(model.get('array'), [ 'foo', 'bar' ], 'Array schema properties should be mutable as arrays from an object');
 			assert.strictEqual(model.get('any'), 'foo', 'null schema properties should be mutable as any value from an object');
 			assert.strictEqual(model.get('invalid'), undefined, 'non-existant schema properties should not be mutable from an object');
+			assert.strictEqual(model.get('accessor'), 'foo', 'accessors and mutators should work normally');
 
 			model.set('number', 'not-a-number');
 			assert.typeOf(model.get('number'), 'number', 'number schema properties should still be numbers even if passed a non-number value');
