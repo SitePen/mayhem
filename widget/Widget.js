@@ -66,7 +66,7 @@ define([
 			this.domNode.widget = this;
 
 			// Call inherited postscript so dojo/Stateful can mix in properties.
-			this.inherited(arguments);
+			this.inherited(arguments, [ propertiesToMixIn ]);
 
 			// Replace reference node after widget is fully initialized so
 			// we only modify the DOM on successful construction.
@@ -149,6 +149,19 @@ define([
 			this.className = className;
 		},
 
+		_tabIndexGetter: function () {
+			return this.domNode.tabIndex;
+		},
+
+		_tabIndexSetter: function (/*Number*/ tabIndex) {
+			// summary:
+			//		Set the tab index for this widget.
+			// tabIndex:
+			//		The widget's tab index
+
+			this.domNode.tabIndex = tabIndex;
+		},
+
 		on: function (/*String|Function*/ type, /*Function*/ listener) {
 			// summary:
 			//		Add a listener for the specified event type.
@@ -184,6 +197,12 @@ define([
 			return eventManager.emit(this, type, event);
 		},
 
+		focus: function () {
+			// summary:
+			//		Set focus on this widget
+			this.domNode.focus();
+		},
+
 		// TODO: Determine supported interface for all pointer event objects.
 		_initDomListenerProxy: function (domEventType, widgetEventType) {
 			widgetEventType = widgetEventType || domEventType;
@@ -198,6 +217,22 @@ define([
 
 				return this.emit(widgetEventType, event);
 			}));
+		},
+
+		_focusInitListener: function () {
+			return this._initDomListenerProxy('focusin', 'focus');
+		},
+
+		_blurInitListener: function () {
+			return this._initDomListenerProxy('focusout', 'blur');
+		},
+
+		_keydownInitListener: function () {
+			return this._initDomListenerProxy('keydown');
+		},
+
+		_keyupInitListener: function () {
+			return this._initDomListenerProxy('keyup');
 		},
 
 		_pointerdownInitListener: function () {
@@ -235,6 +270,12 @@ define([
 		_clickInitListener: function () {
 			return this._initDomListenerProxy('click');
 		}
+
+		// onFocus:
+		//		When the widget gets the focus.
+
+		// onBlur:
+		//		When the widget loses the focus.
 
 		// onPointerdown:
 		//		When a pointer enters the active buttons state.

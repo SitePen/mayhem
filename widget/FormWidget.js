@@ -79,32 +79,12 @@ define([
 		//		private
 		_valueAtStartup: null,
 
-		// _valueOnFocus:
-		//		The value of the control when it was focused. Considered when deciding whether to emit a change event on blur. 
-		_valueOnFocus: null,
-
-		// _appliedUserChange: Boolean
-		//		Whether or not the user made a change while this control was focused.
-		_appliedUserChange: false,
-
 		_create: function () {
 			this.inherited(arguments);
 			domClass.add(this.domNode, 'formWidget');
 
-			this.own(
-				this.on('focus', lang.hitch(this, '_rememberValueOnFocus')),
-				this.on('blur', lang.hitch(this, '_reportChangeFromUserOnBlur'))
-			);
-		},
-
-		postscript: function (propertiesToMixIn, srcNodeRef) {
-			// Apply default tabIndex if none is specified.
-			propertiesToMixIn = propertiesToMixIn || {};
-			if (!('tabIndex' in propertiesToMixIn)) {
-				propertiesToMixIn.tabIndex = this.tabIndex;
-			}
-
-			this.inherited(arguments, [ propertiesToMixIn, srcNodeRef ]);
+			// Default tab order.
+			this.set('tabIndex', 0);
 		},
 
 		_nameSetter: function (value) {
@@ -116,11 +96,6 @@ define([
 
 		_valueSetter: function (value) {
 			this.value = value;
-		},
-
-		_tabIndexSetter: function (value) {
-			this.tabIndex = value;
-			this.domNode.tabIndex = value;
 		},
 
 		_disabledSetter: function (value) {
@@ -145,20 +120,6 @@ define([
 			this.set('value', this._valueAtStartup);
 		},
 
-		focus: function () {
-			// summary:
-			//		Set focus on this widget
-			this.domNode.focus();
-		},
-
-		_focusInitListener: function () {
-			return this._initDomListenerProxy('focusin', 'focus');
-		},
-
-		_blurInitListener: function () {
-			return this._initDomListenerProxy('focusout', 'blur');
-		},
-
 		_inputInitListener: function () {
 			return this._initDomListenerProxy(inputExtensionEvent, 'input');
 		},
@@ -166,12 +127,6 @@ define([
 		_changeInitListener: function () {
 			return this._initDomListenerProxy('change');
 		}
-
-		// onFocus:
-		//		When the widget gets the focus.
-
-		// onBlur:
-		//		When the widget loses the focus.
 
 		// onInput:
 		// 		When the user changes the value of a widget while it has focus.
