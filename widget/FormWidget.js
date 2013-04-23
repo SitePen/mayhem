@@ -27,6 +27,7 @@ define([
 						while (handles.length > 0) { handles.pop.remove(); }
 					}
 				},
+				// TODO: Determine whether this is the right or complete set of events to use for simulating the input event.
 				eventNames = [
 					'cut',
 					'paste',
