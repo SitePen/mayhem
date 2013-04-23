@@ -45,8 +45,7 @@ define({
 	// used here
 	loader: {
 		// Packages that should be registered with the loader in each testing environment
-		packages: [ 'framework', 'dojo', 'teststack' ],
-		map: { 'teststack': { 'dojo-ts': 'teststack/dojo' } }
+		packages: [ 'framework', 'dojo' ]
 	},
 
 	// Non-functional test suite(s) to run in each browser

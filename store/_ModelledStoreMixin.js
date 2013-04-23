@@ -1,6 +1,6 @@
 define([
-	"dojo/_base/declare",
-	"dojo/when"
+	'dojo/_base/declare',
+	'dojo/when'
 ], function (declare, when) {
 	return declare(null, {
 		//	summary:
@@ -15,7 +15,7 @@ define([
 		createModel: function () {
 			var Model = this.model;
 			if (!Model) {
-				throw new Error("Cannot create new model");
+				throw new Error('Cannot create new model');
 			}
 
 			var model = new Model();
@@ -30,7 +30,7 @@ define([
 
 			var Model = this.model;
 			if (Model && !(object instanceof Model)) {
-				throw new Error("Objects put to modelled store must be an instance of the defined model");
+				throw new Error('Objects put to modelled store must be an instance of the defined model');
 			}
 
 			var returnValue = this.inherited(arguments);
@@ -53,7 +53,7 @@ define([
 						object = new Model(object);
 					}
 					object.store = this;
-					object.scenario = "update";
+					object.scenario = 'update';
 					data[i] = object;
 				}
 			}

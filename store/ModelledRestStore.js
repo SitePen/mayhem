@@ -1,9 +1,9 @@
 define([
-	"dojo/_base/declare",
-	"dojo/store/JsonRest",
-	"dojo/when",
-	"dojo/store/util/QueryResults",
-	"./_ModelledStoreMixin"
+	'dojo/_base/declare',
+	'dojo/store/JsonRest',
+	'dojo/when',
+	'dojo/store/util/QueryResults',
+	'./_ModelledStoreMixin'
 ], function (declare, JsonRest, when, createQueryResults, _ModelledStoreMixin) {
 	return declare([ JsonRest, _ModelledStoreMixin ], {
 		//	summary:
@@ -21,7 +21,7 @@ define([
 				if (Model && !(object instanceof Model)) {
 					object = new Model(object);
 					object.store = self;
-					object.scenario = "update";
+					object.scenario = 'update';
 				}
 
 				return object;

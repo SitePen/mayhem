@@ -7,16 +7,9 @@ define([
 	'dojo/when',
 	'dojo/i18n!./nls/validator',
 	'./validators/ValidationError',
-	'./StatefulArray'
-], function (declare, lang, array, Stateful, Deferred, when, i18n, ValidationError, StatefulArray) {
-	var getObjectKeys = Object.keys || function (object) {
-		var keys = [];
-		for (var key in object) {
-			keys.push(key);
-		}
-		return keys;
-	};
-
+	'./StatefulArray',
+	'./util'
+], function (declare, lang, array, Stateful, Deferred, when, i18n, ValidationError, StatefulArray, util) {
 	return declare(Stateful, {
 		//	summary:
 		//		A base class for modelled data objects.
@@ -56,11 +49,6 @@ define([
 		//		model.
 		_committedValues: {},
 
-		//	store: dojo/store/api/Store
-		//		The store to which the object belongs. This is set automatically
-		//		when using `framework/store/_ModelledStoreMixin`.
-		store: null,
-
 		//	scenario: string
 		//		The scenario that is used to determine which validators should
 		//		apply to this model. There are two standard values for scenario,
@@ -76,23 +64,19 @@ define([
 
 		save: function (/*boolean*/ skipValidation) {
 			//	summary:
-			//		Saves this object to its default store.
+			//		Saves this object. By default, this is a no-op. Implementations should call `commit` after saving
+			//		has completed.
 			//	skipValidation:
 			//		Normally, validation is performed to ensure that the object
 			//		is not invalid before being stored. Set `skipValidation` to
 			//		true to skip it.
+			//	returns: dojo/promise/Promise
 
-			if (!skipValidation && !this.validate()) {
-				throw new ValidationError(i18n.validationError);
-			}
-
-			if (!this.store) {
-				throw new Error('Missing store');
-			}
-
-			// When putting to the store, the store *must* call commit on the
-			// object once it is successful.
-			return this.store.put(this);
+			return when(skipValidation ? true : this.validate()).then(function (isValid) {
+				if (!isValid) {
+					throw new ValidationError(i18n.validationError);
+				}
+			});
 		},
 
 		revert: function () {
@@ -134,14 +118,14 @@ define([
 					// value && value.length check is because dijit/_FormMixin
 					// returns an array for checkboxes; an array coerces to true,
 					// but an empty array should be set as false
-					value = (value === 'false' || value === '0' || Array.isArray(value) && !value.length) ? false : !!value;
+					value = (value === 'false' || value === '0' || value instanceof Array && !value.length) ? false : !!value;
 				}
 				else if (typeof DataType === 'function' && !(value instanceof DataType)) {
 					value = new DataType(value);
 				}
 
 				this.inherited(arguments, [ key, value ]);
-				delete this._errors[key];
+				this._errors[key] && this._errors[key].splice(0, this._errors[key].get('length'));
 			}
 		},
 
@@ -159,7 +143,7 @@ define([
 			var self = this,
 				dfd = new Deferred(),
 				validators = this._validators,
-				validatorKeys = getObjectKeys(validators),
+				validatorKeys = util.getObjectKeys(validators),
 				i = 0;
 
 			(function validateNextField() {
@@ -235,7 +219,7 @@ define([
 				key;
 
 			for (key in this._errors) {
-				if (this._errors[key].length) {
+				if (this._errors[key].get('length')) {
 					isValid = false;
 					break;
 				}

@@ -1,7 +1,19 @@
-define([], function () {
+define([
+	'./has'
+], function (has) {
 	return {
 		//	summary:
 		//		Common utility functions.
+
+		getObjectKeys: has('es5-object-keys') ? Object.keys : function (/**Object*/ object) {
+			var keys = [],
+				hasOwnProperty = Object.prototype.hasOwnProperty;
+
+			for (var key in object) {
+				hasOwnProperty.call(object, key) && keys.push(key);
+			}
+			return keys;
+		},
 
 		createSetter: function (/*string*/ propertyName, /*string*/ childName, /*string?*/ childPropertyName) {
 			//	summary:
