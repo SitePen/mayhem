@@ -48,7 +48,8 @@
 		radioButton2,
 		radioButton3,
 		textBox,
-		select;
+		select,
+		filteringSelect;
 
 	require([
 		'widget/Button',
@@ -56,8 +57,10 @@
 		'widget/RadioButton',
 		'widget/TextBox',
 		'widget/Select',
+		'widget/FilteringSelect',
+		'dojo/store/Memory',
 		'dojo/domReady!'
-	], function(Button, CheckBox, RadioButton, TextBox, Select) {
+	], function(Button, CheckBox, RadioButton, TextBox, Select, FilteringSelect, Memory) {
 		var body = document.body;
 
 		button1 = new Button({}, 'button');
@@ -107,6 +110,31 @@
 		});
 		body.appendChild(select.domNode);
 		select.startup();
+
+		var sampleStore = new Memory({
+			idProperty: 'id',
+			data: [
+				{name:"Alabama", id:"AL"},
+				{name:"Alaska", id:"AK"},
+				{name:"American Samoa", id:"AS"},
+				{name:"Arizona", id:"AZ"},
+				{name:"Arkansas", id:"AR"},
+				{name:"Armed Forces Europe", id:"AE"},
+				{name:"Armed Forces Pacific", id:"AP"},
+				{name:"Armed Forces the Americas", id:"AA"},
+				{name:"California", id:"CA"},
+				{name:"Colorado", id:"CO"},
+				{name:"Connecticut", id:"CT"},
+				{name:"Delaware", id:"DE"}
+			]
+		});
+
+		filteringSelect = new FilteringSelect({
+			store: sampleStore,
+			itemLabelProperty: 'name'
+		});
+		body.appendChild(filteringSelect.domNode);
+		filteringSelect.startup();
 	});
 
 	</script>
