@@ -1,7 +1,7 @@
 {
 	var parser = this;
 
-	function verifyMatch(open, close)	{
+	function verifyMatch(open, close) {
 
 		if (open !== close) {
 			var offset = Math.max(pos, rightmostFailuresPos),
@@ -105,7 +105,7 @@ simpleInverse
 
 openInverse
 	= OpenInverse id:path Close {
-			return variable;
+			return path;
 		}
 
 closeBlock
