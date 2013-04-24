@@ -190,10 +190,11 @@ CallVariable
 	}
 
 ReferenceVariable
-	= identifier:Identifier accessors:(ArrayAccessor / DotAccessor)* {
+	= inverted:'!'? identifier:Identifier accessors:(ArrayAccessor / DotAccessor)* {
 		return {
 			type: 'variable',
-			identifier: [ identifier ].concat(accessors)
+			identifier: [ identifier ].concat(accessors),
+			inverted: !!inverted
 		};
 	}
 

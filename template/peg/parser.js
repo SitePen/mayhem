@@ -2354,27 +2354,42 @@ define([], function () {
       }
       
       function parse_ReferenceVariable() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        result0 = parse_Identifier();
+        if (input.charCodeAt(pos.offset) === 33) {
+          result0 = "!";
+          advance(pos, 1);
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"!\"");
+          }
+        }
+        result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
-          result1 = [];
-          result2 = parse_ArrayAccessor();
-          if (result2 === null) {
-            result2 = parse_DotAccessor();
-          }
-          while (result2 !== null) {
-            result1.push(result2);
-            result2 = parse_ArrayAccessor();
-            if (result2 === null) {
-              result2 = parse_DotAccessor();
-            }
-          }
+          result1 = parse_Identifier();
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = [];
+            result3 = parse_ArrayAccessor();
+            if (result3 === null) {
+              result3 = parse_DotAccessor();
+            }
+            while (result3 !== null) {
+              result2.push(result3);
+              result3 = parse_ArrayAccessor();
+              if (result3 === null) {
+                result3 = parse_DotAccessor();
+              }
+            }
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
             pos = clone(pos1);
@@ -2384,12 +2399,13 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, identifier, accessors) {
+          result0 = (function(offset, line, column, inverted, identifier, accessors) {
         		return {
         			type: 'variable',
-        			identifier: [ identifier ].concat(accessors)
+        			identifier: [ identifier ].concat(accessors),
+        			inverted: !!inverted
         		};
-        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
