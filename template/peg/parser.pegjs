@@ -147,7 +147,7 @@ Alias
 	}
 
 Arguments
-	= S* '(' firstArg:Literal? args:Argument* ')' {
+	= S* '(' S* firstArg:Literal? args:Argument* S* ')' {
 		return firstArg ? [ firstArg ].concat(args) : [];
 	}
 
@@ -162,9 +162,9 @@ Literal
 	/ Boolean
 	/ Number
 	/ String
+	/ RegExp
 	/ Object
 	/ Array
-	/ RegExp
 
 Variable
 	= ConditionalVariable
@@ -259,21 +259,41 @@ Undefined
 		return { type: 'literal', value: undefined };
 	}
 
-// TODO: Fails with nested Objects
-Object
-	= object:('{' ([^}] / String / Object)* '}') {
-		return { type: 'literal', value: new Function('return ' + flatten(object))() };
-	}
-
-// TODO: Fails with nested Arrays
-Array
-	= array:('[' ([^\]] / String / Array)* ']') {
-		return { type: 'literal', value: new Function('return ' + flatten(array))() };
-	}
-
 RegExp
 	= regExp:('/' ('\\/' / [^/])* '/' [gim]*) {
 		return { type: 'literal', value: new Function('return ' + flatten(regExp))() };
+	}
+
+Object
+	= '{' S* properties:ObjectLiteralList? S* '}' {
+		var value = {};
+
+		if (properties) {
+			for (var i = 0; i < properties.length; ++i) {
+				value[properties[i].key.value] = properties[i].value;
+			}
+		}
+
+		return { type: 'object', value: value };
+	}
+
+ObjectLiteralList
+	= item:ObjectLiteralItem rest:(S* ',' S* ObjectLiteralItem)* {
+		var items = [ item ];
+		for (var i = 0; i < rest.length; ++i) {
+			items.push(rest[i][3]);
+		}
+		return items;
+	}
+
+ObjectLiteralItem
+	= key:(Identifier / String) S* ':' S* value:Literal {
+		return { type: 'objectitem', key: key, value: value };
+	}
+
+Array
+	= '[' S* firstArg:Literal? args:Argument* S* ']' {
+		return { type: 'array', value: firstArg ? [ firstArg ].concat(args) : [] };
 	}
 
 OpenToken
