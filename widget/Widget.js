@@ -101,11 +101,13 @@ define([
 		_destroy: function () {
 			// summary:
 			//		Destroy this widget.
+			// description:
+			//		Override this method to add other destruction logic to your widget.
+			//		Don't forget to call this.inherited(arguments).
 			// tags:
 			//		protected
 
 			delete this.domNode.widget;
-			domConstruct.destroy(this.domNode);
 
 			// Clean up owned handles
 			while (this._ownedHandles.length > 0) {
@@ -148,6 +150,9 @@ define([
 
 			// Begin with this widget
 			destroyRecursively(0);
+
+			// Remove this widget and its descendants from the DOM
+			domConstruct.destroy(this.domNode);
 
 			this._destroyed = true;
 		},
