@@ -224,24 +224,18 @@ String
 Number
 	= number:(
 		HexadecimalNumber
-		/ ExponentialNumber
 		/ DecimalNumber
 	) {
 		return { type: 'literal', value: number };
 	}
 
 DecimalNumber
-	= number:([+-]? [0-9]+ ('.' [0-9]+)?) {
-		return +flatten(number);
-	}
-
-ExponentialNumber
-	= number:([+-]? [0-9]+ 'e'i [0-9]+ ('.' [0-9]+)?) {
-		return +flatten(number);
+	= number:([+-]? [0-9]+) decimal:('.' [0-9]+)? exponent:([eE] [+-]? [0-9]+)? {
+		return +(flatten(number) + flatten(decimal || []) + flatten(exponent || []));
 	}
 
 HexadecimalNumber
-	= sign:[+-]? number:('0x'i [0-9a-f]i+) {
+	= sign:[+-]? number:('0' [xX] [0-9a-fA-F]+) {
 		return sign === '-' ? 0 - flatten(number) : flatten(number);
 	}
 

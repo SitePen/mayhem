@@ -68,7 +68,6 @@ define([], function () {
         "String": parse_String,
         "Number": parse_Number,
         "DecimalNumber": parse_DecimalNumber,
-        "ExponentialNumber": parse_ExponentialNumber,
         "HexadecimalNumber": parse_HexadecimalNumber,
         "Boolean": parse_Boolean,
         "Null": parse_Null,
@@ -2820,10 +2819,7 @@ define([], function () {
         pos0 = clone(pos);
         result0 = parse_HexadecimalNumber();
         if (result0 === null) {
-          result0 = parse_ExponentialNumber();
-          if (result0 === null) {
-            result0 = parse_DecimalNumber();
-          }
+          result0 = parse_DecimalNumber();
         }
         if (result0 !== null) {
           result0 = (function(offset, line, column, number) {
@@ -2837,11 +2833,12 @@ define([], function () {
       }
       
       function parse_DecimalNumber() {
-        var result0, result1, result2, result3, result4;
+        var result0, result1, result2, result3, result4, result5;
         var pos0, pos1, pos2;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
+        pos2 = clone(pos);
         if (/^[+\-]/.test(input.charAt(pos.offset))) {
           result0 = input.charAt(pos.offset);
           advance(pos, 1);
@@ -2880,45 +2877,119 @@ define([], function () {
             result1 = null;
           }
           if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = clone(pos2);
+          }
+        } else {
+          result0 = null;
+          pos = clone(pos2);
+        }
+        if (result0 !== null) {
+          pos2 = clone(pos);
+          if (input.charCodeAt(pos.offset) === 46) {
+            result1 = ".";
+            advance(pos, 1);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\".\"");
+            }
+          }
+          if (result1 !== null) {
+            if (/^[0-9]/.test(input.charAt(pos.offset))) {
+              result3 = input.charAt(pos.offset);
+              advance(pos, 1);
+            } else {
+              result3 = null;
+              if (reportFailures === 0) {
+                matchFailed("[0-9]");
+              }
+            }
+            if (result3 !== null) {
+              result2 = [];
+              while (result3 !== null) {
+                result2.push(result3);
+                if (/^[0-9]/.test(input.charAt(pos.offset))) {
+                  result3 = input.charAt(pos.offset);
+                  advance(pos, 1);
+                } else {
+                  result3 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("[0-9]");
+                  }
+                }
+              }
+            } else {
+              result2 = null;
+            }
+            if (result2 !== null) {
+              result1 = [result1, result2];
+            } else {
+              result1 = null;
+              pos = clone(pos2);
+            }
+          } else {
+            result1 = null;
+            pos = clone(pos2);
+          }
+          result1 = result1 !== null ? result1 : "";
+          if (result1 !== null) {
             pos2 = clone(pos);
-            if (input.charCodeAt(pos.offset) === 46) {
-              result2 = ".";
+            if (/^[eE]/.test(input.charAt(pos.offset))) {
+              result2 = input.charAt(pos.offset);
               advance(pos, 1);
             } else {
               result2 = null;
               if (reportFailures === 0) {
-                matchFailed("\".\"");
+                matchFailed("[eE]");
               }
             }
             if (result2 !== null) {
-              if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                result4 = input.charAt(pos.offset);
+              if (/^[+\-]/.test(input.charAt(pos.offset))) {
+                result3 = input.charAt(pos.offset);
                 advance(pos, 1);
               } else {
-                result4 = null;
+                result3 = null;
                 if (reportFailures === 0) {
-                  matchFailed("[0-9]");
+                  matchFailed("[+\\-]");
                 }
               }
-              if (result4 !== null) {
-                result3 = [];
-                while (result4 !== null) {
-                  result3.push(result4);
-                  if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                    result4 = input.charAt(pos.offset);
-                    advance(pos, 1);
-                  } else {
-                    result4 = null;
-                    if (reportFailures === 0) {
-                      matchFailed("[0-9]");
-                    }
+              result3 = result3 !== null ? result3 : "";
+              if (result3 !== null) {
+                if (/^[0-9]/.test(input.charAt(pos.offset))) {
+                  result5 = input.charAt(pos.offset);
+                  advance(pos, 1);
+                } else {
+                  result5 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("[0-9]");
                   }
                 }
-              } else {
-                result3 = null;
-              }
-              if (result3 !== null) {
-                result2 = [result2, result3];
+                if (result5 !== null) {
+                  result4 = [];
+                  while (result5 !== null) {
+                    result4.push(result5);
+                    if (/^[0-9]/.test(input.charAt(pos.offset))) {
+                      result5 = input.charAt(pos.offset);
+                      advance(pos, 1);
+                    } else {
+                      result5 = null;
+                      if (reportFailures === 0) {
+                        matchFailed("[0-9]");
+                      }
+                    }
+                  }
+                } else {
+                  result4 = null;
+                }
+                if (result4 !== null) {
+                  result2 = [result2, result3, result4];
+                } else {
+                  result2 = null;
+                  pos = clone(pos2);
+                }
               } else {
                 result2 = null;
                 pos = clone(pos2);
@@ -2943,171 +3014,9 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, number) {
-        		return +flatten(number);
-        	})(pos0.offset, pos0.line, pos0.column, result0);
-        }
-        if (result0 === null) {
-          pos = clone(pos0);
-        }
-        return result0;
-      }
-      
-      function parse_ExponentialNumber() {
-        var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1, pos2;
-        
-        pos0 = clone(pos);
-        pos1 = clone(pos);
-        if (/^[+\-]/.test(input.charAt(pos.offset))) {
-          result0 = input.charAt(pos.offset);
-          advance(pos, 1);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("[+\\-]");
-          }
-        }
-        result0 = result0 !== null ? result0 : "";
-        if (result0 !== null) {
-          if (/^[0-9]/.test(input.charAt(pos.offset))) {
-            result2 = input.charAt(pos.offset);
-            advance(pos, 1);
-          } else {
-            result2 = null;
-            if (reportFailures === 0) {
-              matchFailed("[0-9]");
-            }
-          }
-          if (result2 !== null) {
-            result1 = [];
-            while (result2 !== null) {
-              result1.push(result2);
-              if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                result2 = input.charAt(pos.offset);
-                advance(pos, 1);
-              } else {
-                result2 = null;
-                if (reportFailures === 0) {
-                  matchFailed("[0-9]");
-                }
-              }
-            }
-          } else {
-            result1 = null;
-          }
-          if (result1 !== null) {
-            if (input.substr(pos.offset, 1).toLowerCase() === "e") {
-              result2 = input.substr(pos.offset, 1);
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\"e\"");
-              }
-            }
-            if (result2 !== null) {
-              if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                result4 = input.charAt(pos.offset);
-                advance(pos, 1);
-              } else {
-                result4 = null;
-                if (reportFailures === 0) {
-                  matchFailed("[0-9]");
-                }
-              }
-              if (result4 !== null) {
-                result3 = [];
-                while (result4 !== null) {
-                  result3.push(result4);
-                  if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                    result4 = input.charAt(pos.offset);
-                    advance(pos, 1);
-                  } else {
-                    result4 = null;
-                    if (reportFailures === 0) {
-                      matchFailed("[0-9]");
-                    }
-                  }
-                }
-              } else {
-                result3 = null;
-              }
-              if (result3 !== null) {
-                pos2 = clone(pos);
-                if (input.charCodeAt(pos.offset) === 46) {
-                  result4 = ".";
-                  advance(pos, 1);
-                } else {
-                  result4 = null;
-                  if (reportFailures === 0) {
-                    matchFailed("\".\"");
-                  }
-                }
-                if (result4 !== null) {
-                  if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                    result6 = input.charAt(pos.offset);
-                    advance(pos, 1);
-                  } else {
-                    result6 = null;
-                    if (reportFailures === 0) {
-                      matchFailed("[0-9]");
-                    }
-                  }
-                  if (result6 !== null) {
-                    result5 = [];
-                    while (result6 !== null) {
-                      result5.push(result6);
-                      if (/^[0-9]/.test(input.charAt(pos.offset))) {
-                        result6 = input.charAt(pos.offset);
-                        advance(pos, 1);
-                      } else {
-                        result6 = null;
-                        if (reportFailures === 0) {
-                          matchFailed("[0-9]");
-                        }
-                      }
-                    }
-                  } else {
-                    result5 = null;
-                  }
-                  if (result5 !== null) {
-                    result4 = [result4, result5];
-                  } else {
-                    result4 = null;
-                    pos = clone(pos2);
-                  }
-                } else {
-                  result4 = null;
-                  pos = clone(pos2);
-                }
-                result4 = result4 !== null ? result4 : "";
-                if (result4 !== null) {
-                  result0 = [result0, result1, result2, result3, result4];
-                } else {
-                  result0 = null;
-                  pos = clone(pos1);
-                }
-              } else {
-                result0 = null;
-                pos = clone(pos1);
-              }
-            } else {
-              result0 = null;
-              pos = clone(pos1);
-            }
-          } else {
-            result0 = null;
-            pos = clone(pos1);
-          }
-        } else {
-          result0 = null;
-          pos = clone(pos1);
-        }
-        if (result0 !== null) {
-          result0 = (function(offset, line, column, number) {
-        		return +flatten(number);
-        	})(pos0.offset, pos0.line, pos0.column, result0);
+          result0 = (function(offset, line, column, number, decimal, exponent) {
+        		return +(flatten(number) + flatten(decimal || []) + flatten(exponent || []));
+        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -3116,7 +3025,7 @@ define([], function () {
       }
       
       function parse_HexadecimalNumber() {
-        var result0, result1, result2, result3;
+        var result0, result1, result2, result3, result4;
         var pos0, pos1, pos2;
         
         pos0 = clone(pos);
@@ -3133,44 +3042,58 @@ define([], function () {
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
           pos2 = clone(pos);
-          if (input.substr(pos.offset, 2).toLowerCase() === "0x") {
-            result1 = input.substr(pos.offset, 2);
-            advance(pos, 2);
+          if (input.charCodeAt(pos.offset) === 48) {
+            result1 = "0";
+            advance(pos, 1);
           } else {
             result1 = null;
             if (reportFailures === 0) {
-              matchFailed("\"0x\"");
+              matchFailed("\"0\"");
             }
           }
           if (result1 !== null) {
-            if (/^[0-9a-f]/i.test(input.charAt(pos.offset))) {
-              result3 = input.charAt(pos.offset);
+            if (/^[xX]/.test(input.charAt(pos.offset))) {
+              result2 = input.charAt(pos.offset);
               advance(pos, 1);
             } else {
-              result3 = null;
-              if (reportFailures === 0) {
-                matchFailed("[0-9a-f]i");
-              }
-            }
-            if (result3 !== null) {
-              result2 = [];
-              while (result3 !== null) {
-                result2.push(result3);
-                if (/^[0-9a-f]/i.test(input.charAt(pos.offset))) {
-                  result3 = input.charAt(pos.offset);
-                  advance(pos, 1);
-                } else {
-                  result3 = null;
-                  if (reportFailures === 0) {
-                    matchFailed("[0-9a-f]i");
-                  }
-                }
-              }
-            } else {
               result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("[xX]");
+              }
             }
             if (result2 !== null) {
-              result1 = [result1, result2];
+              if (/^[0-9a-fA-F]/.test(input.charAt(pos.offset))) {
+                result4 = input.charAt(pos.offset);
+                advance(pos, 1);
+              } else {
+                result4 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[0-9a-fA-F]");
+                }
+              }
+              if (result4 !== null) {
+                result3 = [];
+                while (result4 !== null) {
+                  result3.push(result4);
+                  if (/^[0-9a-fA-F]/.test(input.charAt(pos.offset))) {
+                    result4 = input.charAt(pos.offset);
+                    advance(pos, 1);
+                  } else {
+                    result4 = null;
+                    if (reportFailures === 0) {
+                      matchFailed("[0-9a-fA-F]");
+                    }
+                  }
+                }
+              } else {
+                result3 = null;
+              }
+              if (result3 !== null) {
+                result1 = [result1, result2, result3];
+              } else {
+                result1 = null;
+                pos = clone(pos2);
+              }
             } else {
               result1 = null;
               pos = clone(pos2);
