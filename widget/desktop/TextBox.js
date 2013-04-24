@@ -12,7 +12,7 @@ define([
 		//		The type of textbox (e.g., text, password, email, etc)
 		type: 'text',
 
-		_create: function (propertiesToMixIn, srcNodeRef) {
+		_create: function () {
 			this.inherited(arguments);
 			domClass.add(this.domNode, 'textBoxWidget');
 		},
