@@ -1,246 +1,238 @@
 {
-	var parser = this;
-
-	function verifyMatch(open, close) {
-
-		if (open !== close) {
-			var offset = Math.max(pos, rightmostFailuresPos),
-				errorPosition = computeErrorPosition();
-
-			throw new parser.SyntaxError(
-			[quote('' + open)],
-			close,
-			offset,
-			errorPosition.line,
-			errorPosition.column - close.length - 2 // 2 is for closing tag
-			);
-		}
-	}
-
-	function ProgramNode(statements, inverse) {
-		this.type = 'Program';
-		this.statements = statements;
-		if (inverse) {
-			this.inverse = new ProgramNode(inverse);
-		}
-	}
-
-	function BlockNode(variable, program, inverse, close) {
-		verifyMatch(variable, close);
-
-		this.type = 'Block';
-		this.variable = variable;
-		this.program = program;
-		this.inverse = inverse;
-
-		this.isInverse = !!inverse && !program;
-	}
-
-	function VariableNode(id) {
-		this.type = 'Variable';
-		this.id = id;
-
-		// the following may get changed by code acting on an instance of this node
-		this.bound = false;
-		this.inverted = false;
-		this.unescaped = false;
-	}
-
-	function PlaceholderNode(name) {
-		this.type = 'Placeholder';
-		this.name = name || 'default';
-	}
-
-	function ContentNode(content) {
-		this.type = 'Content';
-		this.content = content;
+	function flatten(data) {
+		return Array.prototype.concat.apply([], data).join('');
 	}
 }
 
-// TODO: we want to preserve whitespace at the beginning and end
-start
-	= __ program:program __ { return program; }
+Template
+	= Node*
 
-// TODO: there are 2 contexts in which this parser is used - pre-DOM and post-DOM.  during pre-DOM,
-// we are only concerned about extracting blocks of information.  during post-DOM, we are only
-// concerned about parsing variables.  we should split this parser into 2 pieces if possible.
+Node
+	= OutputNode
+	/ BlockNode
+	/ RawNode
 
-program
-	= statements:statements simpleInverse inverse:statements {
-			return new ProgramNode(statements, inverse);
-		}
-	/ statements:statements simpleInverse {
-			return new ProgramNode(statements, []);
-		}
-	/ statements:statements {
-			return new ProgramNode(statements);
-		}
-	/ '' {
-			return new ProgramNode([]);
-		}
-
-statements
-	= statement:statement statements:(statement)* {
-			statements.unshift(statement);
-			return statements;
-		}
-
-statement
-	= open:openInverse program:program close:closeBlock {
-			return new BlockNode(open, program.inverse, program, close);
-		}
-	/ open:openBlock program:program close:closeBlock {
-			return new BlockNode(open, program, program.inverse, close);
-		}
-	/ variableBlock
-	/ placeholder
-	/ content:Content {
-			return new ContentNode(content);
-		}
-	// TODO: Comment
-
-
-simpleInverse
-	= OpenInverse Close
-
-openInverse
-	= OpenInverse id:path Close {
-			return path;
-		}
-
-closeBlock
-	= OpenEndBlock path:path Close {
-			return path;
-		}
-
-openBlock
-	// TODO: there are variations of blocks
-	= OpenBlock path:path Close {
-			return path;
-		}
-
-variableBlock
-	= OpenVariable variable:variable Close {
-			return variable;
-		}
-	/ OpenUnescaped variable:variable Close {
-			variable.unescaped = true;
-			return variable;
-		}
-
-placeholder
-	= OpenPlaceholder WhiteSpace* name:Id*  WhiteSpace* Close {
-		return new PlaceholderNode(name.join(''));
+OutputNode
+	= OpenToken '=' S* variable:Variable S* CloseToken {
+		return {
+			type: 'output',
+			variable: variable
+		};
 	}
 
-variable
-	= simpleVariable
-	/ boundVariable
-	/ invertedVariable
+BlockNode
+	= IfBlock
+	/ ForBlock
+	/ WhenBlock
+	/ PlaceholderBlock
 
-invertedVariable
-	= '!' variable:simpleVariable {
-			variable.inverted = true;
-			return variable;
-		}
-	/ '!' variable:boundVariable {
-			variable.inverted = true;
-			return variable;
-		}
+RawNode
+	= raw:('\\{%' { return '\x7b%'; } / '{' !'%' / [^{])+ {
+		return { type: 'raw', value: flatten(raw) };
+	}
 
-boundVariable
-	= '@' variable:simpleVariable {
-			variable.bound = true;
-			// TODO: does this need to be returned?
-			return variable;
-		}
-	/ '@' variable:invertedVariable {
-			variable.bound = true;
-			return variable;
-		}
+IfBlock
+	= OpenToken S* 'if' S+ condition:ReferenceVariable S* CloseToken consequent:Node* alternates:ElseIfBlock* final:ElseBlock? OpenToken S* 'endif' S* CloseToken {
+		return {
+			type: 'if',
+			conditions: [ { condition: condition, consequent: consequent } ].concat(alternates),
+			alternate: final || []
+		};
+	}
 
-simpleVariable
-	= path:path {
-			return new VariableNode(path);
-		}
+ElseIfBlock
+	= OpenToken S* 'else' S+ 'if' S+ condition:ReferenceVariable S* CloseToken consequent:Node* {
+		return {
+			condition: condition,
+			consequent: consequent
+		};
+	}
 
-path
-	= segments:pathSegments {
-			return segments.join('.');
-		}
+ElseBlock
+	= OpenToken S* 'else' S* CloseToken consequent:Node* {
+		return consequent;
+	}
 
-pathSegments
-	= id:Id segments:(pathSegment)* {
-			segments.unshift(id);
-			return segments;
-		}
+ForBlock
+	= OpenToken S* 'for' S+ keyIdentifier:Identifier S* ',' S* valueIdentifier:Identifier S+ 'in' S+ objectIdentifier:ReferenceVariable CloseToken body:Node* OpenToken S* 'endfor' S* CloseToken {
+		return {
+			type: 'for',
+			keyIdentifier: keyIdentifier,
+			valueIdentifier: valueIdentifier,
+			objectIdentifier: objectIdentifier
+		};
+	}
+	/ OpenToken S* 'for' S+ valueIdentifier:Identifier S+ 'in' S+ objectIdentifier:ReferenceVariable CloseToken body:Node* OpenToken S* 'endfor' S* CloseToken {
+		return {
+			type: 'for',
+			valueIdentifier: valueIdentifier,
+			objectIdentifier: objectIdentifier
+		};
+	}
 
-pathSegment
-	= Sep id:Id {
-			return id;
-		}
+WhenBlock
+	= OpenToken S* 'when' S+ objectIdentifier:Variable S* CloseToken success:Node* error:WhenErrorBlock? progress:WhenProgressBlock? OpenToken S* 'endwhen' S* CloseToken {
+		return {
+			type: 'when',
+			objectIdentifier: objectIdentifier,
+			success: success,
+			error: error,
+			progress: progress
+		};
+	}
 
+WhenErrorBlock
+	= OpenToken S* 'error' errorIdentifier:WhenAsIdentifier? S* CloseToken body:Node* {
+		return {
+			type: 'whenerror',
+			identifier: errorIdentifier || 'error',
+			body: body
+		};
+	}
 
-WhiteSpace "whitespace"
-	= [\t\v\f \u00A0\uFEFF]
+WhenAsIdentifier
+	= S+ 'as' S+ identifier:Identifier {
+		return identifier;
+	}
 
-LineTerminatorSequence "end of line"
-	= "\n"
-	/ "\r\n"
-	/ "\r"
-	/ "\u2028" // line separator
-	/ "\u2029" // paragraph separator
+WhenProgressBlock
+	= OpenToken S* 'progress' progressIdentifier:WhenAsIdentifier? S* CloseToken body:Node* {
+		return {
+			type: 'whenprogress',
+			identifier: progressIdentifier || 'progress',
+			body: body
+		};
+	}
 
-__
-	= (WhiteSpace / LineTerminatorSequence)*
+PlaceholderBlock
+	= OpenToken S* 'placeholder' identifier:PlaceholderIdentifier? S* CloseToken {
+		return {
+			type: 'placeholder',
+			identifier: identifier || 'default'
+		};
+	}
 
-Open
-	= '<%'
+PlaceholderIdentifier
+	= S+ identifier:Identifier {
+		return identifier;
+	}
 
-Close
-	= WhiteSpace* '%>'
+Arguments
+	= S* '(' firstArg:Expression? args:Argument* ')' {
+		return firstArg ? [ firstArg ].concat(args) : [];
+	}
 
-OpenVariable
-	= Open WhiteSpace*
+Argument
+	= S* ',' S* arg:Expression {
+		return arg;
+	}
 
-OpenBlock
-	= Open '=' WhiteSpace*
+Expression
+	= Null
+	/ Undefined
+	/ Boolean
+	/ Number
+	/ String
+	/ Object
 
-OpenEndBlock
-	= Open '/' WhiteSpace*
+Variable
+	= CallVariable
+	/ ReferenceVariable
 
-OpenInverse
-	= Open WhiteSpace* 'else'
+ReferenceVariable
+	= identifier:Identifier accessors:(ArrayAccessor / DotAccessor)* {
+		return {
+			type: 'variable',
+			identifier: [ identifier ].concat(accessors)
+		};
+	}
 
-OpenUnescaped
-	= Open '!' WhiteSpace*
+ArrayAccessor
+	= S* '[' S* identifier:Expression S* ']' {
+		return identifier;
+	}
 
-OpenPlaceholder
-	= Open '&' WhiteSpace*
+DotAccessor
+	= S* '.' S* identifier:Identifier {
+		return identifier;
+	}
 
-Sep
-	= [\/.]
+CallVariable
+	= variable:ReferenceVariable args:Arguments {
+		return {
+			type: 'callvariable',
+			variable: variable,
+			args: args
+		};
+	}
 
-Id
-	= id:[a-zA-Z0-9_$-]+ &([%\/.]/WhiteSpace){
-			return id.join('');
-		}
-	/ '[' id:[^\]]* ']' {
-			return id.join('');
-		}
+Identifier
+	= identifier:[a-zA-Z0-9_$]+ {
+		return { type: 'identifier', value: identifier.join('') };
+	}
 
-Content
-	= chars:(ContentChars)+  {
-			return chars.join('');
-		}
+String
+	= '\'' string:('\\\'' { return '\''; } / [^'])* '\'' {
+		return { type: 'literal', value: string.join('') };
+	}
+	/ '"' string:('\\"' { return '"'; } / [^"])* '"' {
+		return { type: 'literal', value: string.join('') };
+	}
 
-ContentChars
-	= '\\' backslash:'\\' &Open {
-			return backslash;
-		}
-	/ '\\' open:Open {
-			return open;
-		}
-	/ !Open char:. {
-			return char;
-		}
+Number
+	= number:(
+		HexadecimalNumber
+		/ ExponentialNumber
+		/ DecimalNumber
+	) {
+		return { type: 'literal', value: number };
+	}
+
+DecimalNumber
+	= number:([+-]? [0-9]+ ('.' [0-9]+)?) {
+		return +flatten(number);
+	}
+
+ExponentialNumber
+	= number:([+-]? [0-9]+ 'e'i [0-9]+ ('.' [0-9]+)?) {
+		return +flatten(number);
+	}
+
+HexadecimalNumber
+	= number:([+-]? '0x'i [0-9a-f]i+) {
+		return number;
+	}
+
+Boolean
+	= boolean:('true' / 'false') {
+		return { type: 'literal', value: boolean === 'true' };
+	}
+
+Null
+	= 'null' {
+		return { type: 'literal', value: 'null' };
+	}
+
+Undefined
+	= 'undefined' {
+		return { type: 'literal', value: undefined };
+	}
+
+Object
+	= object:RawObject {
+		return { type: 'literal', value: new Function('return ' + flatten(object))() };
+	}
+
+RawObject
+	= '{' ([^}] / String / RawObject)* '}'
+	/ '[' ([^\]] / String / RawObject)* ']'
+	/ '/' ('\\/' / [^/])* '/' [gim]*
+
+OpenToken
+	= !'\\' '{%'
+
+CloseToken
+	= !'\\' '%}'
+
+S
+	= [ \t\n\r]
