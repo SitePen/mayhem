@@ -23,14 +23,21 @@ define([
 		_proxiedWidget: null,
 
 		_create: function (propertiesToMixIn, srcNodeRef) {
-			var dijitPropertiesToMixIn = lang.mixin({}, propertiesToMixIn, {
-				intermediateChanges: true,
-				onChange: lang.hitch(this, '_applyChangeFromUser')
-			});
-
-			this._proxiedWidget = new this.WidgetToProxy(dijitPropertiesToMixIn, srcNodeRef);
+			this._createProxiedWidget(propertiesToMixIn, srcNodeRef);
 			this.domNode = this._proxiedWidget.domNode;
 			this.inherited(arguments);
+		},
+
+		_createProxiedWidget: function (/*Object?*/propertiesToMixIn, /*DomNode|String?*/ srcNodeRef) {
+			// summary:
+			//		Creates the proxied widget.
+			// propertiesToMixIn:
+			//		The properties to mix into the proxied widget.
+			// srcNodeRef:
+			//		A reference point for creating the proxied widget.
+			// returns:
+			//		Returns the newly created widget to proxy
+			this._proxiedWidget = new this.WidgetToProxy(propertiesToMixIn, srcNodeRef);
 		},
 
 		startup: function () {

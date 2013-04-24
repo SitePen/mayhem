@@ -41,47 +41,72 @@
 
 	<script>
 
+	var button1,
+		button2,
+		checkBox,
+		radioButton1,
+		radioButton2,
+		radioButton3,
+		textBox,
+		select;
+
 	require([
 		'widget/Button',
 		'widget/CheckBox',
 		'widget/RadioButton',
 		'widget/TextBox',
+		'widget/Select',
 		'dojo/domReady!'
-	], function(Button, CheckBox, RadioButton, TextBox) {
+	], function(Button, CheckBox, RadioButton, TextBox, Select) {
 		var body = document.body;
 
-		var button = new Button({}, 'button');
-		button.startup();
+		button1 = new Button({}, 'button');
+		button1.startup();
 
-		var button2 = new Button({
+		button2 = new Button({
 			name: 'button2',
 			value: 'woot',
 			label: 'Button2'
 		});
-		body.insertBefore(button2.domNode, button.domNode.nextSibling);
+		body.insertBefore(button2.domNode, button1.domNode.nextSibling);
 		button2.startup();
 
-		var checkBox = new CheckBox(null, 'checkbox1');
+		checkBox = new CheckBox(null, 'checkbox1');
 		
 		checkBox.startup();
 
-		var radioButton1 = new RadioButton(null, 'radiobutton1');
+		radioButton1 = new RadioButton(null, 'radiobutton1');
 		radioButton1.startup();
 
-		var radioButton2 = new RadioButton(null, 'radiobutton2');
+		radioButton2 = new RadioButton(null, 'radiobutton2');
 		radioButton2.startup();
 
-		var radioButton3 = new RadioButton(null, 'radiobutton3');
+		radioButton3 = new RadioButton(null, 'radiobutton3');
 		radioButton3.startup();
 
-		var textBox = new TextBox(null, 'textbox1');
+		textBox = new TextBox(null, 'textbox1');
 
-		function createListener(eventType) {
-			return function(event) { console.log(eventType, event); };
-		}
-		for(var eventType in { input: 1, change: 1, focus: 1, blur: 1 }) {
-			textBox.on(eventType, createListener(eventType));
-		}
+		select = new Select({
+			itemIdentifierProperty: 'id',
+			itemLabelProperty: 'name',
+			items: [
+				{
+					id: 'snover',
+					name: 'Colin'
+				}, {
+					id: 'hockey',
+					name: 'Ben'
+				}, {
+					id: 'payton',
+					name: 'Brandon'
+				}, {
+					id: 'khalsa',
+					name: 'Mangala'
+				}
+			]
+		});
+		body.appendChild(select.domNode);
+		select.startup();
 	});
 
 	</script>

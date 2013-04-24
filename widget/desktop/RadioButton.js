@@ -17,8 +17,8 @@ define([
 			var self = this,
 				bubblingEvent = { bubbles: true };
 			this.own(
-				this._proxedWidget.on('change', function () { self.emit('input', bubblingEvent); }),
-				this._proxedWidget.on('change', function () { self.emit('change', bubblingEvent); })
+				this._proxiedWidget.on('change', function () { self.emit('input', bubblingEvent); }),
+				this._proxiedWidget.on('change', function () { self.emit('change', bubblingEvent); })
 			);
 		},
 

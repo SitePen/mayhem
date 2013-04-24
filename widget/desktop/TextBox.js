@@ -13,11 +13,14 @@ define([
 		type: 'text',
 
 		_create: function (propertiesToMixIn, srcNodeRef) {
+			this.inherited(arguments);
+			domClass.add(this.domNode, 'textBoxWidget');
+		},
+
+		_createProxiedWidget: function (propertiesToMixIn, srcNodeRef) {
 			// Provide default type
 			propertiesToMixIn = lang.mixin({ type: this.type }, propertiesToMixIn);
 			this.inherited(arguments, [ propertiesToMixIn, srcNodeRef ]);
-
-			domClass.add(this.domNode, 'textBoxWidget');
 		}
 	});
 });
