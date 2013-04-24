@@ -56,6 +56,11 @@ define([
 			expect(widget.id).to.equal('expectedId');
 		});
 
+		bdd.it('should assign the widget id to the widget\'s DOM node', function () {
+			widget = new Widget();
+			expect(widget.domNode.id).to.equal(widget.id);
+		});
+
 		bdd.it('should add a .widget property to domNode during creation', function () {
 			widget = new Widget();
 			expect(widget.domNode.widget).to.equal(widget);
@@ -91,6 +96,46 @@ define([
 			expect(parentNode.childNodes.length).to.equal(1);
 			widget.destroy();
 			expect(parentNode.childNodes.length).to.equal(0);
+		});
+
+		bdd.it('should destroy widget descendents in a post-order depth-first traversal', function () {
+			var destroyedWidgets = [];
+			var DestroyLoggingWidget = declare(Widget, {
+				number: null,
+				_destroy: function () {
+					destroyedWidgets.push(this.number);
+				}
+			});
+			// TODO: Update this hacky composition with one that uses the container interface once it is merged into Widget.
+			var ComplexWidget = declare(DestroyLoggingWidget, {
+				number: 5,
+				_create: function () {
+					this.inherited(arguments);
+
+					// Child 1
+					var child1 = this.child1 = new DestroyLoggingWidget({ number: 3 }),
+						grandChild1 = this.grandChild1 = new DestroyLoggingWidget({ number: 1 }),
+						grandChild2 = this.grandChild2 = new DestroyLoggingWidget({ number: 2 }),
+						child2 = this.child2 = new DestroyLoggingWidget({ number: 4 });
+
+					this.domNode.appendChild(child1.domNode);
+					child1.domNode.appendChild(grandChild1.domNode);
+					child1.domNode.appendChild(grandChild2.domNode);
+					this.domNode.appendChild(child2.domNode);
+				},
+				startup: function () {
+					this.child1.startup();
+					this.grandChild1.startup();
+					this.grandChild2.startup();
+					this.child2.startup();
+				}
+			});
+
+			widget = new ComplexWidget();
+			widget.startup();
+			widget.destroy();
+
+			expect(destroyedWidgets).to.deep.equal([ 1, 2, 3, 4, 5 ]);
 		});
 
 		bdd.it('should mix in properties passed to constructor', function () {

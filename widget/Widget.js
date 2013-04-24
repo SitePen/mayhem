@@ -8,10 +8,11 @@ define([
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class',
+	'dojo/query',
 	'dojo/on',
 	'./pointer',
 	'./eventManager'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, on, pointer, eventManager) {
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, query, on, pointer, eventManager) {
 
 	var nextWidgetIdCounter = 0;
 
@@ -40,6 +41,10 @@ define([
 		//		private
 		_ownedHandles: null,
 
+		// _destroyed: Boolean
+		//		Whether this widget has been destroyed.
+		_destroyed: false,
+
 		// TODO: srcNodeRef is a poor name. Think of a better name.
 		constructor: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
 			// summary:
@@ -58,11 +63,10 @@ define([
 			// tags:
 			//		private
 
-			if (this.id === null) {
-				this.id = 'mayhem-widget-' + (nextWidgetIdCounter++);
-			}
+			var id = (propertiesToMixIn && propertiesToMixIn.id) || ('mayhem-widget-' + (nextWidgetIdCounter++));
 
 			this._create(propertiesToMixIn, srcNodeRef);
+			this.domNode.id = this.id = id;
 			this.domNode.widget = this;
 
 			// Call inherited postscript so dojo/Stateful can mix in properties.
@@ -93,6 +97,22 @@ define([
 			domClass.add(this.domNode, 'widget');
 		},
 
+		// TODO: Change name or improve documentation to distinguish the role of this method from the public destroy() API
+		_destroy: function () {
+			// summary:
+			//		Destroy this widget.
+			// tags:
+			//		protected
+
+			delete this.domNode.widget;
+			domConstruct.destroy(this.domNode);
+
+			// Clean up owned handles
+			while (this._ownedHandles.length > 0) {
+				this._ownedHandles.pop().remove();
+			}
+		},
+
 		startup: function () {
 			// summary:
 			//		Perform initialization after the widget is added to the DOM.
@@ -102,16 +122,38 @@ define([
 
 		destroy: function () {
 			// summary:
-			//		Destroy the widget.
-			// description:
-			//		This method destroys the widget and frees associated resources.
-			delete this.domNode.widget;
-			domConstruct.destroy(this.domNode);
+			//		Destroy the widget and all descendant widgets in a post-order, depth-first traversal.
 
-			// Clean up owned handles
-			while (this._ownedHandles.length > 0) {
-				this._ownedHandles.pop().remove();
+			if (this._destroyed) { return; }
+
+			// Get a NodeList including this widget's DOM node
+			// representing a depth-first traversal of this widget and its descendants
+			var doomedWidgets = query('.widget', this.domNode);
+
+			// Insert this widget as the root to make recursive algorithm cleaner.
+			doomedWidgets.unshift(this.domNode);
+
+			function destroyRecursively(currentIndex) {
+				// TODO: Create a jsperf test to compare approaches at descendant checking. It's possible walking the tree like dom.isDescendant() does would be faster.
+				function isDescendant(testIndex) {
+					var testIdSelector = '#' + doomedWidgets[testIndex].id;
+					return query.matches(doomedWidgets[testIndex], testIdSelector, doomedWidgets[currentIndex]);
+				}
+
+				var nextIndex = currentIndex + 1;
+				while (nextIndex < doomedWidgets.length && isDescendant(nextIndex)) {
+					nextIndex = destroyRecursively(nextIndex);
+				}
+
+				doomedWidgets[currentIndex].widget._destroy();
+
+				return nextIndex;
 			}
+
+			// Begin with this widget
+			destroyRecursively(0);
+
+			this._destroyed = true;
 		},
 
 		own: function (/*Object...*/) {
