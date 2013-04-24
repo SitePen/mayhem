@@ -1,6 +1,5 @@
 define([
 	'./eventManager',
 	'./Widget',
-	'./FormWidget',
-	'./ContainerMixin'
+	'./FormWidget'
 ], function () {});

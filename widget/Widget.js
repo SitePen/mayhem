@@ -8,11 +8,36 @@ define([
 	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/dom-class',
+	'dojo/dom-attr',
 	'dojo/query',
 	'dojo/on',
 	'./pointer',
 	'./eventManager'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, query, on, pointer, eventManager) {
+], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, domAttr, query, on, pointer, eventManager) {
+
+	var INSERTION_POINT_ATTRIBUTE = 'data-dojo-insertion-point';
+	// TODO: Perhaps this should be data-dojo-selection-criteria?
+	var SELECTION_CRITERIA_ATTRIBUTE = 'data-dojo-content-select';
+
+	var selectionTestNode = domConstruct.create('div');
+	function widgetMeetsSelectionCriteria(widget, selectionCriteria) {
+		try {
+			// NOTE: A side effect of this approach is that a widget that
+			// is already in the DOM will be removed from its current home.
+			// I'm not sure yet whether that is something that will occur
+			// in practice with these containers.
+			selectionTestNode.appendChild(widget.domNode);
+
+			// Select only direct children
+			if (!/^\s*>\s*/.test(selectionCriteria)) {
+				selectionCriteria = '>' + selectionCriteria;
+			}
+			return query(selectionCriteria, selectionTestNode).length > 0;
+		}
+		finally {
+			selectionTestNode.innerHTML = '';
+		}
+	}
 
 	var nextWidgetIdCounter = 0;
 
@@ -41,9 +66,16 @@ define([
 		//		private
 		_ownedHandles: null,
 
+		// _started: Boolean
+		//		Whether or not startup() has been called on this widget.
+		_started: false,
+
 		// _destroyed: Boolean
 		//		Whether this widget has been destroyed.
 		_destroyed: false,
+
+		// _insertionPoints: Array
+		_insertionPoints: null,
 
 		// TODO: srcNodeRef is a poor name. Think of a better name.
 		constructor: function (/*=====propertiesToMixIn, srcNodeRef=====*/) {
@@ -68,6 +100,8 @@ define([
 			this._create(propertiesToMixIn, srcNodeRef);
 			this.domNode.id = this.id = id;
 			this.domNode.widget = this;
+
+			this._insertionPoints = query('[' + INSERTION_POINT_ATTRIBUTE + ']', this.domNode);
 
 			// Call inherited postscript so dojo/Stateful can mix in properties.
 			this.inherited(arguments, [ propertiesToMixIn ]);
@@ -119,7 +153,7 @@ define([
 			// summary:
 			//		Perform initialization after the widget is added to the DOM.
 
-			// Do nothing. This method is provided because startup() is assumed to exist on all widget instances.
+			this._started = true;
 		},
 
 		destroy: function () {
@@ -157,6 +191,52 @@ define([
 			domConstruct.destroy(this.domNode);
 
 			this._destroyed = true;
+		},
+
+		// TODO: Implement this richer interface.
+		//addChild: function (childWidget, positionSpecifier, referenceWidget) {
+		// NOTE: This appears to be the interface we require if we're to support ShadowDOM-like insertion points. No more inserting by index.
+		// The idea is to provide a relative position specifier so the container knows where to add the child in the insertion point.
+		// If the position specifier requires a sibling point of reference, a reference widget may be provided as the third argument.
+		// FOR NOW: Using a simpler interface for an initial append-only implementation
+		addChild: function (childWidget) {
+			// summary:
+			//		Add a child widget.
+
+			var insertionPoints = this._insertionPoints,
+				childDistributed = false;
+			for (var i = 0; i < insertionPoints.length && !childDistributed; i++) {
+				var selectionCriteria = domAttr.get(insertionPoints[i], SELECTION_CRITERIA_ATTRIBUTE);
+
+				if (!selectionCriteria || widgetMeetsSelectionCriteria(childWidget, selectionCriteria)) {
+					insertionPoints[i].appendChild(childWidget.domNode);
+					childDistributed = true;
+				}
+			}
+
+			// If the child wasn't distributed to an insertion point, append it to the widget.
+			if (!childDistributed) {
+				this.domNode.appendChild(childWidget.domNode);
+			}
+
+			// TODO: Test that this is occuring.
+			if (this._started) {
+				childWidget.startup();
+			}
+		},
+
+		removeChild: function (childWidget) {
+			// summary:
+			//		Remove a child widget.
+
+			var childNode = childWidget.domNode,
+				parentNode = childNode.parentNode;
+
+			if (!this.domNode.contains(childNode)) {
+				throw new Error('No child found with id ' + childWidget.id);
+			}
+
+			parentNode.removeChild(childNode);
 		},
 
 		own: function (/*Object...*/) {
