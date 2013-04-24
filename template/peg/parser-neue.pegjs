@@ -21,7 +21,7 @@ BlockNode
 	/ PlaceholderBlock
 
 RawNode
-	= raw:('\\{' / [^{])+ {
+	= raw:('\\{%' / '{' !'%' / [^{])+ {
 		return Array.prototype.concat.apply([], raw).join('');
 	}
 
@@ -112,10 +112,14 @@ PlaceholderIdentifier
 	}
 
 Variable
-	= variable:[a-zA-Z0-9_$]+ { return variable.join(''); }
+	= variable:[a-zA-Z0-9_$]+ {
+		return variable.join('');
+	}
 
 Identifier
-	= identifier:[a-zA-Z0-9_$]+ { return identifier.join(''); }
+	= identifier:[a-zA-Z0-9_$]+ {
+		return identifier.join('');
+	}
 
 OpenToken
 	= !'\\' '{%'
