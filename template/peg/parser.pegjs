@@ -25,6 +25,7 @@ BlockNode
 	/ ForBlock
 	/ WhenBlock
 	/ PlaceholderBlock
+	/ AliasBlock
 
 RawNode
 	= raw:('\\{%' { return '\x7b%'; } / '{' !'%' / [^{])+ {
@@ -117,27 +118,76 @@ PlaceholderIdentifier
 		return identifier;
 	}
 
+AliasBlock
+	= OpenToken S* 'alias' S+ aliases:Aliases S* CloseToken {
+		return {
+			type: 'alias',
+			aliases: aliases
+		};
+	}
+
+Aliases
+	= firstAlias:Alias rest:(S* ',' S* Alias)* {
+		var aliases = [ firstAlias ];
+
+		for (var i = 0; i < rest.length; ++i) {
+			aliases.push(rest[i][3]);
+		}
+
+		return aliases;
+	}
+
+Alias
+	= from:(Identifier / String) S* ':' S* to:String {
+		return {
+			type: 'alias',
+			from: from,
+			to: to
+		};
+	}
+
 Arguments
-	= S* '(' firstArg:Expression? args:Argument* ')' {
+	= S* '(' firstArg:Literal? args:Argument* ')' {
 		return firstArg ? [ firstArg ].concat(args) : [];
 	}
 
 Argument
-	= S* ',' S* arg:Expression {
+	= S* ',' S* arg:Literal {
 		return arg;
 	}
 
-Expression
+Literal
 	= Null
 	/ Undefined
 	/ Boolean
 	/ Number
 	/ String
 	/ Object
+	/ Array
+	/ RegExp
 
 Variable
-	= CallVariable
+	= ConditionalVariable
+	/ CallVariable
 	/ ReferenceVariable
+
+ConditionalVariable
+	= condition:ReferenceVariable S* ':' S* value:Literal {
+		return {
+			type: 'conditionalvariable',
+			condition: condition,
+			value: value
+		};
+	}
+
+CallVariable
+	= variable:ReferenceVariable args:Arguments {
+		return {
+			type: 'callvariable',
+			variable: variable,
+			args: args
+		};
+	}
 
 ReferenceVariable
 	= identifier:Identifier accessors:(ArrayAccessor / DotAccessor)* {
@@ -148,22 +198,13 @@ ReferenceVariable
 	}
 
 ArrayAccessor
-	= S* '[' S* identifier:Expression S* ']' {
+	= S* '[' S* identifier:Literal S* ']' {
 		return identifier;
 	}
 
 DotAccessor
 	= S* '.' S* identifier:Identifier {
 		return identifier;
-	}
-
-CallVariable
-	= variable:ReferenceVariable args:Arguments {
-		return {
-			type: 'callvariable',
-			variable: variable,
-			args: args
-		};
 	}
 
 Identifier
@@ -218,15 +259,22 @@ Undefined
 		return { type: 'literal', value: undefined };
 	}
 
+// TODO: Fails with nested Objects
 Object
-	= object:RawObject {
+	= object:('{' ([^}] / String / Object)* '}') {
 		return { type: 'literal', value: new Function('return ' + flatten(object))() };
 	}
 
-RawObject
-	= '{' ([^}] / String / RawObject)* '}'
-	/ '[' ([^\]] / String / RawObject)* ']'
-	/ '/' ('\\/' / [^/])* '/' [gim]*
+// TODO: Fails with nested Arrays
+Array
+	= array:('[' ([^\]] / String / Array)* ']') {
+		return { type: 'literal', value: new Function('return ' + flatten(array))() };
+	}
+
+RegExp
+	= regExp:('/' ('\\/' / [^/])* '/' [gim]*) {
+		return { type: 'literal', value: new Function('return ' + flatten(regExp))() };
+	}
 
 OpenToken
 	= !'\\' '{%'
