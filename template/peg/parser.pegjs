@@ -241,8 +241,8 @@ ExponentialNumber
 	}
 
 HexadecimalNumber
-	= number:([+-]? '0x'i [0-9a-f]i+) {
-		return number;
+	= sign:[+-]? number:('0x'i [0-9a-f]i+) {
+		return sign === '-' ? 0 - flatten(number) : flatten(number);
 	}
 
 Boolean

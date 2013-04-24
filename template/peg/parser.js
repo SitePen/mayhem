@@ -3117,7 +3117,7 @@ define([], function () {
       
       function parse_HexadecimalNumber() {
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
@@ -3132,6 +3132,7 @@ define([], function () {
         }
         result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
+          pos2 = clone(pos);
           if (input.substr(pos.offset, 2).toLowerCase() === "0x") {
             result1 = input.substr(pos.offset, 2);
             advance(pos, 2);
@@ -3169,11 +3170,17 @@ define([], function () {
               result2 = null;
             }
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result1 = [result1, result2];
             } else {
-              result0 = null;
-              pos = clone(pos1);
+              result1 = null;
+              pos = clone(pos2);
             }
+          } else {
+            result1 = null;
+            pos = clone(pos2);
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
           } else {
             result0 = null;
             pos = clone(pos1);
@@ -3183,9 +3190,9 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, number) {
-        		return number;
-        	})(pos0.offset, pos0.line, pos0.column, result0);
+          result0 = (function(offset, line, column, sign, number) {
+        		return sign === '-' ? 0 - flatten(number) : flatten(number);
+        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = clone(pos0);
