@@ -134,18 +134,14 @@ define([
 			doomedWidgets.unshift(this.domNode);
 
 			function destroyRecursively(currentIndex) {
-				// TODO: Create a jsperf test to compare approaches at descendant checking. It's possible walking the tree like dom.isDescendant() does would be faster.
-				function isDescendant(testIndex) {
-					var testIdSelector = '#' + doomedWidgets[testIndex].id;
-					return query.matches(doomedWidgets[testIndex], testIdSelector, doomedWidgets[currentIndex]);
-				}
+				var currentNode = doomedWidgets[currentIndex],
+					nextIndex = currentIndex + 1;
 
-				var nextIndex = currentIndex + 1;
-				while (nextIndex < doomedWidgets.length && isDescendant(nextIndex)) {
+				while (nextIndex < doomedWidgets.length && currentNode.contains(doomedWidgets[nextIndex])) {
 					nextIndex = destroyRecursively(nextIndex);
 				}
 
-				doomedWidgets[currentIndex].widget._destroy();
+				currentNode.widget._destroy();
 
 				return nextIndex;
 			}

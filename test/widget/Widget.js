@@ -108,26 +108,34 @@ define([
 			});
 			// TODO: Update this hacky composition with one that uses the container interface once it is merged into Widget.
 			var ComplexWidget = declare(DestroyLoggingWidget, {
-				number: 5,
+				number: 8,
 				_create: function () {
 					this.inherited(arguments);
 
-					// Child 1
 					var child1 = this.child1 = new DestroyLoggingWidget({ number: 3 }),
 						grandChild1 = this.grandChild1 = new DestroyLoggingWidget({ number: 1 }),
 						grandChild2 = this.grandChild2 = new DestroyLoggingWidget({ number: 2 }),
-						child2 = this.child2 = new DestroyLoggingWidget({ number: 4 });
+						child2 = this.child2 = new DestroyLoggingWidget({ number: 6 }),
+						grandChild3 = this.grandChild3 = new DestroyLoggingWidget({ number: 4 }),
+						grandChild4 = this.grandChild4 = new DestroyLoggingWidget({ number: 5 }),
+						child3 = this.child3 = new DestroyLoggingWidget({ number: 7 });
 
 					this.domNode.appendChild(child1.domNode);
 					child1.domNode.appendChild(grandChild1.domNode);
 					child1.domNode.appendChild(grandChild2.domNode);
 					this.domNode.appendChild(child2.domNode);
+					child2.domNode.appendChild(grandChild3.domNode);
+					child2.domNode.appendChild(grandChild4.domNode);
+					this.domNode.appendChild(child3.domNode);
 				},
 				startup: function () {
 					this.child1.startup();
 					this.grandChild1.startup();
 					this.grandChild2.startup();
 					this.child2.startup();
+					this.grandChild3.startup();
+					this.grandChild4.startup();
+					this.child3.startup();
 				}
 			});
 
@@ -135,7 +143,7 @@ define([
 			widget.startup();
 			widget.destroy();
 
-			expect(destroyedWidgets).to.deep.equal([ 1, 2, 3, 4, 5 ]);
+			expect(destroyedWidgets).to.deep.equal([ 1, 2, 3, 4, 5, 6, 7, 8 ]);
 		});
 
 		bdd.it('should mix in properties passed to constructor', function () {
