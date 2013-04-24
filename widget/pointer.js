@@ -1,5 +1,5 @@
-define(["dojo/_base/kernel", "dojo/aspect", "dojo/dom", "dojo/on", "dojo/has", "dojo/mouse", "dojo/_base/window", './eventManager'],
-function(dojo, aspect, dom, on, has, mouse, win, eventManager){
+define(["dojo/_base/kernel", "dojo/aspect", "dojo/dom", "dojo/on", "dojo/has", "dojo/mouse", "dojo/_base/window"],
+function(dojo, aspect, dom, on, has, mouse, win){
 
 	//
 	// NOTE: This is a stopgap implementation based on dojo/touch. We plan to implement better, simpler pointer event support later on.
@@ -78,8 +78,8 @@ function(dojo, aspect, dom, on, has, mouse, win, eventManager){
 	}
 
 	function _handle(type) {
-		return function (widget, listener) {
-			return eventManager.add(widget, type, listener);
+		return function (node, listener) {
+			return on(node, type, listener);
 		};
 	}
 

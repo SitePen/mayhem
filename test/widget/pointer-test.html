@@ -36,14 +36,26 @@
 		document.body.appendChild(widget.domNode);
 		widget.startup();
 
+		var eventsToWatch = [
+			'pointerdown',
+			'pointerup',
+			'pointercancel',
+			'pointermove',
+			'pointerover',
+			'pointerout',
+			'pointerenter',
+			'pointerleave',
+			'click'
+		];
+
 		function createListener(type) {
 			return function (event) {
 				console.log(type, event);
 			};
 		}
 
-		for(var key in pointer) {
-			widget.on(pointer[key], createListener(key));
+		for (var i = 0; i < eventsToWatch.length; i++) {
+			widget.on(eventsToWatch[i], createListener(eventsToWatch[i]));
 		}
 	});
 
