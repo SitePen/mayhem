@@ -126,7 +126,9 @@ define([
 			// summary:
 			//		Destroy the widget and all descendant widgets in a post-order, depth-first traversal.
 
-			if (this._destroyed) { return; }
+			if (this._destroyed) {
+				return;
+			}
 
 			// Get a NodeList including this widget's DOM node
 			// representing a depth-first traversal of this widget and its descendants
