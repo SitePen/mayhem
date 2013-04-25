@@ -221,62 +221,9 @@ define([
 			expect(domClass.contains(widget.domNode, 'expectedClassName')).to.be.true;
 		});
 
-		bdd.it('should add an event listener with widget.on()', function () {
-			widget = new Widget();
-
-			var eventListenerCalled = false;
-			widget.on('expected-event', function () {
-				eventListenerCalled = true;
-			});
-			widget.emit('expected-event');
-			expect(eventListenerCalled).to.be.true;
-		});
-
-		bdd.it('should call event listener with the widget as \'this\'', function () {
-			widget = new Widget();
-
-			widget.on('expected-event', function () {
-				expect(this).to.equal(widget);
-			});
-			widget.emit('expected-event');
-		});
-
-		bdd.it('should no longer call a listener after it has been removed', function () {
-			widget = new Widget();
-
-			var listenerCalled = false;
-			var handle = widget.on('expected-event', function () {
-				listenerCalled = true;
-			});
-			widget.emit('expected-event');
-			expect(listenerCalled).to.be.true;
-
-			handle.remove();
-			listenerCalled = false;
-			widget.emit('expected-event');
-			expect(listenerCalled).to.be.false;
-		});
-
-		bdd.it('should stop DOM event bubbling when emitting a corresponding bubbling widget event', function () {
-			widget = new NestedWidget();
-			parentNode.appendChild(widget.domNode);
-			widget.startup();
-
-			var outerListenerCallCount = 0,
-				innerListenerCallCount = 0;
-			function outerListener() { outerListenerCallCount++; }
-			function innerListener() { innerListenerCallCount++; }
-
-			widget.on('click', outerListener);
-			widget._innerWidget.on('click', innerListener);
-			widget._innerWidget.domNode.click();
-
-			// Expect each listener to have been called once.
-			// If the outer widget had received the DOM event, it would have emitted an additional 'click' event.
-			expect(outerListenerCallCount).to.equal(1);
-			expect(innerListenerCallCount).to.equal(1);
-		});
-
+		//
+		// Test Widget's container behavior
+		//
 
 		var TestContainer = declare(Widget, {
 			_create: function (propertiesToMixIn) {
@@ -380,18 +327,17 @@ define([
 		});
 
 		//
-		//
+		// Test Widget's Evented-like behavior.
 		//
 
-		bdd.it('should add a widget event listener with eventManager.add()', function () {
+		bdd.it('should add an event listener with widget.on()', function () {
 			widget = new Widget();
 
 			var eventListenerCalled = false;
-
 			widget.on('expected-event', function () {
 				eventListenerCalled = true;
 			});
-			widget.emit('expected-event', {});
+			widget.emit('expected-event');
 			expect(eventListenerCalled).to.be.true;
 		});
 
@@ -402,6 +348,26 @@ define([
 				expect(this).to.equal(widget);
 			});
 			widget.emit('expected-event');
+		});
+
+		bdd.it('should stop DOM event bubbling when emitting a corresponding bubbling widget event', function () {
+			widget = new NestedWidget();
+			parentNode.appendChild(widget.domNode);
+			widget.startup();
+
+			var outerListenerCallCount = 0,
+				innerListenerCallCount = 0;
+			function outerListener() { outerListenerCallCount++; }
+			function innerListener() { innerListenerCallCount++; }
+
+			widget.on('click', outerListener);
+			widget._innerWidget.on('click', innerListener);
+			widget._innerWidget.domNode.click();
+
+			// Expect each listener to have been called once.
+			// If the outer widget had received the DOM event, it would have emitted an additional 'click' event.
+			expect(outerListenerCallCount).to.equal(1);
+			expect(innerListenerCallCount).to.equal(1);
 		});
 
 		bdd.it('should reflect the type of an emitted event in the event\'s type property', function () {
@@ -462,7 +428,7 @@ define([
 			expect(actualListenerContext).to.equal(expectedListenerContext);
 		});
 
-		bdd.it('should no longer call listeners after they have been removed', function () {
+		bdd.it('should no longer call a listener after it has been removed', function () {
 			widget = new Widget();
 
 			var listenerCalled = false;
