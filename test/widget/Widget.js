@@ -8,10 +8,11 @@ define([
 	'dojo/_base/declare',
 	'dojo/_base/lang',
 	'dojo/_base/array',
+	'dojo/aspect',
 	'dojo/query',
 	'dojo/dom-attr',
 	'dojo/domReady!'
-], function (bdd, expect, Widget, NestedWidget, domConstruct, domClass, declare, lang, array, query, domAttr) {
+], function (bdd, expect, Widget, NestedWidget, domConstruct, domClass, declare, lang, array, aspect, query, domAttr) {
 
 	bdd.describe('Widget', function () {
 
@@ -376,6 +377,201 @@ define([
 			var insertionPoint = query('[data-dojo-insertion-point]', container.domNode)[0];
 			expect(insertionPoint.childNodes.length).to.equal(1);
 			expect(insertionPoint.childNodes[0].widget).to.equal(widget);
+		});
+
+		//
+		//
+		//
+
+		bdd.it('should add a widget event listener with eventManager.add()', function () {
+			widget = new Widget();
+
+			var eventListenerCalled = false;
+
+			widget.on('expected-event', function () {
+				eventListenerCalled = true;
+			});
+			widget.emit('expected-event', {});
+			expect(eventListenerCalled).to.be.true;
+		});
+
+		bdd.it('should call event listener with the widget as \'this\'', function () {
+			widget = new Widget();
+
+			widget.on('expected-event', function () {
+				expect(this).to.equal(widget);
+			});
+			widget.emit('expected-event');
+		});
+
+		bdd.it('should reflect the type of an emitted event in the event\'s type property', function () {
+			widget = new Widget();
+
+			widget.on('expected-event', function (event) {
+				expect(event.type).to.equal('expected-event');
+			});
+			widget.emit('expected-event');
+		});
+
+		bdd.it('should define a boolean .bubbles property on all emitted events', function () {
+			widget = new Widget();
+
+			var emittedEvent;
+			widget.on('expected-event', function (event) {
+				emittedEvent = event;
+			});
+			widget.emit('expected-event');
+			expect(emittedEvent).to.be.an('object');
+			expect(emittedEvent.bubbles).to.be.a('boolean');
+		});
+
+		bdd.it('should define a boolean .cancelable property on all emitted events', function () {
+			widget = new Widget();
+
+			var emittedEvent;
+			widget.on('expected-event', function (event) {
+				emittedEvent = event;
+			});
+			widget.emit('expected-event');
+			expect(emittedEvent).to.be.an('object');
+			expect(emittedEvent.cancelable).to.be.a('boolean');
+		});
+
+		bdd.it('should bubble bubblable events', function () {
+			widget = new NestedWidget();
+
+			var eventBubbled = false;
+			widget.on('expected-event', function () {
+				eventBubbled = true;
+			});
+			widget._innerWidget.emit('expected-event', { bubbles: true });
+
+			expect(eventBubbled).to.be.true;
+		});
+
+		bdd.it('should call event listener with current widget as \'this\' for bubbled events', function () {
+			widget = new NestedWidget();
+
+			var expectedListenerContext = widget,
+				actualListenerContext;
+			widget.on('expected-event', function () {
+				actualListenerContext = this;
+			});
+			widget._innerWidget.emit('expected-event', { bubbles: true });
+
+			expect(actualListenerContext).to.equal(expectedListenerContext);
+		});
+
+		bdd.it('should no longer call listeners after they have been removed', function () {
+			widget = new Widget();
+
+			var listenerCalled = false;
+			var handle = widget.on('expected-event', function () {
+				listenerCalled = true;
+			});
+			widget.emit('expected-event');
+			expect(listenerCalled).to.be.true;
+
+			handle.remove();
+			listenerCalled = false;
+			widget.emit('expected-event');
+			expect(listenerCalled).to.be.false;
+		});
+
+		bdd.it('should stop bubbling an event when event.stopPropagation() is called', function () {
+			widget = new NestedWidget();
+
+			var eventBubbled = false;
+			widget.on('expected-event', function () {
+				eventBubbled = true;
+			});
+			widget._innerWidget.on('expected-event', function (event) {
+				event.stopPropagation();
+			});
+			widget._innerWidget.emit('expected-event', { bubbles: true });
+
+			expect(eventBubbled).to.be.false;
+		});
+
+		bdd.it('should call its _<eventtype>InitListener function when when adding the first listener for a given event type', function () {
+			widget = new Widget();
+
+			var calledInitListener = false;
+			aspect.after(widget, '_clickInitListener', function () {
+				calledInitListener = true;
+			});
+			widget.on('click', function () {});
+			expect(calledInitListener).to.be.true;
+		});
+
+		bdd.it('should not call its _<eventtype>InitListener function when when adding an additional listener for a given event type', function () {
+			widget = new Widget();
+
+			var calledInitListener = false;
+			aspect.after(widget, '_clickInitListener', function () {
+				calledInitListener = true;
+			});
+			widget.on('click', function () {});
+			calledInitListener = false;
+			widget.on('click', function () {});
+			expect(calledInitListener).to.be.false;
+		});
+
+		bdd.it('should call the shared listener\'s remove() when all listeners have been removed', function () {
+			widget = new Widget();
+
+			var calledSharedListenerRemove = false;
+			aspect.around(widget, '_clickInitListener', function () {
+				return function () {
+					return { remove: function () { calledSharedListenerRemove = true; } };
+				};
+			});
+
+			var listenerHandle1 = widget.on('click', function () {}),
+				listenerHandle2 = widget.on('click', function () {});
+
+			expect(calledSharedListenerRemove).to.be.false;
+			listenerHandle1.remove();
+			expect(calledSharedListenerRemove).to.be.false;
+			listenerHandle2.remove();
+			expect(calledSharedListenerRemove).to.be.true;
+		});
+
+		bdd.it('should return false from emit() if an event is canceled', function () {
+			widget = new Widget();
+
+			widget.on('expected-event', function (event) {
+				event.preventDefault();
+			});
+			var emitReturnValue = widget.emit('expected-event', { cancelable: true });
+
+			expect(emitReturnValue).to.be.false;
+		});
+
+		bdd.it('should return true from emit() if a cancelable event is not canceled', function () {
+			widget = new Widget();
+
+			widget.on('expected-event', function () {});
+			var emitReturnValue = widget.emit('expected-event', { cancelable: true });
+
+			expect(emitReturnValue).to.be.true;
+		});
+
+		bdd.it('should call originating event\'s preventDefault() when widget event\'s preventDefault() is called', function () {
+			widget = new Widget();
+
+			var preventDefaultCalled = false;
+			widget.on('expected-event', function (event) {
+				event.preventDefault();
+			});
+			widget.emit('expected-event', {
+				cancelable: true,
+				preventDefault: function () {
+					preventDefaultCalled = true;
+				}
+			});
+
+			expect(preventDefaultCalled).to.be.true;
 		});
 	});
 });

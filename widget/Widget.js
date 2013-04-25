@@ -1,5 +1,6 @@
 define([
 	'dojo/_base/lang',
+	'dojo/_base/array',
 	'dojo/aspect',
 	'dojo/_base/declare',
 	'dojo/Stateful',
@@ -11,9 +12,8 @@ define([
 	'dojo/dom-attr',
 	'dojo/query',
 	'dojo/on',
-	'./pointer',
-	'./eventManager'
-], function (lang, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, domAttr, query, on, pointer, eventManager) {
+	'./pointer'
+], function (lang, array, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, domAttr, query, on, pointer) {
 
 	var INSERTION_POINT_ATTRIBUTE = 'data-dojo-insertion-point';
 	// TODO: Perhaps this should be data-dojo-selection-criteria?
@@ -66,6 +66,9 @@ define([
 		//		private
 		_ownedHandles: null,
 
+		// TODO: Change this name.
+		_sharedListenerMap: null,
+
 		// _started: Boolean
 		//		Whether or not startup() has been called on this widget.
 		_started: false,
@@ -87,6 +90,7 @@ define([
 			//		A reference to a DOM node to replace with this widget.
 
 			this._ownedHandles = [];
+			this._sharedListenerMap = {};
 		},
 
 		postscript: function (/*Object|null?*/ propertiesToMixIn, /*DomNode|String?*/ srcNodeRef) {
@@ -300,16 +304,43 @@ define([
 			// returns: Object
 			//		An object with a remove() method to remove the event listener
 
-			// TODO: What is a better naming convention?	
-			var listenerInitMethod = '_' + type + 'InitListener',
-				initializeSharedListener = (listenerInitMethod in this) ? lang.hitch(this, listenerInitMethod) : undefined;
+			var sharedListenerMap = this._sharedListenerMap,
+				sharedListener = sharedListenerMap[type];
 
-			var handle = eventManager.add(this, type, listener, initializeSharedListener);
+			if (!sharedListener) {
+				// TODO: What is a better naming convention?	
+				var listenerInitMethod = '_' + type + 'InitListener';
+
+				sharedListener = sharedListenerMap[type] = {};
+				sharedListener.listeners = [];
+				if (listenerInitMethod in this) {
+					sharedListener.handle =	this[listenerInitMethod]();
+				}
+			}
+
+			sharedListener.listeners.push(listener);
+
+			var removed = false;
+			var handle = {
+				remove: function () {
+					if (!removed) {
+						var listenerIndex = array.indexOf(sharedListener.listeners, listener);
+						sharedListener.listeners.splice(listenerIndex, 1);
+
+						if (sharedListener.listeners.length === 0) {
+							sharedListener.handle && sharedListener.handle.remove();
+							delete sharedListenerMap[type];
+						}
+
+						removed = true;
+					}
+				}
+			};
 			this.own(handle);
 			return handle;
 		},
 
-		emit: function (/*String*/ type, /*Object?*/ event) {
+		emit: function (/*String*/ type, /*Object?*/ eventData) {
 			// summary:
 			//		Emit a widget event.
 			// type:
@@ -319,7 +350,56 @@ define([
 			// tags:
 			// 		protected
 
-			return eventManager.emit(this, type, event);
+			// create the widget event based on the event data
+			eventData = eventData || {};
+			var reservedKeys = { target: 1, preventDefault: 1, stopPropagation: 1 };
+			var widgetEvent = { };
+			for (var key in eventData) {
+				if (eventData.hasOwnProperty(key) && !(key in reservedKeys)) {
+					widgetEvent[key] = eventData[key];
+				}
+			}
+			widgetEvent.target = this;
+			widgetEvent.type = type;
+
+			// make sure event.bubbles is a boolean value
+			widgetEvent.bubbles = !!eventData.bubbles;
+
+			// make sure event.cancelable is a boolean value
+			widgetEvent.cancelable = !!eventData.cancelable;
+
+			var canBubble = !!widgetEvent.bubbles;
+			if (canBubble) {
+				widgetEvent.stopPropagation = function () {
+					canBubble = false;
+				};
+			}
+
+			var canceled = false;
+			if (widgetEvent.cancelable) {
+				widgetEvent.preventDefault = function () {
+					if (eventData.preventDefault) {
+						eventData.preventDefault();
+					}
+					canceled = true;
+				};
+			}
+
+			var domNode = this.domNode;
+			do {
+				var widget = domNode.widget;
+				if (widget) {
+					var widgetSharedListener = widget._sharedListenerMap[type];
+
+					if (widgetSharedListener) {
+						array.forEach(widgetSharedListener.listeners, function (listener) {
+							listener.call(widget, widgetEvent);
+						});
+					}
+				}
+			} while (canBubble && (domNode = domNode.parentNode));
+
+			return !canceled;
 		},
 
 		focus: function () {
