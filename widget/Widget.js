@@ -15,30 +15,6 @@ define([
 	'./pointer'
 ], function (lang, array, aspect, declare, Stateful,/*===== Evented,=====*/ dom, domConstruct, domStyle, domClass, domAttr, query, on, pointer) {
 
-	var INSERTION_POINT_ATTRIBUTE = 'data-dojo-insertion-point';
-	// TODO: Perhaps this should be data-dojo-selection-criteria?
-	var SELECTION_CRITERIA_ATTRIBUTE = 'data-dojo-content-select';
-
-	var selectionTestNode = domConstruct.create('div');
-	function widgetMeetsSelectionCriteria(widget, selectionCriteria) {
-		try {
-			// NOTE: A side effect of this approach is that a widget that
-			// is already in the DOM will be removed from its current home.
-			// I'm not sure yet whether that is something that will occur
-			// in practice with these containers.
-			selectionTestNode.appendChild(widget.domNode);
-
-			// Select only direct children
-			if (!/^\s*>\s*/.test(selectionCriteria)) {
-				selectionCriteria = '>' + selectionCriteria;
-			}
-			return query(selectionCriteria, selectionTestNode).length > 0;
-		}
-		finally {
-			selectionTestNode.innerHTML = '';
-		}
-	}
-
 	var nextWidgetIdCounter = 0;
 
 	var base = Stateful;
@@ -66,7 +42,7 @@ define([
 		//		private
 		_ownedHandles: null,
 
-		// TODO: Change this name.
+		// TODO: Find a better name for this. It's a map of widgetEventType->(sharedDOMListener, widgetEventListeners)
 		_sharedListenerMap: null,
 
 		// _started: Boolean
@@ -105,7 +81,7 @@ define([
 			this.domNode.id = this.id = id;
 			this.domNode.widget = this;
 
-			this._insertionPoints = query('[' + INSERTION_POINT_ATTRIBUTE + ']', this.domNode);
+			this._insertionPoints = query('[data-dojo-insertion-point]', this.domNode);
 
 			// Call inherited postscript so dojo/Stateful can mix in properties.
 			this.inherited(arguments, [ propertiesToMixIn ]);
@@ -208,12 +184,14 @@ define([
 			//		Add a child widget.
 
 			var insertionPoints = this._insertionPoints,
+				childDomNode = childWidget.domNode,
 				childDistributed = false;
 			for (var i = 0; i < insertionPoints.length && !childDistributed; i++) {
-				var selectionCriteria = domAttr.get(insertionPoints[i], SELECTION_CRITERIA_ATTRIBUTE);
+				// TODO: Perhaps this should be data-dojo-selection-criteria?
+				var selectionCriteria = domAttr.get(insertionPoints[i], 'data-dojo-content-select');
 
-				if (!selectionCriteria || widgetMeetsSelectionCriteria(childWidget, selectionCriteria)) {
-					insertionPoints[i].appendChild(childWidget.domNode);
+				if (!selectionCriteria || query.matches(childDomNode, selectionCriteria)) {
+					insertionPoints[i].appendChild(childDomNode);
 					childDistributed = true;
 				}
 			}
