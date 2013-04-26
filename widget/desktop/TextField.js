@@ -4,9 +4,9 @@ define([
 	'../FormWidgetProxy',
 	'dijit/form/TextBox',
 	'dojo/dom-class'
-], function (declare, lang, FormWidgetProxy, TextBox, domClass) {
+], function (declare, lang, FormWidgetProxy, DijitTextBox, domClass) {
 	return declare(FormWidgetProxy, {
-		WidgetToProxy: TextBox,
+		WidgetToProxy: DijitTextBox,
 
 		// type: [readonly] String
 		//		The type of textbox (e.g., text, password, email, etc)
@@ -14,7 +14,7 @@ define([
 
 		_create: function () {
 			this.inherited(arguments);
-			domClass.add(this.domNode, 'textBoxWidget');
+			domClass.add(this.domNode, 'textFieldWidget');
 		},
 
 		_createProxiedWidget: function (propertiesToMixIn, srcNodeRef) {

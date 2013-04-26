@@ -37,7 +37,7 @@
 	<input id='radiobutton3' name='radiobutton' type='radio' value='radio-value2'>
 	<label for='radiobutton3'>Three</label>
 
-	<input id='textbox1' name='textbox1' type='text'>
+	<input id='textfield1' name='textfield1' type='text'>
 
 	<script>
 
@@ -47,7 +47,7 @@
 		radioButton1,
 		radioButton2,
 		radioButton3,
-		textBox,
+		textField,
 		textArea,
 		select,
 		filteringSelect;
@@ -56,13 +56,13 @@
 		'widget/Button',
 		'widget/CheckBox',
 		'widget/RadioButton',
-		'widget/TextBox',
+		'widget/TextField',
 		'widget/TextArea',
 		'widget/Select',
 		'widget/FilteringSelect',
 		'dojo/store/Memory',
 		'dojo/domReady!'
-	], function(Button, CheckBox, RadioButton, TextBox, TextArea, Select, FilteringSelect, Memory) {
+	], function(Button, CheckBox, RadioButton, TextField, TextArea, Select, FilteringSelect, Memory) {
 		var body = document.body;
 
 		button1 = new Button({}, 'button');
@@ -89,9 +89,14 @@
 		radioButton3 = new RadioButton(null, 'radiobutton3');
 		radioButton3.startup();
 
-		textBox = new TextBox(null, 'textbox1');
+		textField = new TextField(null, 'textfield1');
+		textField.startup();
 
-		textArea = new TextArea(null);
+		textArea = new TextArea({
+			style: {
+				height: '13em'
+			}
+		});
 		body.appendChild(textArea.domNode);
 		textArea.startup();
 
