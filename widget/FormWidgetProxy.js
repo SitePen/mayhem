@@ -5,6 +5,12 @@ define([
 	'./FormWidget'
 ], function (declare, lang, aspect, FormWidget) {
 
+	function createProxiedGetter(propertyName) {
+		return function () {
+			return this._proxiedWidget.get(propertyName);
+		};
+	}
+
 	function createProxiedSetter(propertyName) {
 		return function (value) {
 			this._proxiedWidget.set(propertyName, value);
@@ -45,9 +51,13 @@ define([
 			this.inherited(arguments);
 		},
 
+		_nameGetter: createProxiedGetter('name'),
 		_nameSetter: createProxiedSetter('name'),
+		_valueGetter: createProxiedGetter('value'),
 		_valueSetter: createProxiedSetter('value'),
+		_disabledGetter: createProxiedGetter('disabled'),
 		_disabledSetter: createProxiedSetter('disabled'),
+		_tabIndexGetter: createProxiedGetter('tabIndex'),
 		_tabIndexSetter: createProxiedSetter('tabIndex'),
 
 		focus: function () {
