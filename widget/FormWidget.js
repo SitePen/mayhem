@@ -31,7 +31,7 @@ define([
 				eventNames = [
 					'cut',
 					'paste',
-					'keypress',
+					'keydown',
 					'drop'
 				];
 
