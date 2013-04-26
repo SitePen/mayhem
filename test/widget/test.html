@@ -48,6 +48,7 @@
 		radioButton2,
 		radioButton3,
 		textBox,
+		textArea,
 		select,
 		filteringSelect;
 
@@ -56,11 +57,12 @@
 		'widget/CheckBox',
 		'widget/RadioButton',
 		'widget/TextBox',
+		'widget/TextArea',
 		'widget/Select',
 		'widget/FilteringSelect',
 		'dojo/store/Memory',
 		'dojo/domReady!'
-	], function(Button, CheckBox, RadioButton, TextBox, Select, FilteringSelect, Memory) {
+	], function(Button, CheckBox, RadioButton, TextBox, TextArea, Select, FilteringSelect, Memory) {
 		var body = document.body;
 
 		button1 = new Button({}, 'button');
@@ -88,6 +90,10 @@
 		radioButton3.startup();
 
 		textBox = new TextBox(null, 'textbox1');
+
+		textArea = new TextArea(null);
+		body.appendChild(textArea.domNode);
+		textArea.startup();
 
 		select = new Select({
 			itemIdentifierProperty: 'id',
@@ -135,6 +141,7 @@
 		});
 		body.appendChild(filteringSelect.domNode);
 		filteringSelect.startup();
+
 	});
 
 	</script>
