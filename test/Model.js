@@ -3,8 +3,9 @@ define([
 	'teststack/assert',
 	'dojo/_base/declare',
 	'dojo/Deferred',
-	'../Model'
-], function (registerSuite, assert, declare, Deferred, Model) {
+	'../Model',
+	'../validators/RequiredValidator'
+], function (registerSuite, assert, declare, Deferred, Model, RequiredValidator) {
 	function createPopulatedModel() {
 		var model = new (declare(Model, {
 			_schema: {
@@ -155,6 +156,22 @@ define([
 				errors = model.getErrors('test2');
 				assert.strictEqual(errors.get('length'), 0, 'Valid model field should have zero errors');
 			});
+		},
+
+		'#isFieldRequired': function () {
+			var RequiredValidatorSubclass = declare(RequiredValidator, {});
+
+			var model = new (declare(Model, {
+				_validators: {
+					requiredField1: [ new RequiredValidator() ],
+					requiredField2: [ new RequiredValidatorSubclass() ],
+					optionalField: [ ]
+				}
+			}))();
+
+			assert.isTrue(model.isFieldRequired('requiredField1'), 'Field should be required');
+			assert.isTrue(model.isFieldRequired('requiredField2'), 'Field should be required');
+			assert.isFalse(model.isFieldRequired('optionalField'), 'Field should not be required');
 		}
 	});
 });

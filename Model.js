@@ -7,9 +7,10 @@ define([
 	'dojo/when',
 	'dojo/i18n!./nls/validator',
 	'./validators/ValidationError',
+	'./validators/RequiredValidator',
 	'./StatefulArray',
 	'./util'
-], function (declare, lang, array, Stateful, Deferred, when, i18n, ValidationError, StatefulArray, util) {
+], function (declare, lang, array, Stateful, Deferred, when, i18n, ValidationError, RequiredValidator, StatefulArray, util) {
 	return declare(Stateful, {
 		//	summary:
 		//		A base class for modelled data objects.
@@ -134,6 +135,9 @@ define([
 
 				this.inherited(arguments, [ key, value ]);
 				this._errors[key] && this._errors[key].splice(0, this._errors[key].get('length'));
+			}
+			else {
+				console.warn('Schema does not contain a definition for', key);
 			}
 		},
 
@@ -275,6 +279,24 @@ define([
 				array = this._errors[key];
 				array.splice(0, array.get('length'));
 			}
+		},
+
+		isFieldRequired: function (/*String*/ key) {
+			// summary:
+			//		Asks whether the specified field is required.
+			// key:
+			//		The field in question
+			// returns: boolean
+			//		A boolean value indicating whether the field is required.
+
+			var validators = this._validators[key];
+			return validators && array.some(validators, function (validator) {
+				// TODO: Remove direct dependency on RequiredValidator and replace with checking the validator name
+				// and possibly changing validator interface to return an array of errors rather than adding them
+				// to the model. That way or providing an additional method on RequiredValidators would allow us
+				// to run the validator to discern whether the required constraint applies.
+				return validator.isInstanceOf(RequiredValidator);
+			});
 		}
 	});
 });
