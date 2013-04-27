@@ -36,6 +36,14 @@ define([
 		//		A CSS class name for this widget.
 		className: null,
 
+		// viewModel:
+		//		The view model associated with this widget.
+		viewModel: null,
+
+		// fieldName:
+		//		The name of the model field associated with this widget.
+		fieldName: null,
+
 		// _ownedHandles: Array
 		//		The collection of handles owned by this widget.
 		// tags:
