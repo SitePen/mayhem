@@ -5,6 +5,11 @@
 	<link rel='stylesheet' href='../../../dijit/themes/claro/claro.css'
 </head>
 <body class='claro'>
+	<style>
+		.labelWidget.requiredField {
+			text-decoration: underline;
+		}
+	</style>
 	<script>
 
 	var dojoConfig = {
@@ -50,9 +55,13 @@
 		textField,
 		textArea,
 		select,
-		filteringSelect;
+		filteringSelect,
+		label,
+		errorWidget,
+		model;
 
 	require([
+		'dojo/_base/declare',
 		'widget/Button',
 		'widget/CheckBox',
 		'widget/RadioButton',
@@ -61,8 +70,12 @@
 		'widget/Select',
 		'widget/FilteringSelect',
 		'dojo/store/Memory',
+		'widget/Label',
+		'widget/Error',
+		'framework/Model',
+		'framework/validators/RequiredValidator',
 		'dojo/domReady!'
-	], function(Button, CheckBox, RadioButton, TextField, TextArea, Select, FilteringSelect, Memory) {
+	], function(declare, Button, CheckBox, RadioButton, TextField, TextArea, Select, FilteringSelect, Memory, Label, Error, Model, RequiredValidator) {
 		var body = document.body;
 
 		button1 = new Button({}, 'button');
@@ -147,6 +160,37 @@
 		body.appendChild(filteringSelect.domNode);
 		filteringSelect.startup();
 
+		var CustomModel = declare(Model, {
+			_schema: {
+				field1: 'string',
+				field2: 'string'
+			},
+			_validators: {
+				field1: [ new RequiredValidator() ],
+				field2: []
+			}
+		});
+		model = new CustomModel();
+
+		label = new Label({
+			textContent: 'Underlined if Field is Required',
+			viewModel: model,
+			fieldName: 'field1'
+		});
+		body.appendChild(label.domNode);
+		label.startup();
+
+		validationButton = new Button({ label: 'Validate' });
+		validationButton.on('click', function () { model.validate(); });
+		body.appendChild(validationButton.domNode);
+		validationButton.startup();
+
+		errorWidget = new Error({
+			viewModel: model,
+			fieldName: 'field1'
+		});
+		body.appendChild(errorWidget.domNode);
+		errorWidget.startup();
 	});
 
 	</script>
