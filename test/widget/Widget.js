@@ -65,6 +65,18 @@ define([
 			expect(widget.domNode.id).to.equal(widget.id);
 		});
 
+		bdd.it('should set Widget id before calling _create()', function () {
+			var idDuringCreate;
+			var CustomWidget = declare(Widget, {
+				_create: function () {
+					idDuringCreate = this.id;
+				}
+			});
+
+			widget = new CustomWidget({ id: 'expected-id' });
+			expect(idDuringCreate).to.equal('expected-id');
+		});
+
 		bdd.it('should add a .widget property to domNode during creation', function () {
 			widget = new Widget();
 			expect(widget.domNode.widget).to.equal(widget);

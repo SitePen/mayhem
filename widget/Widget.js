@@ -28,6 +28,7 @@ define([
 		// 		The widget identifier
 		id: null,
 
+		// TODO: Consider making domNode protected and adding a place() method to the public interface.
 		// domNode: [readonly] DomNode
 		//		The root of this widget's DOM representation.
 		domNode: null,
@@ -83,10 +84,10 @@ define([
 			// tags:
 			//		private
 
-			var id = (propertiesToMixIn && propertiesToMixIn.id) || ('mayhem-widget-' + (nextWidgetIdCounter++));
+			this.id = (propertiesToMixIn && propertiesToMixIn.id) || ('mayhem-widget-' + (nextWidgetIdCounter++));
 
 			this._create(propertiesToMixIn, srcNodeRef);
-			this.domNode.id = this.id = id;
+			this.domNode.id = this.id;
 			this.domNode.widget = this;
 
 			this._insertionPoints = query('[data-dojo-insertion-point]', this.domNode);
