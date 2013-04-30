@@ -69,7 +69,6 @@ define([
 			expect(widget).to.have.property('disabled');
 			widget.set('disabled', true);
 			expect(widget.get('disabled')).to.be.true;
-			expect(widget._controlNode.disabled).to.be.true;
 		});
 
 		bdd.it('should add a disabled-related CSS class when widget.disabled is true', function () {
