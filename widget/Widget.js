@@ -36,6 +36,14 @@ define([
 		// 		The widget identifier
 		id: null,
 
+		// viewModel:
+		//		The view model associated with this widget.
+		viewModel: null,
+
+		// fieldName:
+		//		The name of the model field associated with this widget.
+		fieldName: null,
+
 		// TODO: Consider making domNode protected and adding a place() method to the public interface.
 		// domNode: [readonly] DomNode
 		//		The root of this widget's DOM representation.
@@ -45,13 +53,8 @@ define([
 		//		A CSS class name for this widget.
 		className: null,
 
-		// viewModel:
-		//		The view model associated with this widget.
-		viewModel: null,
-
-		// fieldName:
-		//		The name of the model field associated with this widget.
-		fieldName: null,
+		// tabIndex: Number
+		//		The widget's place in the tab order
 
 		// _ownedHandles: Array
 		//		The collection of handles owned by this widget.
