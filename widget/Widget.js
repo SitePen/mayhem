@@ -20,6 +20,14 @@ define([
 	var base = Stateful;
 	/*=====base = [ base, Evented ];=====*/
 
+	function findFirstWidgetAncestor(domNode) {
+		while (domNode && !domNode.widget) {
+			domNode = domNode.parentNode;
+		}
+
+		return domNode ? domNode.widget : null;
+	}
+
 	return declare(base, {
 		// summary:
 		//		The base class of all widgets.
@@ -323,6 +331,7 @@ define([
 					}
 				}
 			};
+			// TODO: When remove() is called, the handle will remain in the set of owned handles. Fix this leak.
 			this.own(handle);
 			return handle;
 		},
@@ -346,7 +355,8 @@ define([
 					widgetEvent[key] = eventData[key];
 				}
 			}
-			widgetEvent.target = this;
+			// TODO: Test that when given a DOM event, emit() choosest the closest ancestor for the Widget event target.
+			widgetEvent.target = (eventData.target && findFirstWidgetAncestor(eventData.target)) || this;
 			widgetEvent.type = type;
 
 			// make sure event.bubbles is a boolean value
