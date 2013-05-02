@@ -47,6 +47,8 @@ define([
 		}
 	}
 
+	// TODO: FormWidgets should listen for errors on the field they're bound to and apply an aria-invalid state.
+	// http://www.w3.org/TR/2010/WD-wai-aria-20100916/states_and_properties#aria-invalid
 	return declare(Widget, {
 		// summary:
 		//		The base class for all form widgets.
