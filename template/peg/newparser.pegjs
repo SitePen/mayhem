@@ -1,3 +1,67 @@
+/* Helpers */
+
+{
+	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes) {
+		// summary:
+		//		Creates a constructor for a tag's AST node.
+		// type:
+		//		The AST node type.
+		// requiredAttributes:
+		//		The attributes required by the tag.
+
+		var requiredAttributeMap = {};
+		for (var i = 0; i < requiredAttributes.length; i++) {
+			requiredAttributeMap[requiredAttributes[i]] = true;
+		}
+
+		var unsupportedAttributeMessage = 'The ' + name + ' tag does not support attribute: ';
+
+		var Constructor = function (attributes) {
+			if (attributes !== undefined) {
+				var unsupportedAttributes = [];
+
+				for (var i = 0; i < attributes.length; i++) {
+					var attribute = attributes[i];
+					if (requiredAttributeMap[attribute.name]) {
+						this[attribute.name] = attribute.value;
+					}
+					else {
+						unsupportedAttributes.push(attribute.name);
+					}
+				}
+
+				if (unsupportedAttributes.length > 0) {
+					throw new Error(
+						'The ' + name + ' tag does not support the attribute(s): ' + unsupportedAttributes.join(', ')
+					);
+				}
+			}
+		};
+		Constructor.prototype = {
+			type: type
+		};
+		return Constructor;
+	}
+
+	var IfNode = createNodeConstructor('if', [ 'condition' ]);
+	var ElseIfNode = createNodeConstructor('elseif', [ 'condition' ]);
+	var ElseNode = createNodeConstructor('else', []);
+	var ForNode = createNodeConstructor('for', [ 'each', 'value' ]);
+	var WhenNode = createNodeConstructor('when', [ 'promise' ]);
+	var WhenErrorNode = createNodeConstructor('when-error', []);
+	var WhenProgressNode = createNodeConstructor('when-progress', []);
+	var PlaceholderNode = createNodeConstructor('placeholder', [ 'id' ]);
+	var DataNode = createNodeConstructor('data', [ 'var' ]);
+	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);
+
+	function HtmlFragment(html) {
+		this.html = html;
+	}
+	HtmlFragment.prototype = { type: 'fragment' };
+}
+
+/* Grammar */
+
 start
 	= Content*
 
@@ -31,31 +95,31 @@ HtmlFragment
 		)
 		character:. { return character; }
 	)+ {
-		return {
-			type: 'fragment',
-			html: content.join('')
-		};
+		return new HtmlFragment(content.join(''));
 	}
 
 IfTag
 	=
-	ifObject:IfTagOpen
-		ifBlock:Content*
-		elseIfBlocks:(ElseIfTag Content*)*
-		elseBlock:(ElseTag Content*)?
+	ifNode:IfTagOpen
+		ifChildren:Content*
+		elseIfNodes:(elseIfNode:ElseIfTag children:Content* {
+			elseIfNode.children = children;
+			return elseIfNode;
+		})*
+		elseNode:(elseNode:ElseTag children:Content* {
+			elseNode.children = children;
+			return elseNode;
+		})?
 	IfTagClose {
-		ifObject.ifBlock = ifBlock;
-		ifObject.elseIfBlocks = elseIfBlocks;
-		ifObject.elseBlock = elseBlock;
-		return ifObject;
+		ifNode.ifChildren = ifChildren;
+		ifNode.elseIfNodes = elseIfNodes;
+		ifNode.elseNode = elseNode;
+		return ifNode;
 	}
 
 IfTagOpen
 	= '<if' attributes:Attributes '>' {
-		return {
-			type: 'if',
-			attributes: attributes
-		};
+		return new IfNode(attributes);
 	}
 
 IfTagClose
@@ -63,27 +127,21 @@ IfTagClose
 
 ElseIfTag
 	= '<elseif' attributes:Attributes '>' {
-		return {
-			type: 'elseif',
-			attributes: attributes
-		};
+		return new ElseIfNode(attributes);
 	}
 
 ElseTag
-	= '<else>' { return { type: 'else' }; }
+	= '<else>' { return new ElseNode(); }
 
 ForTag
-	= forNode:ForTagOpen content:Content* ForTagClose {
-		forNode.content = content;
+	= forNode:ForTagOpen children:Content* ForTagClose {
+		forNode.children = children;
 		return forNode;
 	}
 
 ForTagOpen
 	= '<for' attributes:Attributes '>' {
-		return {
-			type: 'for',
-			attributes: attributes
-		};
+		return new ForNode(attributes);
 	}
 
 ForTagClose
@@ -91,55 +149,49 @@ ForTagClose
 
 WhenTag
 	= whenNode:WhenTagOpen
-		resolvedBlock:Content*
-		errorBlock:(WhenErrorTag content:Content* { return content; })?
-		progressBlock:(WhenProgressTag content:Content* { return content; })?
+		resolvedChildren:Content*
+		errorNode:(errorNode:WhenErrorTag children:Content* {
+			errorNode.children = children;
+			return errorNode;
+		})?
+		progressNode:(progressNode:WhenProgressTag children:Content* {
+			progressNode.children = children;
+			return progressNode;
+		})?
 	WhenTagClose {
-		resolvedBlock && (whenNode.resolvedBlock = resolvedBlock)
-		errorBlock && (whenNode.errorBlock = errorBlock);
-		progressBlock && (whenNode.progressBlock = progressBlock);
+		resolvedChildren && (whenNode.resolvedChildren = resolvedChildren)
+		errorNode && (whenNode.errorNode = errorNode);
+		progressNode && (whenNode.progressNode = progressNode);
 		return whenNode;
 	}
 
 WhenTagOpen
 	= '<when' attributes:Attributes '>' {
-		return {
-			type: 'when',
-			attributes: attributes
-		};
+		return new WhenNode(attributes);
 	}
 
 WhenTagClose
 	= '</when>'
 
 WhenErrorTag
-	= '<error>'
+	= '<error>' { return new WhenErrorNode(); }
 
 WhenProgressTag
-	= '<progress>'
+	= '<progress>' { return new WhenProgressNode(); }
 
 PlaceholderTag
 	= '<placeholder' attributes:Attributes '>' {
-		return {
-			type: 'placeholder',
-			attributes: attributes
-		};
+		return new PlaceholderNode(attributes);
 	}
 
 DataTag
 	= '<data' attributes:Attributes '>' {
-		return {
-			type: 'data',
-			attributes: attributes
-		};
+		return new DataNode(attributes);
 	}
 
 AliasTag
 	= '<alias' attributes:Attributes '>' {
-		return {
-			type: 'alias',
-			attributes: attributes
-		}
+		return new AliasNode(attributes);
 	}
 
 Attributes
@@ -147,11 +199,7 @@ Attributes
 
 Attribute
 	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue { return value; })? {
-		return {
-			type: 'attribute',
-			name: name,
-			value: value
-		};
+		return { name: name, value: value };
 	}
 
 AttributeName
@@ -161,5 +209,5 @@ AttributeValue
 	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join(''); })
 	/ ('"' value:('\\"' { return '"' } / [^"\r\n])* '"' { return value.join(''); })
 
-S
+S 'whitespace'
 	= [ \t\r\n]
