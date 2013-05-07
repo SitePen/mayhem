@@ -7,22 +7,28 @@ Content
 	/ WhenTag
 	/ PlaceholderTag
 	/ DataTag
+	/ AliasTag
 	/ HtmlFragment
 
 HtmlFragment
 	= content:(
-		!IfTagOpen
-		!ElseIfTag
-		!ElseTag
-		!IfTagClose
-		!ForTagOpen
-		!ForTagClose
-		!WhenTagOpen
-		!WhenTagClose
-		!WhenErrorTag
-		!WhenProgressTag
-		!PlaceholderTag
-		!DataTag
+		!(
+			& '<'		// Attempt to optimize by only checking tag rules
+						// when the current character is a '<'
+			IfTagOpen
+			/ ElseIfTag
+			/ ElseTag
+			/ IfTagClose
+			/ ForTagOpen
+			/ ForTagClose
+			/ WhenTagOpen
+			/ WhenTagClose
+			/ WhenErrorTag
+			/ WhenProgressTag
+			/ PlaceholderTag
+			/ DataTag
+			/ AliasTag
+		)
 		character:. { return character; }
 	)+ {
 		return {
@@ -126,6 +132,14 @@ DataTag
 			type: 'data',
 			attributes: attributes
 		};
+	}
+
+AliasTag
+	= '<alias' attributes:Attributes '>' {
+		return {
+			type: 'alias',
+			attributes: attributes
+		}
 	}
 
 Attributes
