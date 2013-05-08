@@ -70,13 +70,13 @@ ContentOrEmpty
 
 Content
 	= nodes:(
-	IfTag
-	/ ForTag
-	/ WhenTag
-	/ PlaceholderTag
-	/ DataTag
-	/ AliasTag
-	/ HtmlFragment
+		IfTag
+		/ ForTag
+		/ WhenTag
+		/ PlaceholderTag
+		/ DataTag
+		/ AliasTag
+		/ HtmlFragment
 	)+ {
 		// Flatten content into a single HTML string
 		// with <script id></script> tags marking place for the template control nodes.
