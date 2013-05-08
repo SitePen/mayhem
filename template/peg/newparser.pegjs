@@ -1,6 +1,11 @@
 /* Helpers */
 
 {
+	var nextId = 1;
+	function getNextId() {
+		return nextId++;
+	}
+
 	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes) {
 		// summary:
 		//		Creates a constructor for a tag's AST node.
@@ -43,49 +48,64 @@
 
 	var IfNode = createNodeConstructor('if', [ 'condition' ]);
 	var ElseIfNode = createNodeConstructor('elseif', [ 'condition' ]);
-	var ElseNode = createNodeConstructor('else', []);
 	var ForNode = createNodeConstructor('for', [ 'each', 'value' ]);
 	var WhenNode = createNodeConstructor('when', [ 'promise' ]);
-	var WhenErrorNode = createNodeConstructor('when-error', []);
-	var WhenProgressNode = createNodeConstructor('when-progress', []);
 	var PlaceholderNode = createNodeConstructor('placeholder', [ 'id' ]);
 	var DataNode = createNodeConstructor('data', [ 'var' ]);
 	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);
 
-	function HtmlFragment(html) {
-		// TODO: What element is best to use for a root node. Is a block element the right choice?
-		var fragmentRoot = document.createElement('div');
-		fragmentRoot.innerHTML = html;
-		// TODO: Is this the best we can do to verify that the fragment was parsed correctly?
-		// TODO: Verify that this works on all supported browsers.
-		if (fragmentRoot.innerHTML.length !== html.length) {
-			throw new Error('Unable to parse fragment: ' + html);
-		}
-		var documentFragment = document.createDocumentFragment();
-		documentFragment.appendChild(fragmentRoot);
-		this.documentFragment = documentFragment;
+	function HtmlFragmentNode(html) {
+		this.html = html;
 	}
-	HtmlFragment.prototype = { type: 'fragment' };
+	HtmlFragmentNode.prototype = { type: 'fragment' };
 }
 
 /* Grammar */
 
 start
-	= Content*
+	= ContentOrEmpty
+
+ContentOrEmpty
+	= Content?
 
 Content
-	= IfTag
+	= nodes:(
+	IfTag
 	/ ForTag
 	/ WhenTag
 	/ PlaceholderTag
 	/ DataTag
 	/ AliasTag
 	/ HtmlFragment
+	)+ {
+		// Flatten content into a single HTML string
+		// with <script id></script> tags marking place for the template control nodes.
+		var htmlFragmentBuffer = [];
+
+		var templateNodeMap = {};
+		for(var i = 0; i < nodes.length; i++) {
+			var node = nodes[i];
+			if (node instanceof HtmlFragmentNode) {
+				htmlFragmentBuffer.push(node.html);
+			}
+			else {
+				var id = getNextId();
+				htmlFragmentBuffer.push('<script data-template-id="' + id + '"></script>');
+				templateNodeMap[id] = node;
+			}
+		}
+
+		return {
+			html: htmlFragmentBuffer.join(''),
+			templateNodeMap: templateNodeMap
+		};
+	}
 
 HtmlFragment
 	= content:(
 		!(
-			& '<'		// Only check tag rules when the current character is a '<'
+			& '<'		// Optimization: Only check tag rules
+						// when the current character is a '<'
 			IfTagOpen
 			/ ElseIfTag
 			/ ElseTag
@@ -102,25 +122,22 @@ HtmlFragment
 		)
 		character:. { return character; }
 	)+ {
-		return new HtmlFragment(content.join(''));
+		return new HtmlFragmentNode(content.join(''));
 	}
 
 IfTag
 	=
 	ifNode:IfTagOpen
-		ifChildren:Content*
-		elseIfNodes:(elseIfNode:ElseIfTag children:Content* {
-			elseIfNode.children = children;
+		ifContent:ContentOrEmpty
+		elseIfNodes:(elseIfNode:ElseIfTag content:ContentOrEmpty {
+			elseIfNode.content = content;
 			return elseIfNode;
 		})*
-		elseNode:(elseNode:ElseTag children:Content* {
-			elseNode.children = children;
-			return elseNode;
-		})?
+		elseContent:(ElseTag content:ContentOrEmpty { return content; })?
 	IfTagClose {
-		ifNode.ifChildren = ifChildren;
+		ifNode.ifContent = ifContent;
 		ifNode.elseIfNodes = elseIfNodes;
-		ifNode.elseNode = elseNode;
+		ifNode.elseContent = elseContent;
 		return ifNode;
 	}
 
@@ -138,11 +155,11 @@ ElseIfTag
 	}
 
 ElseTag
-	= '<else>' { return new ElseNode(); }
+	= '<else>'
 
 ForTag
-	= forNode:ForTagOpen children:Content* ForTagClose {
-		forNode.children = children;
+	= forNode:ForTagOpen content:ContentOrEmpty ForTagClose {
+		forNode.content = content;
 		return forNode;
 	}
 
@@ -156,19 +173,13 @@ ForTagClose
 
 WhenTag
 	= whenNode:WhenTagOpen
-		resolvedChildren:Content*
-		errorNode:(errorNode:WhenErrorTag children:Content* {
-			errorNode.children = children;
-			return errorNode;
-		})?
-		progressNode:(progressNode:WhenProgressTag children:Content* {
-			progressNode.children = children;
-			return progressNode;
-		})?
+		resolvedContent:ContentOrEmpty
+		errorContent:(WhenErrorTag content:ContentOrEmpty { return content; })?
+		progressContent:(WhenProgressTag content:ContentOrEmpty { return content; })?
 	WhenTagClose {
-		resolvedChildren && (whenNode.resolvedChildren = resolvedChildren)
-		errorNode && (whenNode.errorNode = errorNode);
-		progressNode && (whenNode.progressNode = progressNode);
+		whenNode.resolvedContent = resolvedContent;
+		whenNode.errorContent = errorContent;
+		whenNode.progressContent = progressContent;
 		return whenNode;
 	}
 
@@ -181,10 +192,10 @@ WhenTagClose
 	= '</when>'
 
 WhenErrorTag
-	= '<error>' { return new WhenErrorNode(); }
+	= '<error>'
 
 WhenProgressTag
-	= '<progress>' { return new WhenProgressNode(); }
+	= '<progress>'
 
 PlaceholderTag
 	= '<placeholder' attributes:Attributes '>' {
