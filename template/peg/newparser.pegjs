@@ -14,8 +14,6 @@
 			requiredAttributeMap[requiredAttributes[i]] = true;
 		}
 
-		var unsupportedAttributeMessage = 'The ' + name + ' tag does not support attribute: ';
-
 		var Constructor = function (attributes) {
 			if (attributes !== undefined) {
 				var unsupportedAttributes = [];
@@ -32,7 +30,7 @@
 
 				if (unsupportedAttributes.length > 0) {
 					throw new Error(
-						'The ' + name + ' tag does not support the attribute(s): ' + unsupportedAttributes.join(', ')
+						'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
 					);
 				}
 			}
@@ -55,7 +53,17 @@
 	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);
 
 	function HtmlFragment(html) {
-		this.html = html;
+		// TODO: What element is best to use for a root node. Is a block element the right choice?
+		var fragmentRoot = document.createElement('div');
+		fragmentRoot.innerHTML = html;
+		// TODO: Is this the best we can do to verify that the fragment was parsed correctly?
+		// TODO: Verify that this works on all supported browsers.
+		if (fragmentRoot.innerHTML.length !== html.length) {
+			throw new Error('Unable to parse fragment: ' + html);
+		}
+		var documentFragment = document.createDocumentFragment();
+		documentFragment.appendChild(fragmentRoot);
+		this.documentFragment = documentFragment;
 	}
 	HtmlFragment.prototype = { type: 'fragment' };
 }
@@ -77,8 +85,7 @@ Content
 HtmlFragment
 	= content:(
 		!(
-			& '<'		// Attempt to optimize by only checking tag rules
-						// when the current character is a '<'
+			& '<'		// Only check tag rules when the current character is a '<'
 			IfTagOpen
 			/ ElseIfTag
 			/ ElseTag
