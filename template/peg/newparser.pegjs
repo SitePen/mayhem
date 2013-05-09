@@ -148,6 +148,7 @@ IfTag
 			conditionalBlocks.push(createConditionalBlock(elseIfNode));
 		}
 
+		// TODO: Create constructor for this transformed 'if' AST node
 		return {
 			type: 'if',
 			conditionalBlocks: conditionalBlocks,
