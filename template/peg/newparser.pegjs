@@ -6,6 +6,13 @@
 		return nextId++;
 	}
 
+	function createConditionalBlock(conditionalNode) {
+		return {
+			condition: conditionalNode.condition,
+			content: conditionalNode.content
+		};
+	}
+
 	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes) {
 		// summary:
 		//		Creates a constructor for a tag's AST node.
@@ -126,8 +133,7 @@ HtmlFragment
 	}
 
 IfTag
-	=
-	ifNode:IfTagOpen
+	= ifNode:IfTagOpen
 		content:ContentOrEmpty
 		elseIfNodes:(elseIfNode:ElseIfTag content:ContentOrEmpty {
 			elseIfNode.content = content;
@@ -135,10 +141,18 @@ IfTag
 		})*
 		elseContent:(ElseTag content:ContentOrEmpty { return content; })?
 	IfTagClose {
-		ifNode.content = content;
-		ifNode.elseIfNodes = elseIfNodes;
-		ifNode.elseContent = elseContent;
-		return ifNode;
+		// Combine 'if' and 'elseif' into ordered list of conditional blocks
+		var conditionalBlocks = [ createConditionalBlock(ifNode) ];
+		while (elseIfNodes.length > 0) {
+			var elseIfNode = elseIfNodes.shift();
+			conditionalBlocks.push(createConditionalBlock(elseIfNode));
+		}
+
+		return {
+			type: 'if',
+			conditionalBlocks: conditionalBlocks,
+			elseBlock: { content: elseContent }
+		};
 	}
 
 IfTagOpen
