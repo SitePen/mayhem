@@ -90,7 +90,7 @@ Content
 			}
 			else {
 				var id = getNextId();
-				htmlFragmentBuffer.push('<script data-template-id="' + id + '"></script>');
+				htmlFragmentBuffer.push('<script data-template-control-id="' + id + '"></script>');
 				templateNodeMap[id] = node;
 			}
 		}
@@ -128,14 +128,14 @@ HtmlFragment
 IfTag
 	=
 	ifNode:IfTagOpen
-		ifContent:ContentOrEmpty
+		content:ContentOrEmpty
 		elseIfNodes:(elseIfNode:ElseIfTag content:ContentOrEmpty {
 			elseIfNode.content = content;
 			return elseIfNode;
 		})*
 		elseContent:(ElseTag content:ContentOrEmpty { return content; })?
 	IfTagClose {
-		ifNode.ifContent = ifContent;
+		ifNode.content = content;
 		ifNode.elseIfNodes = elseIfNodes;
 		ifNode.elseContent = elseContent;
 		return ifNode;
