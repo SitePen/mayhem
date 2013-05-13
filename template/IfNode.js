@@ -7,7 +7,7 @@ define([
 		conditionalBlocks: null,
 		elseBlock: null,
 
-		_create: function () {
+		_bind: function () {
 			// TODO: data bind and update content in response to changes.
 		}
 	});

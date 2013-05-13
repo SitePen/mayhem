@@ -8,7 +8,7 @@ define([
 		errorBlock: null,
 		progressBlock: null,
 
-		_create: function () {
+		_bind: function () {
 			// TODO: data bind and update content in response to changes.
 		}
 	});

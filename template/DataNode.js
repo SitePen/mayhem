@@ -6,7 +6,7 @@ define([
 
 		'var': null,
 
-		_create: function (view) {
+		_bind: function (view) {
 			// TODO: data bind and update content in response to changes.
 		}
 	});
