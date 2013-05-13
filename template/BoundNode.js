@@ -11,6 +11,7 @@ define([
 
 		postscript: function (view) {
 			this._create(view);
+			this._bind(view);
 		},
 
 		_create: function (/*view*/) {
@@ -26,17 +27,22 @@ define([
 			fragment.appendChild(beginComment);
 			fragment.appendChild(endComment);
 		},
+
+		_bind: function (/*view*/) {
+			// Do nothing in base class.
+		},
+
 		placeAt: function (referenceNode, position) {
-			var fragment = this.fragment;
-			if (fragment.contains(this.beginMarker)) {
-				// This instance's fragment has not yet been placed.
-				domConstruct.place(fragment, referenceNode, position);
-			}
-			else {
-				// This instance's nodes are already in the DOM. Move them.
+			// If the fragment has already been placed, extract the range back into the fragment.
+			if (!this.fragment.contains(this.beginMarker)) {
+				var range = document.createRange();
+				range.setStartBefore(this.beginComment);
+				range.setEndAfter(this.endComment);
+				this.fragment = range.extractContents();
 
+				// TODO: Support IE8 which doesn't support ranges. The below code should work but hasn't been tested yet.
+				/*
 				// TODO: Is there a simpler way to do this?
-
 				var beginComment = this.beginComment,
 					endComment = this.endComment,
 					lastNode = endComment.previousSibling;
@@ -50,7 +56,10 @@ define([
 					nextSibling = currentNode.nextSibling;
 					destination.insertBefore(currentNode, endComment);
 				} while (currentNode !== lastNode && (currentNode = nextSibling));
+				*/
 			}
+
+			domConstruct.place(this.fragment, referenceNode, position);
 		},
 		destroy: function () {
 			// TODO
