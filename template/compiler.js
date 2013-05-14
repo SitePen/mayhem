@@ -1,27 +1,27 @@
 define([
+	'dojo/_base/lang',
 	'dojo/_base/array',
 	'dojo/_base/declare',
 	'dojo/Deferred',
 	'dojo/query',
 	'dojo/dom-construct',
 	'dojo/dom-attr',
-	'./peg/newparser',
-	'./Template',
-	'./ast/PlaceholderNode',
-	'./ast/ContentNode',
-	'./ast/IfNode',
-	'./ast/ForNode',
-	'./ast/WhenNode',
-	'./ast/DataNode'
-], function (array, declare, Deferred, query, domConstruct, domAttr, pegParser, Template, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
+	'./peg/parser',
+	'./PlaceholderNode',
+	'./ContentNode',
+	'./IfNode',
+	'./ForNode',
+	'./WhenNode',
+	'./DataNode'
+], function (lang, array, declare, Deferred, query, domConstruct, domAttr, pegParser, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
 
 	return {
-		parseFromSource: function (templateSource) {
+		compileFromSource: function (templateSource) {
 			var pegAst = pegParser.parse(templateSource);
-			return this.parseFromAst(pegAst);
+			return this.compileFromAst(pegAst);
 		},
 
-		parseFromAst: function (templateAst) {
+		compileFromAst: function (templateAst) {
 			function processNode(pegNode) {
 				var type = pegNode.type;
 				var Constructor;
@@ -51,7 +51,7 @@ define([
 					}
 
 					Constructor = declare(ContentNodeWithDependencies, {
-						baseFragment: fragment,
+						masterFragment: fragment,
 						dependencyMap: dependencyMap,
 						templateNodeConstructors: array.map(pegNode.templateNodes, processNode)
 					});
@@ -61,28 +61,29 @@ define([
 						conditionalBlocks: array.map(pegNode.conditionalBlocks, function (conditionalBlock) {
 							return {
 								condition: conditionalBlock.condition,
-								content: processNode(conditionalBlock.content)
+								ContentConstructor: processNode(conditionalBlock.content)
 							};
 						}),
-						elseBlock: pegNode.elseBlock ? processNode(pegNode.elseBlock) : null
+						elseBlock: pegNode.elseBlock ? { ContentConstructor: processNode(pegNode.elseBlock) } : null
 					});
 				}
 				else if (type === 'for') {
 					Constructor = declare(ForNode, {
 						each: pegNode.each,
 						value: pegNode.value,
-						content: processNode(pegNode.content)
+						ContentConstructor: processNode(pegNode.content)
 					});
 				}
 				else if (type === 'placeholder') {
-					Constructor = declare(PlaceholderNode, { id: pegNode.id });
+					// TODO: Support default placeholder with no name attribute
+					Constructor = declare(PlaceholderNode, { name: pegNode.name });
 				}
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
 						promise: pegNode.promise,
-						resolvedContent: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
-						errorContent: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
-						progressContent: pegNode.progressContent ? processNode(pegNode.progressContent) : null
+						ResolvedContentConstructor: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
+						ErrorContentConstructor: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
+						ProgressContentConstructor: pegNode.progressContent ? processNode(pegNode.progressContent) : null
 					});
 				}
 				else if (type === 'data') {
@@ -99,7 +100,15 @@ define([
 
 			var dependencyMap = {},
 				ContentNodeWithDependencies = declare(ContentNode, { dependencyMap: dependencyMap }),
-				TemplateConstructor = processNode(templateAst),
+				TemplateConstructor = declare(processNode(templateAst), {
+					placeholderMap: null,
+					constructor: function () {
+						this.placeholderMap = {};
+					},
+					_create: function (view, options) {
+						this.inherited(arguments, [ view, lang.delegate(options, { root: this })]);
+					}
+				}),
 				dfd = new Deferred();
 
 			// List dependency module IDs
@@ -109,6 +118,9 @@ define([
 			}
 
 			// Resolve template dependencies
+			// TODO: relative deps will be loaded relative to this module.
+			// it would be more intutive to make deps relative to the template. ids should be
+			// adjusted to work like that.
 			require(dependencies, function () {
 				for (var i = 0; i < dependencies.length; i++) {
 					var moduleId = dependencies[i];

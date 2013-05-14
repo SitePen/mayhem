@@ -6,26 +6,27 @@ define([
 		baseFragment: null,
 
 		fragment: null,
-		beginComment: null,
-		endComment: null,
+		beginMarker: null,
+		endMarker: null,
 
-		postscript: function (view) {
-			this._create(view);
-			this._bind(view);
+		postscript: function (view, options) {
+			options = options || {};
+			this._create(view, options);
+			this._bind(view, options);
 		},
 
-		_create: function (/*view*/) {
+		_create: function (/*view, options*/) {
 			// summary:
 			//		Create a template node.
 			// view:
 			// 		The view for which the node is being created.
 
-			var fragment = this.fragment = this.templateFragment.cloneNode(true),
-				beginComment = document.createComment('begin-' + this.id),
-				endComment = document.createComment('end-' + this.id);
+			var fragment = this.fragment || (this.fragment = document.createDocumentFragment()),
+				beginMarker = this.beginMarker = document.createComment('begin-' + this.id),
+				endMarker = this.endMarker = document.createComment('end-' + this.id);
 
-			fragment.appendChild(beginComment);
-			fragment.appendChild(endComment);
+			fragment.appendChild(beginMarker);
+			fragment.appendChild(endMarker);
 		},
 
 		_bind: function (/*view*/) {
@@ -33,34 +34,40 @@ define([
 		},
 
 		placeAt: function (referenceNode, position) {
-			// If the fragment has already been placed, extract the range back into the fragment.
+			// Remove nodes into the fragment so they can be easily placed.
+			this.remove();
+
+			domConstruct.place(this.fragment, referenceNode, position);
+		},
+
+		remove: function () {
+			// Remove nodes into fragment if they aren't already there.
 			if (!this.fragment.contains(this.beginMarker)) {
 				var range = document.createRange();
-				range.setStartBefore(this.beginComment);
-				range.setEndAfter(this.endComment);
+				range.setStartBefore(this.beginMarker);
+				range.setEndAfter(this.endMarker);
 				this.fragment = range.extractContents();
 
 				// TODO: Support IE8 which doesn't support ranges. The below code should work but hasn't been tested yet.
 				/*
 				// TODO: Is there a simpler way to do this?
-				var beginComment = this.beginComment,
-					endComment = this.endComment,
-					lastNode = endComment.previousSibling;
+				var beginMarker = this.beginMarker,
+					endMarker = this.endMarker,
+					lastNode = endMarker.previousSibling;
 
-				domConstruct.place(endComment, referenceNode, position);
+				domConstruct.place(endMarker, referenceNode, position);
 
-				var destination = endComment.parentNode,
-					currentNode = beginComment,
+				var destination = endMarker.parentNode,
+					currentNode = beginMarker,
 					nextSibling;
 				do {
 					nextSibling = currentNode.nextSibling;
-					destination.insertBefore(currentNode, endComment);
+					destination.insertBefore(currentNode, endMarker);
 				} while (currentNode !== lastNode && (currentNode = nextSibling));
 				*/
 			}
-
-			domConstruct.place(this.fragment, referenceNode, position);
 		},
+
 		destroy: function () {
 			// TODO
 		}

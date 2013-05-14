@@ -103,7 +103,9 @@ Content
 			}
 		}
 
+		// TODO: Make proper constructor for this.
 		return {
+			type: 'fragment',
 			html: htmlFragmentBuffer.join(''),
 			templateNodes: templateNodes
 		};

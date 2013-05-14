@@ -93,8 +93,8 @@ define([
 				this.view,
 				this.controller,
 				this.template
-			], function (View, Controller, template) {
-				return when(self._instantiateComponents(View, Controller, template)).then(function () {
+			], function (View, Controller, TemplateConstructor) {
+				return when(self._instantiateComponents(View, Controller, TemplateConstructor)).then(function () {
 					setRouteState(event);
 					dfd.resolve();
 				}, function () {
@@ -140,14 +140,14 @@ define([
 			return this._viewInstance.addSubView(view, placeholderId);
 		},
 
-		_instantiateComponents: function (View, Controller, template) {
+		_instantiateComponents: function (View, Controller, TemplateConstructor) {
 			var controller = this._controllerInstance = new Controller({
 				app: this.app
 			});
 
 			this._viewInstance = new View({
 				app: this.app,
-				template: template,
+				TemplateConstructor: TemplateConstructor,
 				viewModel: controller
 			});
 

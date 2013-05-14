@@ -103,22 +103,12 @@ define([
 			// ./template/compiler is our code to parse and compile the template string.  this
 			// same module would be leveraged by the build plugin to produce the compiled
 			// function exported by the AMD module that replaces this dependency.
-			require(['./template/compiler', 'dojo/text!' + id], function (compile, templateString) {
-
-				var renderer = compile(string.trim(templateString), {
-						sourceUrl: moduleRequire.toUrl(id),
-						toDom: domConstruct.toDom
-					});
+			require(['./template/compiler', 'dojo/text!' + id], function (compiler, templateString) {
+				compiler.compileFromSource(templateString).then(function (result) {
+					load(result.TemplateConstructor);
+				});
 
 				// TODO: cache the results based on sourceUrl?
-
-				// ensure any deps we found in the template will be pre-loaded.
-				// TODO: relative deps will be loaded relative to the View that uses this template.
-				// it would be more intutive to make deps relative to the template. ids should be
-				// adjusted to work like that.
-				moduleRequire(renderer.deps || [], function () {
-					complete(renderer);
-				});
 			});
 		}
 	};

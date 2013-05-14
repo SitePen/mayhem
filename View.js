@@ -3,8 +3,10 @@ define([
 	'dojo/_base/array',
 	'dojo/_base/lang',
 	'dbind/bind',
+	'dojo/Stateful',
+	'./StatefulArray',
 	'./Component'
-], function (declare, array, lang, bind, Component) {
+], function (declare, array, lang, bind, Stateful, StatefulArray, Component) {
 
 	var View = declare(Component, {
 
@@ -24,8 +26,21 @@ define([
 		//		then there can be no unnamed placeholder.
 		subViews: null,
 
+		//  TemplateConstructor
+		//		A constructor for the view template.
+		_TemplateConstructorSetter: function (TemplateConstructor) {
+			this.TemplateConstructor = TemplateConstructor;
+
+			var existingTemplate = this.template;
+			if (existingTemplate) {
+				existingTemplate.destroy();
+			}
+
+			this.template = new TemplateConstructor(this);
+		},
+
 		//	template: framework/Template
-		//		A Template for rendering this view
+		//		The view template
 
 		// TODO: add a setter for template that tears down any existing template and renders the new one
 
@@ -33,79 +48,29 @@ define([
 		//		An array of nodes representing the top level of the hierarchy of DOM nodes
 		//		controlled by this View.
 
-		render: function () {
-			//	summary:
-			//		Renders this View based on it's template.  As a result of this, the nodes
-			//		property will be set.
-
-			var view = this;
-
-			if (this.template) {
-				// render the template to get back the list of nodes
-				bind.when(this.template.render(this), function (nodes) {
-					var currentNodes = view.nodes || [],
-						firstNode = currentNodes[0],
-						lastNode = currentNodes[currentNodes.length - 1],
-						// we will move the parentNode to a document fragment
-						parentNode = firstNode && firstNode.parentNode,
-						// we need to know where to put the parentNode back
-						parentSibling = parentNode && parentNode.nextSibling,
-						parentParent = parentNode && parentNode.parentNode,
-						parentFrag,
-						i = 0,
-						length = nodes.length;
-
-					// if the view already has a firstNode.parentNode then we need to remove all the
-					// nodes.
-					if (parentNode && firstNode !== nodes[0]) {
-						// move parentNode to a document fragment first since we will add/remove
-						// multiple nodes most likely
-						parentFrag = document.createDocumentFragment();
-						parentFrag.appendChild(parentNode);
-
-						// remove the previous nodes but leave the firstNode there as a point of
-						// reference for insertBefore when adding the new nodes
-						while (firstNode !== lastNode) {
-							lastNode = lastNode.previousSibling;
-							parentNode.removeChild(lastNode.nextSibling);
-						}
-
-						// add the new nodes
-						while (i < length) {
-							parentNode.insertBefore(nodes[i++], firstNode);
-						}
-
-						// we're done with the firstNode now, so remove it
-						parentNode.removeChild(firstNode);
-
-						if (parentParent) {
-							// we can put the parentNode back in the document now
-							parentParent.insertBefore(parentNode, parentSibling);
-						}
-					}
-
-					// now that everything is in place we'll set the new values for nodes
-					view.set('nodes', nodes);
-				});
-			}
+		constructor: function () {
+			this.subViews = new Stateful();
 		},
 
-		placeAt: function (node) {
+		postscript: function () {
+			this.inherited(arguments);
+
+			this.template || (this.template = new this.TemplateConstructor(this));
+		},
+
+		placeAt: function (node, position) {
 			// TODO: this currently only supports our nodes being placed as child nodes of the
 			// provided node.  besides the placeholder renderer, this is also the only way to
 			// trigger rendering of a view.  in practice, this whole method only matters for the top
 			// view since everything is connected as sub-views after that.
-			this.render();
 
-			var nodes = this.nodes || [],
-				i = 0,
-				length = nodes.length;
-
-			while (i < length) {
-				node.appendChild(nodes[i++]);
-			}
+			this.template.placeAt(node, position);
 
 			return this;
+		},
+
+		remove: function () {
+			this.template.remove();
 		},
 
 		// TODO: do we still need removeSubView as a public API since this returns a handle?
@@ -121,18 +86,10 @@ define([
 			//	returns: object
 			//		A handle to remove the subView
 
-			destination = destination || 'default';
-
 			// TODO: make subViews and the placeholder lists something that can be observed.  then
 			// the template can observe the placeholder lists and incrementally update the rendering
-			var subViews = this.subViews || (this.subViews = {}),
-				placeholder = subViews[destination] || (subViews[destination] = []);
-
-			placeholder.push(view);
-
-			// XXX: an ugly hack to work around the lack of observable array mutations
-			// and also https://github.com/kriszyp/dbind/issues/11
-			this.render();
+			var subViewArray = this._lookupSubviewArray(destination);
+			subViewArray.push(view);
 
 			return {
 				remove: lang.hitch(this, 'removeSubView', view, destination)
@@ -153,10 +110,6 @@ define([
 				placeholder,
 				name,
 				index;
-
-			if (!subViews) {
-				return;
-			}
 
 			for (name in subViews) {
 				// if location was provided, we're going to hijack the first pass through this
@@ -183,9 +136,21 @@ define([
 			if (this.template) {
 				this.template.unrender(this);
 			}
-			this.nodes = null;
 
 			this.inherited(arguments);
+		},
+
+		_lookupSubviewArray: function (location) {
+			location = location || 'default';
+
+			var subViews = this.subViews,
+				subView = subViews.get(location);
+			if (!subView) {
+				subView = new StatefulArray();
+				subViews.set(location, subView);
+			}
+
+			return subView;
 		}
 	});
 
