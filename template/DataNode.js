@@ -11,7 +11,7 @@ define([
 		_bind: function (view) {
 			var dataNode = this;
 
-			this._applyBindingExpression(this.var, view, function (value) {
+			this.var.bind(view, function (value) {
 				var existingDomTextNode = dataNode.domTextNode,
 					newDomTextNode = dataNode.domTextNode = document.createTextNode(value);
 

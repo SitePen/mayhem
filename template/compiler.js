@@ -8,13 +8,14 @@ define([
 	'dojo/dom-attr',
 	'./peg/templateParser',
 	'./peg/expressionParser',
+	'./DataBindingExpression',
 	'./PlaceholderNode',
 	'./ContentNode',
 	'./IfNode',
 	'./ForNode',
 	'./WhenNode',
 	'./DataNode'
-], function (lang, array, declare, Deferred, query, domConstruct, domAttr, templateParser, expressionParser, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
+], function (lang, array, declare, Deferred, query, domConstruct, domAttr, templateParser, expressionParser, DataBindingExpression, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
 
 	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/;
 	function compileDataBoundAttributes(element) {
@@ -95,7 +96,7 @@ define([
 					Constructor = declare(IfNode, {
 						conditionalBlocks: array.map(pegNode.conditionalBlocks, function (conditionalBlock) {
 							return {
-								condition: conditionalBlock.condition,
+								condition: new DataBindingExpression(conditionalBlock.condition),
 								ContentConstructor: processNode(conditionalBlock.content)
 							};
 						}),
@@ -106,8 +107,8 @@ define([
 				}
 				else if (type === 'for') {
 					Constructor = declare(ForNode, {
-						each: pegNode.each,
-						value: pegNode.value,
+						each: new DataBindingExpression(pegNode.each),
+						value: new DataBindingExpression(pegNode.value),
 						ContentConstructor: processNode(pegNode.content)
 					});
 				}
@@ -117,14 +118,16 @@ define([
 				}
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
-						promiseName: pegNode.promise,
+						promiseName: new DataBindingExpression(pegNode.promise),
 						ResolvedTemplate: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
 						ErrorTemplate: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
 						ProgressTemplate: pegNode.progressContent ? processNode(pegNode.progressContent) : null
 					});
 				}
 				else if (type === 'data') {
-					Constructor = declare(DataNode, { 'var': pegNode.var });
+					Constructor = declare(DataNode, {
+						'var': new DataBindingExpression(pegNode.var)
+					});
 				}
 				else {
 					throw new Error('Unrecognized PEG AST node type: ' + type);

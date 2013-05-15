@@ -72,63 +72,6 @@ define([
 			}
 		},
 
-		bindingHelperFunctions: {
-			// TODO: Implement date function
-			date: function (format) {
-				return dateLocale.format(new Date(), { selector: 'date', datePattern: format });
-			}
-		},
-
-		_applyBindingExpression: function (expression, view, callback) {
-			// TODO: Move this to compiler where it can be parsed and saved with the AST during application builds.
-			// TODO: This ternary expression is a hack to make progress. Definitely move all expression parsing to the compiler.
-			var result = typeof expression === 'string' ? expressionParser.parse(expression) : expression,
-				// Revisit what the context should be. This is a mess.
-				supplementalReferences = lang.mixin({}, this.bindingHelperFunctions, {
-					app: view.app,
-					// TODO: Support relative paths to createPath
-					router: view.app.router
-				}),
-				context = lang.delegate(view.viewModel, supplementalReferences),
-				resolveObject = function (references) {
-					return lang.getObject(references.join('.'), false, context);
-				},
-				object;
-
-			if (result.type === 'function-call') {
-				var name = result.name;
-
-				object = resolveObject(name.references);
-
-				callback = (function (funcToCall, callback) {
-					return function (value) { callback(funcToCall(value)); };
-				})(lang.hitch(object, name.target), callback);
-
-				result = result.argument;
-			}
-
-			var type = result.type;
-			if (type === 'dot-expression') {
-				var identifiers = result.references,
-					targetProperty = result.target;
-
-				object = resolveObject(identifiers);
-
-				if (object && targetProperty in object) {
-					bind(object).get(targetProperty).getValue(callback);
-				}
-				else {
-					callback(new Error(identifiers.join('.') + '.' + targetProperty + ' is undefined'));
-				}
-			}
-			else if (type === 'number' || type === 'string') {
-				callback(result.value);
-			}
-			else {
-				throw new Error('Unrecognized data binding expression type: ' + type);
-			}
-		},
-
 		destroy: function () {
 			// TODO
 			this.remove();

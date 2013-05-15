@@ -5,8 +5,9 @@ define([
 	'./PlaceholderNode',
 	'dojo/_base/array',
 	'dojo/query',
-	'dojo/dom-attr'
-], function (lang, declare, BoundNode, PlaceholderNode, array, query, domAttr) {
+	'dojo/dom-attr',
+	'./DataBindingExpression'
+], function (lang, declare, BoundNode, PlaceholderNode, array, query, domAttr, DataBindingExpression) {
 
 	function findPlaceMarker(rootNode, id) {
 		return query('[data-template-node-id="' + id + '"]', rootNode)[0];
@@ -38,15 +39,11 @@ define([
 		},
 
 		_bind: function (view) {
-			var contentNode = this;
 			query('[data-bound-attributes]', this.fragment).forEach(function (element) {
 				var dataBoundAttributeMap = JSON.parse(domAttr.get(element, 'data-bound-attributes'));
 				for (var attributeName in dataBoundAttributeMap) {
-					contentNode._applyBindingExpression(
-						dataBoundAttributeMap[attributeName],
-						view,
-						lang.hitch(domAttr, 'set', element, attributeName)
-					);
+					var expression = new DataBindingExpression(dataBoundAttributeMap[attributeName]);
+					expression.bind(view, lang.hitch(domAttr, 'set', element, attributeName));
 				}
 			});
 		}
