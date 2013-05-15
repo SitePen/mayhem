@@ -6,18 +6,53 @@ define([
 	'dojo/query',
 	'dojo/dom-construct',
 	'dojo/dom-attr',
-	'./peg/parser',
+	'./peg/templateParser',
+	'./peg/expressionParser',
 	'./PlaceholderNode',
 	'./ContentNode',
 	'./IfNode',
 	'./ForNode',
 	'./WhenNode',
 	'./DataNode'
-], function (lang, array, declare, Deferred, query, domConstruct, domAttr, pegParser, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
+], function (lang, array, declare, Deferred, query, domConstruct, domAttr, templateParser, expressionParser, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
+
+	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/;
+	function compileDataBoundAttributes(element) {
+		var boundAttributeMap = {},
+			foundBoundAttributes = false,
+			attributes = element.attributes,
+			attribute,
+			name,
+			value,
+			parsedExpression;
+
+		// Iterate backwards so we can remove attributes as we go
+		// without affecting the next index.
+		for (var i = attributes.length - 1; i >= 0; i--) {
+			attribute = attributes[i];
+			name = attribute.name;
+			value = attribute.value;
+
+			if (BOUND_ATTRIBUTE_PATTERN.test(value)) {
+				value = value.replace(BOUND_ATTRIBUTE_PATTERN, '$1');
+				boundAttributeMap[name] = expressionParser.parse(value);
+				domAttr.remove(element, name);
+				foundBoundAttributes = true;
+			}
+		}
+
+		if (foundBoundAttributes) {
+			domAttr.set(element, 'data-bound-attributes', JSON.stringify(boundAttributeMap));
+		}
+
+		for (var child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
+			compileDataBoundAttributes(child);
+		}
+	}
 
 	return {
 		compileFromSource: function (templateSource) {
-			var pegAst = pegParser.parse(templateSource);
+			var pegAst = templateParser.parse(templateSource);
 			return this.compileFromAst(pegAst);
 		},
 
@@ -43,7 +78,7 @@ define([
 						dependencyMap[moduleId] = true;
 					}
 
-					// TODO: Walk tree looking for data bound attributes, adding a specific attribute so data bound elements can be queried on instantiation
+					compileDataBoundAttributes(domNode);
 
 					var fragment = document.createDocumentFragment();
 					while (domNode.childNodes.length > 0) {
@@ -64,7 +99,9 @@ define([
 								ContentConstructor: processNode(conditionalBlock.content)
 							};
 						}),
-						elseBlock: pegNode.elseBlock ? { ContentConstructor: processNode(pegNode.elseBlock) } : null
+						elseBlock: pegNode.elseBlock && pegNode.elseBlock.content
+							? { ContentConstructor: processNode(pegNode.elseBlock.content) }
+							: null
 					});
 				}
 				else if (type === 'for') {
@@ -80,10 +117,10 @@ define([
 				}
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
-						promise: pegNode.promise,
-						ResolvedContentConstructor: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
-						ErrorContentConstructor: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
-						ProgressContentConstructor: pegNode.progressContent ? processNode(pegNode.progressContent) : null
+						promiseName: pegNode.promise,
+						ResolvedTemplate: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
+						ErrorTemplate: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
+						ProgressTemplate: pegNode.progressContent ? processNode(pegNode.progressContent) : null
 					});
 				}
 				else if (type === 'data') {

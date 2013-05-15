@@ -1,24 +1,27 @@
 define([
 	'dojo/_base/declare',
-	'./BoundNode',
-	'dbind/bind'
-], function (declare, BoundNode, bind) {
+	'./BoundNode'
+], function (declare, BoundNode) {
 	return declare(BoundNode, {
 		'var': null,
 		domTextNode: null,
 
+		// TODO: Support safe attribute
+
 		_bind: function (view) {
 			var dataNode = this;
-			bind(view.viewModel).get(this.var).then(function (value) {
-				var existingDomTextNode = dataNode.domTextNode;
+
+			this._applyBindingExpression(this.var, view, function (value) {
+				var existingDomTextNode = dataNode.domTextNode,
+					newDomTextNode = dataNode.domTextNode = document.createTextNode(value);
+
 				if (existingDomTextNode) {
-
-					existingDomTextNode.parentNode.removeChild(existingDomTextNode);
+					existingDomTextNode.parentNode.replaceChild(newDomTextNode, existingDomTextNode);
 				}
-
-				var domTextNode = dataNode.domTextNode = document.createTextNode(value),
-					endMarker = dataNode.endMarker;
-				endMarker.parentNode.insertBefore(domTextNode, endMarker);
+				else {
+					var endMarker = dataNode.endMarker;
+					endMarker.parentNode.insertBefore(newDomTextNode, endMarker);
+				}
 			});
 		}
 	});

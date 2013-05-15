@@ -37,6 +37,7 @@ define([], function () {
      */
     parse: function(input, startRule) {
       var parseFunctions = {
+        "start": parse_start,
         "ContentOrEmpty": parse_ContentOrEmpty,
         "Content": parse_Content,
         "HtmlFragment": parse_HtmlFragment,
@@ -68,7 +69,7 @@ define([], function () {
           throw new Error("Invalid rule name: " + quote(startRule) + ".");
         }
       } else {
-        startRule = "ContentOrEmpty";
+        startRule = "start";
       }
       
       var pos = { offset: 0, line: 1, column: 1, seenCR: false };
@@ -146,6 +147,26 @@ define([], function () {
         rightmostFailuresExpected.push(failure);
       }
       
+      function parse_start() {
+        var result0;
+        var pos0;
+        
+        pos0 = clone(pos);
+        result0 = parse_ContentOrEmpty();
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, content) {
+        		if (content) {
+        			content.aliases = aliases;
+        		}
+        		return content;
+        	})(pos0.offset, pos0.line, pos0.column, result0);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
+        }
+        return result0;
+      }
+      
       function parse_ContentOrEmpty() {
         var result0;
         
@@ -216,6 +237,9 @@ define([], function () {
         			var node = nodes[i];
         			if (node instanceof HtmlFragmentNode) {
         				htmlFragmentBuffer.push(node.html);
+        			}
+        			else if (node.type === 'alias') {
+        				aliases[node.from] = node.to;
         			}
         			else {
         				// TODO: Colin prefers the use of comment nodes, but it appears we'll need to stick w/ <script> for this step since it is queryable.
@@ -582,6 +606,8 @@ define([], function () {
         }
         if (result0 !== null) {
           result0 = (function(offset, line, column, ifNode, content, elseIfNodes, elseContent) {
+        		ifNode.content = content;
+        
         		// Combine 'if' and 'elseif' into ordered list of conditional blocks
         		var conditionalBlocks = [ createConditionalBlock(ifNode) ];
         		while (elseIfNodes.length > 0) {
@@ -1671,6 +1697,9 @@ define([], function () {
       		this.html = html;
       	}
       	HtmlFragmentNode.prototype = { type: 'fragment' };
+      
+      	// TODO: Currently, aliases apply to the whole template regardless of where they are specified. Should they be scoped?
+      	var aliases = {};
       
       
       var result = parseFunctions[startRule]();

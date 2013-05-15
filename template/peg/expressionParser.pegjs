@@ -1,29 +1,39 @@
 // TODO: Support object dot notation
 start
 	= FunctionCall
-	/ IdentifierReference
+	/ DotExpression
+	/ PaddedIdentifier
 
+// TODO: Support multiple arguments.
+// TODO: Support chained function calls.
 FunctionCall
-	= S* functionIdentifier:Identifier S* '(' S*
-		argument:(Identifier / StringLiteral / DecimalLiteral)
+	= functionIdentifier:DotExpression '(' S*
+		argument:(DotExpression / StringLiteral / DecimalLiteral)
 	S* ')' S* {
 		return {
 			type: 'function-call',
-			name: functionIdentifier.value,
+			name: functionIdentifier,
 			argument: argument
 		};
 	}
 
-IdentifierReference
+// TODO: Find a better name for this.
+DotExpression
+	= references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
+		return {
+			type: 'dot-expression',
+			references: references,
+			target: target
+		};
+	}
+
+PaddedIdentifier
 	= S* identifier:Identifier S* { return identifier; }
 
 // TODO: This is a quick implementation that doesn't support all valid Ecmascript identifiers. Fix it.
 Identifier
 	= lead:[$_a-zA-Z] tail:[$_a-zA-Z0-9]* {
-		return {
-			type: 'identifier',
-			value: lead + tail.join('')
-		};
+		return lead + tail.join('');
 	}
 
 StringLiteral
@@ -54,4 +64,4 @@ DecimalLiteral
 	}
 
 S "whitespace"
-	= [\s]
+	= [ \t\r\n]

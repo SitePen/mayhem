@@ -1,7 +1,7 @@
-PEGJSSRC=parser.pegjs
-PEGJSOUT=parser.js
-DATABINDSRC=dataBindingExpression.pegjs
-DATABINDOUT=dataBindingExpression.js
+PEGJSSRC=templateParser.pegjs
+PEGJSOUT=templateParser.js
+DATABINDSRC=expressionParser.pegjs
+DATABINDOUT=expressionParser.js
 
 # TODO: add pegjs to devDependencies and use via ./node_modules/etc.
 parser: $(PEGJSSRC)

@@ -65,12 +65,20 @@
 		this.html = html;
 	}
 	HtmlFragmentNode.prototype = { type: 'fragment' };
+
+	// TODO: Currently, aliases apply to the whole template regardless of where they are specified. Should they be scoped?
+	var aliases = {};
 }
 
 /* Grammar */
 
 start
-	= ContentOrEmpty
+	= content:ContentOrEmpty {
+		if (content) {
+			content.aliases = aliases;
+		}
+		return content;
+	}
 
 ContentOrEmpty
 	= Content?
@@ -94,6 +102,9 @@ Content
 			var node = nodes[i];
 			if (node instanceof HtmlFragmentNode) {
 				htmlFragmentBuffer.push(node.html);
+			}
+			else if (node.type === 'alias') {
+				aliases[node.from] = node.to;
 			}
 			else {
 				// TODO: Colin prefers the use of comment nodes, but it appears we'll need to stick w/ <script> for this step since it is queryable.
@@ -144,6 +155,8 @@ IfTag
 		})*
 		elseContent:(ElseTag content:ContentOrEmpty { return content; })?
 	IfTagClose {
+		ifNode.content = content;
+
 		// Combine 'if' and 'elseif' into ordered list of conditional blocks
 		var conditionalBlocks = [ createConditionalBlock(ifNode) ];
 		while (elseIfNodes.length > 0) {

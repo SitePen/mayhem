@@ -71,6 +71,7 @@ define([
 
 		remove: function () {
 			this.template.remove();
+			this.template = null;
 		},
 
 		// TODO: do we still need removeSubView as a public API since this returns a handle?

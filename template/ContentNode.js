@@ -1,10 +1,12 @@
 define([
+	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'./BoundNode',
 	'./PlaceholderNode',
 	'dojo/_base/array',
-	'dojo/query'
-], function (declare, BoundNode, PlaceholderNode, array, query) {
+	'dojo/query',
+	'dojo/dom-attr'
+], function (lang, declare, BoundNode, PlaceholderNode, array, query, domAttr) {
 
 	function findPlaceMarker(rootNode, id) {
 		return query('[data-template-node-id="' + id + '"]', rootNode)[0];
@@ -32,6 +34,20 @@ define([
 				}
 
 				templateNode.placeAt(placeMarkerDomNode, 'replace');
+			});
+		},
+
+		_bind: function (view) {
+			var contentNode = this;
+			query('[data-bound-attributes]', this.fragment).forEach(function (element) {
+				var dataBoundAttributeMap = JSON.parse(domAttr.get(element, 'data-bound-attributes'));
+				for (var attributeName in dataBoundAttributeMap) {
+					contentNode._applyBindingExpression(
+						dataBoundAttributeMap[attributeName],
+						view,
+						lang.hitch(domAttr, 'set', element, attributeName)
+					);
+				}
 			});
 		}
 	});
