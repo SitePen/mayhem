@@ -21,10 +21,24 @@ define([
 		templateNodes: null,
 
 		_create: function (view, options) {
-			var contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true),
+			var contentNode = this,
+				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true),
 				placeholderMap = options.root.placeholderMap;
 			this.inherited(arguments);
 
+			// Instantiate widgets
+			query('[data-is]', contentNodeFragment).forEach(function (typedElement) {
+				var type = domAttr.get(typedElement, 'data-is'),
+					// TODO: Support widget properties
+					/*propertiesString = domAttr.get(typedElement, 'data-props'),
+					properties = propertiesString ? JSON.parse('{' + propertiesString + '}') : null,*/
+					WidgetConstructor = contentNode.dependencyMap[type];
+
+				// TODO: Support something like data-dojo-props
+				new WidgetConstructor(null, typedElement);
+			});
+
+			// Instantiate template nodes
 			this.templateNodes = array.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
 				var id = TemplateNodeConstructor.prototype.id,
 					placeMarkerDomNode = findPlaceMarker(contentNodeFragment, id),

@@ -89,15 +89,13 @@ define([
 					}
 
 					// Collect dependencies
-					var dojoTypedDomNodes = query('[data-dojo-type]', domNode);
-					for (var i = 0; i < dojoTypedDomNodes.length; i++) {
-
-						var moduleId = domAttr.get(dojoTypedDomNodes, 'data-dojo-type');
+					query('[data-is]', domNode).forEach(function (typedElement) {
+						var moduleId = domAttr.get(typedElement, 'data-is');
 						if (aliases[moduleId]) {
 							moduleId = aliases[moduleId];
 						}
 						dependencyMap[moduleId] = true;
-					}
+					});
 
 					compileDataBoundAttributes(domNode);
 
