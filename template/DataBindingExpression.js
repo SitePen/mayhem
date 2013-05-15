@@ -40,6 +40,7 @@ define([
 		}
 	};
 	// TODO: Determine how standard data binding context should be supported. This is probably not the way.
+	// TODO: Choose better name.
 	function enrichContext(context) {
 		return lang.delegate(
 			context,
