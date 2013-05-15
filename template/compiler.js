@@ -15,7 +15,24 @@ define([
 	'./ForNode',
 	'./WhenNode',
 	'./DataNode'
-], function (lang, array, declare, Deferred, query, domConstruct, domAttr, templateParser, expressionParser, DataBindingExpression, PlaceholderNode, ContentNode, IfNode, ForNode, WhenNode, DataNode) {
+], function (
+	lang,
+	array,
+	declare,
+	Deferred,
+	query, 
+	domConstruct, 
+	domAttr, 
+	templateParser, 
+	expressionParser, 
+	DataBindingExpression, 
+	PlaceholderNode, 
+	ContentNode, 
+	IfNode, 
+	ForNode, 
+	WhenNode, 
+	DataNode
+) {
 
 	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/;
 	function compileDataBoundAttributes(element) {
@@ -76,6 +93,9 @@ define([
 					for (var i = 0; i < dojoTypedDomNodes.length; i++) {
 
 						var moduleId = domAttr.get(dojoTypedDomNodes, 'data-dojo-type');
+						if (aliases[moduleId]) {
+							moduleId = aliases[moduleId];
+						}
 						dependencyMap[moduleId] = true;
 					}
 
@@ -139,6 +159,7 @@ define([
 			}
 
 			var dependencyMap = {},
+				aliases = templateAst.aliases,
 				ContentNodeWithDependencies = declare(ContentNode, { dependencyMap: dependencyMap }),
 				TemplateConstructor = declare(processNode(templateAst), {
 					placeholderMap: null,
