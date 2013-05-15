@@ -108,7 +108,7 @@ define([
 				else if (type === 'for') {
 					Constructor = declare(ForNode, {
 						each: new DataBindingExpression(pegNode.each),
-						value: new DataBindingExpression(pegNode.value),
+						valueName: pegNode.value,
 						ContentConstructor: processNode(pegNode.content)
 					});
 				}
