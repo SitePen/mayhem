@@ -1,4 +1,3 @@
-// TODO: Support object dot notation
 start
 	= FunctionCall
 	/ DotExpression
