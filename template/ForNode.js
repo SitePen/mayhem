@@ -12,12 +12,12 @@ define([
 
 		contentItems: null,
 
-		_bind: function (view, options, context) {
-			this.each.bind(context, lang.hitch(this, '_update', view, options, context));
+		_bind: function (kwArgs) {
+			this.each.bind(kwArgs.bindingContext, lang.hitch(this, '_update', kwArgs));
 		},
 
 		// TODO: The list of necessary params is exploding. Consider if kwArgs or a better design is in order.
-		_update: function (view, options, context, array) {
+		_update: function (kwArgs, array) {
 			if (this.contentItems) {
 				arrayUtil.forEach(this.contentItems, function (contentItem) {
 					contentItem.destroy();
@@ -29,9 +29,13 @@ define([
 				var itemData = {};
 				itemData[this.valueName] = item;
 
-				var contentItem = new this.ContentConstructor(view, lang.delegate(options, {
-					additionalContext: itemData
-				}));
+				// TODO: Fix this. This is a hack to avoid carrying dbind _binding property forward for these specializations.
+				itemData._binding = undefined;
+
+				var itemBindingContext = lang.delegate(kwArgs.bindingContext, itemData),
+					contentItem = new this.ContentConstructor(lang.delegate(kwArgs, {
+						bindingContext: itemBindingContext
+					}));
 				contentItem.placeAt(this.endMarker, 'before');
 				return contentItem;
 			}));

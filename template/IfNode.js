@@ -10,16 +10,16 @@ define([
 
 		content: null,
 
-		_bind: function (view, options, context) {
+		_bind: function (kwArgs) {
 			var conditionalBlocks = this.conditionalBlocks,
-				update = lang.hitch(this, '_evaluateConditions', view, options, context);
+				update = lang.hitch(this, '_evaluateConditions', kwArgs);
 			for (var i = 0; i < conditionalBlocks.length; i++) {
 				// TODO: Is there a way to avoid having update() called when binding to each condition?
-				conditionalBlocks[i].condition.bind(context, update);
+				conditionalBlocks[i].condition.bind(kwArgs.bindingContext, update);
 			}
 		},
 
-		_evaluateConditions: function (view, options, context, value) {
+		_evaluateConditions: function (kwArgs, value) {
 			this._removeContent();
 
 			var conditionalBlocks = this.conditionalBlocks,
@@ -28,7 +28,7 @@ define([
 
 			for (var i = 0; i < conditionalBlocks.length && !blockToApply; i++) {
 				conditionalBlock = conditionalBlocks[i];
-				if (conditionalBlock.condition.getValue(context)) {
+				if (conditionalBlock.condition.getValue(kwArgs.bindingContext)) {
 					blockToApply = conditionalBlock;
 				}
 			}
@@ -38,7 +38,7 @@ define([
 			}
 
 			if (blockToApply) {
-				var content = this.content = new blockToApply.ContentConstructor(context);
+				var content = this.content = new blockToApply.ContentConstructor(kwArgs);
 				content.placeAt(this.endMarker, 'before');
 			}
 		},

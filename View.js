@@ -36,7 +36,7 @@ define([
 				existingTemplate.destroy();
 			}
 
-			this.template = new TemplateConstructor(this);
+			this.template = new TemplateConstructor({ view: this });
 		},
 
 		//	template: framework/Template
@@ -55,7 +55,7 @@ define([
 		postscript: function () {
 			this.inherited(arguments);
 
-			this.template || (this.template = new this.TemplateConstructor(this));
+			this.template || (this.template = new this.TemplateConstructor({ view: this }));
 		},
 
 		placeAt: function (node, position) {

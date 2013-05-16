@@ -8,10 +8,11 @@ define([
 
 		name: null,
 
-		_bind: function (view, options, context) {
+		_bind: function (kwArgs) {
 			this.inherited(arguments);
 
-			var placeholder = this;
+			var view = kwArgs.view,
+				placeholder = this;
 
 			// TODO: What is a better way to bind to a view's subviews?
 			// TODO: Stop leaking this handle.
