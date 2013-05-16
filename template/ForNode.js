@@ -28,7 +28,9 @@ define([
 				var itemData = {};
 				itemData[this.valueName] = item;
 
-				return new this.ContentConstructor(lang.delegate(view, itemData));
+				var contentItem = new this.ContentConstructor(lang.delegate(view, itemData));
+				contentItem.placeAt(this.endMarker, 'before');
+				return contentItem;
 			}));
 		}
 	});

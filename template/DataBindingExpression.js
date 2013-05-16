@@ -41,12 +41,12 @@ define([
 	};
 	// TODO: Determine how standard data binding context should be supported. This is probably not the way.
 	// TODO: Choose better name.
-	function enrichContext(context) {
+	function createBindingContext(view) {
 		return lang.delegate(
-			context,
+			view.viewModel,
 			lang.mixin({}, bindingHelperFunctions, {
-				app: context.app,
-				router: context.app.router
+				app: view.app,
+				router: view.app.router
 			})
 		);
 	}
@@ -57,12 +57,12 @@ define([
 			: stringOrAst;
 	}
 	DataBindingExpression.prototype = {
-		getValue: function (context) {
-			context = enrichContext(context);
+		getValue: function (view) {
+			context = createBindingContext(view);
 			return getValue(context, this.expressionAst);
 		},
-		bind: function (context, callback) {
-			context = enrichContext(context);
+		bind: function (view, callback) {
+			context = createBindingContext(view);
 
 			var expressionAst = this.expressionAst,
 				type = expressionAst.type;
