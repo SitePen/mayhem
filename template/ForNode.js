@@ -16,7 +16,6 @@ define([
 			this.each.bind(kwArgs.bindingContext, lang.hitch(this, '_update', kwArgs));
 		},
 
-		// TODO: The list of necessary params is exploding. Consider if kwArgs or a better design is in order.
 		_update: function (kwArgs, array) {
 			if (this.contentItems) {
 				arrayUtil.forEach(this.contentItems, function (contentItem) {
