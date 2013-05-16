@@ -102,8 +102,7 @@ define([
 				view.viewModel,
 				lang.mixin({}, bindingHelperFunctions, {
 					app: view.app,
-					router: view.app.router,
-					temp: [ 1, 2, 3, 4, 5 ]
+					router: view.app.router
 				})
 			);
 		},
