@@ -17,7 +17,7 @@ define([
 	'./DataNode'
 ], function (
 	lang,
-	array,
+	arrayUtil,
 	declare,
 	Deferred,
 	query, 
@@ -108,12 +108,12 @@ define([
 					Constructor = declare(ContentNodeWithDependencies, {
 						masterFragment: fragment,
 						dependencyMap: dependencyMap,
-						templateNodeConstructors: array.map(pegNode.templateNodes, processNode)
+						templateNodeConstructors: arrayUtil.map(pegNode.templateNodes, processNode)
 					});
 				}
 				else if (type === 'if') {
 					Constructor = declare(IfNode, {
-						conditionalBlocks: array.map(pegNode.conditionalBlocks, function (conditionalBlock) {
+						conditionalBlocks: arrayUtil.map(pegNode.conditionalBlocks, function (conditionalBlock) {
 							return {
 								condition: new DataBindingExpression(conditionalBlock.condition),
 								ContentConstructor: processNode(conditionalBlock.content)

@@ -3,7 +3,7 @@ define([
 	'./BoundNode',
 	'dojo/_base/lang',
 	'dojo/_base/array'
-], function (declare, BoundNode, lang, array) {
+], function (declare, BoundNode, lang, arrayUtil) {
 	return declare(BoundNode, {
 
 		name: null,
@@ -17,8 +17,8 @@ define([
 				var viewArray = newValue;
 				// TODO: Stop leaking this handle.
 				viewArray.watchElements(function (index, removedViews, addedViews) {
-					array.forEach(removedViews, lang.hitch(placeholder, 'removeView'));
-					array.forEach(addedViews, lang.hitch(placeholder, 'addView'));
+					arrayUtil.forEach(removedViews, lang.hitch(placeholder, 'removeView'));
+					arrayUtil.forEach(addedViews, lang.hitch(placeholder, 'addView'));
 				});
 			});
 		},
