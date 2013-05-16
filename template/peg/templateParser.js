@@ -61,6 +61,8 @@ define([], function () {
         "Attribute": parse_Attribute,
         "AttributeName": parse_AttributeName,
         "AttributeValue": parse_AttributeValue,
+        "OpenToken": parse_OpenToken,
+        "CloseToken": parse_CloseToken,
         "S": parse_S
       };
       
@@ -630,34 +632,32 @@ define([], function () {
       }
       
       function parse_IfTagOpen() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 3) === "<if") {
-          result0 = "<if";
-          advance(pos, 3);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<if\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 2) === "if") {
+            result1 = "if";
+            advance(pos, 2);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"if\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -673,7 +673,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new IfNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -682,49 +682,67 @@ define([], function () {
       }
       
       function parse_IfTagClose() {
-        var result0;
+        var result0, result1, result2;
+        var pos0;
         
-        if (input.substr(pos.offset, 5) === "</if>") {
-          result0 = "</if>";
-          advance(pos, 5);
+        pos0 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 3) === "/if") {
+            result1 = "/if";
+            advance(pos, 3);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"/if\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_CloseToken();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos0);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
         } else {
           result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"</if>\"");
-          }
+          pos = clone(pos0);
         }
         return result0;
       }
       
       function parse_ElseIfTag() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 7) === "<elseif") {
-          result0 = "<elseif";
-          advance(pos, 7);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<elseif\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 6) === "elseif") {
+            result1 = "elseif";
+            advance(pos, 6);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"elseif\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -740,7 +758,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new ElseIfNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -749,16 +767,36 @@ define([], function () {
       }
       
       function parse_ElseTag() {
-        var result0;
+        var result0, result1, result2;
+        var pos0;
         
-        if (input.substr(pos.offset, 6) === "<else>") {
-          result0 = "<else>";
-          advance(pos, 6);
+        pos0 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 4) === "else") {
+            result1 = "else";
+            advance(pos, 4);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"else\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_CloseToken();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos0);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
         } else {
           result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<else>\"");
-          }
+          pos = clone(pos0);
         }
         return result0;
       }
@@ -801,34 +839,32 @@ define([], function () {
       }
       
       function parse_ForTagOpen() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 4) === "<for") {
-          result0 = "<for";
-          advance(pos, 4);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<for\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 3) === "for") {
+            result1 = "for";
+            advance(pos, 3);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"for\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -844,7 +880,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new ForNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -853,16 +889,36 @@ define([], function () {
       }
       
       function parse_ForTagClose() {
-        var result0;
+        var result0, result1, result2;
+        var pos0;
         
-        if (input.substr(pos.offset, 6) === "</for>") {
-          result0 = "</for>";
-          advance(pos, 6);
+        pos0 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 4) === "/for") {
+            result1 = "/for";
+            advance(pos, 4);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"/for\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_CloseToken();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos0);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
         } else {
           result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"</for>\"");
-          }
+          pos = clone(pos0);
         }
         return result0;
       }
@@ -961,34 +1017,32 @@ define([], function () {
       }
       
       function parse_WhenTagOpen() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 5) === "<when") {
-          result0 = "<when";
-          advance(pos, 5);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<when\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 4) === "when") {
+            result1 = "when";
+            advance(pos, 4);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"when\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -1004,7 +1058,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new WhenNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1013,79 +1067,137 @@ define([], function () {
       }
       
       function parse_WhenTagClose() {
-        var result0;
+        var result0, result1, result2;
+        var pos0;
         
-        if (input.substr(pos.offset, 7) === "</when>") {
-          result0 = "</when>";
-          advance(pos, 7);
+        pos0 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 5) === "/when") {
+            result1 = "/when";
+            advance(pos, 5);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"/when\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_CloseToken();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos0);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
         } else {
           result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"</when>\"");
-          }
+          pos = clone(pos0);
         }
         return result0;
       }
       
       function parse_WhenErrorTag() {
-        var result0;
+        var result0, result1, result2;
+        var pos0;
         
-        if (input.substr(pos.offset, 7) === "<error>") {
-          result0 = "<error>";
-          advance(pos, 7);
+        pos0 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 5) === "error") {
+            result1 = "error";
+            advance(pos, 5);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"error\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_CloseToken();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos0);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
         } else {
           result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<error>\"");
-          }
+          pos = clone(pos0);
         }
         return result0;
       }
       
       function parse_WhenProgressTag() {
-        var result0;
+        var result0, result1, result2;
+        var pos0;
         
-        if (input.substr(pos.offset, 10) === "<progress>") {
-          result0 = "<progress>";
-          advance(pos, 10);
+        pos0 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 8) === "progress") {
+            result1 = "progress";
+            advance(pos, 8);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"progress\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_CloseToken();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos0);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
         } else {
           result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<progress>\"");
-          }
+          pos = clone(pos0);
         }
         return result0;
       }
       
       function parse_PlaceholderTag() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 12) === "<placeholder") {
-          result0 = "<placeholder";
-          advance(pos, 12);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<placeholder\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 11) === "placeholder") {
+            result1 = "placeholder";
+            advance(pos, 11);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"placeholder\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -1101,7 +1213,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new PlaceholderNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1110,34 +1222,32 @@ define([], function () {
       }
       
       function parse_DataTag() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 5) === "<data") {
-          result0 = "<data";
-          advance(pos, 5);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<data\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 4) === "data") {
+            result1 = "data";
+            advance(pos, 4);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"data\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -1153,7 +1263,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new DataNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1162,34 +1272,32 @@ define([], function () {
       }
       
       function parse_AliasTag() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.substr(pos.offset, 6) === "<alias") {
-          result0 = "<alias";
-          advance(pos, 6);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<alias\"");
-          }
-        }
+        result0 = parse_OpenToken();
         if (result0 !== null) {
-          result1 = parse_AttributeSet();
-          if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 62) {
-              result2 = ">";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\">\"");
-              }
+          if (input.substr(pos.offset, 5) === "alias") {
+            result1 = "alias";
+            advance(pos, 5);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"alias\"");
             }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
             if (result2 !== null) {
-              result0 = [result0, result1, result2];
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
             } else {
               result0 = null;
               pos = clone(pos1);
@@ -1205,7 +1313,7 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
         		return new AliasNode(attributes);
-        	})(pos0.offset, pos0.line, pos0.column, result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1605,6 +1713,74 @@ define([], function () {
           if (result0 === null) {
             pos = clone(pos0);
           }
+        }
+        return result0;
+      }
+      
+      function parse_OpenToken() {
+        var result0, result1, result2;
+        var pos0;
+        
+        pos0 = clone(pos);
+        if (input.charCodeAt(pos.offset) === 60) {
+          result0 = "<";
+          advance(pos, 1);
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"<\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = [];
+          result2 = parse_S();
+          while (result2 !== null) {
+            result1.push(result2);
+            result2 = parse_S();
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
+        } else {
+          result0 = null;
+          pos = clone(pos0);
+        }
+        return result0;
+      }
+      
+      function parse_CloseToken() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = clone(pos);
+        result0 = [];
+        result1 = parse_S();
+        while (result1 !== null) {
+          result0.push(result1);
+          result1 = parse_S();
+        }
+        if (result0 !== null) {
+          if (input.charCodeAt(pos.offset) === 62) {
+            result1 = ">";
+            advance(pos, 1);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\">\"");
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = clone(pos0);
+          }
+        } else {
+          result0 = null;
+          pos = clone(pos0);
         }
         return result0;
       }

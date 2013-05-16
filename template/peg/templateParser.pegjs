@@ -195,20 +195,20 @@ IfTag
 	}
 
 IfTagOpen
-	= '<if' attributes:AttributeSet '>' {
+	= OpenToken 'if' attributes:AttributeSet CloseToken {
 		return new IfNode(attributes);
 	}
 
 IfTagClose
-	= '</if>'
+	= OpenToken '/if' CloseToken
 
 ElseIfTag
-	= '<elseif' attributes:AttributeSet '>' {
+	= OpenToken 'elseif' attributes:AttributeSet CloseToken {
 		return new ElseIfNode(attributes);
 	}
 
 ElseTag
-	= '<else>'
+	= OpenToken 'else' CloseToken
 
 ForTag
 	= forNode:ForTagOpen content:ContentOrEmpty ForTagClose {
@@ -217,12 +217,12 @@ ForTag
 	}
 
 ForTagOpen
-	= '<for' attributes:AttributeSet '>' {
+	= OpenToken 'for' attributes:AttributeSet CloseToken {
 		return new ForNode(attributes);
 	}
 
 ForTagClose
-	= '</for>'
+	= OpenToken '/for' CloseToken
 
 WhenTag
 	= whenNode:WhenTagOpen
@@ -237,31 +237,31 @@ WhenTag
 	}
 
 WhenTagOpen
-	= '<when' attributes:AttributeSet '>' {
+	= OpenToken 'when' attributes:AttributeSet CloseToken {
 		return new WhenNode(attributes);
 	}
 
 WhenTagClose
-	= '</when>'
+	= OpenToken '/when' CloseToken
 
 WhenErrorTag
-	= '<error>'
+	= OpenToken 'error' CloseToken
 
 WhenProgressTag
-	= '<progress>'
+	= OpenToken 'progress' CloseToken
 
 PlaceholderTag
-	= '<placeholder' attributes:AttributeSet '>' {
+	= OpenToken 'placeholder' attributes:AttributeSet CloseToken {
 		return new PlaceholderNode(attributes);
 	}
 
 DataTag
-	= '<data' attributes:AttributeSet '>' {
+	= OpenToken 'data' attributes:AttributeSet CloseToken {
 		return new DataNode(attributes);
 	}
 
 AliasTag
-	= '<alias' attributes:AttributeSet '>' {
+	= OpenToken 'alias' attributes:AttributeSet CloseToken {
 		return new AliasNode(attributes);
 	}
 
@@ -292,6 +292,12 @@ AttributeName
 AttributeValue
 	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join(''); })
 	/ ('"' value:('\\"' { return '"' } / [^"\r\n])* '"' { return value.join(''); })
+
+OpenToken
+	= '<' S*
+
+CloseToken
+	= S* '>'
 
 S 'whitespace'
 	= [ \t\r\n]
