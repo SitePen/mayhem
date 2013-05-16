@@ -28,6 +28,7 @@ define([
 				var itemData = {};
 				itemData[this.valueName] = item;
 
+				// TODO: Figure out how to pass different context vars. Delegating here doesn't work because view.viewModel becomes root context.
 				var contentItem = new this.ContentConstructor(lang.delegate(view, itemData));
 				contentItem.placeAt(this.endMarker, 'before');
 				return contentItem;
