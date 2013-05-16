@@ -9,12 +9,12 @@ define([
 		ProgressTemplate: null,
 
 		promise: null,
+		// TODO: Add valueName property that specifies what the callback parameter should be called in the data binding context.
 		content: null,
 
 		_bind: function (view, options, context) {
 			var whenNode = this;
 			this.promise.bind(context, function (promise) {
-				// TODO: Make promise callback params available to template data binding.
 				// TODO: Cleanup!
 				promise && promise.then(
 					function (value) {
