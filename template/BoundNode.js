@@ -51,6 +51,7 @@ define([
 				range.setStartBefore(this.beginMarker);
 				range.setEndAfter(this.endMarker);
 				this.fragment = range.extractContents();
+				range.detach();
 
 				// TODO: Support IE8 which doesn't support ranges. The below code should work but hasn't been tested yet.
 				/*
@@ -70,6 +71,10 @@ define([
 				} while (currentNode !== lastNode && (currentNode = nextSibling));
 				*/
 			}
+		},
+
+		startup: function () {
+			// Do nothing
 		},
 
 		destroy: function () {

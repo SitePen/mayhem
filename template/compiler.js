@@ -89,10 +89,11 @@ define([
 					}
 
 					// Collect dependencies
-					query('[data-is]', domNode).forEach(function (typedElement) {
-						var moduleId = domAttr.get(typedElement, 'data-is');
+					query('[is]', domNode).forEach(function (typedElement) {
+						var moduleId = domAttr.get(typedElement, 'is');
 						if (aliases[moduleId]) {
 							moduleId = aliases[moduleId];
+							domAttr.set(typedElement, 'is', moduleId);
 						}
 						dependencyMap[moduleId] = true;
 					});
@@ -136,7 +137,7 @@ define([
 				}
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
-						promiseName: new DataBindingExpression(pegNode.promise),
+						promise: new DataBindingExpression(pegNode.promise),
 						ResolvedTemplate: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
 						ErrorTemplate: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
 						ProgressTemplate: pegNode.progressContent ? processNode(pegNode.progressContent) : null
@@ -144,7 +145,8 @@ define([
 				}
 				else if (type === 'data') {
 					Constructor = declare(DataNode, {
-						'var': new DataBindingExpression(pegNode.var)
+						'var': new DataBindingExpression(pegNode.var),
+						safe: !!pegNode.safe
 					});
 				}
 				else {
@@ -159,15 +161,7 @@ define([
 			var dependencyMap = {},
 				aliases = templateAst.aliases,
 				ContentNodeWithDependencies = declare(ContentNode, { dependencyMap: dependencyMap }),
-				TemplateConstructor = declare(processNode(templateAst), {
-					placeholderMap: null,
-					constructor: function () {
-						this.placeholderMap = {};
-					},
-					_create: function (view, options) {
-						this.inherited(arguments, [ view, lang.delegate(options, { root: this })]);
-					}
-				}),
+				TemplateConstructor = processNode(templateAst),
 				dfd = new Deferred();
 
 			// List dependency module IDs

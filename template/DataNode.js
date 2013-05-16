@@ -1,28 +1,30 @@
 define([
 	'dojo/_base/declare',
-	'./BoundNode'
-], function (declare, BoundNode) {
+	'./BoundNode',
+	'dojo/dom-construct'
+], function (declare, BoundNode, domConstruct) {
 	return declare(BoundNode, {
+		safe: false,
 		'var': null,
-		domTextNode: null,
-
-		// TODO: Support safe attribute
 
 		_bind: function (view) {
 			var dataNode = this;
 
 			this.var.bind(view, function (value) {
-				var existingDomTextNode = dataNode.domTextNode,
-					newDomTextNode = dataNode.domTextNode = document.createTextNode(value);
+				dataNode._removeContent();
 
-				if (existingDomTextNode) {
-					existingDomTextNode.parentNode.replaceChild(newDomTextNode, existingDomTextNode);
-				}
-				else {
-					var endMarker = dataNode.endMarker;
-					endMarker.parentNode.insertBefore(newDomTextNode, endMarker);
-				}
+				var newContent = dataNode.safe ? domConstruct.toDom(value) : document.createTextNode(value);
+				domConstruct.place(newContent, dataNode.beginMarker, 'after');
 			});
+		},
+
+		_removeContent: function () {
+			// TODO: Support IE8, which doesn't support ranges
+			var range = document.createRange();
+			range.setStartAfter(this.beginMarker);
+			range.setEndBefore(this.endMarker);
+			range.deleteContents();
+			range.detach();
 		}
 	});
 });

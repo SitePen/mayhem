@@ -57,7 +57,7 @@ define([], function () {
         "PlaceholderTag": parse_PlaceholderTag,
         "DataTag": parse_DataTag,
         "AliasTag": parse_AliasTag,
-        "Attributes": parse_Attributes,
+        "AttributeSet": parse_AttributeSet,
         "Attribute": parse_Attribute,
         "AttributeName": parse_AttributeName,
         "AttributeValue": parse_AttributeValue,
@@ -645,7 +645,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -712,7 +712,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -816,7 +816,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -976,7 +976,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -1073,7 +1073,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -1125,7 +1125,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -1177,7 +1177,7 @@ define([], function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_Attributes();
+          result1 = parse_AttributeSet();
           if (result1 !== null) {
             if (input.charCodeAt(pos.offset) === 62) {
               result2 = ">";
@@ -1213,7 +1213,7 @@ define([], function () {
         return result0;
       }
       
-      function parse_Attributes() {
+      function parse_AttributeSet() {
         var result0, result1, result2;
         var pos0, pos1;
         
@@ -1243,7 +1243,20 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, attributes) { return attributes; })(pos0.offset, pos0.line, pos0.column, result0[0]);
+          result0 = (function(offset, line, column, attributes) {
+        		var attributeMap = {};
+        		for (var i = 0; i < attributes.length; i++) {
+        			var attribute = attributes[i];
+        
+        			if (attributeMap[attribute.name]) {
+        				throw new Error('A "' + attribute.name + '" has already been specified');
+        			}
+        
+        			attributeMap[attribute.name] = attribute.value;
+        		}
+        
+        		return attributeMap;
+        	})(pos0.offset, pos0.line, pos0.column, result0[0]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -1645,38 +1658,60 @@ define([], function () {
       		};
       	}
       
-      	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes) {
+      	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes, /*Array*/ optionalAttributes) {
       		// summary:
       		//		Creates a constructor for a tag's AST node.
       		// type:
       		//		The AST node type.
       		// requiredAttributes:
       		//		The attributes required by the tag.
+      		// optionalAttributes:
+      		//		Non-required attributes allowed by the tag.
       
-      		var requiredAttributeMap = {};
+      		requiredAttributes = requiredAttributes || [];
+      		optionalAttributes = optionalAttributes || [];
+      
+      		var permittedAttributeSet = {};
       		for (var i = 0; i < requiredAttributes.length; i++) {
-      			requiredAttributeMap[requiredAttributes[i]] = true;
+      			permittedAttributeSet[requiredAttributes[i]] = true;
+      		}
+      		for (var i = 0; i < optionalAttributes.length; i++) {
+      			permittedAttributeSet[optionalAttributes[i]] = true;
       		}
       
-      		var Constructor = function (attributes) {
-      			if (attributes !== undefined) {
-      				var unsupportedAttributes = [];
+      		var Constructor = function (attributeSet) {
+      			attributeSet = attributeSet || {};
       
-      				for (var i = 0; i < attributes.length; i++) {
-      					var attribute = attributes[i];
-      					if (requiredAttributeMap[attribute.name]) {
-      						this[attribute.name] = attribute.value;
-      					}
-      					else {
-      						unsupportedAttributes.push(attribute.name);
-      					}
+      			// Make sure required attributes are present
+      			var missingAttributes = [];
+      			for (var i = 0; i < requiredAttributes.length; i++) {
+      				if (!(requiredAttributes[i] in permittedAttributeSet)) {
+      					missingAttributes.push(requiredAttributes[i]);
       				}
+      			}
       
-      				if (unsupportedAttributes.length > 0) {
-      					throw new Error(
-      						'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
-      					);
+      			if (missingAttributes.length) {
+      				throw new Error(
+      					'Type ' + type + ' is missing required attribute(s): ' + missingAttributes.join(', ')
+      				);
+      			}
+      
+      			// Apply attributes
+      			var unsupportedAttributes = [];
+      			for (var name in attributeSet) {
+      				if (name in permittedAttributeSet) {
+      					this[name] = attributeSet[name];
       				}
+      				else {
+      					unsupportedAttributes.push(attribute.name);
+      				}
+      			}
+      
+      			// Report unsupported attributes
+      			if (unsupportedAttributes.length > 0) {
+      				throw new Error(
+      					'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
+      				);
       			}
       		};
       		Constructor.prototype = {
@@ -1690,7 +1725,7 @@ define([], function () {
       	var ForNode = createNodeConstructor('for', [ 'each', 'value' ]);
       	var WhenNode = createNodeConstructor('when', [ 'promise' ]);
       	var PlaceholderNode = createNodeConstructor('placeholder', [ 'name' ]);
-      	var DataNode = createNodeConstructor('data', [ 'var' ]);
+      	var DataNode = createNodeConstructor('data', [ 'var' ], [ 'safe' ]);
       	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);
       
       	function HtmlFragmentNode(html) {

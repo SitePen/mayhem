@@ -13,38 +13,60 @@
 		};
 	}
 
-	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes) {
+	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes, /*Array*/ optionalAttributes) {
 		// summary:
 		//		Creates a constructor for a tag's AST node.
 		// type:
 		//		The AST node type.
 		// requiredAttributes:
 		//		The attributes required by the tag.
+		// optionalAttributes:
+		//		Non-required attributes allowed by the tag.
 
-		var requiredAttributeMap = {};
+		requiredAttributes = requiredAttributes || [];
+		optionalAttributes = optionalAttributes || [];
+
+		var permittedAttributeSet = {};
 		for (var i = 0; i < requiredAttributes.length; i++) {
-			requiredAttributeMap[requiredAttributes[i]] = true;
+			permittedAttributeSet[requiredAttributes[i]] = true;
+		}
+		for (var i = 0; i < optionalAttributes.length; i++) {
+			permittedAttributeSet[optionalAttributes[i]] = true;
 		}
 
-		var Constructor = function (attributes) {
-			if (attributes !== undefined) {
-				var unsupportedAttributes = [];
+		var Constructor = function (attributeSet) {
+			attributeSet = attributeSet || {};
 
-				for (var i = 0; i < attributes.length; i++) {
-					var attribute = attributes[i];
-					if (requiredAttributeMap[attribute.name]) {
-						this[attribute.name] = attribute.value;
-					}
-					else {
-						unsupportedAttributes.push(attribute.name);
-					}
+			// Make sure required attributes are present
+			var missingAttributes = [];
+			for (var i = 0; i < requiredAttributes.length; i++) {
+				if (!(requiredAttributes[i] in permittedAttributeSet)) {
+					missingAttributes.push(requiredAttributes[i]);
 				}
+			}
 
-				if (unsupportedAttributes.length > 0) {
-					throw new Error(
-						'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
-					);
+			if (missingAttributes.length) {
+				throw new Error(
+					'Type ' + type + ' is missing required attribute(s): ' + missingAttributes.join(', ')
+				);
+			}
+
+			// Apply attributes
+			var unsupportedAttributes = [];
+			for (var name in attributeSet) {
+				if (name in permittedAttributeSet) {
+					this[name] = attributeSet[name];
 				}
+				else {
+					unsupportedAttributes.push(attribute.name);
+				}
+			}
+
+			// Report unsupported attributes
+			if (unsupportedAttributes.length > 0) {
+				throw new Error(
+					'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
+				);
 			}
 		};
 		Constructor.prototype = {
@@ -58,7 +80,7 @@
 	var ForNode = createNodeConstructor('for', [ 'each', 'value' ]);
 	var WhenNode = createNodeConstructor('when', [ 'promise' ]);
 	var PlaceholderNode = createNodeConstructor('placeholder', [ 'name' ]);
-	var DataNode = createNodeConstructor('data', [ 'var' ]);
+	var DataNode = createNodeConstructor('data', [ 'var' ], [ 'safe' ]);
 	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);
 
 	function HtmlFragmentNode(html) {
@@ -173,7 +195,7 @@ IfTag
 	}
 
 IfTagOpen
-	= '<if' attributes:Attributes '>' {
+	= '<if' attributes:AttributeSet '>' {
 		return new IfNode(attributes);
 	}
 
@@ -181,7 +203,7 @@ IfTagClose
 	= '</if>'
 
 ElseIfTag
-	= '<elseif' attributes:Attributes '>' {
+	= '<elseif' attributes:AttributeSet '>' {
 		return new ElseIfNode(attributes);
 	}
 
@@ -195,7 +217,7 @@ ForTag
 	}
 
 ForTagOpen
-	= '<for' attributes:Attributes '>' {
+	= '<for' attributes:AttributeSet '>' {
 		return new ForNode(attributes);
 	}
 
@@ -215,7 +237,7 @@ WhenTag
 	}
 
 WhenTagOpen
-	= '<when' attributes:Attributes '>' {
+	= '<when' attributes:AttributeSet '>' {
 		return new WhenNode(attributes);
 	}
 
@@ -229,22 +251,35 @@ WhenProgressTag
 	= '<progress>'
 
 PlaceholderTag
-	= '<placeholder' attributes:Attributes '>' {
+	= '<placeholder' attributes:AttributeSet '>' {
 		return new PlaceholderNode(attributes);
 	}
 
 DataTag
-	= '<data' attributes:Attributes '>' {
+	= '<data' attributes:AttributeSet '>' {
 		return new DataNode(attributes);
 	}
 
 AliasTag
-	= '<alias' attributes:Attributes '>' {
+	= '<alias' attributes:AttributeSet '>' {
 		return new AliasNode(attributes);
 	}
 
-Attributes
-	= attributes:Attribute* S* { return attributes; }
+AttributeSet
+	= attributes:Attribute* S* {
+		var attributeMap = {};
+		for (var i = 0; i < attributes.length; i++) {
+			var attribute = attributes[i];
+
+			if (attributeMap[attribute.name]) {
+				throw new Error('A "' + attribute.name + '" has already been specified');
+			}
+
+			attributeMap[attribute.name] = attribute.value;
+		}
+
+		return attributeMap;
+	}
 
 Attribute
 	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue { return value; })? {

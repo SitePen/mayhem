@@ -8,12 +8,12 @@ define([
 		ErrorTemplate: null,
 		ProgressTemplate: null,
 
-		promiseName: null,
+		promise: null,
 		content: null,
 
 		_bind: function (view) {
 			var whenNode = this;
-			this._applyBindingExpression(this.promiseName, view, function (promise) {
+			this.promise.bind(view, function (promise) {
 				// TODO: Make promise callback params available to template data binding.
 				// TODO: Cleanup!
 				promise && promise.then(

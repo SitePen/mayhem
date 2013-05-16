@@ -7,7 +7,7 @@ define([
 	'dojo/query',
 	'dojo/dom-attr',
 	'./DataBindingExpression'
-], function (lang, declare, BoundNode, PlaceholderNode, array, query, domAttr, DataBindingExpression) {
+], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, query, domAttr, DataBindingExpression) {
 
 	function findPlaceMarker(rootNode, id) {
 		return query('[data-template-node-id="' + id + '"]', rootNode)[0];
@@ -20,35 +20,46 @@ define([
 		templateNodeConstructors: null,
 		templateNodes: null,
 
-		_create: function (view, options) {
+		_create: function (view) {
 			var contentNode = this,
-				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true),
-				placeholderMap = options.root.placeholderMap;
+				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true);
+
 			this.inherited(arguments);
 
-			// Instantiate widgets
-			query('[data-is]', contentNodeFragment).forEach(function (typedElement) {
-				var type = domAttr.get(typedElement, 'data-is'),
-					// TODO: Support widget properties
-					/*propertiesString = domAttr.get(typedElement, 'data-props'),
-					properties = propertiesString ? JSON.parse('{' + propertiesString + '}') : null,*/
-					WidgetConstructor = contentNode.dependencyMap[type];
+			// Get our widget-typed elements before instantiating template nodes,
+			// which may have their own widget-typed elements.
+			var widgetDomNodes = query('[is]', contentNodeFragment);
 
-				// TODO: Support something like data-dojo-props
-				new WidgetConstructor(null, typedElement);
-			});
-
-			// Instantiate template nodes
-			this.templateNodes = array.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
+			// Instantiating template nodes before widgets because Dijits
+			// are clobbering our template node placeholders.
+			// TODO: This likely means data-bound widget content is broken. Fix this with our own widgets or insist on data binding to widget properties that affect contents.
+			this.templateNodes = arrayUtil.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
 				var id = TemplateNodeConstructor.prototype.id,
 					placeMarkerDomNode = findPlaceMarker(contentNodeFragment, id),
 					templateNode = new TemplateNodeConstructor(view);
 
-				if (templateNode.isInstanceOf(PlaceholderNode)) {
-					placeholderMap[templateNode.name] = templateNode;
-				}
-
 				templateNode.placeAt(placeMarkerDomNode, 'replace');
+			});
+
+			// Instantiate widgets
+			widgetDomNodes.forEach(function (typedElement) {
+				var type = domAttr.get(typedElement, 'is'),
+					WidgetConstructor = contentNode.dependencyMap[type];
+
+				var widget = new WidgetConstructor(null, typedElement);
+
+				// TODO: Consider whether these would be better implemented by Widget base class. Probably: yes.
+					// TODO: Support property spec attribute like data-dojo-props
+					// TODO: Support event listener spec attribute like data-dojo-attach-events
+					// TODO: Support action attribute to bind widget events to view actions.
+					// TODO: Support attach points through data-dojo-attach-point.
+
+				// Associate widget with view model
+				widget.set('viewModel', view.viewModel);
+				var fieldName = domAttr.get(typedElement, 'data-field');
+				if (fieldName) {
+					widget.set('fieldName', fieldName);
+				}
 			});
 		},
 
@@ -60,6 +71,28 @@ define([
 					expression.bind(view, lang.hitch(domAttr, 'set', element, attributeName));
 				}
 			});
+		},
+
+		startup: function () {
+			this.inherited(arguments);
+
+			// Startup template nodes
+			arrayUtil.forEach(this.templateNodes, function (templateNode) {
+				templateNode.startup();
+			});
+
+			// TODO: Startup widgets.
+		},
+
+		destroy: function () {
+			this.inherited(arguments);
+
+			// Destroy template nodes
+			arrayUtil.forEach(this.templateNodes, function (templateNode) {
+				// TODO: Consider how to avoid removing child nodes from DOM piecemeal. Better to remove once from DOM at destruction root.
+			});
+
+			// TODO: Destroy widgets.
 		}
 	});
 });
