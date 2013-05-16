@@ -6,6 +6,24 @@ define([
 	'dbind/bind',
 	'dojo/date/locale'
 ], function (lang, declare, domConstruct, expressionParser, bind, dateLocale) {
+
+	var bindingHelperFunctions = {
+		// TODO: Implement date function
+		date: function (format) {
+			return dateLocale.format(new Date(), { selector: 'date', datePattern: format });
+		}
+	};
+
+	function createBindingContext(view, additionalContext) {
+		return lang.delegate(
+			view.viewModel,
+			lang.mixin({}, bindingHelperFunctions, additionalContext, {
+				app: view.app,
+				router: view.app.router
+			})
+		);
+	}
+
 	return declare(null, {
 		baseFragment: null,
 
@@ -15,8 +33,9 @@ define([
 
 		postscript: function (view, options) {
 			options = options || {};
+
 			this._create(view, options);
-			this._bind(view, options);
+			this._bind(view, options, createBindingContext(view, options.additionalContext));
 		},
 
 		_create: function (/*view, options*/) {
@@ -33,7 +52,7 @@ define([
 			domConstruct.place(endMarker, fragment, 'last');
 		},
 
-		_bind: function (/*view*/) {
+		_bind: function (/*view, options, context*/) {
 			// Do nothing in base class.
 		},
 

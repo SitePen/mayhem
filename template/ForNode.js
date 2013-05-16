@@ -12,11 +12,12 @@ define([
 
 		contentItems: null,
 
-		_bind: function (view) {
-			this.each.bind(view, lang.hitch(this, '_update', view));
+		_bind: function (view, options, context) {
+			this.each.bind(context, lang.hitch(this, '_update', view, options, context));
 		},
 
-		_update: function (view, array) {
+		// TODO: The list of necessary params is exploding. Consider if kwArgs or a better design is in order.
+		_update: function (view, options, context, array) {
 			if (this.contentItems) {
 				arrayUtil.forEach(this.contentItems, function (contentItem) {
 					contentItem.destroy();
@@ -28,8 +29,9 @@ define([
 				var itemData = {};
 				itemData[this.valueName] = item;
 
-				// TODO: Figure out how to pass different context vars. Delegating here doesn't work because view.viewModel becomes root context.
-				var contentItem = new this.ContentConstructor(lang.delegate(view, itemData));
+				var contentItem = new this.ContentConstructor(view, lang.delegate(options, {
+					additionalContext: itemData
+				}));
 				contentItem.placeAt(this.endMarker, 'before');
 				return contentItem;
 			}));

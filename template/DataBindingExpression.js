@@ -33,37 +33,16 @@ define([
 		}
 	}
 
-	var bindingHelperFunctions = {
-		// TODO: Implement date function
-		date: function (format) {
-			return dateLocale.format(new Date(), { selector: 'date', datePattern: format });
-		}
-	};
-	// TODO: Determine how standard data binding context should be supported. This is probably not the way.
-	// TODO: Choose better name.
-	function createBindingContext(view) {
-		return lang.delegate(
-			view.viewModel,
-			lang.mixin({}, bindingHelperFunctions, {
-				app: view.app,
-				router: view.app.router
-			})
-		);
-	}
-
 	function DataBindingExpression(stringOrAst) {
 		this.expressionAst = typeof stringOrAst === 'string'
 			? expressionParser.parse(stringOrAst)
 			: stringOrAst;
 	}
 	DataBindingExpression.prototype = {
-		getValue: function (view) {
-			context = createBindingContext(view);
+		getValue: function (context) {
 			return getValue(context, this.expressionAst);
 		},
-		bind: function (view, callback) {
-			context = createBindingContext(view);
-
+		bind: function (context, callback) {
 			var expressionAst = this.expressionAst,
 				type = expressionAst.type;
 

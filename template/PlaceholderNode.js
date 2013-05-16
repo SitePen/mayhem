@@ -8,7 +8,9 @@ define([
 
 		name: null,
 
-		_bind: function (view) {
+		_bind: function (view, options, context) {
+			this.inherited(arguments);
+
 			var placeholder = this;
 
 			// TODO: What is a better way to bind to a view's subviews?

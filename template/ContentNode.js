@@ -20,7 +20,7 @@ define([
 		templateNodeConstructors: null,
 		templateNodes: null,
 
-		_create: function (view) {
+		_create: function (view, options) {
 			var contentNode = this,
 				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true);
 
@@ -36,7 +36,7 @@ define([
 			this.templateNodes = arrayUtil.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
 				var id = TemplateNodeConstructor.prototype.id,
 					placeMarkerDomNode = findPlaceMarker(contentNodeFragment, id),
-					templateNode = new TemplateNodeConstructor(view);
+					templateNode = new TemplateNodeConstructor(view, options);
 
 				templateNode.placeAt(placeMarkerDomNode, 'replace');
 			});
@@ -63,12 +63,12 @@ define([
 			});
 		},
 
-		_bind: function (view) {
+		_bind: function (view, options, context) {
 			query('[data-bound-attributes]', this.fragment).forEach(function (element) {
 				var dataBoundAttributeMap = JSON.parse(domAttr.get(element, 'data-bound-attributes'));
 				for (var attributeName in dataBoundAttributeMap) {
 					var expression = new DataBindingExpression(dataBoundAttributeMap[attributeName]);
-					expression.bind(view, lang.hitch(domAttr, 'set', element, attributeName));
+					expression.bind(context, lang.hitch(domAttr, 'set', element, attributeName));
 				}
 			});
 		},

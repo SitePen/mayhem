@@ -7,10 +7,10 @@ define([
 		safe: false,
 		'var': null,
 
-		_bind: function (view) {
+		_bind: function (view, options, context) {
 			var dataNode = this;
 
-			this.var.bind(view, function (value) {
+			this.var.bind(context, function (value) {
 				dataNode._removeContent();
 
 				var newContent = dataNode.safe ? domConstruct.toDom(value) : document.createTextNode(value);

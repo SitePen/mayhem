@@ -11,23 +11,23 @@ define([
 		promise: null,
 		content: null,
 
-		_bind: function (view) {
+		_bind: function (view, options, context) {
 			var whenNode = this;
-			this.promise.bind(view, function (promise) {
+			this.promise.bind(context, function (promise) {
 				// TODO: Make promise callback params available to template data binding.
 				// TODO: Cleanup!
 				promise && promise.then(
 					function (value) {
 						whenNode.content.destroy();
-						whenNode.content = new whenNode.ResolvedTemplate();
+						whenNode.content = new whenNode.ResolvedTemplate(view, options);
 					},
 					function (error) {
 						whenNode.content.destroy();
-						whenNode.content = new whenNode.ErrorTemplate();
+						whenNode.content = new whenNode.ErrorTemplate(view, options);
 					},
 					function (progress) {
 						whenNode.content.destroy();
-						whenNode.content = new whenNode.ProgressTemplate();
+						whenNode.content = new whenNode.ProgressTemplate(view, options);
 					}
 				);
 			});
