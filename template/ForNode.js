@@ -24,7 +24,7 @@ define([
 				});
 			}
 
-			// TODO: Support StatefullyArray binding for updating item-specific content.
+			// TODO: Support StatefulArray binding for updating item-specific content.
 			this.contentItems = arrayUtil.map(array, lang.hitch(this, function (item) {
 				var itemData = {};
 				itemData[this.valueName] = item;
