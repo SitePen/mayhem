@@ -121,6 +121,7 @@ define([
 						throw new Error('Unable to correctly parse template HTML.');
 					}
 
+					// TODO: Only apply when parsing uncompiled AST
 					// Collect dependencies
 					query('[is]', domNode).forEach(function (typedElement) {
 						var moduleId = domAttr.get(typedElement, 'is');
@@ -133,8 +134,13 @@ define([
 						dependencyMap[moduleId] = true;
 					});
 
+					// TODO: Only apply when parsing uncompiled AST
 					compileDataBoundAttributes(domNode);
 
+					// Save compiled DOM back to AST HTML
+					astNode.html = domNode.innerHTML;
+
+					// TODO: Create a child-adoption module because we're using this everywhere and need to encapsulate an IE8 workaround anyway.
 					var range = document.createRange();
 					range.selectNodeContents(domNode);
 
@@ -198,6 +204,7 @@ define([
 				TemplateConstructor = compileNode(templateAst),
 				dfd = new Deferred();
 
+			// TODO: Only apply when parsing uncompiled AST
 			// List dependency module IDs
 			var dependencies = [];
 			for (var moduleId in dependencyMap) {
@@ -205,9 +212,7 @@ define([
 			}
 
 			// Resolve template dependencies
-			// TODO: relative deps should be loaded relative to the template
-			// it would be more intutive to make deps relative to the template. ids should be
-			// adjusted to work like that.
+			// TODO: relative deps should be loaded relative to the template location
 			require(dependencies, function () {
 				for (var i = 0; i < dependencies.length; i++) {
 					var moduleId = dependencies[i];
@@ -216,8 +221,9 @@ define([
 
 				// Include dependency MIDs and the compiled AST with the constructor
 				// to be used by template-related build tasks.
+				templateAst.compiled = true;
+				TemplateConstructor.compiledAst = templateAst;
 				TemplateConstructor.dependencies = dependencies;
-				TemplateConstructor.templateAst = templateAst;
 
 				dfd.resolve(TemplateConstructor);
 			});
