@@ -15,7 +15,7 @@ define([
 
 	return declare(BoundNode, {
 		// summary:
-		//		TODO!
+		//		Template node for managing HTML content and nested template nodes.
 
 		// dependencyMap: [readonly] Object
 		//		A map of dependency MID's to resolved dependencies
