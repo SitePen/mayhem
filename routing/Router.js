@@ -44,7 +44,7 @@ define([
 
 		//	templatePath: string
 		//		The default location for templates.
-		templatePath: '../Template!app/views',
+		templatePath: '../template!app/views',
 
 		//	defaultRoute: string
 		//		The default route when the application is loaded without an existing route.

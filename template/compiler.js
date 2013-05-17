@@ -20,29 +20,37 @@ define([
 	arrayUtil,
 	declare,
 	Deferred,
-	query, 
-	domConstruct, 
-	domAttr, 
-	templateParser, 
-	expressionParser, 
-	DataBindingExpression, 
-	PlaceholderNode, 
-	ContentNode, 
-	IfNode, 
-	ForNode, 
-	WhenNode, 
+	query,
+	domConstruct,
+	domAttr,
+	templateParser,
+	expressionParser,
+	DataBindingExpression,
+	PlaceholderNode,
+	ContentNode,
+	IfNode,
+	ForNode,
+	WhenNode,
 	DataNode
 ) {
 
 	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/;
-	function compileDataBoundAttributes(element) {
+	function compileDataBoundAttributes(/*DomNode*/ element) {
+		// summary:
+		//		Compile data-bound attributes on an element and its children.
+		// description:
+		//		This function compiles data-bound attributes on an element and its children.
+		//		When data bound attributes are found on an element, a data-bound-attributes attribute
+		//		is added with a map of attribute names to expression ASTs.
+		// element:
+		//		The element to examine for data-bound attributes.
+
 		var boundAttributeMap = {},
 			foundBoundAttributes = false,
 			attributes = element.attributes,
 			attribute,
 			name,
-			value,
-			parsedExpression;
+			value;
 
 		// Iterate backwards so we can remove attributes as we go
 		// without affecting the next index.
@@ -70,20 +78,43 @@ define([
 
 	return {
 		compileFromSource: function (templateSource) {
+			// summary:
+			//		Compile a template from a source string
+			// templateSource:
+			//		The template source string
+			// returns: dojo/promise/Promise
+			//		A promise resolving with a Template constructor.
+
 			var pegAst = templateParser.parse(templateSource);
 			return this.compileFromAst(pegAst);
 		},
 
 		compileFromAst: function (templateAst) {
-			function processNode(pegNode) {
-				var type = pegNode.type;
+			// summary:
+			//		Compile a template from a template AST.
+			// templateAst:
+			//		The template AST
+			// returns: dojo/promise/Promise
+			//		A promise resolving with a Template constructor.
+
+			// TODO: Some operations like dependency collection can be done at build time. Identify these and support skipping them if compiling a pre-processed template AST.
+
+			function compileNode(astNode) {
+				// summary:
+				//		Compile an AST node and its children.
+				// astNode:
+				//		The AST node to compile
+				// returns: Function
+				//		A template node constructor
+
+				var type = astNode.type;
 				var Constructor;
 
 				if (type === 'fragment') {
 					// TODO: Is there a reason dom-construct.toDom() should be preferred here?
 					var domNode = domConstruct.create('div');
-					domNode.innerHTML = pegNode.html;
-					if (domNode.innerHTML.length !== pegNode.html.length) {
+					domNode.innerHTML = astNode.html;
+					if (domNode.innerHTML.length !== astNode.html.length) {
 						// TODO: Make this error more useful by including input and output.
 						throw new Error('Unable to correctly parse template HTML.');
 					}
@@ -108,52 +139,52 @@ define([
 					Constructor = declare(ContentNodeWithDependencies, {
 						masterFragment: fragment,
 						dependencyMap: dependencyMap,
-						templateNodeConstructors: arrayUtil.map(pegNode.templateNodes, processNode)
+						templateNodeConstructors: arrayUtil.map(astNode.templateNodes, compileNode)
 					});
 				}
 				else if (type === 'if') {
 					Constructor = declare(IfNode, {
-						conditionalBlocks: arrayUtil.map(pegNode.conditionalBlocks, function (conditionalBlock) {
+						conditionalBlocks: arrayUtil.map(astNode.conditionalBlocks, function (conditionalBlock) {
 							return {
 								condition: new DataBindingExpression(conditionalBlock.condition),
-								ContentConstructor: processNode(conditionalBlock.content)
+								ContentConstructor: compileNode(conditionalBlock.content)
 							};
 						}),
-						elseBlock: pegNode.elseBlock && pegNode.elseBlock.content
-							? { ContentConstructor: processNode(pegNode.elseBlock.content) }
+						elseBlock: astNode.elseBlock && astNode.elseBlock.content
+							? { ContentConstructor: compileNode(astNode.elseBlock.content) }
 							: null
 					});
 				}
 				else if (type === 'for') {
 					Constructor = declare(ForNode, {
-						each: new DataBindingExpression(pegNode.each),
-						valueName: pegNode.value,
-						ContentConstructor: processNode(pegNode.content)
+						each: new DataBindingExpression(astNode.each),
+						valueName: astNode.value,
+						ContentConstructor: compileNode(astNode.content)
 					});
 				}
 				else if (type === 'placeholder') {
 					// TODO: Support default placeholder with no name attribute
-					Constructor = declare(PlaceholderNode, { name: pegNode.name });
+					Constructor = declare(PlaceholderNode, { name: astNode.name });
 				}
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
-						promise: new DataBindingExpression(pegNode.promise),
-						ResolvedTemplate: pegNode.resolvedContent ? processNode(pegNode.resolvedContent) : null,
-						ErrorTemplate: pegNode.errorContent ? processNode(pegNode.errorContent) : null,
-						ProgressTemplate: pegNode.progressContent ? processNode(pegNode.progressContent) : null
+						promise: new DataBindingExpression(astNode.promise),
+						ResolvedTemplate: astNode.resolvedContent ? compileNode(astNode.resolvedContent) : null,
+						ErrorTemplate: astNode.errorContent ? compileNode(astNode.errorContent) : null,
+						ProgressTemplate: astNode.progressContent ? compileNode(astNode.progressContent) : null
 					});
 				}
 				else if (type === 'data') {
 					Constructor = declare(DataNode, {
-						'var': new DataBindingExpression(pegNode.var),
-						safe: !!pegNode.safe
+						'var': new DataBindingExpression(astNode.var),
+						safe: !!astNode.safe
 					});
 				}
 				else {
-					throw new Error('Unrecognized PEG AST node type: ' + type);
+					throw new Error('Unrecognized template AST node type: ' + type);
 				}
 
-				Constructor.prototype.id = pegNode.id;
+				Constructor.prototype.id = astNode.id;
 
 				return Constructor;
 			}
@@ -161,7 +192,7 @@ define([
 			var dependencyMap = {},
 				aliases = templateAst.aliases,
 				ContentNodeWithDependencies = declare(ContentNode, { dependencyMap: dependencyMap }),
-				TemplateConstructor = processNode(templateAst),
+				TemplateConstructor = compileNode(templateAst),
 				dfd = new Deferred();
 
 			// List dependency module IDs
@@ -171,7 +202,7 @@ define([
 			}
 
 			// Resolve template dependencies
-			// TODO: relative deps will be loaded relative to this module.
+			// TODO: relative deps should be loaded relative to the template
 			// it would be more intutive to make deps relative to the template. ids should be
 			// adjusted to work like that.
 			require(dependencies, function () {
@@ -180,11 +211,12 @@ define([
 					dependencyMap[moduleId] = arguments[i];
 				}
 
-				dfd.resolve({
-					dependencies: dependencies,
-					templateAst: templateAst,
-					TemplateConstructor: TemplateConstructor
-				});
+				// Include dependency MIDs and the compiled AST with the constructor
+				// to be used by template-related build tasks.
+				TemplateConstructor.dependencies = dependencies;
+				TemplateConstructor.templateAst = templateAst;
+
+				dfd.resolve(TemplateConstructor);
 			});
 
 			return dfd.promise;
