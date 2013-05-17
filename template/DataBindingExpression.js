@@ -68,9 +68,10 @@ define([
 		//
 		// expression:
 		//		An expression string or a pre-generated expression AST.
-		this.expressionAst = typeof stringOrAst === 'string'
-			? expressionParser.parse(stringOrAst)
-			: stringOrAst;
+		
+		this.expressionAst = typeof expression === 'string'
+			? expressionParser.parse(expression)
+			: expression;
 	}
 	DataBindingExpression.prototype = {
 		getValue: function (/*Object*/ context) {
