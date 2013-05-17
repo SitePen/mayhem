@@ -5,7 +5,17 @@ define([
 	'dojo/date/locale'
 ], function (bind, expressionParser, lang, dateLocale) {
 
-	function resolve(context, references) {
+	function resolve(/*Object*/ context, /*Array*/ references) {
+		// summary:
+		//		Look up a nested property given the parts of a dot expression
+		//		(e.g., object.property.deeperProperty).
+		// context:
+		//		Where to start
+		// references:
+		//		An array of property names to successively apply
+		// returns:
+		//		The value of the target property
+
 		var current = context;
 		for (var i = 0; i < references.length; i++) {
 			current = current[references[i]];
@@ -13,7 +23,14 @@ define([
 		return current;
 	}
 
-	function getValue(context, expressionAst) {
+	function getValue(/*Object*/ context, /*Object*/ expressionAst) {
+		// summary:
+		//		Gets the value of the expression target
+		// context:
+		//		The context to which the expression is applied
+		// expressionAst:
+		//		The expression AST
+
 		var type = expressionAst.type;
 
 		if (type === 'dot-expression') {
@@ -33,16 +50,46 @@ define([
 		}
 	}
 
-	function DataBindingExpression(stringOrAst) {
+	function DataBindingExpression(/*String|Object*/ expression) {
+		// summary:
+		//		A data binding expression
+		// description:
+		//		This is a constructor for a data binding expression.
+		//		Data binding expressions support property references, single function calls,
+		//		and numeric and string literals.
+		//
+		//		Examples of supported expressions:
+		//		| someProperty
+		//		| someProperty.deeperProperty.evenDeeperProperty
+		//		| date('yyyy')
+		//		| router.createPath('index')
+		//		| 123.45
+		//		| '12345'
+		//
+		// expression:
+		//		An expression string or a pre-generated expression AST.
 		this.expressionAst = typeof stringOrAst === 'string'
 			? expressionParser.parse(stringOrAst)
 			: stringOrAst;
 	}
 	DataBindingExpression.prototype = {
-		getValue: function (context) {
+		getValue: function (/*Object*/ context) {
+			// summary:
+			// 		Get the value of the expression applied to the specified context.
+			// context:
+			//		The context to which the expression is applied
+			// returns:
+			//		The evaluated value
 			return getValue(context, this.expressionAst);
 		},
-		bind: function (context, callback) {
+		bind: function (/*Object*/ context, /*Function*/ callback) {
+			// summary:
+			//		Bind to the expression target.
+			// context:
+			//		The context to which the expression is applied
+			// callback:
+			//		The function called when first bound and everytime the target changes
+
 			var expressionAst = this.expressionAst,
 				type = expressionAst.type;
 
