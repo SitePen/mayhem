@@ -137,7 +137,10 @@ define([], function () {
         if (result0 === null) {
           result0 = parse_DotExpression();
           if (result0 === null) {
-            result0 = parse_PaddedIdentifier();
+            result0 = parse_StringLiteral();
+            if (result0 === null) {
+              result0 = parse_DecimalLiteral();
+            }
           }
         }
         return result0;

@@ -14,6 +14,8 @@ define([
 	}
 
 	return declare(BoundNode, {
+		// summary:
+		//		TODO!
 
 		// dependencyMap: [readonly] Object
 		//		A map of dependency MID's to resolved dependencies

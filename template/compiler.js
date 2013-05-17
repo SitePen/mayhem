@@ -34,6 +34,7 @@ define([
 	DataNode
 ) {
 
+	// TODO: This only matches cases where entire attribute value is a ${ expression }. Consider support for richer values.
 	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/;
 	function compileDataBoundAttributes(/*DomNode*/ element) {
 		// summary:
@@ -112,8 +113,9 @@ define([
 
 				if (type === 'fragment') {
 					// TODO: Is there a reason dom-construct.toDom() should be preferred here?
-					var domNode = domConstruct.create('div');
-					domNode.innerHTML = astNode.html;
+					var domNode = domConstruct.create('div', { innerHTML: astNode.html });
+
+					// TODO: Is this a good check for successful parsing?
 					if (domNode.innerHTML.length !== astNode.html.length) {
 						// TODO: Make this error more useful by including input and output.
 						throw new Error('Unable to correctly parse template HTML.');
@@ -122,6 +124,8 @@ define([
 					// Collect dependencies
 					query('[is]', domNode).forEach(function (typedElement) {
 						var moduleId = domAttr.get(typedElement, 'is');
+
+						// TODO: Support aliases for components of the MID
 						if (aliases[moduleId]) {
 							moduleId = aliases[moduleId];
 							domAttr.set(typedElement, 'is', moduleId);
@@ -131,27 +135,26 @@ define([
 
 					compileDataBoundAttributes(domNode);
 
-					var fragment = document.createDocumentFragment();
-					while (domNode.childNodes.length > 0) {
-						fragment.appendChild(domNode.firstChild);
-					}
+					var range = document.createRange();
+					range.selectNodeContents(domNode);
 
 					Constructor = declare(ContentNodeWithDependencies, {
-						masterFragment: fragment,
-						dependencyMap: dependencyMap,
+						masterFragment: range.extractContents(),
 						templateNodeConstructors: arrayUtil.map(astNode.templateNodes, compileNode)
 					});
+
+					range.detach();
 				}
 				else if (type === 'if') {
 					Constructor = declare(IfNode, {
 						conditionalBlocks: arrayUtil.map(astNode.conditionalBlocks, function (conditionalBlock) {
 							return {
 								condition: new DataBindingExpression(conditionalBlock.condition),
-								ContentConstructor: compileNode(conditionalBlock.content)
+								ContentTemplate: compileNode(conditionalBlock.content)
 							};
 						}),
 						elseBlock: astNode.elseBlock && astNode.elseBlock.content
-							? { ContentConstructor: compileNode(astNode.elseBlock.content) }
+							? { ContentTemplate: compileNode(astNode.elseBlock.content) }
 							: null
 					});
 				}
@@ -159,7 +162,7 @@ define([
 					Constructor = declare(ForNode, {
 						each: new DataBindingExpression(astNode.each),
 						valueName: astNode.value,
-						ContentConstructor: compileNode(astNode.content)
+						ContentTemplate: compileNode(astNode.content)
 					});
 				}
 				else if (type === 'placeholder') {
@@ -177,7 +180,7 @@ define([
 				else if (type === 'data') {
 					Constructor = declare(DataNode, {
 						'var': new DataBindingExpression(astNode.var),
-						safe: !!astNode.safe
+						safe: astNode.safe !== undefined
 					});
 				}
 				else {

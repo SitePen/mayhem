@@ -1,7 +1,8 @@
 start
 	= FunctionCall
 	/ DotExpression
-	/ PaddedIdentifier
+	/ StringLiteral
+	/ NumericLiteral
 
 // TODO: Support multiple arguments.
 // TODO: Support chained function calls.
@@ -45,6 +46,9 @@ StringLiteral
 			value: value
 		};
 	}
+
+NumericLiteral
+	= DecimalLiteral
 
 // TODO: Hex literal
 // TODO: Octal literal

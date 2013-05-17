@@ -43,7 +43,9 @@ define([
 					},
 					function (progress) {
 						whenNode.content.destroy();
-						whenNode.content = new whenNode.ProgressTemplate(kwArgs);
+						if (whenNode.ProgressTemplate) {
+							whenNode.content = new whenNode.ProgressTemplate(kwArgs);
+						}
 					}
 				);
 			});

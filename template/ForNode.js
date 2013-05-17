@@ -8,9 +8,9 @@ define([
 		// summary:
 		//		Template node that generates content for each item in a collection.
 
-		// ContentConstructor: Function
-		//		The constructor for per-item content nodes.
-		ContentConstructor: null,
+		// ContentTemplate: Function
+		//		The constructor for per-item content.
+		ContentTemplate: null,
 
 		// each: DataBindingExpression
 		//		An expression indicating what collection to bind to
@@ -51,7 +51,7 @@ define([
 				itemData._binding = undefined;
 
 				var itemBindingContext = lang.delegate(kwArgs.bindingContext, itemData),
-					contentItem = new this.ContentConstructor(lang.delegate(kwArgs, {
+					contentItem = new this.ContentTemplate(lang.delegate(kwArgs, {
 						bindingContext: itemBindingContext
 					}));
 				contentItem.placeAt(this.endMarker, 'before');

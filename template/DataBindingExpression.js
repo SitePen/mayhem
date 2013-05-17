@@ -68,7 +68,7 @@ define([
 		//
 		// expression:
 		//		An expression string or a pre-generated expression AST.
-		
+
 		this.expressionAst = typeof expression === 'string'
 			? expressionParser.parse(expression)
 			: expression;
@@ -98,6 +98,8 @@ define([
 				var name = expressionAst.name,
 					func = lang.hitch(resolve(context, name.references), name.target);
 
+				// Wrap callback so it is passed the result of this function
+				// when the bound argument changes.
 				callback = (function (callback) {
 					return function (value) {
 						callback(func(value));

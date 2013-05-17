@@ -8,11 +8,11 @@ define([
 		//		Template node for conditionally displaying content depending on an if/elseif/else structure
 
 		// conditionalBlocks: Array
-		//		An array of objects with condition and ContentConstructor properties.
+		//		An array of objects with condition and ContentTemplate properties.
 		conditionalBlocks: null,
 
 		// elseBlock:
-		//		An object containing a ContentConstructor used to instantiate content when
+		//		An object containing a ContentTemplate used to instantiate content when
 		// 		no conditonal blocks evaluate to true.
 		elseBlock: null,
 
@@ -52,7 +52,7 @@ define([
 			}
 
 			if (blockToApply) {
-				var content = this.content = new blockToApply.ContentConstructor(kwArgs);
+				var content = this.content = new blockToApply.ContentTemplate(kwArgs);
 				content.placeAt(this.endMarker, 'before');
 			}
 		},
