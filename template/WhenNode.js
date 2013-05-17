@@ -3,13 +3,29 @@ define([
 	'./BoundNode'
 ], function (declare, BoundNode) {
 	return declare(BoundNode, {
+		// summary:
+		//		Template node that displays content relative to a promise
 
+		// ResolvedTemplate: Function
+		//		A constructor for content when the promise is resolved
 		ResolvedTemplate: null,
+
+		// ErrorTemplate: Function
+		//		A constructor for content when the promise is rejected
 		ErrorTemplate: null,
+
+		// ProgressTemplate: Function
+		//		A constructor for content when the promise reports progress
 		ProgressTemplate: null,
 
+		// promise: DataBindingExpression
+		//		An expression indicating the promise to bind to
 		promise: null,
+
 		// TODO: Add valueName property that specifies what the callback parameter should be called in the data binding context.
+
+		// content: ContentNode
+		//		The active content for this template node
 		content: null,
 
 		_bind: function (kwArgs) {
@@ -31,6 +47,13 @@ define([
 					}
 				);
 			});
+		},
+
+		destroy: function () {
+			if (this.content) {
+				this.content.destroy();
+				this.content = null;
+			}
 		}
 	});
 });

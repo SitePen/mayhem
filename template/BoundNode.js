@@ -7,6 +7,7 @@ define([
 	'dojo/date/locale'
 ], function (lang, declare, domConstruct, expressionParser, bind, dateLocale) {
 
+	// Helper functions that can be called in data binding expressions.
 	var bindingHelperFunctions = {
 		date: function (format) {
 			return dateLocale.format(new Date(), { selector: 'date', datePattern: format });
@@ -34,8 +35,6 @@ define([
 	return declare(null, {
 		// summary:
 		//		The base class for all template nodes.
-
-		baseFragment: null,
 
 		fragment: null,
 		beginMarker: null,
@@ -83,7 +82,7 @@ define([
 
 		_bind: function (/*kwArgs*/) {
 			// summary:
-			//		Perform initial data binding.
+			//		Data bind this node.
 			// kwArgs: __TemplateBindingArgs
 			//		The binding arguments
 
@@ -92,7 +91,7 @@ define([
 
 		_createDefaultBindingContext: function (/*framework/View*/ view) {
 			// summary:
-			//		Creates the default data binding context from the view.
+			//		Create the default data binding context from the view.
 			// view:
 			//		The view used to create the default context.
 			// returns: Object
@@ -107,7 +106,14 @@ define([
 			);
 		},
 
-		placeAt: function (referenceNode, position) {
+		placeAt: function (/*DomNode*/ referenceNode, /*String?*/ position) {
+			// summary:
+			//		Place the template node.
+			// referenceNode
+			//		A reference point for the placement
+			// position:
+			//		A relative position specifier
+
 			// Remove nodes into the fragment so they can be easily placed.
 			this.remove();
 
@@ -115,6 +121,9 @@ define([
 		},
 
 		remove: function () {
+			// summary:
+			//		Remove the template node from its current location
+
 			// Remove nodes into fragment if they aren't already there.
 			if (!this.fragment.contains(this.beginMarker)) {
 				var range = document.createRange();
@@ -144,11 +153,18 @@ define([
 		},
 
 		startup: function () {
+			// summary:
+			//		Start the template node.
+
 			// Do nothing
 		},
 
 		destroy: function () {
-			// TODO
+			// summary:
+			//		Destroy the template node.
+
+			// TODO: Remove data bindings.
+
 			this.remove();
 		}
 	});

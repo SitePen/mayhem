@@ -5,11 +5,23 @@ define([
 	'./BoundNode'
 ], function (lang, arrayUtil, declare, BoundNode) {
 	return declare(BoundNode, {
+		// summary:
+		//		Template node that generates content for each item in a collection.
+
+		// ContentConstructor: Function
+		//		The constructor for per-item content nodes.
 		ContentConstructor: null,
 
+		// each: DataBindingExpression
+		//		An expression indicating what collection to bind to
 		each: null,
+
+		// valueName: String
+		//		The name of the item to use in data binding expressions
 		valueName: null,
 
+		// contentItems: Array
+		//		An array of content nodes corresponding to the collection items
 		contentItems: null,
 
 		_bind: function (kwArgs) {
@@ -17,13 +29,20 @@ define([
 		},
 
 		_update: function (kwArgs, array) {
+			// summary:
+			//		Update the content items from the collection items
+			// kwArgs:
+			//		The data binding args
+			// array: Array
+			// 		The item array
+
 			if (this.contentItems) {
 				arrayUtil.forEach(this.contentItems, function (contentItem) {
 					contentItem.destroy();
 				});
 			}
 
-			// TODO: Support StatefulArray binding for updating item-specific content.
+			// TODO: Support StatefulArray binding
 			this.contentItems = arrayUtil.map(array, lang.hitch(this, function (item) {
 				var itemData = {};
 				itemData[this.valueName] = item;
@@ -38,6 +57,16 @@ define([
 				contentItem.placeAt(this.endMarker, 'before');
 				return contentItem;
 			}));
+		},
+
+		destroy: function () {
+			if (this.contentItems) {
+				arrayUtil.forEach(this.contentItems, function (contentItem) {
+					contentItem.destroy();
+				});
+				this.contentItems = null;
+			}
+			this.inherited(arguments);
 		}
 	});
 });

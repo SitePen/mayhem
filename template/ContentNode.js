@@ -14,10 +14,25 @@ define([
 	}
 
 	return declare(BoundNode, {
-		masterFragment: null,
-		fragment: null,
+
+		// dependencyMap: [readonly] Object
+		//		A map of dependency MID's to resolved dependencies
 		dependencyMap: null,
+
+		// masterFragment: [readonly] DomFragment
+		//		A DOM fragment containing content to be cloned for instances
+		masterFragment: null,
+
+		// templateNodeConstructors: [readonly] Array
+		// 		Constructors for the template nodes owned by this node
 		templateNodeConstructors: null,
+
+		// fragment: DomFragment
+		//		The DOM fragment associated with this instance
+		fragment: null,
+
+		// templateNodes: Array
+		//		The template nodes owned by this node
 		templateNodes: null,
 
 		_create: function (kwArgs) {
@@ -31,8 +46,8 @@ define([
 			// which may have their own widget-typed elements.
 			var widgetDomNodes = query('[is]', contentNodeFragment);
 
-			// Instantiating template nodes before widgets because Dijits
-			// are clobbering our template node placeholders.
+			// Instantiate template nodes before widgets
+			// because Dijits are clobbering the template node placeholders.
 			// TODO: This likely means data-bound widget content is broken. Fix this with our own widgets or insist on data binding to widget properties that affect contents.
 			this.templateNodes = arrayUtil.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
 				var id = TemplateNodeConstructor.prototype.id,
@@ -40,6 +55,7 @@ define([
 					templateNode = new TemplateNodeConstructor(kwArgs);
 
 				templateNode.placeAt(placeMarkerDomNode, 'replace');
+				return templateNode;
 			});
 
 			// Instantiate widgets
@@ -65,6 +81,7 @@ define([
 		},
 
 		_bind: function (kwArgs) {
+			// DOM Attribute data binding
 			var bindingContext = kwArgs.bindingContext;
 			query('[data-bound-attributes]', this.fragment).forEach(function (element) {
 				var dataBoundAttributeMap = JSON.parse(domAttr.get(element, 'data-bound-attributes'));
@@ -87,14 +104,16 @@ define([
 		},
 
 		destroy: function () {
-			this.inherited(arguments);
-
 			// Destroy template nodes
 			arrayUtil.forEach(this.templateNodes, function (templateNode) {
 				// TODO: Consider how to avoid removing child nodes from DOM piecemeal. Better to remove once from DOM at destruction root.
+				// TODO: Reenable this once the problem of widgets eating template nodes is solved. Right now, destroy() ends up doing illegal things with DOM ranges because of that.
+				//templateNode.destroy();
 			});
 
 			// TODO: Destroy widgets.
+
+			this.inherited(arguments);
 		}
 	});
 });

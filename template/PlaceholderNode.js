@@ -5,7 +5,11 @@ define([
 	'dojo/_base/array'
 ], function (declare, BoundNode, lang, arrayUtil) {
 	return declare(BoundNode, {
+		// summary:
+		//		Template node placeholder for sub-views
 
+		// name: [readonly] String
+		//		The name of the placeholder
 		name: null,
 
 		_bind: function (kwArgs) {
@@ -27,10 +31,18 @@ define([
 		},
 
 		addView: function (view) {
+			// summary:
+			//		Add a view to the placeholder.
+			// view: framework/View
+			//		The view to add
 			view.placeAt(this.endMarker, 'before');
 		},
 
 		removeView: function (view) {
+			// summary:
+			//		Remove a view from the placeholder.
+			// view: framework/View
+			//		The view to remove
 			view.remove();
 		}
 	});

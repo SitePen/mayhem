@@ -4,10 +4,20 @@ define([
 	'./BoundNode'
 ], function (lang, declare, BoundNode) {
 	return declare(BoundNode, {
+		// summary:
+		//		Template node for conditionally displaying content depending on an if/elseif/else structure
 
+		// conditionalBlocks: Array
+		//		An array of objects with condition and ContentConstructor properties.
 		conditionalBlocks: null,
+
+		// elseBlock:
+		//		An object containing a ContentConstructor used to instantiate content when
+		// 		no conditonal blocks evaluate to true.
 		elseBlock: null,
 
+		// content: ContentNode
+		//		The active content for this template node
 		content: null,
 
 		_bind: function (kwArgs) {
@@ -19,8 +29,12 @@ define([
 			}
 		},
 
-		_evaluateConditions: function (kwArgs, value) {
-			this._removeContent();
+		_evaluateConditions: function (kwArgs) {
+			// summary:
+			//		Evaluate conditions and apply earliest block that evaluates to true.
+			// kwArgs:
+			//		The data binding args
+			this._destroyContent();
 
 			var conditionalBlocks = this.conditionalBlocks,
 				conditionalBlock,
@@ -43,11 +57,18 @@ define([
 			}
 		},
 
-		_removeContent: function () {
+		_destroyContent: function () {
+			// summary:
+			//		Destroy the active content
 			if (this.content) {
 				this.content.destroy();
 				this.content = null;
 			}
+		},
+
+		destroy: function () {
+			this._destroyContent();
+			this.inherited(arguments);
 		}
 	});
 });

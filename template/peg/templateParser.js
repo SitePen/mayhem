@@ -1824,10 +1824,20 @@ define([], function () {
       
       	var nextId = 1;
       	function getNextId() {
+      		// summary:
+      		//		Get the next template node id
+      
       		return nextId++;
       	}
       
       	function createConditionalBlock(conditionalNode) {
+      		// summary:
+      		//		Create a conditional block object given a conditional template node.
+      		// conditionalNode: IfNode|ElseIfNode
+      		//		The node from which to create a conditional block
+      		// returns: Object
+      		//		A conditional block 
+      
       		return {
       			condition: conditionalNode.condition,
       			content: conditionalNode.content
@@ -1836,13 +1846,15 @@ define([], function () {
       
       	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes, /*Array*/ optionalAttributes) {
       		// summary:
-      		//		Creates a constructor for a tag's AST node.
+      		//		Create a constructor for a tag's AST node.
       		// type:
       		//		The AST node type.
       		// requiredAttributes:
       		//		The attributes required by the tag.
       		// optionalAttributes:
       		//		Non-required attributes allowed by the tag.
+      		// returns: Function
+      		// 		A template node constructor
       
       		requiredAttributes = requiredAttributes || [];
       		optionalAttributes = optionalAttributes || [];
