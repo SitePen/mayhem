@@ -4,13 +4,12 @@ define([
 	'./BoundNode',
 	'./PlaceholderNode',
 	'dojo/_base/array',
-	'dojo/query',
-	'dojo/dom-attr',
 	'./DataBindingExpression'
-], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, query, domAttr, DataBindingExpression) {
+], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression) {
 
 	function findPlaceMarker(rootNode, id) {
-		return query('[data-template-node-id="' + id + '"]', rootNode)[0];
+		// TODO: See if we can use querySelectorAll instead
+		return rootNode.querySelectorAll('[data-template-node-id="' + id + '"]')[0];
 	}
 
 	return declare(BoundNode, {
@@ -46,7 +45,7 @@ define([
 
 			// Get our widget-typed elements before instantiating template nodes,
 			// which may have their own widget-typed elements.
-			var widgetDomNodes = query('[is]', contentNodeFragment);
+			var widgetDomNodes = contentNodeFragment.querySelectorAll('[is]');
 
 			// Instantiate template nodes before widgets
 			// because Dijits are clobbering the template node placeholders.
@@ -61,8 +60,8 @@ define([
 			});
 
 			// Instantiate widgets
-			widgetDomNodes.forEach(function (typedElement) {
-				var type = domAttr.get(typedElement, 'is'),
+			arrayUtil.forEach(widgetDomNodes, function (typedElement) {
+				var type = typedElement.getAttribute('is'),
 					WidgetConstructor = contentNode.dependencyMap[type];
 
 				var widget = new WidgetConstructor(null, typedElement);
@@ -75,7 +74,7 @@ define([
 
 				// Associate widget with view model
 				widget.set('viewModel', view.viewModel);
-				var fieldName = domAttr.get(typedElement, 'data-field');
+				var fieldName = typedElement.getAttribute('data-field');
 				if (fieldName) {
 					widget.set('fieldName', fieldName);
 				}
@@ -84,12 +83,14 @@ define([
 
 		_bind: function (kwArgs) {
 			// DOM Attribute data binding
-			var bindingContext = kwArgs.bindingContext;
-			query('[data-bound-attributes]', this.fragment).forEach(function (element) {
-				var dataBoundAttributeMap = JSON.parse(domAttr.get(element, 'data-bound-attributes'));
+			var bindingContext = kwArgs.bindingContext,
+				elementsWithBoundAttributes = this.fragment.querySelectorAll('[data-bound-attributes]');
+
+			arrayUtil.forEach(elementsWithBoundAttributes, function (element) {
+				var dataBoundAttributeMap = JSON.parse(element.getAttribute('data-bound-attributes'));
 				for (var attributeName in dataBoundAttributeMap) {
 					var expression = new DataBindingExpression(dataBoundAttributeMap[attributeName]);
-					expression.bind(bindingContext, lang.hitch(domAttr, 'set', element, attributeName));
+					expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
 				}
 			});
 		},

@@ -3,9 +3,7 @@ define([
 	'dojo/_base/array',
 	'dojo/_base/declare',
 	'dojo/Deferred',
-	'dojo/query',
 	'dojo/dom-construct',
-	'dojo/dom-attr',
 	'./peg/templateParser',
 	'./peg/expressionParser',
 	'./DataBindingExpression',
@@ -20,9 +18,7 @@ define([
 	arrayUtil,
 	declare,
 	Deferred,
-	query,
 	domConstruct,
-	domAttr,
 	templateParser,
 	expressionParser,
 	DataBindingExpression,
@@ -63,13 +59,13 @@ define([
 			if (BOUND_ATTRIBUTE_PATTERN.test(value)) {
 				value = value.replace(BOUND_ATTRIBUTE_PATTERN, '$1');
 				boundAttributeMap[name] = expressionParser.parse(value);
-				domAttr.remove(element, name);
+				element.setAttribute(name, null);
 				foundBoundAttributes = true;
 			}
 		}
 
 		if (foundBoundAttributes) {
-			domAttr.set(element, 'data-bound-attributes', JSON.stringify(boundAttributeMap));
+			element.setAttribute('data-bound-attributes', JSON.stringify(boundAttributeMap));
 		}
 
 		for (var child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
@@ -123,13 +119,13 @@ define([
 
 					// TODO: Only apply when parsing uncompiled AST
 					// Collect dependencies
-					query('[is]', domNode).forEach(function (typedElement) {
-						var moduleId = domAttr.get(typedElement, 'is');
+					arrayUtil.forEach(domNode.querySelectorAll('[is]'), function (typedElement) {
+						var moduleId = typedElement.getAttribute('is');
 
 						// TODO: Support aliases for components of the MID
 						if (aliases[moduleId]) {
 							moduleId = aliases[moduleId];
-							domAttr.set(typedElement, 'is', moduleId);
+							typedElement.setAttribute('is', moduleId);
 						}
 						dependencyMap[moduleId] = true;
 					});
