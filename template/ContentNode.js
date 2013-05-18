@@ -28,10 +28,6 @@ define([
 		// 		Constructors for the template nodes owned by this node
 		templateNodeConstructors: null,
 
-		// fragment: DomFragment
-		//		The DOM fragment associated with this instance
-		fragment: null,
-
 		// templateNodes: Array
 		//		The template nodes owned by this node
 		templateNodes: null,

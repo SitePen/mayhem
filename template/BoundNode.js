@@ -36,8 +36,16 @@ define([
 		// summary:
 		//		The base class for all template nodes.
 
+		// fragment: DomFragment
+		//		The DOM fragment associated with this instance
 		fragment: null,
+
+		// beginMarker: DomNode
+		//		A DOM comment marking the beginning of the DOM nodes owned by this template node.
 		beginMarker: null,
+
+		// endMarker: DomNode
+		//		A DOM comment marking the end of the DOM nodes owned by this template node.
 		endMarker: null,
 
 		constructor: function (/*kwArgs*/) {
