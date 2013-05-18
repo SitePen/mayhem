@@ -100,11 +100,10 @@ define([
 
 				// Wrap callback so it is passed the result of this function
 				// when the bound argument changes.
-				callback = (function (callback) {
-					return function (value) {
-						callback(func(value));
-					};
-				})(callback);
+				var originalCallback = callback;
+				callback = function (value) {
+					originalCallback(func(value));
+				};
 
 				expressionAst = expressionAst.argument;
 				type = expressionAst.type;
