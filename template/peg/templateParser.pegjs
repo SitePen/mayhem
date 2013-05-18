@@ -90,7 +90,7 @@
 	var IfNode = createNodeConstructor('if', [ 'condition' ]);
 	var ElseIfNode = createNodeConstructor('elseif', [ 'condition' ]);
 	var ForNode = createNodeConstructor('for', [ 'each', 'value' ]);
-	var WhenNode = createNodeConstructor('when', [ 'promise' ]);
+	var WhenNode = createNodeConstructor('when', [ 'promise' ], [ 'value' ]);
 	var PlaceholderNode = createNodeConstructor('placeholder', [ 'name' ]);
 	var DataNode = createNodeConstructor('data', [ 'var' ], [ 'safe' ]);
 	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);

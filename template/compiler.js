@@ -174,6 +174,7 @@ define([
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
 						promise: new DataBindingExpression(astNode.promise),
+						valueName: astNode.value,
 						ResolvedTemplate: astNode.resolvedContent ? compileNode(astNode.resolvedContent) : null,
 						ErrorTemplate: astNode.errorContent ? compileNode(astNode.errorContent) : null,
 						ProgressTemplate: astNode.progressContent ? compileNode(astNode.progressContent) : null

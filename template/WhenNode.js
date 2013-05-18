@@ -1,7 +1,8 @@
 define([
+	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'./BoundNode'
-], function (declare, BoundNode) {
+], function (lang, declare, BoundNode) {
 	return declare(BoundNode, {
 		// summary:
 		//		Template node that displays content relative to a promise
@@ -30,25 +31,53 @@ define([
 
 		_bind: function (kwArgs) {
 			var whenNode = this;
+
+			function createContentArgs(value) {
+				var contentArgs;
+				if (whenNode.valueName) {
+					var valueData = {};
+					valueData[whenNode.valueName] = value;
+
+					contentArgs = lang.delegate(kwArgs, {
+						bindingContext: lang.delegate(kwArgs.bindingArgs, valueData)
+					});
+				}
+				else {
+					contentArgs = kwArgs;
+				}
+				return contentArgs;
+			}
+
+			function createCallback(constructorName) {
+				var ContentNode = whenNode[constructorName];
+				if (!ContentNode) {
+					return null;
+				}
+				else {
+					return function (value) {
+						whenNode._destroyContent();
+						whenNode.content = new ContentNode(createContentArgs(value));
+						whenNode.content.placeAt(whenNode.endMarker, 'before');
+					};
+				}
+			}
+
 			this.promise.bind(kwArgs.bindingContext, function (promise) {
-				// TODO: Cleanup!
 				promise && promise.then(
-					function (value) {
-						whenNode.content.destroy();
-						whenNode.content = new whenNode.ResolvedTemplate(kwArgs);
-					},
-					function (error) {
-						whenNode.content.destroy();
-						whenNode.content = new whenNode.ErrorTemplate(kwArgs);
-					},
-					function (progress) {
-						whenNode.content.destroy();
-						if (whenNode.ProgressTemplate) {
-							whenNode.content = new whenNode.ProgressTemplate(kwArgs);
-						}
-					}
+					createCallback('ResolvedTemplate'),
+					createCallback('ErrorTemplate'),
+					createCallback('ProgressTemplate')
 				);
 			});
+		},
+
+		_destroyContent: function () {
+			// summary:
+			//		Destroy the active content
+			if (this.content) {
+				this.content.destroy();
+				this.content = null;
+			}
 		},
 
 		destroy: function () {
