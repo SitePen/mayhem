@@ -51,6 +51,7 @@ define([
 				itemData._binding = undefined;
 
 				var itemBindingContext = lang.delegate(kwArgs.bindingContext, itemData),
+					// TODO: Fix naming to be more consistent: ContentNode
 					contentItem = new this.ContentTemplate(lang.delegate(kwArgs, {
 						bindingContext: itemBindingContext
 					}));
