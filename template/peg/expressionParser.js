@@ -147,78 +147,63 @@ define([], function () {
       }
       
       function parse_FunctionCall() {
-        var result0, result1, result2, result3, result4, result5, result6, result7, result8;
+        var result0, result1, result2, result3, result4, result5, result6, result7;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        if (input.charCodeAt(pos.offset) === 33) {
-          result0 = "!";
-          advance(pos, 1);
-        } else {
-          result0 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"!\"");
-          }
-        }
-        result0 = result0 !== null ? result0 : "";
+        result0 = parse_DotExpression();
         if (result0 !== null) {
-          result1 = parse_DotExpression();
+          if (input.charCodeAt(pos.offset) === 40) {
+            result1 = "(";
+            advance(pos, 1);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"(\"");
+            }
+          }
           if (result1 !== null) {
-            if (input.charCodeAt(pos.offset) === 40) {
-              result2 = "(";
-              advance(pos, 1);
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\"(\"");
-              }
+            result2 = [];
+            result3 = parse_S();
+            while (result3 !== null) {
+              result2.push(result3);
+              result3 = parse_S();
             }
             if (result2 !== null) {
-              result3 = [];
-              result4 = parse_S();
-              while (result4 !== null) {
-                result3.push(result4);
-                result4 = parse_S();
+              result3 = parse_DotExpression();
+              if (result3 === null) {
+                result3 = parse_StringLiteral();
+                if (result3 === null) {
+                  result3 = parse_DecimalLiteral();
+                }
               }
               if (result3 !== null) {
-                result4 = parse_DotExpression();
-                if (result4 === null) {
-                  result4 = parse_StringLiteral();
-                  if (result4 === null) {
-                    result4 = parse_DecimalLiteral();
-                  }
+                result4 = [];
+                result5 = parse_S();
+                while (result5 !== null) {
+                  result4.push(result5);
+                  result5 = parse_S();
                 }
                 if (result4 !== null) {
-                  result5 = [];
-                  result6 = parse_S();
-                  while (result6 !== null) {
-                    result5.push(result6);
-                    result6 = parse_S();
+                  if (input.charCodeAt(pos.offset) === 41) {
+                    result5 = ")";
+                    advance(pos, 1);
+                  } else {
+                    result5 = null;
+                    if (reportFailures === 0) {
+                      matchFailed("\")\"");
+                    }
                   }
                   if (result5 !== null) {
-                    if (input.charCodeAt(pos.offset) === 41) {
-                      result6 = ")";
-                      advance(pos, 1);
-                    } else {
-                      result6 = null;
-                      if (reportFailures === 0) {
-                        matchFailed("\")\"");
-                      }
+                    result6 = [];
+                    result7 = parse_S();
+                    while (result7 !== null) {
+                      result6.push(result7);
+                      result7 = parse_S();
                     }
                     if (result6 !== null) {
-                      result7 = [];
-                      result8 = parse_S();
-                      while (result8 !== null) {
-                        result7.push(result8);
-                        result8 = parse_S();
-                      }
-                      if (result7 !== null) {
-                        result0 = [result0, result1, result2, result3, result4, result5, result6, result7];
-                      } else {
-                        result0 = null;
-                        pos = clone(pos1);
-                      }
+                      result0 = [result0, result1, result2, result3, result4, result5, result6];
                     } else {
                       result0 = null;
                       pos = clone(pos1);
@@ -248,13 +233,13 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, negated, functionIdentifier, argument) {
+          result0 = (function(offset, line, column, functionIdentifier, argument) {
         		return {
         			type: 'function-call',
         			name: functionIdentifier,
         			argument: argument
         		};
-        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[4]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
         }
         if (result0 === null) {
           pos = clone(pos0);
