@@ -17,13 +17,13 @@ FunctionCall
 		};
 	}
 
-// TODO: Find a better name for this.
 DotExpression
-	= references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
+	= negated:'!'? references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
 		return {
 			type: 'dot-expression',
 			references: references,
-			target: target
+			target: target,
+			negated: !!negated
 		};
 	}
 

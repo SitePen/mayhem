@@ -1,9 +1,8 @@
 define([
 	'dbind/bind',
 	'./peg/expressionParser',
-	'dojo/_base/lang',
-	'dojo/date/locale'
-], function (bind, expressionParser, lang, dateLocale) {
+	'dojo/_base/lang'
+], function (bind, expressionParser, lang) {
 
 	function resolve(/*Object*/ context, /*Array*/ references) {
 		// summary:
@@ -31,22 +30,38 @@ define([
 		// expressionAst:
 		//		The expression AST
 
-		var type = expressionAst.type;
+		var type = expressionAst.type,
+			negate = false,
+			value;
 
 		if (type === 'dot-expression') {
 			var object = resolve(context, expressionAst.references);
-			return object[expressionAst.target];
+			value = object[expressionAst.target];
+			negate = expressionAst.negated;
 		}
 		else if (type === 'function-call') {
 			var name = expressionAst.name,
 				func = lang.hitch(resolve(context, name.references), name.target);
-			return func(getValue(context, expressionAst.argument));
+			value = func(getValue(context, expressionAst.argument));
+			negate = name.negated;
 		}
 		else if (type === 'number' || type === 'string') {
-			return expressionAst.value;
+			value = expressionAst.value;
 		}
 		else {
 			throw new Error('Unrecognized data binding expression type: ' + type);
+		}
+
+		return negate ? !value : value;
+	}
+
+	function negateValue(value) {
+		return !value;
+	}
+
+	function filterCallback(callback, filter) {
+		return function () {
+			callback(filter(arguments[0]));
 		}
 	}
 
@@ -55,14 +70,17 @@ define([
 		//		A data binding expression
 		// description:
 		//		This is a constructor for a data binding expression.
-		//		Data binding expressions support property references, single function calls,
+		//		Data binding expressions support property references, single function calls, negations,
 		//		and numeric and string literals.
 		//
 		//		Examples of supported expressions:
 		//		| someProperty
+		//		| !someProperty
 		//		| someProperty.deeperProperty.evenDeeperProperty
 		//		| date('yyyy')
 		//		| router.createPath('index')
+		//		| !someObject.isMatching(someField)
+		//		| enableSomething(!disabled)
 		//		| 123.45
 		//		| '12345'
 		//
@@ -96,14 +114,15 @@ define([
 
 			if (type === 'function-call') {
 				var name = expressionAst.name,
+					negate = name.negated,
 					func = lang.hitch(resolve(context, name.references), name.target);
 
 				// Wrap callback so it is passed the result of this function
 				// when the bound argument changes.
-				var originalCallback = callback;
-				callback = function (value) {
-					originalCallback(func(value));
-				};
+				callback = filterCallback(callback, func);
+				if(negate) {
+					callback = filterCallback(callback, negateValue);
+				}
 
 				expressionAst = expressionAst.argument;
 				type = expressionAst.type;
@@ -113,6 +132,10 @@ define([
 				var identifiers = expressionAst.references,
 					targetProperty = expressionAst.target,
 					object = resolve(context, identifiers);
+
+				if(expressionAst.negated) {
+					callback = filterCallback(callback, negateValue);
+				}
 
 				if (object && targetProperty in object) {
 					bind(object).get(expressionAst.target).getValue(callback);

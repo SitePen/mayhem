@@ -147,63 +147,78 @@ define([], function () {
       }
       
       function parse_FunctionCall() {
-        var result0, result1, result2, result3, result4, result5, result6, result7;
+        var result0, result1, result2, result3, result4, result5, result6, result7, result8;
         var pos0, pos1;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        result0 = parse_DotExpression();
-        if (result0 !== null) {
-          if (input.charCodeAt(pos.offset) === 40) {
-            result1 = "(";
-            advance(pos, 1);
-          } else {
-            result1 = null;
-            if (reportFailures === 0) {
-              matchFailed("\"(\"");
-            }
+        if (input.charCodeAt(pos.offset) === 33) {
+          result0 = "!";
+          advance(pos, 1);
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"!\"");
           }
+        }
+        result0 = result0 !== null ? result0 : "";
+        if (result0 !== null) {
+          result1 = parse_DotExpression();
           if (result1 !== null) {
-            result2 = [];
-            result3 = parse_S();
-            while (result3 !== null) {
-              result2.push(result3);
-              result3 = parse_S();
+            if (input.charCodeAt(pos.offset) === 40) {
+              result2 = "(";
+              advance(pos, 1);
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"(\"");
+              }
             }
             if (result2 !== null) {
-              result3 = parse_DotExpression();
-              if (result3 === null) {
-                result3 = parse_StringLiteral();
-                if (result3 === null) {
-                  result3 = parse_DecimalLiteral();
-                }
+              result3 = [];
+              result4 = parse_S();
+              while (result4 !== null) {
+                result3.push(result4);
+                result4 = parse_S();
               }
               if (result3 !== null) {
-                result4 = [];
-                result5 = parse_S();
-                while (result5 !== null) {
-                  result4.push(result5);
-                  result5 = parse_S();
+                result4 = parse_DotExpression();
+                if (result4 === null) {
+                  result4 = parse_StringLiteral();
+                  if (result4 === null) {
+                    result4 = parse_DecimalLiteral();
+                  }
                 }
                 if (result4 !== null) {
-                  if (input.charCodeAt(pos.offset) === 41) {
-                    result5 = ")";
-                    advance(pos, 1);
-                  } else {
-                    result5 = null;
-                    if (reportFailures === 0) {
-                      matchFailed("\")\"");
-                    }
+                  result5 = [];
+                  result6 = parse_S();
+                  while (result6 !== null) {
+                    result5.push(result6);
+                    result6 = parse_S();
                   }
                   if (result5 !== null) {
-                    result6 = [];
-                    result7 = parse_S();
-                    while (result7 !== null) {
-                      result6.push(result7);
-                      result7 = parse_S();
+                    if (input.charCodeAt(pos.offset) === 41) {
+                      result6 = ")";
+                      advance(pos, 1);
+                    } else {
+                      result6 = null;
+                      if (reportFailures === 0) {
+                        matchFailed("\")\"");
+                      }
                     }
                     if (result6 !== null) {
-                      result0 = [result0, result1, result2, result3, result4, result5, result6];
+                      result7 = [];
+                      result8 = parse_S();
+                      while (result8 !== null) {
+                        result7.push(result8);
+                        result8 = parse_S();
+                      }
+                      if (result7 !== null) {
+                        result0 = [result0, result1, result2, result3, result4, result5, result6, result7];
+                      } else {
+                        result0 = null;
+                        pos = clone(pos1);
+                      }
                     } else {
                       result0 = null;
                       pos = clone(pos1);
@@ -233,13 +248,13 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, functionIdentifier, argument) {
+          result0 = (function(offset, line, column, negated, functionIdentifier, argument) {
         		return {
         			type: 'function-call',
         			name: functionIdentifier,
         			argument: argument
         		};
-        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[4]);
         }
         if (result0 === null) {
           pos = clone(pos0);
@@ -248,77 +263,92 @@ define([], function () {
       }
       
       function parse_DotExpression() {
-        var result0, result1, result2;
+        var result0, result1, result2, result3;
         var pos0, pos1, pos2, pos3;
         
         pos0 = clone(pos);
         pos1 = clone(pos);
-        result0 = [];
-        pos2 = clone(pos);
-        pos3 = clone(pos);
-        result1 = parse_PaddedIdentifier();
-        if (result1 !== null) {
-          if (input.charCodeAt(pos.offset) === 46) {
-            result2 = ".";
-            advance(pos, 1);
-          } else {
-            result2 = null;
-            if (reportFailures === 0) {
-              matchFailed("\".\"");
-            }
-          }
-          if (result2 !== null) {
-            result1 = [result1, result2];
-          } else {
-            result1 = null;
-            pos = clone(pos3);
-          }
+        if (input.charCodeAt(pos.offset) === 33) {
+          result0 = "!";
+          advance(pos, 1);
         } else {
-          result1 = null;
-          pos = clone(pos3);
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"!\"");
+          }
         }
-        if (result1 !== null) {
-          result1 = (function(offset, line, column, identifier) { return identifier; })(pos2.offset, pos2.line, pos2.column, result1[0]);
-        }
-        if (result1 === null) {
-          pos = clone(pos2);
-        }
-        while (result1 !== null) {
-          result0.push(result1);
+        result0 = result0 !== null ? result0 : "";
+        if (result0 !== null) {
+          result1 = [];
           pos2 = clone(pos);
           pos3 = clone(pos);
-          result1 = parse_PaddedIdentifier();
-          if (result1 !== null) {
+          result2 = parse_PaddedIdentifier();
+          if (result2 !== null) {
             if (input.charCodeAt(pos.offset) === 46) {
-              result2 = ".";
+              result3 = ".";
               advance(pos, 1);
             } else {
-              result2 = null;
+              result3 = null;
               if (reportFailures === 0) {
                 matchFailed("\".\"");
               }
             }
-            if (result2 !== null) {
-              result1 = [result1, result2];
+            if (result3 !== null) {
+              result2 = [result2, result3];
             } else {
-              result1 = null;
+              result2 = null;
               pos = clone(pos3);
             }
           } else {
-            result1 = null;
+            result2 = null;
             pos = clone(pos3);
           }
-          if (result1 !== null) {
-            result1 = (function(offset, line, column, identifier) { return identifier; })(pos2.offset, pos2.line, pos2.column, result1[0]);
+          if (result2 !== null) {
+            result2 = (function(offset, line, column, identifier) { return identifier; })(pos2.offset, pos2.line, pos2.column, result2[0]);
           }
-          if (result1 === null) {
+          if (result2 === null) {
             pos = clone(pos2);
           }
-        }
-        if (result0 !== null) {
-          result1 = parse_PaddedIdentifier();
+          while (result2 !== null) {
+            result1.push(result2);
+            pos2 = clone(pos);
+            pos3 = clone(pos);
+            result2 = parse_PaddedIdentifier();
+            if (result2 !== null) {
+              if (input.charCodeAt(pos.offset) === 46) {
+                result3 = ".";
+                advance(pos, 1);
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\".\"");
+                }
+              }
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = clone(pos3);
+              }
+            } else {
+              result2 = null;
+              pos = clone(pos3);
+            }
+            if (result2 !== null) {
+              result2 = (function(offset, line, column, identifier) { return identifier; })(pos2.offset, pos2.line, pos2.column, result2[0]);
+            }
+            if (result2 === null) {
+              pos = clone(pos2);
+            }
+          }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse_PaddedIdentifier();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
           } else {
             result0 = null;
             pos = clone(pos1);
@@ -328,13 +358,14 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, references, target) {
+          result0 = (function(offset, line, column, negated, references, target) {
         		return {
         			type: 'dot-expression',
         			references: references,
-        			target: target
+        			target: target,
+        			negated: !!negated
         		};
-        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1]);
+        	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = clone(pos0);
