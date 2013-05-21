@@ -278,6 +278,11 @@ define([
 			//		Normalizes a string to a real ID value.
 			//	returns: string
 
+			// Normalize relative IDs
+			var activeRoutes = this._activeRoutes,
+				idPrefix = activeRoutes.length > 0 ? (activeRoutes[activeRoutes.length - 1].path + '/') : '';
+			id = id.replace(/^\.\//, idPrefix);
+
 			if (id === '') {
 				id = 'index';
 			}
