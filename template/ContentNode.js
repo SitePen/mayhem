@@ -6,12 +6,6 @@ define([
 	'dojo/_base/array',
 	'./DataBindingExpression'
 ], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression) {
-
-	function findPlaceMarker(rootNode, id) {
-		// TODO: See if we can use querySelectorAll instead
-		return rootNode.querySelectorAll('[data-template-node-id="' + id + '"]')[0];
-	}
-
 	return declare(BoundNode, {
 		// summary:
 		//		Template node for managing HTML content and nested template nodes.
@@ -19,6 +13,18 @@ define([
 		// dependencyMap: [readonly] Object
 		//		A map of dependency MID's to resolved dependencies
 		dependencyMap: null,
+
+		// nodeIdAttributeName: String
+		//		The name of the DOM attribute referencing template node IDs.
+		nodeIdAttributeName: null,
+
+		// widgetTypeAttributeName: String
+		//		The name of the DOM attribute that associates an element with a widget type
+		widgetTypeAttributeName: null,
+
+		// boundAttributesAttributeName: String
+		//		The name of the DOM attribute that defines an element's data-bound attributes
+		boundAttributesAttributeName: null,
 
 		// masterFragment: [readonly] DomFragment
 		//		A DOM fragment containing content to be cloned for instances
@@ -37,18 +43,24 @@ define([
 				contentNode = this,
 				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true);
 
+			function findPlaceMarker(id) {
+				return contentNodeFragment.querySelectorAll(
+					'[' + contentNode.nodeIdAttributeName + '="' + id + '"]'
+				)[0];
+			}
+
 			this.inherited(arguments);
 
 			// Get our widget-typed elements before instantiating template nodes,
 			// which may have their own widget-typed elements.
-			var widgetDomNodes = contentNodeFragment.querySelectorAll('[is]');
+			var widgetDomNodes = contentNodeFragment.querySelectorAll('[' + contentNode.widgetTypeAttributeName + ']');
 
 			// Instantiate template nodes before widgets
 			// because Dijits are clobbering the template node placeholders.
 			// TODO: This likely means data-bound widget content is broken. Fix this with our own widgets or insist on data binding to widget properties that affect contents.
 			this.templateNodes = arrayUtil.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
 				var id = TemplateNodeConstructor.prototype.id,
-					placeMarkerDomNode = findPlaceMarker(contentNodeFragment, id),
+					placeMarkerDomNode = findPlaceMarker(id),
 					templateNode = new TemplateNodeConstructor(kwArgs);
 
 				templateNode.placeAt(placeMarkerDomNode, 'replace');
@@ -57,7 +69,7 @@ define([
 
 			// Instantiate widgets
 			arrayUtil.forEach(widgetDomNodes, function (typedElement) {
-				var type = typedElement.getAttribute('is'),
+				var type = typedElement.getAttribute(contentNode.widgetTypeAttributeName),
 					WidgetConstructor = contentNode.dependencyMap[type];
 
 				var widget = new WidgetConstructor(null, typedElement);
@@ -80,10 +92,11 @@ define([
 		_bind: function (kwArgs) {
 			// DOM Attribute data binding
 			var bindingContext = kwArgs.bindingContext,
-				elementsWithBoundAttributes = this.fragment.querySelectorAll('[data-bound-attributes]');
+				boundAttributesAttributeName = this.boundAttributesAttributeName;
+				elementsWithBoundAttributes = this.fragment.querySelectorAll('[' + boundAttributesAttributeName + ']');
 
 			arrayUtil.forEach(elementsWithBoundAttributes, function (element) {
-				var dataBoundAttributeMap = JSON.parse(element.getAttribute('data-bound-attributes'));
+				var dataBoundAttributeMap = JSON.parse(element.getAttribute(boundAttributesAttributeName));
 				for (var attributeName in dataBoundAttributeMap) {
 					var expression = new DataBindingExpression(dataBoundAttributeMap[attributeName]);
 					expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));

@@ -30,8 +30,12 @@ define([
 	DataNode
 ) {
 
+	var boundAttributesAttributeName = 'data-bound-attributes',
+		widgetTypeAttributeName = 'is',
+		widgetTypeAttributeSelector = '[' + widgetTypeAttributeName + ']';
+
 	// TODO: This only matches cases where entire attribute value is a ${ expression }. Consider support for richer values.
-	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/;
+	var boundAttributePattern = /^\${(.+)}$/;
 	function compileDataBoundAttributes(/*DomNode*/ element) {
 		// summary:
 		//		Compile data-bound attributes on an element and its children.
@@ -56,8 +60,8 @@ define([
 			name = attribute.name;
 			value = attribute.value;
 
-			if (BOUND_ATTRIBUTE_PATTERN.test(value)) {
-				value = value.replace(BOUND_ATTRIBUTE_PATTERN, '$1');
+			if (boundAttributePattern.test(value)) {
+				value = value.replace(boundAttributePattern, '$1');
 				boundAttributeMap[name] = expressionParser.parse(value);
 				element.setAttribute(name, null);
 				foundBoundAttributes = true;
@@ -65,7 +69,7 @@ define([
 		}
 
 		if (foundBoundAttributes) {
-			element.setAttribute('data-bound-attributes', JSON.stringify(boundAttributeMap));
+			element.setAttribute(boundAttributesAttributeName, JSON.stringify(boundAttributeMap));
 		}
 
 		for (var child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
@@ -119,13 +123,13 @@ define([
 
 					// TODO: Only apply when parsing uncompiled AST
 					// Collect dependencies
-					arrayUtil.forEach(domNode.querySelectorAll('[is]'), function (typedElement) {
-						var moduleId = typedElement.getAttribute('is');
+					arrayUtil.forEach(domNode.querySelectorAll(widgetTypeAttributeSelector), function (typedElement) {
+						var moduleId = typedElement.getAttribute(widgetTypeAttributeName);
 
 						// TODO: Support aliases for components of the MID
 						if (aliases[moduleId]) {
 							moduleId = aliases[moduleId];
-							typedElement.setAttribute('is', moduleId);
+							typedElement.setAttribute(widgetTypeAttributeName, moduleId);
 						}
 						dependencyMap[moduleId] = true;
 					});
@@ -197,7 +201,14 @@ define([
 
 			var dependencyMap = {},
 				aliases = templateAst.aliases,
-				ContentNodeWithDependencies = declare(ContentNode, { dependencyMap: dependencyMap }),
+				ContentNodeWithDependencies = declare(ContentNode, {
+					dependencyMap: dependencyMap,
+
+					// Provide shared attribute names so we stay DRY.
+					nodeIdAttributeName: templateAst.nodeIdAttributeName,
+					widgetTypeAttributeName: widgetTypeAttributeName,
+					boundAttributesAttributeName: boundAttributesAttributeName
+				}),
 				TemplateConstructor = compileNode(templateAst),
 				dfd = new Deferred();
 

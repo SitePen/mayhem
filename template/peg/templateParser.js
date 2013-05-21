@@ -158,6 +158,9 @@ define([], function () {
         if (result0 !== null) {
           result0 = (function(offset, line, column, content) {
         		if (content) {
+        			// Include the node ID attribute name with the AST so dependent code can stay DRY.
+        			content.nodeIdAttributeName = nodeIdAttributeName;
+        
         			content.aliases = aliases;
         		}
         		return content;
@@ -246,7 +249,7 @@ define([], function () {
         			else {
         				// TODO: Colin prefers the use of comment nodes, but it appears we'll need to stick w/ <script> for this step since it is queryable.
         				node.id = getNextId();
-        				htmlFragmentBuffer.push('<script data-template-node-id="' + node.id + '"></script>');
+        				htmlFragmentBuffer.push('<script ' + nodeIdAttributeName + '="' + node.id + '"></script>');
         				templateNodes.push(node);
         			}
         		}
@@ -1922,7 +1925,8 @@ define([], function () {
       	HtmlFragmentNode.prototype = { type: 'fragment' };
       
       	// TODO: Currently, aliases apply to the whole template regardless of where they are specified. Should they be scoped?
-      	var aliases = {};
+      	var aliases = {},
+      		nodeIdAttributeName = 'data-template-node-id';
       
       
       var result = parseFunctions[startRule]();
