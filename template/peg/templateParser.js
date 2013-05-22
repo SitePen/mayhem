@@ -161,6 +161,10 @@ define([], function () {
         			// Include the node ID attribute name with the AST so dependent code can stay DRY.
         			content.nodeIdAttributeName = nodeIdAttributeName;
         
+        			var aliases = [];
+        			for (var alias in aliasMap) {
+        				aliases.push({ from: alias, to: aliasMap[alias] });
+        			}
         			content.aliases = aliases;
         		}
         		return content;
@@ -244,7 +248,10 @@ define([], function () {
         				htmlFragmentBuffer.push(node.html);
         			}
         			else if (node.type === 'alias') {
-        				aliases[node.from] = node.to;
+        				if (aliasMap[node.from]) {
+        					throw new Error('Alias "' + node.from + '" has already been defined');
+        				}
+        				aliasMap[node.from] = node.to;
         			}
         			else {
         				// TODO: Colin prefers the use of comment nodes, but it appears we'll need to stick w/ <script> for this step since it is queryable.
@@ -1925,7 +1932,7 @@ define([], function () {
       	HtmlFragmentNode.prototype = { type: 'fragment' };
       
       	// TODO: Currently, aliases apply to the whole template regardless of where they are specified. Should they be scoped?
-      	var aliases = {},
+      	var aliasMap = {},
       		nodeIdAttributeName = 'data-template-node-id';
       
       

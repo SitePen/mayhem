@@ -77,8 +77,32 @@ define([
 		}
 	}
 
+	// TODO: Consider whether we want to allow applying more than one alias at a time. Keeping it simple now because it's possible to introduce circular aliases.
+	function applyAliases(/**Array*/ aliases, /**String*/ moduleId) {
+		// summary:
+		//		Apply aliases to a module ID.
+		//		Returns after first matching alias or after testing the module ID against all aliases.
+		// aliases: Array
+		//		An array of from/to pairs of strings.
+		// moduleId: String
+		//		The module ID to which aliases are applied.
+		// returns: String
+		//		The transformed module ID or the original module ID if no aliases applied.
+
+		for (var i = 0, match; i < aliases.length && !match; i++) {
+			match = moduleId.match(aliases[i].from);
+			if (match) {
+				var leading = moduleId.substring(0, match.index),
+					trailing = moduleId.substring(match.index + match[1].length);
+				return leading + aliases[i].to + trailing;
+			}
+		}
+
+		return moduleId;
+	}
+
 	return {
-		compileFromSource: function (templateSource) {
+		compileFromSource: function (/**String*/ templateSource) {
 			// summary:
 			//		Compile a template from a source string
 			// templateSource:
@@ -90,7 +114,7 @@ define([
 			return this.compileFromAst(pegAst);
 		},
 
-		compileFromAst: function (templateAst) {
+		compileFromAst: function (/**Object*/ templateAst) {
 			// summary:
 			//		Compile a template from a template AST.
 			// templateAst:
@@ -99,6 +123,22 @@ define([
 			//		A promise resolving with a Template constructor.
 
 			// TODO: Some operations like dependency collection can be done at build time. Identify these and support skipping them if compiling a pre-processed template AST.
+
+			var dependencyMap = {},
+				aliases = arrayUtil.map(templateAst.aliases, function (aliasAst) {
+					return {
+						from: new RegExp('(?:^|/)(' + aliasAst.from + ')(?:$|/)'),
+						to: aliasAst.to
+					};
+				}),
+				ContentNodeWithDependencies = declare(ContentNode, {
+					dependencyMap: dependencyMap,
+
+					// Provide shared attribute names so we stay DRY.
+					nodeIdAttributeName: templateAst.nodeIdAttributeName,
+					widgetTypeAttributeName: widgetTypeAttributeName,
+					boundAttributesAttributeName: boundAttributesAttributeName
+				});
 
 			function compileNode(astNode) {
 				// summary:
@@ -124,14 +164,15 @@ define([
 					// TODO: Only apply when parsing uncompiled AST
 					// Collect dependencies
 					arrayUtil.forEach(domNode.querySelectorAll(widgetTypeAttributeSelector), function (typedElement) {
-						var moduleId = typedElement.getAttribute(widgetTypeAttributeName);
+						var originalModuleId = typedElement.getAttribute(widgetTypeAttributeName);
 
-						// TODO: Support aliases for components of the MID
-						if (aliases[moduleId]) {
-							moduleId = aliases[moduleId];
-							typedElement.setAttribute(widgetTypeAttributeName, moduleId);
+						// Apply aliases
+						var normalizedModuleId = applyAliases(aliases, originalModuleId);
+						if (originalModuleId !== normalizedModuleId) {
+							typedElement.setAttribute(widgetTypeAttributeName, normalizedModuleId);
 						}
-						dependencyMap[moduleId] = true;
+
+						dependencyMap[normalizedModuleId] = true;
 					});
 
 					// TODO: Only apply when parsing uncompiled AST
@@ -199,17 +240,7 @@ define([
 				return Constructor;
 			}
 
-			var dependencyMap = {},
-				aliases = templateAst.aliases,
-				ContentNodeWithDependencies = declare(ContentNode, {
-					dependencyMap: dependencyMap,
-
-					// Provide shared attribute names so we stay DRY.
-					nodeIdAttributeName: templateAst.nodeIdAttributeName,
-					widgetTypeAttributeName: widgetTypeAttributeName,
-					boundAttributesAttributeName: boundAttributesAttributeName
-				}),
-				TemplateConstructor = compileNode(templateAst),
+			var TemplateConstructor = compileNode(templateAst),
 				dfd = new Deferred();
 
 			// TODO: Only apply when parsing uncompiled AST
