@@ -62,7 +62,7 @@ define([
 	function filterCallback(callback, filter) {
 		return function () {
 			callback(filter(arguments[0]));
-		}
+		};
 	}
 
 	function DataBindingExpression(/*String|Object*/ expression) {
@@ -120,7 +120,7 @@ define([
 				// Wrap callback so it is passed the result of this function
 				// when the bound argument changes.
 				callback = filterCallback(callback, func);
-				if(negate) {
+				if (negate) {
 					callback = filterCallback(callback, negateValue);
 				}
 
@@ -133,7 +133,7 @@ define([
 					targetProperty = expressionAst.target,
 					object = resolve(context, identifiers);
 
-				if(expressionAst.negated) {
+				if (expressionAst.negated) {
 					callback = filterCallback(callback, negateValue);
 				}
 
