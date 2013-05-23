@@ -30,13 +30,14 @@ define([
 	DataNode
 ) {
 
-	var boundAttributesAttributeName = 'data-bound-attributes',
+	var boundElementAttributeName = 'data-bound-element',
 		widgetTypeAttributeName = 'is',
 		widgetTypeAttributeSelector = '[' + widgetTypeAttributeName + ']';
 
 	// TODO: This only matches cases where entire attribute value is a ${ expression }. Consider support for richer values.
-	var boundAttributePattern = /^\${(.+)}$/;
-	function compileDataBoundAttributes(/*DomNode*/ element) {
+	var boundAttributePattern = /^\${(.+)}$/,
+		nextDataBoundElementId = 1;
+	function compileDataBoundAttributes(/*DomNode*/ element, /*Object?*/ boundElementMap) {
 		// summary:
 		//		Compile data-bound attributes on an element and its children.
 		// description:
@@ -45,6 +46,12 @@ define([
 		//		is added with a map of attribute names to expression ASTs.
 		// element:
 		//		The element to examine for data-bound attributes.
+		// boundElementMap:
+		// 		An object hash of data-bound element IDs to a hash of attribute names to expression ASTs.
+		// returns: Object
+		//		The data-bound element map for this element and its children.
+
+		boundElementMap = boundElementMap || {};
 
 		var boundAttributeMap = {},
 			foundBoundAttributes = false,
@@ -69,12 +76,16 @@ define([
 		}
 
 		if (foundBoundAttributes) {
-			element.setAttribute(boundAttributesAttributeName, JSON.stringify(boundAttributeMap));
+			boundElementMap[nextDataBoundElementId] = boundAttributeMap;
+			element.setAttribute(boundElementAttributeName, nextDataBoundElementId);
+			nextDataBoundElementId++;
 		}
 
 		for (var child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
-			compileDataBoundAttributes(child);
+			compileDataBoundAttributes(child, boundElementMap);
 		}
+
+		return boundElementMap;
 	}
 
 	// TODO: Consider whether we want to allow applying more than one alias at a time. Keeping it simple now because it's possible to introduce circular aliases.
@@ -137,7 +148,7 @@ define([
 					// Provide shared attribute names so we stay DRY.
 					nodeIdAttributeName: templateAst.nodeIdAttributeName,
 					widgetTypeAttributeName: widgetTypeAttributeName,
-					boundAttributesAttributeName: boundAttributesAttributeName
+					boundElementAttributeName: boundElementAttributeName
 				});
 
 			function compileNode(astNode) {
@@ -176,7 +187,7 @@ define([
 					});
 
 					// TODO: Only apply when parsing uncompiled AST
-					compileDataBoundAttributes(domNode);
+					var boundElementMap = compileDataBoundAttributes(domNode);
 
 					// Save compiled DOM back to AST HTML
 					astNode.html = domNode.innerHTML;
@@ -187,6 +198,7 @@ define([
 
 					Constructor = declare(ContentNodeWithDependencies, {
 						masterFragment: range.extractContents(),
+						boundElementMap: boundElementMap,
 						templateNodeConstructors: arrayUtil.map(astNode.templateNodes, compileNode)
 					});
 

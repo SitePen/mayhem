@@ -22,13 +22,17 @@ define([
 		//		The name of the DOM attribute that associates an element with a widget type
 		widgetTypeAttributeName: null,
 
-		// boundAttributesAttributeName: String
-		//		The name of the DOM attribute that defines an element's data-bound attributes
-		boundAttributesAttributeName: null,
+		// boundElementAttributeName: String
+		//		The name of the DOM attribute that identifies a data-bound element.
+		boundElementAttributeName: null,
 
 		// masterFragment: [readonly] DomFragment
 		//		A DOM fragment containing content to be cloned for instances
 		masterFragment: null,
+
+		// boundElementMap: Object
+		//		A hash of data-bound element IDs to a hash of attribute names to expression ASTs.
+		boundElementMap: null,
 
 		// templateNodeConstructors: [readonly] Array
 		// 		Constructors for the template nodes owned by this node
@@ -43,13 +47,14 @@ define([
 				contentNode = this,
 				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true);
 
+			this.inherited(arguments);
+			this._bindDomAttributes(kwArgs);
+
 			function findPlaceMarker(id) {
 				return contentNodeFragment.querySelectorAll(
 					'[' + contentNode.nodeIdAttributeName + '="' + id + '"]'
 				)[0];
 			}
-
-			this.inherited(arguments);
 
 			// Get our widget-typed elements before instantiating template nodes,
 			// which may have their own widget-typed elements.
@@ -89,21 +94,28 @@ define([
 			});
 		},
 
-		_bind: function (kwArgs) {
+		_bindDomAttributes: function (kwArgs) {
 			// DOM Attribute data binding
 			var bindingContext = kwArgs.bindingContext,
-				boundAttributesAttributeName = this.boundAttributesAttributeName;
-				elementsWithBoundAttributes = this.fragment.querySelectorAll('[' + boundAttributesAttributeName + ']');
+				boundElementAttributeName = this.boundElementAttributeName,
+				elementsWithBoundAttributes = this.fragment.querySelectorAll('[' + boundElementAttributeName + ']'),
+				boundElementMap = this.boundElementMap;
 
 			arrayUtil.forEach(elementsWithBoundAttributes, function (element) {
-				var dataBoundAttributeMap = JSON.parse(element.getAttribute(boundAttributesAttributeName));
-				
-				// Remove attribute so the element doesn't appear in ancestors' data binding queries.
-				element.setAttribute(boundAttributesAttributeName, null);
+				var boundElementId = element.getAttribute(boundElementAttributeName),
+					boundAttributeMap = boundElementMap[boundElementId];
 
-				for (var attributeName in dataBoundAttributeMap) {
-					var expression = new DataBindingExpression(dataBoundAttributeMap[attributeName]);
-					expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
+				// Remove attribute so the element doesn't appear in ancestors' data binding queries.
+				element.setAttribute(boundElementAttributeName, null);
+
+				if (boundAttributeMap) {
+					for (var attributeName in boundAttributeMap) {
+						var expression = new DataBindingExpression(boundAttributeMap[attributeName]);
+						expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
+					}
+				}
+				else if(has('debug')){
+					console.warn('Unable to find attribute name for data-bound element ' + boundElementId);
 				}
 			});
 		},

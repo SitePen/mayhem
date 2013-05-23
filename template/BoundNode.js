@@ -63,15 +63,22 @@ define([
 			// kwArgs:
 			//		The construction args
 
-			this._create(kwArgs);
+			try {
+				if (!kwArgs.bindingContext) {
+					kwArgs = lang.delegate(kwArgs, {
+						bindingContext: this._createDefaultBindingContext(kwArgs.view)
+					});
+				}
+				this._create(kwArgs);
 
-			if (!kwArgs.bindingContext) {
-				kwArgs = lang.delegate(kwArgs, {
-					bindingContext: this._createDefaultBindingContext(kwArgs.view)
-				});
+				// TODO: Get rid of _bind and defer all data-binding to _create()
+				this._bind(kwArgs);
 			}
-
-			this._bind(kwArgs);
+			catch (e) {
+				// Free any resources allocated for this node before the error.
+				this.destroy();
+				throw e;
+			}
 		},
 
 		_create: function (/*kwArgs*/) {
