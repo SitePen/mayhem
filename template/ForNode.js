@@ -24,7 +24,8 @@ define([
 		//		An array of content nodes corresponding to the collection items
 		contentItems: null,
 
-		_bind: function (kwArgs) {
+		_create: function (kwArgs) {
+			this.inherited(arguments);
 			this.each.bind(kwArgs.bindingContext, lang.hitch(this, '_update', kwArgs));
 		},
 

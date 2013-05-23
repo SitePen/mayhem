@@ -12,7 +12,7 @@ define([
 		//		The name of the placeholder
 		name: null,
 
-		_bind: function (kwArgs) {
+		_create: function (kwArgs) {
 			this.inherited(arguments);
 
 			var view = kwArgs.view,

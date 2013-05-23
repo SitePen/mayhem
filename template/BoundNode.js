@@ -25,11 +25,6 @@ define([
 		// bindingContext: Object?
 		//		The context to bind to. If not provided, a default is created.
 	};
-
-	var __TemplateBindingArgs = declare(__TemplateNodeArgs, {
-		// bindingContext: Object
-		//		The context to bind to.
-	});
 	=====*/
 
 	return declare(null, {
@@ -65,14 +60,13 @@ define([
 
 			try {
 				if (!kwArgs.bindingContext) {
+					// Create a default binding context
 					kwArgs = lang.delegate(kwArgs, {
 						bindingContext: this._createDefaultBindingContext(kwArgs.view)
 					});
 				}
+				
 				this._create(kwArgs);
-
-				// TODO: Get rid of _bind and defer all data-binding to _create()
-				this._bind(kwArgs);
 			}
 			catch (e) {
 				// Free any resources allocated for this node before the error.
@@ -93,15 +87,6 @@ define([
 
 			domConstruct.place(beginMarker, fragment, 'first');
 			domConstruct.place(endMarker, fragment, 'last');
-		},
-
-		_bind: function (/*kwArgs*/) {
-			// summary:
-			//		Data bind this node.
-			// kwArgs: __TemplateBindingArgs
-			//		The binding arguments
-
-			// Do nothing in base class.
 		},
 
 		_createDefaultBindingContext: function (/*framework/View*/ view) {

@@ -29,7 +29,9 @@ define([
 		//		The active content for this template node
 		content: null,
 
-		_bind: function (kwArgs) {
+		_create: function (kwArgs) {
+			this.inherited(arguments);
+
 			var whenNode = this;
 
 			function createContentArgs(value) {

@@ -15,7 +15,9 @@ define([
 		//		An expression indicating the value bound to this node
 		'var': null,
 
-		_bind: function (kwArgs) {
+		_create: function (kwArgs) {
+			this.inherited(arguments);
+
 			var dataNode = this;
 
 			this.var.bind(kwArgs.bindingContext, function (value) {

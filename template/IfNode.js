@@ -20,7 +20,8 @@ define([
 		//		The active content for this template node
 		content: null,
 
-		_bind: function (kwArgs) {
+		_create: function (kwArgs) {
+			this.inherited(arguments);
 			var conditionalBlocks = this.conditionalBlocks,
 				update = lang.hitch(this, '_evaluateConditions', kwArgs);
 			for (var i = 0; i < conditionalBlocks.length; i++) {
