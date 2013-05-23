@@ -163,7 +163,10 @@ define([], function () {
         
         			var aliases = [];
         			for (var alias in aliasMap) {
-        				aliases.push({ from: alias, to: aliasMap[alias] });
+        				aliases.push({
+        					fromPattern: new RegExp('(?:^|/)(' + alias + ')(?:$|/)'),
+        					to: aliasMap[alias]
+        				});
         			}
         			content.aliases = aliases;
         		}

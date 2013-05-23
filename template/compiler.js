@@ -101,7 +101,7 @@ define([
 		//		The transformed module ID or the original module ID if no aliases applied.
 
 		for (var i = 0, match; i < aliases.length && !match; i++) {
-			match = moduleId.match(aliases[i].from);
+			match = moduleId.match(aliases[i].fromPattern);
 			if (match) {
 				var leading = moduleId.substring(0, match.index),
 					trailing = moduleId.substring(match.index + match[1].length);
@@ -110,6 +110,29 @@ define([
 		}
 
 		return moduleId;
+	}
+
+	function collectWidgetDependencies(/*DomNode*/ domNode, /*Array*/ aliases, /*Object*/ dependencyMap) {
+		// summary:
+		//		Collects the widget dependencies of a DOM node and its children.
+		// domNode:
+		//		The DOM node to collect dependencies from
+		// aliaes:
+		//		An array of module ID aliases.
+		// dependencyMap:
+		//		The map dependencies are added to
+
+		arrayUtil.forEach(domNode.querySelectorAll(widgetTypeAttributeSelector), function (typedElement) {
+			var originalModuleId = typedElement.getAttribute(widgetTypeAttributeName);
+
+			// Apply aliases
+			var normalizedModuleId = applyAliases(aliases, originalModuleId);
+			if (originalModuleId !== normalizedModuleId) {
+				typedElement.setAttribute(widgetTypeAttributeName, normalizedModuleId);
+			}
+
+			dependencyMap[normalizedModuleId] = true;
+		});
 	}
 
 	return {
@@ -136,12 +159,7 @@ define([
 			// TODO: Some operations like dependency collection can be done at build time. Identify these and support skipping them if compiling a pre-processed template AST.
 
 			var dependencyMap = {},
-				aliases = arrayUtil.map(templateAst.aliases, function (aliasAst) {
-					return {
-						from: new RegExp('(?:^|/)(' + aliasAst.from + ')(?:$|/)'),
-						to: aliasAst.to
-					};
-				}),
+				prebuilt = templateAst.built,
 				ContentNodeWithDependencies = declare(ContentNode, {
 					dependencyMap: dependencyMap,
 
@@ -172,25 +190,17 @@ define([
 						throw new Error('Unable to correctly parse template HTML.');
 					}
 
-					// TODO: Only apply when parsing uncompiled AST
-					// Collect dependencies
-					arrayUtil.forEach(domNode.querySelectorAll(widgetTypeAttributeSelector), function (typedElement) {
-						var originalModuleId = typedElement.getAttribute(widgetTypeAttributeName);
+					var boundElementMap;
+					if (prebuilt) {
+						boundElementMap = templateAst.boundElementMap;
+					}
+					else {
+						boundElementMap = astNode.boundElementMap = compileDataBoundAttributes(domNode);
+						collectWidgetDependencies(domNode, templateAst.aliases, dependencyMap);
 
-						// Apply aliases
-						var normalizedModuleId = applyAliases(aliases, originalModuleId);
-						if (originalModuleId !== normalizedModuleId) {
-							typedElement.setAttribute(widgetTypeAttributeName, normalizedModuleId);
-						}
-
-						dependencyMap[normalizedModuleId] = true;
-					});
-
-					// TODO: Only apply when parsing uncompiled AST
-					var boundElementMap = compileDataBoundAttributes(domNode);
-
-					// Save compiled DOM back to AST HTML
-					astNode.html = domNode.innerHTML;
+						// Save compiled DOM back to AST HTML
+						astNode.html = domNode.innerHTML;
+					}
 
 					// TODO: Create a child-adoption module because we're using this everywhere and need to encapsulate an IE8 workaround anyway.
 					var range = document.createRange();
@@ -255,11 +265,13 @@ define([
 			var TemplateConstructor = compileNode(templateAst),
 				dfd = new Deferred();
 
-			// TODO: Only apply when parsing uncompiled AST
-			// List dependency module IDs
-			var dependencies = [];
-			for (var moduleId in dependencyMap) {
-				dependencies.push(moduleId);
+			if (!prebuilt) {
+				// List dependency module IDs
+				var dependencies = [];
+				for (var moduleId in dependencyMap) {
+					dependencies.push(moduleId);
+				}
+				templateAst.dependencies = dependencies;
 			}
 
 			// Resolve template dependencies
@@ -270,11 +282,9 @@ define([
 					dependencyMap[moduleId] = arguments[i];
 				}
 
-				// Include dependency MIDs and the compiled AST with the constructor
-				// to be used by template-related build tasks.
-				templateAst.compiled = true;
+				// Include the built AST with the constructor so it can be included in builds.
+				templateAst.built = true;
 				TemplateConstructor.compiledAst = templateAst;
-				TemplateConstructor.dependencies = dependencies;
 
 				dfd.resolve(TemplateConstructor);
 			});
