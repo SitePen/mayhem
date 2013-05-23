@@ -8,14 +8,22 @@ start
 // TODO: Support chained function calls.
 FunctionCall
 	= functionIdentifier:DotExpression '(' S*
-		argument:(DotExpression / StringLiteral / DecimalLiteral)
+		leadingArgument:FunctionArgument? trailingArguments:(',' arg:FunctionArgument { return arg; })*
 	S* ')' S* {
+		var arguments = trailingArguments;
+		if (leadingArgument) {
+			arguments.unshift(leadingArgument);
+		}
+
 		return {
 			type: 'function-call',
 			name: functionIdentifier,
-			argument: argument
+			arguments: arguments
 		};
 	}
+
+FunctionArgument
+	= DotExpression / StringLiteral / NumericLiteral
 
 DotExpression
 	= negated:'!'? references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
@@ -32,8 +40,8 @@ PaddedIdentifier
 
 // TODO: This is a quick implementation that doesn't support all valid Ecmascript identifiers. Fix it.
 Identifier
-	= lead:[$_a-zA-Z] tail:[$_a-zA-Z0-9]* {
-		return lead + tail.join('');
+	= head:[$_a-zA-Z] tail:[$_a-zA-Z0-9]* {
+		return head + tail.join('');
 	}
 
 StringLiteral

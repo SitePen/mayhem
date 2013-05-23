@@ -55,6 +55,7 @@ define([
 					contentItem = new this.ContentTemplate(lang.delegate(kwArgs, {
 						bindingContext: itemBindingContext
 					}));
+				window.bContext = itemBindingContext;
 				contentItem.placeAt(this.endMarker, 'before');
 				return contentItem;
 			}));

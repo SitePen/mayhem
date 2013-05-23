@@ -97,6 +97,10 @@ define([
 
 			arrayUtil.forEach(elementsWithBoundAttributes, function (element) {
 				var dataBoundAttributeMap = JSON.parse(element.getAttribute(boundAttributesAttributeName));
+				
+				// Remove attribute so the element doesn't appear in ancestors' data binding queries.
+				element.setAttribute(boundAttributesAttributeName, null);
+
 				for (var attributeName in dataBoundAttributeMap) {
 					var expression = new DataBindingExpression(dataBoundAttributeMap[attributeName]);
 					expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
