@@ -5,7 +5,6 @@ define([
 	'dojo/Deferred',
 	'dojo/dom-construct',
 	'./peg/templateParser',
-	'./peg/expressionParser',
 	'./DataBindingExpression',
 	'./PlaceholderNode',
 	'./ContentNode',
@@ -20,7 +19,6 @@ define([
 	Deferred,
 	domConstruct,
 	templateParser,
-	expressionParser,
 	DataBindingExpression,
 	PlaceholderNode,
 	ContentNode,
@@ -37,7 +35,7 @@ define([
 	// TODO: This only matches cases where entire attribute value is a ${ expression }. Consider support for richer values.
 	var boundAttributePattern = /^\${(.+)}$/,
 		nextDataBoundElementId = 1;
-	function compileDataBoundAttributes(/*DomNode*/ element, /*Object?*/ boundElementMap) {
+	function compileDataBoundAttributes(/*DomNode*/ element, /*Object*/ boundElementMap) {
 		// summary:
 		//		Compile data-bound attributes on an element and its children.
 		// description:
@@ -48,10 +46,8 @@ define([
 		//		The element to examine for data-bound attributes.
 		// boundElementMap:
 		// 		An object hash of data-bound element IDs to a hash of attribute names to expression ASTs.
-		// returns: Object
-		//		The data-bound element map for this element and its children.
-
-		boundElementMap = boundElementMap || {};
+		// returns: Boolean
+		//		A boolean indicating whether any data-bound attributes were found.
 
 		var boundAttributeMap = {},
 			foundBoundAttributes = false,
@@ -69,7 +65,7 @@ define([
 
 			if (boundAttributePattern.test(value)) {
 				value = value.replace(boundAttributePattern, '$1');
-				boundAttributeMap[name] = expressionParser.parse(value);
+				boundAttributeMap[name] = templateParser.parse(value, 'DataBindingExpression');
 				element.setAttribute(name, null);
 				foundBoundAttributes = true;
 			}
@@ -82,10 +78,12 @@ define([
 		}
 
 		for (var child = element.firstElementChild; child !== null; child = child.nextElementSibling) {
-			compileDataBoundAttributes(child, boundElementMap);
+			if (compileDataBoundAttributes(child, boundElementMap)) {
+				foundBoundAttributes = true;
+			}
 		}
 
-		return boundElementMap;
+		return foundBoundAttributes;
 	}
 
 	// TODO: Consider whether we want to allow applying more than one alias at a time. Keeping it simple now because it's possible to introduce circular aliases.
@@ -112,7 +110,7 @@ define([
 		return moduleId;
 	}
 
-	function collectWidgetDependencies(/*DomNode*/ domNode, /*Array*/ aliases, /*Object*/ dependencyMap) {
+	function processWidgetDependencies(/*DomNode*/ domNode, /*Array*/ aliases, /*Object*/ dependencyMap) {
 		// summary:
 		//		Collects the widget dependencies of a DOM node and its children.
 		// domNode:
@@ -136,30 +134,113 @@ define([
 	}
 
 	return {
-		compileFromSource: function (/**String*/ templateSource) {
+		parse: function (/**String*/ templateSource) {
 			// summary:
-			//		Compile a template from a source string
+			//		Parse a template
 			// templateSource:
-			//		The template source string
-			// returns: dojo/promise/Promise
-			//		A promise resolving with a Template constructor.
+			//		The template source text
+			// returns:
+			//		The template AST
 
-			var pegAst = templateParser.parse(templateSource);
-			return this.compileFromAst(pegAst);
+			var templateAst = templateParser.parse(templateSource),
+				templateData = {
+					// Provide shared attribute names so we stay DRY.
+					nodeIdAttributeName: templateAst.nodeIdAttributeName
+				},
+				aliases = arrayUtil.map(templateAst.aliases, function (alias) {
+					return {
+						fromPattern: new RegExp('(?:^|/)(' + alias.from + ')(?:$|/)'),
+						to: alias.to
+					};
+				}),
+				dependencyMap = {};
+
+			function compileNode(astNode) {
+				// summary:
+				//		Compile an AST node and its children.
+				// astNode:
+				//		The AST node to compile
+
+				var type = astNode.type;
+
+				if (type === 'content') {
+					// TODO: Is there a reason dom-construct.toDom() should be preferred here?
+					// TODO: Create/use a DOM module that allows for use in the browser or on the command line (for builds).
+					var domNode = domConstruct.create('div', { innerHTML: astNode.html });
+
+					// TODO: Is this a good check for successful parsing?
+					if (domNode.innerHTML.length !== astNode.html.length) {
+						// TODO: Make this error more useful by including input and output.
+						throw new Error('Unable to correctly parse template HTML.');
+					}
+
+					var boundElementMap = {};
+					if (compileDataBoundAttributes(domNode, boundElementMap)) {
+						astNode.boundElementMap = boundElementMap;
+					}
+
+					processWidgetDependencies(domNode, aliases, dependencyMap);
+
+					// Save compiled DOM back to AST HTML
+					astNode.html = domNode.innerHTML;
+
+					// Process child nodes
+					arrayUtil.forEach(astNode.templateNodes, compileNode);
+				}
+				else if (type === 'if') {
+					arrayUtil.forEach(astNode.conditionalBlocks, function (conditionalBlock) {
+						conditionalBlock.content = compileNode(conditionalBlock.content);
+					});
+					if (astNode.elseBlock) {
+						compileNode(astNode.elseBlock.content);
+					}
+				}
+				else if (type === 'for') {
+					astNode.content = compileNode(astNode.content);
+				}
+				else if (type === 'placeholder') {
+					// Do nothing
+				}
+				else if (type === 'when') {
+					for (var key in { resolvedContent: 1, errorContent: 1, progressContent: 1 }) {
+						if (astNode[key]) {
+							compileNode(astNode[key]);
+						}
+					}
+				}
+				else if (type === 'data') {
+					// Convert parsed safe value to Boolean
+					astNode.safe = astNode.safe !== undefined;
+				}
+				else {
+					throw new Error('Unrecognized template AST node type: ' + type);
+				}
+
+				return astNode;
+			}
+
+			compileNode(templateAst);
+
+			// List dependency module IDs
+			var dependencies = [];
+			for (var moduleId in dependencyMap) {
+				dependencies.push(moduleId);
+			}
+			templateAst.dependencies = dependencies;
+
+			return templateAst;
 		},
 
-		compileFromAst: function (/**Object*/ templateAst) {
+		load: function (/*Object*/ templateAst) {
 			// summary:
-			//		Compile a template from a template AST.
+			//		Load a template from a template AST.
 			// templateAst:
 			//		The template AST
 			// returns: dojo/promise/Promise
 			//		A promise resolving with a Template constructor.
 
-			// TODO: Some operations like dependency collection can be done at build time. Identify these and support skipping them if compiling a pre-processed template AST.
-
-			var dependencyMap = {},
-				prebuilt = templateAst.built,
+			var dependencies = templateAst.dependencies,
+				dependencyMap = {},
 				ContentNodeWithDependencies = declare(ContentNode, {
 					dependencyMap: dependencyMap,
 
@@ -169,38 +250,30 @@ define([
 					boundElementAttributeName: boundElementAttributeName
 				});
 
-			function compileNode(astNode) {
+			// Resolve template dependencies
+			var deferredDependencies = new Deferred();
+			require(dependencies, function () {
+				for (var i = 0; i < dependencies.length; i++) {
+					var moduleId = dependencies[i];
+					dependencyMap[moduleId] = arguments[i];
+				}
+				deferredDependencies.resolve();
+			});
+
+			function createNodeConstructor(astNode) {
 				// summary:
-				//		Compile an AST node and its children.
+				//		Load a template node and its children.
 				// astNode:
-				//		The AST node to compile
+				//		The AST node to load
 				// returns: Function
 				//		A template node constructor
 
 				var type = astNode.type;
-				var Constructor;
 
-				if (type === 'fragment') {
+				var Constructor;
+				if (type === 'content') {
 					// TODO: Is there a reason dom-construct.toDom() should be preferred here?
 					var domNode = domConstruct.create('div', { innerHTML: astNode.html });
-
-					// TODO: Is this a good check for successful parsing?
-					if (domNode.innerHTML.length !== astNode.html.length) {
-						// TODO: Make this error more useful by including input and output.
-						throw new Error('Unable to correctly parse template HTML.');
-					}
-
-					var boundElementMap;
-					if (prebuilt) {
-						boundElementMap = templateAst.boundElementMap;
-					}
-					else {
-						boundElementMap = astNode.boundElementMap = compileDataBoundAttributes(domNode);
-						collectWidgetDependencies(domNode, templateAst.aliases, dependencyMap);
-
-						// Save compiled DOM back to AST HTML
-						astNode.html = domNode.innerHTML;
-					}
 
 					// TODO: Create a child-adoption module because we're using this everywhere and need to encapsulate an IE8 workaround anyway.
 					var range = document.createRange();
@@ -208,8 +281,8 @@ define([
 
 					Constructor = declare(ContentNodeWithDependencies, {
 						masterFragment: range.extractContents(),
-						boundElementMap: boundElementMap,
-						templateNodeConstructors: arrayUtil.map(astNode.templateNodes, compileNode)
+						boundElementMap: astNode.boundElementMap || null,
+						templateNodeConstructors: arrayUtil.map(astNode.templateNodes, createNodeConstructor)
 					});
 
 					range.detach();
@@ -219,11 +292,11 @@ define([
 						conditionalBlocks: arrayUtil.map(astNode.conditionalBlocks, function (conditionalBlock) {
 							return {
 								condition: new DataBindingExpression(conditionalBlock.condition),
-								ContentTemplate: compileNode(conditionalBlock.content)
+								ContentTemplate: createNodeConstructor(conditionalBlock.content)
 							};
 						}),
-						elseBlock: astNode.elseBlock && astNode.elseBlock.content
-							? { ContentTemplate: compileNode(astNode.elseBlock.content) }
+						elseBlock: astNode.elseBlock 
+							? { ContentTemplate: createNodeConstructor(astNode.elseBlock.content) }
 							: null
 					});
 				}
@@ -231,7 +304,7 @@ define([
 					Constructor = declare(ForNode, {
 						each: new DataBindingExpression(astNode.each),
 						valueName: astNode.value,
-						ContentTemplate: compileNode(astNode.content)
+						ContentTemplate: createNodeConstructor(astNode.content)
 					});
 				}
 				else if (type === 'placeholder') {
@@ -242,9 +315,9 @@ define([
 					Constructor = declare(WhenNode, {
 						promise: new DataBindingExpression(astNode.promise),
 						valueName: astNode.value,
-						ResolvedTemplate: astNode.resolvedContent ? compileNode(astNode.resolvedContent) : null,
-						ErrorTemplate: astNode.errorContent ? compileNode(astNode.errorContent) : null,
-						ProgressTemplate: astNode.progressContent ? compileNode(astNode.progressContent) : null
+						ResolvedTemplate: astNode.resolvedContent ? createNodeConstructor(astNode.resolvedContent) : null,
+						ErrorTemplate: astNode.errorContent ? createNodeConstructor(astNode.errorContent) : null,
+						ProgressTemplate: astNode.progressContent ? createNodeConstructor(astNode.progressContent) : null
 					});
 				}
 				else if (type === 'data') {
@@ -254,42 +327,29 @@ define([
 					});
 				}
 				else {
-					throw new Error('Unrecognized template AST node type: ' + type);
+					throw new Error('Unrecognized template node type: ' + type);
 				}
 
+				// TODO: Rename id to something else since it is shared by all objects inheriting from the prototype.
 				Constructor.prototype.id = astNode.id;
 
 				return Constructor;
 			}
 
-			var TemplateConstructor = compileNode(templateAst),
-				dfd = new Deferred();
-
-			if (!prebuilt) {
-				// List dependency module IDs
-				var dependencies = [];
-				for (var moduleId in dependencyMap) {
-					dependencies.push(moduleId);
-				}
-				templateAst.dependencies = dependencies;
-			}
-
-			// Resolve template dependencies
-			// TODO: relative deps should be loaded relative to the template location
-			require(dependencies, function () {
-				for (var i = 0; i < dependencies.length; i++) {
-					var moduleId = dependencies[i];
-					dependencyMap[moduleId] = arguments[i];
-				}
-
-				// Include the built AST with the constructor so it can be included in builds.
-				templateAst.built = true;
-				TemplateConstructor.compiledAst = templateAst;
-
-				dfd.resolve(TemplateConstructor);
+			return deferredDependencies.then(function () {
+				return createNodeConstructor(templateAst);
 			});
+		},
 
-			return dfd.promise;
+		compile: function (/*String*/ templateSource) {
+			// summary:
+			//		Parse and load a template
+			// templateSource:
+			//		The template source text
+			// returns: dojo/promise/Promise
+			//		A promise for a template constructor
+
+			return this.load(this.parse(templateSource));
 		}
 	};
 });

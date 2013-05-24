@@ -1,9 +1,9 @@
 define([
 	'dbind/bind',
-	'./peg/expressionParser',
+	'./peg/templateParser',
 	'dojo/_base/lang',
 	'dojo/_base/array'
-], function (bind, expressionParser, lang, arrayUtil) {
+], function (bind, templateParser, lang, arrayUtil) {
 
 	// TODO: Consider whether an eval() or Function()-based approach would be better than manually applying expressions like we do now.
 
@@ -186,7 +186,7 @@ define([
 		//		An expression string or a pre-generated expression AST.
 
 		this.expressionAst = typeof expression === 'string'
-			? expressionParser.parse(expression)
+			? templateParser.parse(expression, 'DataBindingExpression')
 			: expression;
 	}
 	DataBindingExpression.prototype = {

@@ -2,10 +2,9 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'dojo/dom-construct',
-	'./peg/expressionParser',
 	'dbind/bind',
 	'dojo/date/locale'
-], function (lang, declare, domConstruct, expressionParser, bind, dateLocale) {
+], function (lang, declare, domConstruct, bind, dateLocale) {
 
 	// Helper functions that can be called in data binding expressions.
 	var bindingHelperFunctions = {

@@ -1,6 +1,9 @@
 /* Helpers */
 
 {
+	// Save a reference to the parser so we can call it manually
+	var parser = this;
+
 	var nextId = 1;
 	function getNextId() {
 		// summary:
@@ -23,7 +26,7 @@
 		};
 	}
 
-	function createNodeConstructor(/*String*/ type, /*Array*/ requiredAttributes, /*Array*/ optionalAttributes) {
+	function createNodeConstructor(kwArgs) {
 		// summary:
 		//		Create a constructor for a tag's AST node.
 		// type:
@@ -35,8 +38,10 @@
 		// returns: Function
 		// 		A template node constructor
 
-		requiredAttributes = requiredAttributes || [];
-		optionalAttributes = optionalAttributes || [];
+		var type = kwArgs.type,
+			requiredAttributes = kwArgs.requiredAttributes || [],
+			optionalAttributes = kwArgs.optionalAttributes || [],
+			expressionAttributes = kwArgs.expressionAttributes || [];
 
 		var permittedAttributeSet = {};
 		for (var i = 0; i < requiredAttributes.length; i++) {
@@ -80,21 +85,60 @@
 					'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
 				);
 			}
+
+			// Parse data binding expressions
+			for (var i = 0, attributeName; i < expressionAttributes.length; i++) {
+				attributeName = expressionAttributes[i];
+				if (attributeName in this) {
+					// TODO: Fix this. This is a hack. Newer versions of pegjs generate a named parse() function that may be called directly here.
+					this[attributeName] = parser.parse(this[attributeName], 'DataBindingExpression');
+				}
+			}
 		};
 		Constructor.prototype = {
 			type: type
 		};
 		return Constructor;
 	}
+	var IfNode = createNodeConstructor({
+			type: 'if',
+			requiredAttributes: [ 'condition' ],
+			expressionAttributes: [ 'condition' ]
+		}),
+		ElseIfNode = createNodeConstructor({
+			type: 'elseif',
+			requiredAttributes: [ 'condition' ],
+			expressionAttributes: [ 'condition' ]
+		}),
+		ForNode = createNodeConstructor({
+			type: 'for',
+			requiredAttributes: [ 'each', 'value' ],
+			expressionAttributes: [ 'each' ]
+		}),
+		WhenNode = createNodeConstructor({
+			type: 'when',
+			requiredAttributes: [ 'promise' ],
+			optionalAttributes: [ 'value' ],
+			expressionAttributes: [ 'promise' ]
+		}),
+		PlaceholderNode = createNodeConstructor({
+			type: 'placeholder',
+			requiredAttributes: [ 'name' ]
+		}),
+		DataNode = createNodeConstructor({
+			type: 'data',
+			requiredAttributes: [ 'var' ],
+			optionalAttributes: [ 'safe' ],
+			expressionAttributes: [ 'var' ]
+		}),
+		AliasNode = createNodeConstructor({
+			type: 'alias',
+			requiredAttributes: [ 'from', 'to' ]
+		});
 
-	var IfNode = createNodeConstructor('if', [ 'condition' ]);
-	var ElseIfNode = createNodeConstructor('elseif', [ 'condition' ]);
-	var ForNode = createNodeConstructor('for', [ 'each', 'value' ]);
-	var WhenNode = createNodeConstructor('when', [ 'promise' ], [ 'value' ]);
-	var PlaceholderNode = createNodeConstructor('placeholder', [ 'name' ]);
-	var DataNode = createNodeConstructor('data', [ 'var' ], [ 'safe' ]);
-	var AliasNode = createNodeConstructor('alias', [ 'from', 'to' ]);
-
+	// Using constructor and prototype for HTML fragments to save memory.
+	// We don't do this for AST node types because they need to be persisted as JSON downstream,
+	// and inherited properties aren't included by JSON.stringify.
 	function HtmlFragmentNode(html) {
 		this.html = html;
 	}
@@ -105,7 +149,7 @@
 		nodeIdAttributeName = 'data-template-node-id';
 }
 
-/* Grammar */
+/* Template Grammar */
 
 start
 	= content:ContentOrEmpty {
@@ -115,10 +159,7 @@ start
 
 			var aliases = [];
 			for (var alias in aliasMap) {
-				aliases.push({
-					fromPattern: new RegExp('(?:^|/)(' + alias + ')(?:$|/)'),
-					to: aliasMap[alias]
-				});
+				aliases.push({ from: alias, to: aliasMap[alias] });
 			}
 			content.aliases = aliases;
 		}
@@ -145,7 +186,7 @@ Content
 
 		for(var i = 0; i < nodes.length; i++) {
 			var node = nodes[i];
-			if (node instanceof HtmlFragmentNode) {
+			if (node.type === 'fragment') {
 				htmlFragmentBuffer.push(node.html);
 			}
 			else if (node.type === 'alias') {
@@ -164,7 +205,7 @@ Content
 
 		// TODO: Make proper constructor for this.
 		return {
-			type: 'fragment',
+			type: 'content',
 			html: htmlFragmentBuffer.join(''),
 			templateNodes: templateNodes
 		};
@@ -216,7 +257,7 @@ IfTag
 		return {
 			type: 'if',
 			conditionalBlocks: conditionalBlocks,
-			elseBlock: { content: elseContent }
+			elseBlock: elseContent ? { content: elseContent } : undefined
 		};
 	}
 
@@ -256,9 +297,9 @@ WhenTag
 		errorContent:(WhenErrorTag content:ContentOrEmpty { return content; })?
 		progressContent:(WhenProgressTag content:ContentOrEmpty { return content; })?
 	WhenTagClose {
-		whenNode.resolvedContent = resolvedContent;
-		whenNode.errorContent = errorContent;
-		whenNode.progressContent = progressContent;
+		whenNode.resolvedContent = resolvedContent || undefined;
+		whenNode.errorContent = errorContent || undefined;
+		whenNode.progressContent = progressContent || undefined;
 		return whenNode;
 	}
 
@@ -324,6 +365,86 @@ OpenToken
 
 CloseToken
 	= S* '>'
+
+/* Data-binding Expression Grammar */
+
+DataBindingExpression
+	= FunctionCall
+	/ DotExpression
+	/ StringLiteral
+	/ NumericLiteral
+
+// TODO: Support multiple arguments.
+// TODO: Support chained function calls.
+FunctionCall
+	= functionIdentifier:DotExpression '(' S*
+		leadingArgument:FunctionArgument? trailingArguments:(',' arg:FunctionArgument { return arg; })*
+	S* ')' S* {
+		var arguments = trailingArguments;
+		if (leadingArgument) {
+			arguments.unshift(leadingArgument);
+		}
+
+		return {
+			type: 'function-call',
+			name: functionIdentifier,
+			arguments: arguments
+		};
+	}
+
+FunctionArgument
+	= DotExpression / StringLiteral / NumericLiteral
+
+DotExpression
+	= negated:'!'? references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
+		return {
+			type: 'dot-expression',
+			references: references,
+			target: target,
+			negated: !!negated
+		};
+	}
+
+PaddedIdentifier
+	= S* identifier:Identifier S* { return identifier; }
+
+// TODO: This is a quick implementation that doesn't support all valid Ecmascript identifiers. Fix it.
+Identifier
+	= head:[$_a-zA-Z] tail:[$_a-zA-Z0-9]* {
+		return head + tail.join('');
+	}
+
+StringLiteral
+	= value:(
+		("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join(''); })
+		/ ('"' value:('\\"' { return '"' } / [^"\r\n])* '"' { return value.join(''); })
+	) {
+		return {
+			type: 'string',
+			value: value
+		};
+	}
+
+NumericLiteral
+	= DecimalLiteral
+
+// TODO: Hex literal
+// TODO: Octal literal
+
+// TODO: Update with full support for ECMAScript decimal literals
+DecimalLiteral
+	= numberString:(
+		(integer:[0-9]+ point:'.' fractional:[0-9]+ { return integer.join('') + point + fractional.join(''); })
+		/ (point: '.' fractional:[0-9]+ { return point + fractional; })
+		/ [0-9]+
+	) {
+		return {
+			type: 'number',
+			value: +numberString
+		};
+	}
+
+/* General-purpose Rules */
 
 S 'whitespace'
 	= [ \t\r\n]
