@@ -52,6 +52,9 @@
 		}
 
 		var Constructor = function (attributeSet) {
+			// type is on the instance, not on the prototype, because the AST will be converted to JSON
+			this.type = kwArgs.type;
+
 			attributeSet = attributeSet || {};
 
 			// Make sure required attributes are present
@@ -324,7 +327,12 @@ PlaceholderTag
 
 DataTag
 	= OpenToken 'data' attributes:AttributeSet CloseToken {
-		return new DataNode(attributes);
+		var node = new DataNode(attributes);
+		// If node is annotated with a safe property, make it a boolean.
+		if (node.safe) {
+			node.safe = true;
+		}
+		return node;
 	}
 
 AliasTag
@@ -397,12 +405,15 @@ FunctionArgument
 
 DotExpression
 	= negated:'!'? references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
-		return {
+		var expression = {
 			type: 'dot-expression',
 			references: references,
-			target: target,
-			negated: !!negated
+			target: target
 		};
+		if (negated) {
+			expression.negated = true;
+		}
+		return expression;
 	}
 
 PaddedIdentifier

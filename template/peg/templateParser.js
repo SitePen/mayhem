@@ -1280,7 +1280,12 @@ define([], function () {
         }
         if (result0 !== null) {
           result0 = (function(offset, line, column, attributes) {
-        		return new DataNode(attributes);
+        		var node = new DataNode(attributes);
+        		// If node is annotated with a safe property, make it a boolean.
+        		if (node.safe) {
+        			node.safe = true;
+        		}
+        		return node;
         	})(pos0.offset, pos0.line, pos0.column, result0[2]);
         }
         if (result0 === null) {
@@ -2097,12 +2102,15 @@ define([], function () {
         }
         if (result0 !== null) {
           result0 = (function(offset, line, column, negated, references, target) {
-        		return {
+        		var expression = {
         			type: 'dot-expression',
         			references: references,
-        			target: target,
-        			negated: !!negated
+        			target: target
         		};
+        		if (negated) {
+        			expression.negated = true;
+        		}
+        		return expression;
         	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[1], result0[2]);
         }
         if (result0 === null) {
@@ -2711,6 +2719,9 @@ define([], function () {
       		}
       
       		var Constructor = function (attributeSet) {
+      			// type is on the instance, not on the prototype, because the AST will be converted to JSON
+      			this.type = kwArgs.type;
+      
       			attributeSet = attributeSet || {};
       
       			// Make sure required attributes are present

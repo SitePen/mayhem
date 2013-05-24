@@ -209,8 +209,7 @@ define([
 					}
 				}
 				else if (type === 'data') {
-					// Convert parsed safe value to Boolean
-					astNode.safe = astNode.safe !== undefined;
+					// Do nothing
 				}
 				else {
 					throw new Error('Unrecognized template AST node type: ' + type);
