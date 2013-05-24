@@ -50,7 +50,7 @@ define([
 
 			if (!includesExtension.test(id)) {
 				require([id], function (templateAst) {
-					compiler.compileFromAst(templateAst).then(load);
+					compiler.load(templateAst).then(load);
 				});
 			}
 			// templates with extensions are treated like a text file.
@@ -59,7 +59,7 @@ define([
 				// same module would be leveraged by the build plugin to produce the compiled
 				// function exported by the AMD module that replaces this dependency.
 				require([ 'dojo/text!' + id], function (templateString) {
-					compiler.compileFromSource(templateString).then(load);
+					compiler.compile(templateString).then(load);
 
 					// TODO: cache the results based on sourceUrl?
 				});
