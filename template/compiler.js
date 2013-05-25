@@ -143,10 +143,6 @@ define([
 			//		The template AST
 
 			var templateAst = templateParser.parse(templateSource),
-				templateData = {
-					// Provide shared attribute names so we stay DRY.
-					nodeIdAttributeName: templateAst.nodeIdAttributeName
-				},
 				aliases = arrayUtil.map(templateAst.aliases, function (alias) {
 					return {
 						fromPattern: new RegExp('(?:^|/)(' + alias.from + ')(?:$|/)'),
@@ -294,7 +290,7 @@ define([
 								ContentTemplate: createNodeConstructor(conditionalBlock.content)
 							};
 						}),
-						elseBlock: astNode.elseBlock 
+						elseBlock: astNode.elseBlock
 							? { ContentTemplate: createNodeConstructor(astNode.elseBlock.content) }
 							: null
 					});
