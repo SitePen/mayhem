@@ -106,7 +106,7 @@ define([
 					boundAttributeMap = boundElementMap[boundElementId];
 
 				// Remove attribute so the element doesn't appear in ancestors' data binding queries.
-				element.setAttribute(boundElementAttributeName, null);
+				element.removeAttribute(boundElementAttributeName);
 
 				if (boundAttributeMap) {
 					for (var attributeName in boundAttributeMap) {
