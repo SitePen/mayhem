@@ -455,6 +455,22 @@ DecimalLiteral
 		};
 	}
 
+/* Widget-related expressions */
+WidgetProperty
+	= name:PaddedIdentifier ':' S* value:DataBindingExpression {
+		return { name: name, value: value };
+	}
+
+WidgetPropertyList
+	=
+	firstProperty:WidgetProperty?
+	remainingProperties:(S* ',' S* property:WidgetProperty { return property; })* {
+		if (firstProperty) {
+			remainingProperties.unshift(firstProperty);
+		}
+		return remainingProperties;
+	}
+
 /* General-purpose Rules */
 
 S 'whitespace'

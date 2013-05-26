@@ -4,8 +4,10 @@ define([
 	'./BoundNode',
 	'./PlaceholderNode',
 	'dojo/_base/array',
-	'./DataBindingExpression'
-], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression) {
+	'./DataBindingExpression',
+	// TODO: Move all uses of parser back into the compiler
+	'./peg/templateParser'
+], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression, templateParser) {
 	return declare(BoundNode, {
 		// summary:
 		//		Template node for managing HTML content and nested template nodes.
@@ -73,11 +75,26 @@ define([
 			});
 
 			// Instantiate widgets
+			var bindingContext = kwArgs.bindingContext;
 			arrayUtil.forEach(widgetDomNodes, function (typedElement) {
 				var type = typedElement.getAttribute(contentNode.widgetTypeAttributeName),
-					WidgetConstructor = contentNode.dependencyMap[type];
+					WidgetConstructor = contentNode.dependencyMap[type],
+					widgetProperties = {};
 
-				var widget = new WidgetConstructor(null, typedElement);
+				// TODO: Move attribute string into a property on the prototype
+				// TODO: Move the parsing into the compilation step
+				if (typedElement.hasAttribute('data-widget-properties')) {
+					var propertyListAst = templateParser.parse(
+						typedElement.getAttribute('data-widget-properties'),
+						'WidgetPropertyList'
+					);
+					arrayUtil.forEach(propertyListAst, function (property) {
+						var expression = new DataBindingExpression(property.value);
+						widgetProperties[property.name] = expression.getValue(bindingContext);
+					});
+				}
+
+				var widget = new WidgetConstructor(widgetProperties, typedElement);
 
 				// TODO: Consider whether these would be better implemented by Widget base class. Probably: yes.
 					// TODO: Support property spec attribute like data-dojo-props
