@@ -457,7 +457,7 @@ DecimalLiteral
 
 /* Widget-related expressions */
 WidgetProperty
-	= name:PaddedIdentifier ':' S* value:DataBindingExpression {
+	= name:PaddedIdentifier ':' S* valueExpression:DataBindingExpression {
 		return { name: name, value: value };
 	}
 

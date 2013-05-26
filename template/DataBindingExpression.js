@@ -211,5 +211,7 @@ define([
 		}
 	};
 
+	DataBindingExpression.getValue = getValue;
+
 	return DataBindingExpression;
 });

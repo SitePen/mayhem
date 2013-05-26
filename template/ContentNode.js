@@ -89,8 +89,9 @@ define([
 						'WidgetPropertyList'
 					);
 					arrayUtil.forEach(propertyListAst, function (property) {
-						var expression = new DataBindingExpression(property.value);
-						widgetProperties[property.name] = expression.getValue(bindingContext);
+						widgetProperties[property.name] = DataBindingExpression.getValue(
+							bindingContext, property.valueExpression
+						);
 					});
 				}
 

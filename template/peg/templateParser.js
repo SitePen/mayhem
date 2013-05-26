@@ -2678,7 +2678,7 @@ define([], function () {
           pos = clone(pos1);
         }
         if (result0 !== null) {
-          result0 = (function(offset, line, column, name, value) {
+          result0 = (function(offset, line, column, name, valueExpression) {
         		return { name: name, value: value };
         	})(pos0.offset, pos0.line, pos0.column, result0[0], result0[3]);
         }
