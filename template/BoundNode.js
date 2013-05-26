@@ -64,7 +64,7 @@ define([
 						bindingContext: this._createDefaultBindingContext(kwArgs.view)
 					});
 				}
-				
+
 				this._create(kwArgs);
 			}
 			catch (e) {
