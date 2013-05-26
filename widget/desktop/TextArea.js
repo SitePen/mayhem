@@ -1,15 +1,15 @@
 define([
 	'dojo/_base/declare',
 	'../FormWidgetProxy',
-	'dijit/form/SimpleTextArea',
+	'dijit/form/SimpleTextarea',
 	'dojo/dom-class'
-], function (declare, FormWidgetProxy, DijitSimpleTextArea, domClass) {
+], function (declare, FormWidgetProxy, DijitSimpleTextarea, domClass) {
 	return declare(FormWidgetProxy, {
-		WidgetToProxy: DijitSimpleTextArea,
+		WidgetToProxy: DijitSimpleTextarea,
 
 		_create: function () {
 			this.inherited(arguments);
-			domClass.add(this.domNode, 'textAreaWidget');
+			domClass.add(this.domNode, 'textareaWidget');
 		}
 	});
 });
