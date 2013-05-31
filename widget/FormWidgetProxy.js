@@ -18,7 +18,7 @@ define([
 		};
 	}
 
-	return declare(FormWidget, {
+	var FormWidgetProxy = declare(FormWidget, {
 
 		// WidgetToProxy:
 		//		The constructor of the widget to be proxied.
@@ -64,4 +64,7 @@ define([
 			this._proxiedWidget.focus();
 		}
 	});
+	FormWidgetProxy.createProxiedGetter = createProxiedGetter;
+	FormWidgetProxy.createProxiedSetter = createProxiedSetter;
+	return FormWidgetProxy;
 });

@@ -16,10 +16,12 @@ define([
 			this.domNode = domConstruct.create('label');
 
 			// TODO: This is a stopgap. How should initialization w/ existing child content work?
-			var range = document.createRange();
-			range.selectNodeContents(srcNodeRef);
-			this.domNode.appendChild(range.extractContents());
-			range.detach();
+			if (srcNodeRef) {
+				var range = document.createRange();
+				range.selectNodeContents(srcNodeRef);
+				this.domNode.appendChild(range.extractContents());
+				range.detach();
+			}
 
 			domClass.add(this.domNode, 'labelWidget');
 			this.inherited(arguments);
