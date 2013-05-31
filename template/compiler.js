@@ -11,7 +11,8 @@ define([
 	'./IfNode',
 	'./ForNode',
 	'./WhenNode',
-	'./DataNode'
+	'./DataNode',
+	'./WidgetNode'
 ], function (
 	lang,
 	arrayUtil,
@@ -25,7 +26,8 @@ define([
 	IfNode,
 	ForNode,
 	WhenNode,
-	DataNode
+	DataNode,
+	WidgetNode
 ) {
 
 	var boundElementAttributeName = 'data-bound-element',
@@ -110,29 +112,6 @@ define([
 		return moduleId;
 	}
 
-	function processWidgetDependencies(/*DomNode*/ domNode, /*Array*/ aliases, /*Object*/ dependencyMap) {
-		// summary:
-		//		Collects the widget dependencies of a DOM node and its children.
-		// domNode:
-		//		The DOM node to collect dependencies from
-		// aliaes:
-		//		An array of module ID aliases.
-		// dependencyMap:
-		//		The map dependencies are added to
-
-		arrayUtil.forEach(domNode.querySelectorAll(widgetTypeAttributeSelector), function (typedElement) {
-			var originalModuleId = typedElement.getAttribute(widgetTypeAttributeName);
-
-			// Apply aliases
-			var normalizedModuleId = applyAliases(aliases, originalModuleId);
-			if (originalModuleId !== normalizedModuleId) {
-				typedElement.setAttribute(widgetTypeAttributeName, normalizedModuleId);
-			}
-
-			dependencyMap[normalizedModuleId] = true;
-		});
-	}
-
 	return {
 		parse: function (/**String*/ templateSource) {
 			// summary:
@@ -175,8 +154,6 @@ define([
 						astNode.boundElementMap = boundElementMap;
 					}
 
-					processWidgetDependencies(domNode, aliases, dependencyMap);
-
 					// Save compiled DOM back to AST HTML
 					astNode.html = domNode.innerHTML;
 
@@ -206,6 +183,17 @@ define([
 				}
 				else if (type === 'data') {
 					// Do nothing
+				}
+				else if (type === 'widget') {
+					var originalModuleId = astNode.properties.is;
+
+					// Apply aliases
+					var normalizedModuleId = applyAliases(aliases, originalModuleId);
+					if (originalModuleId !== normalizedModuleId) {
+						astNode.properties.is = normalizedModuleId;
+					}
+
+					dependencyMap[normalizedModuleId] = true;
 				}
 				else {
 					throw new Error('Unrecognized template AST node type: ' + type);
@@ -244,16 +232,6 @@ define([
 					widgetTypeAttributeName: widgetTypeAttributeName,
 					boundElementAttributeName: boundElementAttributeName
 				});
-
-			// Resolve template dependencies
-			var deferredDependencies = new Deferred();
-			require(dependencies, function () {
-				for (var i = 0; i < dependencies.length; i++) {
-					var moduleId = dependencies[i];
-					dependencyMap[moduleId] = arguments[i];
-				}
-				deferredDependencies.resolve();
-			});
 
 			function createNodeConstructor(astNode) {
 				// summary:
@@ -321,6 +299,25 @@ define([
 						safe: astNode.safe !== undefined
 					});
 				}
+				else if (type === 'widget') {
+					// TODO: Consider doing property-name conversion in the compilation step instead
+					var properties = {};
+					for (var key in astNode.properties) {
+						if (!(key in { type: 1, is: 1 })) {
+							// Convert property names from AST-format to widget-format
+							// TODO: Support other allowable character sets for attribute names
+							var name = key.replace(/-[a-zA-Z]/g, function (match) {
+								return match.charAt(1).toUpperCase();
+							});
+							properties[name] = astNode.properties[key];
+						}
+					}
+
+					Constructor = declare(WidgetNode, {
+						Widget: dependencyMap[astNode.properties.is],
+						propertyMap: properties
+					});
+				}
 				else {
 					throw new Error('Unrecognized template node type: ' + type);
 				}
@@ -330,6 +327,16 @@ define([
 
 				return Constructor;
 			}
+
+			// Resolve template dependencies
+			var deferredDependencies = new Deferred();
+			require(dependencies, function () {
+				for (var i = 0; i < dependencies.length; i++) {
+					var moduleId = dependencies[i];
+					dependencyMap[moduleId] = arguments[i];
+				}
+				deferredDependencies.resolve();
+			});
 
 			return deferredDependencies.then(function () {
 				return createNodeConstructor(templateAst);

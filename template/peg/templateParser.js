@@ -37,7 +37,7 @@ define([], function () {
      */
     parse: function(input, startRule) {
       var parseFunctions = {
-        "start": parse_start,
+        "Template": parse_Template,
         "ContentOrEmpty": parse_ContentOrEmpty,
         "Content": parse_Content,
         "HtmlFragment": parse_HtmlFragment,
@@ -57,6 +57,7 @@ define([], function () {
         "PlaceholderTag": parse_PlaceholderTag,
         "DataTag": parse_DataTag,
         "AliasTag": parse_AliasTag,
+        "WidgetTag": parse_WidgetTag,
         "AttributeSet": parse_AttributeSet,
         "Attribute": parse_Attribute,
         "AttributeName": parse_AttributeName,
@@ -81,7 +82,7 @@ define([], function () {
           throw new Error("Invalid rule name: " + quote(startRule) + ".");
         }
       } else {
-        startRule = "start";
+        startRule = "Template";
       }
       
       var pos = { offset: 0, line: 1, column: 1, seenCR: false };
@@ -159,7 +160,7 @@ define([], function () {
         rightmostFailuresExpected.push(failure);
       }
       
-      function parse_start() {
+      function parse_Template() {
         var result0;
         var pos0;
         
@@ -211,7 +212,10 @@ define([], function () {
                 if (result1 === null) {
                   result1 = parse_AliasTag();
                   if (result1 === null) {
-                    result1 = parse_HtmlFragment();
+                    result1 = parse_WidgetTag();
+                    if (result1 === null) {
+                      result1 = parse_HtmlFragment();
+                    }
                   }
                 }
               }
@@ -234,7 +238,10 @@ define([], function () {
                     if (result1 === null) {
                       result1 = parse_AliasTag();
                       if (result1 === null) {
-                        result1 = parse_HtmlFragment();
+                        result1 = parse_WidgetTag();
+                        if (result1 === null) {
+                          result1 = parse_HtmlFragment();
+                        }
                       }
                     }
                   }
@@ -297,15 +304,7 @@ define([], function () {
         pos4 = clone(pos);
         pos5 = clone(pos);
         reportFailures++;
-        if (input.charCodeAt(pos.offset) === 60) {
-          result1 = "<";
-          advance(pos, 1);
-        } else {
-          result1 = null;
-          if (reportFailures === 0) {
-            matchFailed("\"<\"");
-          }
-        }
+        result1 = parse_OpenToken();
         reportFailures--;
         if (result1 !== null) {
           result1 = "";
@@ -349,6 +348,9 @@ define([], function () {
                               result1 = parse_DataTag();
                               if (result1 === null) {
                                 result1 = parse_AliasTag();
+                                if (result1 === null) {
+                                  result1 = parse_WidgetTag();
+                                }
                               }
                             }
                           }
@@ -405,15 +407,7 @@ define([], function () {
             pos4 = clone(pos);
             pos5 = clone(pos);
             reportFailures++;
-            if (input.charCodeAt(pos.offset) === 60) {
-              result1 = "<";
-              advance(pos, 1);
-            } else {
-              result1 = null;
-              if (reportFailures === 0) {
-                matchFailed("\"<\"");
-              }
-            }
+            result1 = parse_OpenToken();
             reportFailures--;
             if (result1 !== null) {
               result1 = "";
@@ -457,6 +451,9 @@ define([], function () {
                                   result1 = parse_DataTag();
                                   if (result1 === null) {
                                     result1 = parse_AliasTag();
+                                    if (result1 === null) {
+                                      result1 = parse_WidgetTag();
+                                    }
                                   }
                                 }
                               }
@@ -1346,6 +1343,59 @@ define([], function () {
         return result0;
       }
       
+      function parse_WidgetTag() {
+        var result0, result1, result2, result3;
+        var pos0, pos1;
+        
+        pos0 = clone(pos);
+        pos1 = clone(pos);
+        result0 = parse_OpenToken();
+        if (result0 !== null) {
+          if (input.substr(pos.offset, 6) === "widget") {
+            result1 = "widget";
+            advance(pos, 6);
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"widget\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_AttributeSet();
+            if (result2 !== null) {
+              result3 = parse_CloseToken();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = clone(pos1);
+              }
+            } else {
+              result0 = null;
+              pos = clone(pos1);
+            }
+          } else {
+            result0 = null;
+            pos = clone(pos1);
+          }
+        } else {
+          result0 = null;
+          pos = clone(pos1);
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, line, column, attributes) {
+        		return {
+        			type: 'widget',
+        			properties: attributes
+        		};
+        	})(pos0.offset, pos0.line, pos0.column, result0[2]);
+        }
+        if (result0 === null) {
+          pos = clone(pos0);
+        }
+        return result0;
+      }
+      
       function parse_AttributeSet() {
         var result0, result1, result2;
         var pos0, pos1;
@@ -1498,26 +1548,26 @@ define([], function () {
         var pos0;
         
         pos0 = clone(pos);
-        if (/^[a-zA-Z]/.test(input.charAt(pos.offset))) {
+        if (/^[a-zA-Z\-]/.test(input.charAt(pos.offset))) {
           result1 = input.charAt(pos.offset);
           advance(pos, 1);
         } else {
           result1 = null;
           if (reportFailures === 0) {
-            matchFailed("[a-zA-Z]");
+            matchFailed("[a-zA-Z\\-]");
           }
         }
         if (result1 !== null) {
           result0 = [];
           while (result1 !== null) {
             result0.push(result1);
-            if (/^[a-zA-Z]/.test(input.charAt(pos.offset))) {
+            if (/^[a-zA-Z\-]/.test(input.charAt(pos.offset))) {
               result1 = input.charAt(pos.offset);
               advance(pos, 1);
             } else {
               result1 = null;
               if (reportFailures === 0) {
-                matchFailed("[a-zA-Z]");
+                matchFailed("[a-zA-Z\\-]");
               }
             }
           }

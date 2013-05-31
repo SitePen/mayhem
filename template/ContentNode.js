@@ -1,28 +1,19 @@
 define([
+	'dojo/has',
 	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'./BoundNode',
 	'./PlaceholderNode',
 	'dojo/_base/array',
-	'./DataBindingExpression',
-	// TODO: Move all uses of parser back into the compiler
-	'./peg/templateParser'
-], function (lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression, templateParser) {
+	'./DataBindingExpression'
+], function (has, lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression) {
 	return declare(BoundNode, {
 		// summary:
 		//		Template node for managing HTML content and nested template nodes.
 
-		// dependencyMap: [readonly] Object
-		//		A map of dependency MID's to resolved dependencies
-		dependencyMap: null,
-
 		// nodeIdAttributeName: String
 		//		The name of the DOM attribute referencing template node IDs.
 		nodeIdAttributeName: null,
-
-		// widgetTypeAttributeName: String
-		//		The name of the DOM attribute that associates an element with a widget type
-		widgetTypeAttributeName: null,
 
 		// boundElementAttributeName: String
 		//		The name of the DOM attribute that identifies a data-bound element.
@@ -45,8 +36,7 @@ define([
 		templateNodes: null,
 
 		_create: function (kwArgs) {
-			var view = kwArgs.view,
-				contentNode = this,
+			var contentNode = this,
 				contentNodeFragment = this.fragment = this.masterFragment.cloneNode(true);
 
 			this.inherited(arguments);
@@ -58,13 +48,6 @@ define([
 				)[0];
 			}
 
-			// Get our widget-typed elements before instantiating template nodes,
-			// which may have their own widget-typed elements.
-			var widgetDomNodes = contentNodeFragment.querySelectorAll('[' + contentNode.widgetTypeAttributeName + ']');
-
-			// Instantiate template nodes before widgets
-			// because Dijits are clobbering the template node placeholders.
-			// TODO: This likely means data-bound widget content is broken. Fix this with our own widgets or insist on data binding to widget properties that affect contents.
 			this.templateNodes = arrayUtil.map(this.templateNodeConstructors, function (TemplateNodeConstructor) {
 				var id = TemplateNodeConstructor.prototype.id,
 					placeMarkerDomNode = findPlaceMarker(id),
@@ -72,43 +55,6 @@ define([
 
 				templateNode.placeAt(placeMarkerDomNode, 'replace');
 				return templateNode;
-			});
-
-			// Instantiate widgets
-			var bindingContext = kwArgs.bindingContext;
-			arrayUtil.forEach(widgetDomNodes, function (typedElement) {
-				var type = typedElement.getAttribute(contentNode.widgetTypeAttributeName),
-					WidgetConstructor = contentNode.dependencyMap[type],
-					widgetProperties = {};
-
-				// TODO: Move attribute string into a property on the prototype
-				// TODO: Move the parsing into the compilation step
-				if (typedElement.hasAttribute('data-widget-properties')) {
-					var propertyListAst = templateParser.parse(
-						typedElement.getAttribute('data-widget-properties'),
-						'WidgetPropertyList'
-					);
-					arrayUtil.forEach(propertyListAst, function (property) {
-						widgetProperties[property.name] = DataBindingExpression.getValue(
-							bindingContext, property.valueExpression
-						);
-					});
-				}
-
-				var widget = new WidgetConstructor(widgetProperties, typedElement);
-
-				// TODO: Consider whether these would be better implemented by Widget base class. Probably: yes.
-					// TODO: Support property spec attribute like data-dojo-props
-					// TODO: Support event listener spec attribute like data-dojo-attach-events
-					// TODO: Support action attribute to bind widget events to view actions.
-					// TODO: Support attach points through data-dojo-attach-point.
-
-				// Associate widget with view model
-				widget.set('viewModel', view.viewModel);
-				var fieldName = typedElement.getAttribute('data-field');
-				if (fieldName) {
-					widget.set('fieldName', fieldName);
-				}
 			});
 		},
 
@@ -132,7 +78,7 @@ define([
 						expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
 					}
 				}
-				else if(has('debug')){
+				else if (has('debug')) {
 					console.warn('Unable to find attribute name for data-bound element ' + boundElementId);
 				}
 			});
@@ -145,19 +91,14 @@ define([
 			arrayUtil.forEach(this.templateNodes, function (templateNode) {
 				templateNode.startup();
 			});
-
-			// TODO: Startup widgets.
 		},
 
 		destroy: function () {
 			// Destroy template nodes
 			arrayUtil.forEach(this.templateNodes, function (templateNode) {
 				// TODO: Consider how to avoid removing child nodes from DOM piecemeal. Better to remove once from DOM at destruction root.
-				// TODO: Reenable this once the problem of widgets eating template nodes is solved. Right now, destroy() ends up doing illegal things with DOM ranges because of that.
-				//templateNode.destroy();
+				templateNode.destroy();
 			});
-
-			// TODO: Destroy widgets.
 
 			this.inherited(arguments);
 		}

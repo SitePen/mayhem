@@ -154,7 +154,7 @@
 
 /* Template Grammar */
 
-start
+Template
 	= content:ContentOrEmpty {
 		if (content) {
 			// Include the node ID attribute name with the AST so dependent code can stay DRY.
@@ -180,6 +180,7 @@ Content
 		/ PlaceholderTag
 		/ DataTag
 		/ AliasTag
+		/ WidgetTag
 		/ HtmlFragment
 	)+ {
 		// Flatten content into a single HTML string
@@ -217,8 +218,8 @@ Content
 HtmlFragment
 	= content:(
 		!(
-			& '<'		// Optimization: Only check tag rules
-						// when the current character is a '<'
+			& OpenToken	// Optimization: Only check tag rules
+						// when the current position matches the OpenToken
 			IfTagOpen
 			/ ElseIfTag
 			/ ElseTag
@@ -232,6 +233,7 @@ HtmlFragment
 			/ PlaceholderTag
 			/ DataTag
 			/ AliasTag
+			/ WidgetTag
 		)
 		character:. { return character; }
 	)+ {
@@ -340,6 +342,14 @@ AliasTag
 		return new AliasNode(attributes);
 	}
 
+WidgetTag
+	= OpenToken 'widget' attributes:AttributeSet CloseToken {
+		return {
+			type: 'widget',
+			properties: attributes
+		};
+	}
+
 AttributeSet
 	= attributes:Attribute* S* {
 		var attributeMap = {};
@@ -362,7 +372,7 @@ Attribute
 	}
 
 AttributeName
-	= nameChars:[a-zA-Z]+ { return nameChars.join(''); }
+	= nameChars:[a-zA-Z\-]+ { return nameChars.join(''); }
 
 AttributeValue
 	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join(''); })
