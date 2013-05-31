@@ -1,9 +1,9 @@
 define([
 	'dojo/_base/lang',
 	'dojo/_base/declare',
-	'./BoundNode'
-], function (lang, declare, BoundNode) {
-	return declare(BoundNode, {
+	'./Node'
+], function (lang, declare, Node) {
+	return declare(Node, {
 		// summary:
 		//		Template node that displays content relative to a promise
 

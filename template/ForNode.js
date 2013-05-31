@@ -2,9 +2,9 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/array',
 	'dojo/_base/declare',
-	'./BoundNode'
-], function (lang, arrayUtil, declare, BoundNode) {
-	return declare(BoundNode, {
+	'./Node'
+], function (lang, arrayUtil, declare, Node) {
+	return declare(Node, {
 		// summary:
 		//		Template node that generates content for each item in a collection.
 

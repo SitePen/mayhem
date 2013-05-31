@@ -1,10 +1,10 @@
 define([
 	'dojo/_base/declare',
-	'./BoundNode',
+	'./Node',
 	'dojo/_base/lang',
 	'dojo/_base/array'
-], function (declare, BoundNode, lang, arrayUtil) {
-	return declare(BoundNode, {
+], function (declare, Node, lang, arrayUtil) {
+	return declare(Node, {
 		// summary:
 		//		Template node placeholder for sub-views
 

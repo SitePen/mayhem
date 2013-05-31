@@ -1,9 +1,9 @@
 define([
 	'dojo/_base/declare',
-	'./BoundNode',
+	'./Node',
 	'dojo/dom-construct'
-], function (declare, BoundNode, domConstruct) {
-	return declare(BoundNode, {
+], function (declare, Node, domConstruct) {
+	return declare(Node, {
 		// summary:
 		//		Template node representing raw text or HTML.
 

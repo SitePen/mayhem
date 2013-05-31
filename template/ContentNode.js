@@ -2,12 +2,11 @@ define([
 	'dojo/has',
 	'dojo/_base/lang',
 	'dojo/_base/declare',
-	'./BoundNode',
-	'./PlaceholderNode',
+	'./Node',
 	'dojo/_base/array',
 	'./DataBindingExpression'
-], function (has, lang, declare, BoundNode, PlaceholderNode, arrayUtil, DataBindingExpression) {
-	return declare(BoundNode, {
+], function (has, lang, declare, Node, arrayUtil, DataBindingExpression) {
+	return declare(Node, {
 		// summary:
 		//		Template node for managing HTML content and nested template nodes.
 
