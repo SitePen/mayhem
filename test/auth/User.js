@@ -1,6 +1,6 @@
 define([
 	'intern!object',
-	'intern/assert',
+	'intern/chai!assert',
 	'dojo/_base/declare',
 	'dojo/Deferred',
 	'../../auth/User'

@@ -1,6 +1,6 @@
 define([
 	'intern!object',
-	'intern/assert',
+	'intern/chai!assert',
 	'../../routing/BaseRoute'
 ], function (registerSuite, assert, BaseRoute) {
 	var route;

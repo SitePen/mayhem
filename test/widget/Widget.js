@@ -1,5 +1,5 @@
 define([
-	'intern!bdd',
+	'intern/chai!bdd',
 	'intern/chai!expect',
 	'../../widget/Widget',
 	'./helpers/NestedWidget',
