@@ -1,6 +1,6 @@
 define([
-	'teststack!bdd',
-	'teststack/chai!expect',
+	'intern!bdd',
+	'intern/chai!expect',
 	'../../widget/Form',
 	'dojo/_base/declare',
 	'dojo/dom-construct'

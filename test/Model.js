@@ -1,6 +1,6 @@
 define([
-	'teststack!object',
-	'teststack/assert',
+	'intern!object',
+	'intern/assert',
 	'dojo/_base/declare',
 	'dojo/Deferred',
 	'../Model',

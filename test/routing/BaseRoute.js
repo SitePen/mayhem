@@ -1,6 +1,6 @@
 define([
-	'teststack!object',
-	'teststack/assert',
+	'intern!object',
+	'intern/assert',
 	'../../routing/BaseRoute'
 ], function (registerSuite, assert, BaseRoute) {
 	var route;
