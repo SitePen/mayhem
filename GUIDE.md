@@ -44,7 +44,7 @@ when the path changes.
 
 In cases where two different views should be shown for the same path,
 two separate routes may be given the same path; however, which route is activated first is
-currently browser-dependent because the order of iterating over the route map may be vary across browsers.
+currently browser-dependent because the order of iterating over the route map may vary across browsers.
 
 Putting the Pieces Together
 ---------------------------
@@ -74,7 +74,7 @@ Putting the Pieces Together
 				(`router.templatePath + upperCaseFirstLetter(route.id) + "View.html"`)
 			4. Otherwise, compute the MID based on the value:
 				(`router.templatePath + upperCaseFirstLetter(route.template) + "View.html"`)
-2. On startup, the router navigates to the default route: "index" and calls `enter` on the route.
+2. On startup, the router navigates to the default route "index" and calls `enter` on the route.
 	1. Entering a route instantiates its Controller and View and passes the route arguments to the Controller
 		via the Controller's routeState property.
 	2. The Controller is responsible for initializing its Model based on the route arguments.
@@ -84,27 +84,3 @@ Putting the Pieces Together
 	5. The Template creates the DOM elements for the View and binds to the Controller
 		which includes the ability to bind to the Model via the Controller's `model` property.
 3. To be continued... 
-
--- ignore the sketches below --
-
-We start with Views so each step has a visual reward.
-
-Bootstrapping
--------------
-Views
-	Index
-Config
-	Routes
-		Route to Index
-
-!!!Mention the template system
-
-Models
-------
-
-Views
------
-
-Controllers
------------
-
