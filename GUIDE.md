@@ -27,11 +27,11 @@ A Model is an observable encapsulation of information and can validate and save 
 Controllers implement the application's behavior and are the bridge between models and views.
 
 ### Router
-The router is a tool for managing application state via a heirarchy of routes. A route:
+The router is a tool for managing application state via a hierarchy of routes. A route:
 * has a unique ID
 * encapsulates a controller and a view
 * may take arguments (identifiers are a common example)
-* may be a child of another route if its route ID is starts with the parents' route ID
+* may be a child of another route if its route IDstarts with the parent's route ID
 (e.g., parent, parent/child, and parent/child/grandchild)
 
 Route IDs are used to create a path to a route. One route ID plus two different sets of parameters
