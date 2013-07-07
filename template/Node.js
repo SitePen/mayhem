@@ -57,21 +57,14 @@ define([
 			// kwArgs:
 			//		The construction args
 
-			try {
-				if (!kwArgs.bindingContext) {
-					// Create a default binding context
-					kwArgs = lang.delegate(kwArgs, {
-						bindingContext: this._createDefaultBindingContext(kwArgs.view)
-					});
-				}
+			if (!kwArgs.bindingContext) {
+				// Create a default binding context
+				kwArgs = lang.delegate(kwArgs, {
+					bindingContext: this._createDefaultBindingContext(kwArgs.view)
+				});
+			}
 
-				this._create(kwArgs);
-			}
-			catch (e) {
-				// Free any resources allocated for this node before the error.
-				this.destroy();
-				throw e;
-			}
+			this._create(kwArgs);
 		},
 
 		_create: function (/*kwArgs*/) {
