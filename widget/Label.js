@@ -38,11 +38,11 @@ define([
 			}
 		},
 
-		_textContentGetter: function () {
+		_textGetter: function () {
 			return domText.get(this.domNode);
 		},
 
-		_textContentSetter: function (value) {
+		_textSetter: function (value) {
 			domText.set(this.domNode, value);
 		},
 
