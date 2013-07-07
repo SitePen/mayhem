@@ -13,9 +13,13 @@ define([
 		//		The constructor for the Widget represented by this node.
 		Widget: null,
 
-		// each: DataBindingExpression
-		//		An expression indicating what collection to bind to
+		// propertyMap: Object
+		//		A map of property names to DataBindingExpressions
 		propertyMap: null,
+
+		// eventMap: Object
+		//		A map of event names to DataBindingExpressions for event handlers
+		eventMap: null,
 
 		// widget: framework/widget/Widget
 		//		The widget instance
@@ -28,7 +32,14 @@ define([
 
 			var propertyMap = this.propertyMap;
 			for (var key in propertyMap) {
-				widget.set(key, propertyMap[key]);
+				// TODO: Data bind
+				propertyMap[key].bind(kwArgs.bindingContex, lang.hitch(widget, "set", key));
+			}
+
+			var eventMap = this.eventMap;
+			for (var key in eventMap) {
+				// TODO:  Data bind
+				widget.on(key, eventMap[key].getValue(kwArgs.bindingContext));
 			}
 
 			// Associate widget with view model

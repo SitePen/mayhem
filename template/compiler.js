@@ -301,21 +301,29 @@ define([
 				}
 				else if (type === 'widget') {
 					// TODO: Consider doing property-name conversion in the compilation step instead
-					var properties = {};
+					var properties = {},
+						eventHandlers = {};
 					for (var key in astNode.properties) {
 						if (!(key in { type: 1, is: 1 })) {
-							// Convert property names from AST-format to widget-format
-							// TODO: Support other allowable character sets for attribute names
-							var name = key.replace(/-[a-zA-Z]/g, function (match) {
-								return match.charAt(1).toUpperCase();
-							});
-							properties[name] = astNode.properties[key];
+							var eventHandlerMatch = /^on-(.*)$/.exec(key);
+							if (eventHandlerMatch) {
+								var eventName = eventHandlerMatch[1];
+								eventHandlers[eventName] = new DataBindingExpression(astNode.properties[key]);
+							} else {
+								// Convert property names from AST-format to widget-format
+								// TODO: Support other allowable character sets for attribute names
+								var name = key.replace(/-[a-zA-Z]/g, function (match) {
+									return match.charAt(1).toUpperCase();
+								});
+								properties[name] = new DataBindingExpression(astNode.properties[key]);
+							}
 						}
 					}
 
 					Constructor = declare(WidgetNode, {
 						Widget: dependencyMap[astNode.properties.is],
-						propertyMap: properties
+						propertyMap: properties,
+						eventMap: eventHandlers
 					});
 				}
 				else {
