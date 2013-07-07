@@ -3,6 +3,10 @@ define([
 	'./Component'
 ], function (declare, Component) {
 	return declare(Component, {
+		// app: framework/Application
+		//		The application
+		app: null,
+
 		_generateRouteId: function (/**string*/ routeId) {
 			//	summary:
 			//		Generates a route ID relative to the current route for this controller.
