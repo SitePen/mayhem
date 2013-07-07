@@ -26,18 +26,9 @@ define([
 		//		then there can be no unnamed placeholder.
 		subViews: null,
 
-		//  TemplateConstructor
+		//  TemplateConstructor:
 		//		A constructor for the view template.
-		_TemplateConstructorSetter: function (TemplateConstructor) {
-			this.TemplateConstructor = TemplateConstructor;
-
-			var existingTemplate = this.template;
-			if (existingTemplate) {
-				existingTemplate.destroy();
-			}
-
-			this.template = new TemplateConstructor({ view: this });
-		},
+		TemplateConstructor: null,
 
 		//	template: framework/Template
 		//		The view template
@@ -55,7 +46,7 @@ define([
 		postscript: function () {
 			this.inherited(arguments);
 
-			this.template || (this.template = new this.TemplateConstructor({ view: this }));
+			this.template = new this.TemplateConstructor({ view: this });
 		},
 
 		placeAt: function (node, position) {
