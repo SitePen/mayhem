@@ -233,7 +233,8 @@ HtmlFragment
 			/ PlaceholderTag
 			/ DataTag
 			/ AliasTag
-			/ WidgetTag
+			/ WidgetTagOpen
+			/ WidgetTagClose
 		)
 		character:. { return character; }
 	)+ {
@@ -343,12 +344,22 @@ AliasTag
 	}
 
 WidgetTag
+	= widgetNode:WidgetTagOpen content:ContentOrEmpty WidgetTagClose {
+		widgetNode.content = content;
+		return widgetNode;
+	}
+
+WidgetTagOpen
 	= OpenToken 'widget' attributes:AttributeSet CloseToken {
 		return {
 			type: 'widget',
 			properties: attributes
 		};
 	}
+
+
+WidgetTagClose
+	= OpenToken '/widget' CloseToken
 
 AttributeSet
 	= attributes:Attribute* S* {
@@ -463,22 +474,6 @@ DecimalLiteral
 			type: 'number',
 			value: +numberString
 		};
-	}
-
-/* Widget-related expressions */
-WidgetProperty
-	= name:PaddedIdentifier ':' S* valueExpression:DataBindingExpression {
-		return { name: name, value: value };
-	}
-
-WidgetPropertyList
-	=
-	firstProperty:WidgetProperty?
-	remainingProperties:(S* ',' S* property:WidgetProperty { return property; })* {
-		if (firstProperty) {
-			remainingProperties.unshift(firstProperty);
-		}
-		return remainingProperties;
 	}
 
 /* General-purpose Rules */
