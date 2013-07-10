@@ -26,17 +26,17 @@ define([
 		//		activated. Route nesting in this manner is necessary to load sub-views into parent views.
 		//
 		//		See `framework/routing/Route` for more information on available Route properties. By default, Router
-		//		will set the `path`, `view`, and `controller` properties to the ID of the route if they are not
+		//		will set the `path`, `view`, and `binder` properties to the ID of the route if they are not
 		//		explicitly set.
 		//
-		//		For the moment, routes must only be set after the `controllerPath`, `viewPath`, and `templatePath` have
+		//		For the moment, routes must only be set after the `binderPath`, `viewPath`, and `templatePath` have
 		//		been set to their correct values.
 		//
 		//		Once the router has been started, routes can no longer be changed.
 
-		//	controllerPath: string
-		//		The default location for controllers.
-		controllerPath: 'app/controllers',
+		//	binderPath: string
+		//		The default location for binders.
+		binderPath: 'app/binders',
 
 		//	viewPath: string
 		//		The default location for views.
@@ -66,7 +66,7 @@ define([
 				routeIds = this._routeIds = {};
 
 			if (!routeMap[this.notFoundRoute]) {
-				routeMap[this.notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
+				routeMap[this.notFoundRoute] = { binder: null, view: '/framework/views/ErrorView', code: 404 };
 			}
 
 			var kwArgs,
@@ -132,7 +132,7 @@ define([
 
 		_fixUpRouteArguments: function (/**Object*/ kwArgs) {
 			//	summary:
-			//		Transforms route view/template/controller arguments to complete module IDs. Directly modifies
+			//		Transforms route view/template/binder arguments to complete module IDs. Directly modifies
 			//		the passed object.
 
 			function resolve(/**string*/ value) {
@@ -149,16 +149,16 @@ define([
 			var suffixes = {
 				view: 'View',
 				template: 'View.html',
-				controller: 'Controller'
+				binder: 'Binder'
 			};
 
 			var routeId = kwArgs.id,
 				resolvedRouteId = resolve(routeId);
 
-			for (var key in { controller: 1, view: 1, template: 1 }) {
+			for (var key in { binder: 1, view: 1, template: 1 }) {
 				var value = kwArgs[key];
 
-				// undefined controller and template default to computing the ID based on the route ID
+				// undefined binder and template default to computing the ID based on the route ID
 				if (value === undefined && key !== 'view') {
 					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId + suffixes[key];
 				}

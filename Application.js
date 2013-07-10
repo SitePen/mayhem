@@ -86,15 +86,15 @@ define([
 			return dfd.promise;
 		},
 
-		loadController: function (/**string*/ moduleId) {
+		loadBinder: function (/**string*/ moduleId) {
 			//	summary:
-			//		Destroys the current controller (if any) and starts up a new one.
+			//		Destroys the current binder (if any) and starts up a new one.
 			//	moduleId:
-			//		The module ID of the controller to load.
+			//		The module ID of the binder to load.
 			//	event:
 			//		A dojo/router event.
 			//	returns: dojo/promise/Promise
-			//		A promise that resolves to the new controller after it has been started.
+			//		A promise that resolves to the new binder after it has been started.
 
 			var self = this,
 				dfd = new Deferred(),
@@ -102,17 +102,17 @@ define([
 
 			// TODO: Use destroy instead?
 			// TODO: Use this.own?
-			this.controller && this.controller.destroyRecursive();
+			this.binder && this.binder.destroyRecursive();
 
-			require([ moduleId ], function (Controller) {
-				var controller = new Controller({
+			require([ moduleId ], function (Binder) {
+				var binder = new Binder({
 					app: self
 				}).placeAt(contentNode);
 				// Don't need to call startup; _WidgetBase in 1.8 already will because
 				// it sees a parent widget
 
-				self.set('controller', controller);
-				dfd.resolve(controller);
+				self.set('binder', binder);
+				dfd.resolve(binder);
 			});
 
 			return dfd.promise;
