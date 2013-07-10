@@ -115,7 +115,7 @@ define([
 			has('debug') && console.log('exiting', this.id);
 
 			var handle;
-			while((handle = this._subViewHandles.pop())) {
+			while ((handle = this._subViewHandles.pop())) {
 				handle.remove();
 			}
 		},
