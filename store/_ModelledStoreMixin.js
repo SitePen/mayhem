@@ -12,13 +12,13 @@ define([
 		//		the parent store into actual JavaScript objects.
 		model: null,
 
-		createModel: function () {
+		createModel: function (/**Object*/ kwArgs) {
 			var Model = this.model;
 			if (!Model) {
 				throw new Error('Cannot create new model');
 			}
 
-			var model = new Model();
+			var model = new Model(kwArgs);
 			model.store = this;
 			return model;
 		},
