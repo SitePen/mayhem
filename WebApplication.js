@@ -14,7 +14,7 @@ define([
 					},
 					ui: {
 						constructor: 'app/views/ApplicationView',
-						viewModel: this
+						binder: this
 					}
 				}
 			});

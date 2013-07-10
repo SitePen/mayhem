@@ -36,9 +36,9 @@ define([
 		// 		The widget identifier
 		id: null,
 
-		// viewModel:
+		// binder:
 		//		The view model associated with this widget.
-		viewModel: null,
+		binder: null,
 
 		// fieldName:
 		//		The name of the model field associated with this widget.

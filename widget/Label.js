@@ -30,10 +30,10 @@ define([
 		postscript: function () {
 			this.inherited(arguments);
 
-			if (this.viewModel && this.fieldName) {
+			if (this.binder && this.fieldName) {
 				this._refreshFromModel();
 				this.own(
-					this.viewModel.watch(lang.hitch(this, '_refreshFromModel'))
+					this.binder.watch(lang.hitch(this, '_refreshFromModel'))
 				);
 			}
 		},
@@ -47,7 +47,7 @@ define([
 		},
 
 		_refreshFromModel: function () {
-			var method = this.viewModel.isFieldRequired(this.fieldName) ? 'add' : 'remove';
+			var method = this.binder.isFieldRequired(this.fieldName) ? 'add' : 'remove';
 			// TODO: Instead of a requiredField class, we should add an aria-required attribute. CSS can use attribute selectors for this instead of the class.
 			// http://www.w3.org/TR/2010/WD-wai-aria-20100916/states_and_properties#aria-required
 			domClass[method](this.domNode, 'requiredField');
