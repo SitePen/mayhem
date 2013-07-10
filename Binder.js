@@ -9,7 +9,7 @@ define([
 
 		_generateRouteId: function (/**string*/ routeId) {
 			//	summary:
-			//		Generates a route ID relative to the current route for this controller.
+			//		Generates a route ID relative to the current route for this binder.
 			//	returns: string
 			//		A route ID.
 
@@ -39,7 +39,7 @@ define([
 
 		createPath: function (/**string*/ routeId, /**Object*/ kwArgs) {
 			//	summary:
-			//		Generates a path to a route relative to the current route for this controller.
+			//		Generates a path to a route relative to the current route for this binder.
 			//	routeId:
 			//		A relative route ID that will be appended to the current route, or an absolute route ID starting
 			//		with a forward-slash.
@@ -50,7 +50,7 @@ define([
 
 		go: function (/**string*/ routeId, /**Object*/ kwArgs) {
 			//	summary:
-			//		Goes to a new route using a route ID relative to the current route for this controller.
+			//		Goes to a new route using a route ID relative to the current route for this binder.
 			//	routeId:
 			//		A relative route ID that will be appended to the current route, or an absolute route ID starting
 			//		with a forward-slash.

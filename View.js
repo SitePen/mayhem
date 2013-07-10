@@ -10,10 +10,11 @@ define([
 
 	var View = declare(Component, {
 
-		//	viewModel:
-		//		The model that this view reflects.  The viewModel is also the context for data binding
-		//		in the template
-		viewModel: null,
+		//	binder:
+		//		reference to an object that either proxies to the model, or 
+		//		provides an additional layer of control between the view and model.
+		//		It is also the context for data binding in the template
+		binder: null,
 
 		//	parentView: View
 		//		A reference to this view's parent view.

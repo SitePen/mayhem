@@ -19,13 +19,13 @@ define([
 		//		instance.
 		parent: null,
 
-		//	controller: string|null
-		//		The name of a controller which, when transformed using the expression
-		//		`router.controllerPath + '/' + toUpperCamelCase(route.controller) + 'Controller'`,
-		//		provides a module ID that points to a module whose value is a `framework/Controller`.
+		//	binder: string|null
+		//		The name of a binder which, when transformed using the expression
+		//		`router.binderPath + '/' + toUpperCamelCase(route.binder) + 'Binder'`,
+		//		provides a module ID that points to a module whose value is a `framework/Binder`.
 		//		If the string starts with a `/`, it will be treated as an absolute module ID and not transformed.
-		//		If null, a generic Controller object will be used for this route instead.
-		controller: null,
+		//		If null, a generic Binder object will be used for this route instead.
+		binder: null,
 
 		//	view: string|null
 		//		The name of a view which, when transformed using the expression
@@ -58,9 +58,9 @@ define([
 
 		enter: function (/**framework/routing/RouteEvent*/ event) {
 			//	summary:
-			//		Activates this route, instantiating view and controller components and placing them into any
+			//		Activates this route, instantiating view and binder components and placing them into any
 			//		parent route's view. Whenever a route is activated, state information from the route is provided
-			//		to the controller by setting its `routeState` property.
+			//		to the binder by setting its `routeState` property.
 
 			function setRouteState(event) {
 				has('debug') && console.log('entering', self.id);
@@ -68,7 +68,7 @@ define([
 				var kwArgs = { id: self.id };
 
 				for (var k in self) {
-					// Custom properties on the route should be provided to the controller, but not private or
+					// Custom properties on the route should be provided to the binder, but not private or
 					// default properties since those are only relevant to the route itself
 					if (k.charAt(0) === '_' || (k in self.constructor.prototype)) {
 						continue;
@@ -80,7 +80,7 @@ define([
 				lang.mixin(kwArgs, self.parse(event.newPath));
 
 				has('debug') && console.log('new route state for', self.id, kwArgs);
-				self._controllerInstance.set('routeState', kwArgs);
+				self._binderInstance.set('routeState', kwArgs);
 				return dfd.promise;
 			}
 
@@ -91,10 +91,10 @@ define([
 
 			require([
 				this.view,
-				this.controller,
+				this.binder,
 				this.template
-			], function (View, Controller, TemplateConstructor) {
-				return when(self._instantiateComponents(View, Controller, TemplateConstructor)).then(function () {
+			], function (View, Binder, TemplateConstructor) {
+				return when(self._instantiateComponents(View, Binder, TemplateConstructor)).then(function () {
 					setRouteState(event);
 					dfd.resolve();
 				}, function () {
@@ -125,7 +125,7 @@ define([
 
 			if (this._viewInstance) {
 				this._viewInstance.destroyRecursive();
-				this._controllerInstance.destroy && this._controllerInstance.destroy();
+				this._binderInstance.destroy && this._binderInstance.destroy();
 			}
 		},
 
@@ -140,15 +140,15 @@ define([
 			return this._viewInstance.addSubView(view, placeholderId);
 		},
 
-		_instantiateComponents: function (View, Controller, TemplateConstructor) {
-			var controller = this._controllerInstance = new Controller({
+		_instantiateComponents: function (View, Binder, TemplateConstructor) {
+			var binder = this._binderInstance = new Binder({
 				app: this.app
 			});
 
 			this._viewInstance = new View({
 				app: this.app,
 				TemplateConstructor: TemplateConstructor,
-				viewModel: controller
+				binder: binder
 			});
 
 			this._subViewHandles.push(this.parent.place(this._viewInstance, this.placeholder));

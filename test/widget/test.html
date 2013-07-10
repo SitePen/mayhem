@@ -174,7 +174,7 @@
 
 		label = new Label({
 			textContent: 'Underlined if Field is Required',
-			viewModel: model,
+			binder: model,
 			fieldName: 'field1'
 		});
 		body.appendChild(label.domNode);
@@ -186,7 +186,7 @@
 		validationButton.startup();
 
 		errorWidget = new Error({
-			viewModel: model,
+			binder: model,
 			fieldName: 'field1'
 		});
 		body.appendChild(errorWidget.domNode);

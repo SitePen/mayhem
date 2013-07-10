@@ -23,13 +23,13 @@ HTML element attributes may be data-bound as well.
 ### Models
 A Model is an observable encapsulation of information and can validate and save changes.
 
-### Controllers
-Controllers implement the application's behavior and are the bridge between models and views.
+### Binders
+Binders implement the application's behavior and are the bridge between models and views.
 
 ### Router
 The router is a tool for managing application state via a hierarchy of routes. A route:
 * has a unique ID
-* encapsulates a controller and a view
+* encapsulates a binder and a view
 * may take arguments (identifiers are a common example)
 * may be a child of another route if its route IDstarts with the parent's route ID
 (e.g., parent, parent/child, and parent/child/grandchild)
@@ -52,16 +52,16 @@ Putting the Pieces Together
 1. The Application owns the application View, the Router, and application-wide concerns like data stores.
 	1. The WebApplication module defines the default application View MID to `app/views/ApplicationView`.
 	2. The application View provides the basic layout of the UI along with named placeholders for subviews associated with routes.
-	3. The Router computes the `controller`, `view`, and `template` properties for each route.
-		1. By default, `controller`, `view`, and `template` are assumed to be relative to the Router's
-			`controllerPath`, `viewPath`, and `templatePath` properties respectively.
-		2. `controller` is computed based on the following rules:
+	3. The Router computes the `binder`, `view`, and `template` properties for each route.
+		1. By default, `binder`, `view`, and `template` are assumed to be relative to the Router's
+			`binderPath`, `viewPath`, and `templatePath` properties respectively.
+		2. `binder` is computed based on the following rules:
 			1. If there is a leading `/`, assume an absolute MID and leave as-is
-			2. If `null`, default to the core implementation `mayhem/Controller`
+			2. If `null`, default to the core implementation `mayhem/Binder`
 			3. If `undefined`, use convention based on route ID:
-				(`router.controllerPath + upperCaseFirstLetter(route.id) + "Controller"`)
+				(`router.binderPath + upperCaseFirstLetter(route.id) + "Binder"`)
 			4. Otherwise, compute the MID based on the value:
-				(`router.controllerPath + upperCaseFirstLetter(route.controller) + "Controller"`)
+				(`router.binderPath + upperCaseFirstLetter(route.binder) + "Binder"`)
 		3. `view` is computed based on the following rules:
 			1. If there is a leading `/`, assume an absolute MID and leave as-is
 			2. If `null` or `undefined`, default to the core implementation `mayhem/View`
@@ -75,12 +75,12 @@ Putting the Pieces Together
 			4. Otherwise, compute the MID based on the value:
 				(`router.templatePath + upperCaseFirstLetter(route.template) + "View.html"`)
 2. On startup, the router navigates to the default route "index" and calls `enter` on the route.
-	1. Entering a route instantiates its Controller and View and passes the route arguments to the Controller
-		via the Controller's routeState property.
-	2. The Controller is responsible for initializing its Model based on the route arguments.
-	3. Access to application-wide data stores is provided to the controller via its `app` property
-		(e.g., controller.app.contactStore)
+	1. Entering a route instantiates its Binder and View and passes the route arguments to the Binder
+		via the Binder's routeState property.
+	2. The Binder is responsible for initializing its Model based on the route arguments.
+	3. Access to application-wide data stores is provided to the binder via its `app` property
+		(e.g., binder.app.contactStore)
 	4. The View is responsible for instantiating its Template.
-	5. The Template creates the DOM elements for the View and binds to the Controller
-		which includes the ability to bind to the Model via the Controller's `model` property.
+	5. The Template creates the DOM elements for the View and binds to the Binder
+		which includes the ability to bind to the Model via the Binder's `model` property.
 3. To be continued... 

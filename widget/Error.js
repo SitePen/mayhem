@@ -22,10 +22,10 @@ define([
 			this.inherited(arguments);
 
 			// Bind list to the model's errors array.
-			var viewModel = this.viewModel,
+			var binder = this.binder,
 				fieldName = this.fieldName;
-			if (viewModel) {
-				var errors = fieldName ? viewModel.getErrors(fieldName) : viewModel.getErrors();
+			if (binder) {
+				var errors = fieldName ? binder.getErrors(fieldName) : binder.getErrors();
 
 				this._updateErrors(0, [], errors);
 				errors.watchElements(lang.hitch(this, '_updateErrors'));

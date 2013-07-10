@@ -90,7 +90,7 @@ define([
 			//		The binding context
 
 			return lang.delegate(
-				view.viewModel,
+				view.binder,
 				lang.mixin({}, bindingHelperFunctions, {
 					app: view.app,
 					router: view.app.router

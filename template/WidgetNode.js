@@ -43,7 +43,7 @@ define([
 			}
 
 			// Associate widget with view model
-			widget.set('viewModel', kwArgs.view.viewModel);
+			widget.set('binder', kwArgs.view.binder);
 
 			domConstruct.place(widget.domNode, this.beginMarker, 'after');
 
