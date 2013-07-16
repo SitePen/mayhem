@@ -33,7 +33,7 @@ define([
 			var propertyMap = this.propertyMap;
 			for (var key in propertyMap) {
 				// TODO: Data bind
-				propertyMap[key].bind(kwArgs.bindingContex, lang.hitch(widget, "set", key));
+				propertyMap[key].bind(kwArgs.bindingContext, lang.hitch(widget, "set", key));
 			}
 
 			var eventMap = this.eventMap;
