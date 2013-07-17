@@ -3,11 +3,13 @@ define([
 	'dojo/_base/declare',
 	'./has',
 	'./Component',
+	'./template/bindingExpressionRegistry',
 	'dojo/Deferred',
+	'dojo/when',
 	'dojo/promise/all',
 	'dojo/request/util',
 	'require'
-], function (lang, declare, has, Component, Deferred, whenAll, util, require) {
+], function (lang, declare, has, Component, bindingExpressionRegistry, Deferred, when, whenAll, util, require) {
 	return declare(Component, {
 		postscript: function (kwArgs) {
 			//	summary:
@@ -32,6 +34,64 @@ define([
 					}
 				}
 			};
+		},
+
+		_loadTemplateBindings: function () {
+			// summary:
+			//		Load and register handlers for template data binding expressions
+			// returns: dojo/promise/Promise?
+			//		A promise if loading is asynchronous
+
+			if (this.templateBindings === undefined) {
+				// There are no template bindings. Do nothing.
+				return;
+			}
+
+			var templateBindings = this.templateBindings,
+				registerTemplateBindings = function () {
+					// Register in reverse order so the first in the list has highest precendence
+					//	as would be intuitively expected by a developer
+					for (var i = templateBindings.length - 1; i >= 0; --i) {
+						var DataBindingExpression = templateBindings[i],
+							name = DataBindingExpression.name || ("syntax-" + i)
+						bindingExpressionRegistry.register(name, DataBindingExpression, true);
+					}
+				};
+
+			// Collect module IDs to resolve
+			var moduleIdsToResolve = [],
+				resolvedModuleIndexes = [];
+			for (var i = 0; i < templateBindings.length; ++i) {
+				if (typeof templateBindings[i] === 'string') {
+					moduleIdsToResolve.push(templateBindings[i]);
+					resolvedModuleIndexes.push(i);
+				}
+			}
+
+			if (moduleIdsToResolve.length > 0) {
+				var dfd = new Deferred();
+
+				require(moduleIdsToResolve, function () {
+					try {
+						for (var i = 0; i < arguments.length; ++i) {
+							var bindingIndex = resolvedModuleIndexes[i];
+							templateBindings[bindingIndex] = arguments[bindingIndex];
+						}
+
+						registerTemplateBindings();
+
+						dfd.resolve();
+					}
+					catch (error) {
+						dfd.reject(error);
+					}
+				});
+
+				return dfd.promise;
+			}
+			else {
+				registerTemplateBindings();
+			}
 		},
 
 		_loadModules: function () {
@@ -133,7 +193,8 @@ define([
 				});
 			}
 
-			var promise = this._loadModules();
+			// Load template bindings first because they are needed by the modules
+			var promise = when(this._loadTemplateBindings(), lang.hitch(this, "_loadModules"));
 
 			if (options.startModules !== false) {
 				promise = promise.then(lang.hitch(this, 'startupModules'));
