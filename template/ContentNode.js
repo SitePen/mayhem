@@ -4,8 +4,8 @@ define([
 	'dojo/_base/declare',
 	'./Node',
 	'dojo/_base/array',
-	'./DataBindingExpression'
-], function (has, lang, declare, Node, arrayUtil, DataBindingExpression) {
+	'./bindingExpressionRegistry'
+], function (has, lang, declare, Node, arrayUtil, bindingExpressionRegistry) {
 	return declare(Node, {
 		// summary:
 		//		Template node for managing HTML content and nested template nodes.
@@ -73,7 +73,7 @@ define([
 
 				if (boundAttributeMap) {
 					for (var attributeName in boundAttributeMap) {
-						var expression = new DataBindingExpression(boundAttributeMap[attributeName]);
+						var expression = bindingExpressionRegistry.match(boundAttributeMap[attributeName]);
 						expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
 					}
 				}

@@ -163,7 +163,7 @@ define([
 		// TODO: Return handle with remove() method.
 	}
 
-	function DataBindingExpression(/*String|Object*/ expression) {
+	function DefaultBindingExpression(/*String|Object*/ expression) {
 		// summary:
 		//		A data binding expression
 		// description:
@@ -189,7 +189,7 @@ define([
 			? templateParser.parse(expression, 'DataBindingExpression')
 			: expression;
 	}
-	DataBindingExpression.prototype = {
+	DefaultBindingExpression.prototype = {
 		getValue: function (/*Object*/ context) {
 			// summary:
 			// 		Get the value of the expression applied to the specified context.
@@ -211,7 +211,18 @@ define([
 		}
 	};
 
-	DataBindingExpression.getValue = getValue;
+	DefaultBindingExpression.isMatch = function(rawExpression) {
+		// summary:
+		//		Answer whether a given expression is an instance of this expression syntax.
+		// rawExpression: String
+		//		The string to inspect
+		// returns: boolean
+		//		Whether the given expression is an instance of this syntax
 
-	return DataBindingExpression;
+		// TODO: Write inspection logic. Leaving as true for now because this is the default.
+		return true;
+	};
+
+
+	return DefaultBindingExpression;
 });

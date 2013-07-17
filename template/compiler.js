@@ -5,7 +5,7 @@ define([
 	'dojo/Deferred',
 	'dojo/dom-construct',
 	'./peg/templateParser',
-	'./DataBindingExpression',
+	'./bindingExpressionRegistry',
 	'./PlaceholderNode',
 	'./ContentNode',
 	'./IfNode',
@@ -20,7 +20,7 @@ define([
 	Deferred,
 	domConstruct,
 	templateParser,
-	DataBindingExpression,
+	bindingExpressionRegistry,
 	PlaceholderNode,
 	ContentNode,
 	IfNode,
@@ -242,7 +242,7 @@ define([
 				//		A template node constructor
 
 				var type = astNode.type;
-
+				
 				var Constructor;
 				if (type === 'content') {
 					// TODO: Is there a reason dom-construct.toDom() should be preferred here?
@@ -264,7 +264,7 @@ define([
 					Constructor = declare(IfNode, {
 						conditionalBlocks: arrayUtil.map(astNode.conditionalBlocks, function (conditionalBlock) {
 							return {
-								condition: new DataBindingExpression(conditionalBlock.condition),
+								condition: bindingExpressionRegistry.match(conditionalBlock.condition),
 								ContentTemplate: createNodeConstructor(conditionalBlock.content)
 							};
 						}),
@@ -275,7 +275,7 @@ define([
 				}
 				else if (type === 'for') {
 					Constructor = declare(ForNode, {
-						each: new DataBindingExpression(astNode.each),
+						each: bindingExpressionRegistry.match(astNode.each),
 						valueName: astNode.value,
 						ContentTemplate: createNodeConstructor(astNode.content)
 					});
@@ -286,7 +286,7 @@ define([
 				}
 				else if (type === 'when') {
 					Constructor = declare(WhenNode, {
-						promise: new DataBindingExpression(astNode.promise),
+						promise: bindingExpressionRegistry.match(astNode.promise),
 						valueName: astNode.value,
 						ResolvedTemplate: astNode.resolvedContent ? createNodeConstructor(astNode.resolvedContent) : null,
 						ErrorTemplate: astNode.errorContent ? createNodeConstructor(astNode.errorContent) : null,
@@ -295,7 +295,7 @@ define([
 				}
 				else if (type === 'data') {
 					Constructor = declare(DataNode, {
-						'var': new DataBindingExpression(astNode.var),
+						'var': bindingExpressionRegistry.match(astNode.var),
 						safe: astNode.safe !== undefined
 					});
 				}
@@ -308,14 +308,14 @@ define([
 							var eventHandlerMatch = /^on-(.*)$/.exec(key);
 							if (eventHandlerMatch) {
 								var eventName = eventHandlerMatch[1];
-								eventHandlers[eventName] = new DataBindingExpression(astNode.properties[key]);
+								eventHandlers[eventName] = bindingExpressionRegistry.match(astNode.properties[key]);
 							} else {
 								// Convert property names from AST-format to widget-format
 								// TODO: Support other allowable character sets for attribute names
 								var name = key.replace(/-[a-zA-Z]/g, function (match) {
 									return match.charAt(1).toUpperCase();
 								});
-								properties[name] = new DataBindingExpression(astNode.properties[key]);
+								properties[name] = bindingExpressionRegistry.match(astNode.properties[key]);
 							}
 						}
 					}
