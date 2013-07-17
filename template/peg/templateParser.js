@@ -1509,7 +1509,7 @@ define([], function () {
         		for (var i = 0; i < attributes.length; i++) {
         			var attribute = attributes[i];
         
-        			if (attributeMap[attribute.name]) {
+        			if (attribute.name in attributeMap) {
         				throw new Error('A "' + attribute.name + '" has already been specified');
         			}
         
