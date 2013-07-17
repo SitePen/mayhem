@@ -35,7 +35,7 @@ define([
 		widgetTypeAttributeSelector = '[' + widgetTypeAttributeName + ']';
 
 	// TODO: This only matches cases where entire attribute value is a ${ expression }. Consider support for richer values.
-	var boundAttributePattern = /^\${(.+)}$/,
+	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/,
 		nextDataBoundElementId = 1;
 	function compileDataBoundAttributes(/*DomNode*/ element, /*Object*/ boundElementMap) {
 		// summary:
@@ -65,8 +65,8 @@ define([
 			name = attribute.name;
 			value = attribute.value;
 
-			if (boundAttributePattern.test(value)) {
-				value = value.replace(boundAttributePattern, '$1');
+			if (BOUND_ATTRIBUTE_PATTERN.test(value)) {
+				value = value.replace(BOUND_ATTRIBUTE_PATTERN, '$1');
 				boundAttributeMap[name] = templateParser.parse(value, 'DataBindingExpression');
 				element.setAttribute(name, null);
 				foundBoundAttributes = true;

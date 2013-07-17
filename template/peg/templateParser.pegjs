@@ -148,7 +148,7 @@
 	HtmlFragmentNode.prototype = { type: 'fragment' };
 
 	var aliasMap = {},
-		nodeIdAttributeName = 'data-template-node-id';
+		NODE_ID_ATTRIBUTE_NAME = 'data-template-node-id';
 }
 
 /* Template Grammar */
@@ -157,7 +157,7 @@ Template
 	= content:ContentOrEmpty {
 		if (content) {
 			// Include the node ID attribute name with the AST so dependent code can stay DRY.
-			content.nodeIdAttributeName = nodeIdAttributeName;
+			content.nodeIdAttributeName = NODE_ID_ATTRIBUTE_NAME;
 
 			var aliases = [];
 			for (var alias in aliasMap) {
@@ -201,7 +201,7 @@ Content
 			else {
 				// TODO: Colin prefers the use of comment nodes, but it appears we'll need to stick w/ <script> for this step since it is queryable.
 				node.id = getNextId();
-				htmlFragmentBuffer.push('<script ' + nodeIdAttributeName + '="' + node.id + '"></script>');
+				htmlFragmentBuffer.push('<script ' + NODE_ID_ATTRIBUTE_NAME + '="' + node.id + '"></script>');
 				templateNodes.push(node);
 			}
 		}
