@@ -147,7 +147,6 @@
 	}
 	HtmlFragmentNode.prototype = { type: 'fragment' };
 
-	// TODO: Currently, aliases apply to the whole template regardless of where they are specified. Should they be scoped?
 	var aliasMap = {},
 		nodeIdAttributeName = 'data-template-node-id';
 }
