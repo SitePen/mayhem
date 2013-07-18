@@ -6,6 +6,7 @@ define([
 	'dojo/dom-construct',
 	'./peg/templateParser',
 	'./bindingExpressionRegistry',
+	'./AttributeBinding',
 	'./PlaceholderNode',
 	'./ContentNode',
 	'./IfNode',
@@ -21,6 +22,7 @@ define([
 	domConstruct,
 	templateParser,
 	bindingExpressionRegistry,
+	AttributeBinding,
 	PlaceholderNode,
 	ContentNode,
 	IfNode,
@@ -35,8 +37,7 @@ define([
 		widgetTypeAttributeSelector = '[' + widgetTypeAttributeName + ']';
 
 	// TODO: This only matches cases where entire attribute value is a ${ expression }. Consider support for richer values.
-	var BOUND_ATTRIBUTE_PATTERN = /^\${(.+)}$/,
-		nextDataBoundElementId = 1;
+	var nextDataBoundElementId = 1;
 	function compileDataBoundAttributes(/*DomNode*/ element, /*Object*/ boundElementMap) {
 		// summary:
 		//		Compile data-bound attributes on an element and its children.
@@ -65,10 +66,9 @@ define([
 			name = attribute.name;
 			value = attribute.value;
 
-			if (BOUND_ATTRIBUTE_PATTERN.test(value)) {
-				value = value.replace(BOUND_ATTRIBUTE_PATTERN, '$1');
-				boundAttributeMap[name] = templateParser.parse(value, 'DataBindingExpression');
-				element.setAttribute(name, null);
+			if (AttributeBinding.containsBindingExpression(value)) {
+				boundAttributeMap[name] = value;
+				element.removeAttribute(name);
 				foundBoundAttributes = true;
 			}
 		}
@@ -301,7 +301,8 @@ define([
 				}
 				else if (type === 'widget') {
 					// TODO: Consider doing property-name conversion in the compilation step instead
-					var properties = {},
+					var staticProperties = {},
+						boundProperties = {},
 						eventHandlers = {};
 					for (var key in astNode.properties) {
 						if (!(key in { type: 1, is: 1 })) {
@@ -310,19 +311,25 @@ define([
 								var eventName = eventHandlerMatch[1];
 								eventHandlers[eventName] = bindingExpressionRegistry.match(astNode.properties[key]);
 							} else {
-								// Convert property names from AST-format to widget-format
+								// Convert property names from html-attribute-format to widgetFormat
 								// TODO: Support other allowable character sets for attribute names
 								var name = key.replace(/-[a-zA-Z]/g, function (match) {
 									return match.charAt(1).toUpperCase();
 								});
-								properties[name] = bindingExpressionRegistry.match(astNode.properties[key]);
+								if (AttributeBinding.containsBindingExpression(astNode.properties[key])) {
+									boundProperties[key] = new AttributeBinding(astNode.properties[key]);
+								}
+								else {
+									staticProperties[key] = astNode.properties[key];
+								}
 							}
 						}
 					}
 
 					Constructor = declare(WidgetNode, {
 						Widget: dependencyMap[astNode.properties.is],
-						propertyMap: properties,
+						staticProperties: staticProperties,
+						boundProperties: boundProperties,
 						eventMap: eventHandlers
 					});
 				}

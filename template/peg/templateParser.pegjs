@@ -78,7 +78,7 @@
 					this[name] = attributeSet[name];
 				}
 				else {
-					unsupportedAttributes.push(attribute.name);
+					unsupportedAttributes.push(name);
 				}
 			}
 

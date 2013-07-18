@@ -4,8 +4,8 @@ define([
 	'dojo/_base/declare',
 	'./Node',
 	'dojo/_base/array',
-	'./bindingExpressionRegistry'
-], function (has, lang, declare, Node, arrayUtil, bindingExpressionRegistry) {
+	'./AttributeBinding'
+], function (has, lang, declare, Node, arrayUtil, AttributeBinding) {
 	return declare(Node, {
 		// summary:
 		//		Template node for managing HTML content and nested template nodes.
@@ -73,8 +73,10 @@ define([
 
 				if (boundAttributeMap) {
 					for (var attributeName in boundAttributeMap) {
-						var expression = bindingExpressionRegistry.match(boundAttributeMap[attributeName]);
-						expression.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
+						var rawAttributeExpression = boundAttributeMap[attributeName],
+							// TODO: Instantiating AttributeBinding should only occur once for a template AST node, not every time it is rendered. Fix this as part of the major refactoring.
+							attributeBinding = new AttributeBinding(rawAttributeExpression);
+						attributeBinding.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
 					}
 				}
 				else if (has('debug')) {

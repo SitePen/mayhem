@@ -13,9 +13,13 @@ define([
 		//		The constructor for the Widget represented by this node.
 		Widget: null,
 
-		// propertyMap: Object
-		//		A map of property names to DataBindingExpressions
-		propertyMap: null,
+		// staticProperties: Object
+		//		Unbound property values for the widget
+		staticProperties: null,
+
+		// boundProperties: Object
+		//		A map of property names to AttributeBinding objects
+		boundProperties: null,
 
 		// eventMap: Object
 		//		A map of event names to DataBindingExpressions for event handlers
@@ -28,17 +32,15 @@ define([
 		_create: function (kwArgs) {
 			this.inherited(arguments);
 
-			var widget = this.widget = new this.Widget();
+			var widget = this.widget = new this.Widget(this.staticProperties);
 
-			var propertyMap = this.propertyMap;
-			for (var key in propertyMap) {
-				// TODO: Data bind
-				propertyMap[key].bind(kwArgs.bindingContext, lang.hitch(widget, "set", key));
+			var boundProperties = this.boundProperties;
+			for (var key in boundProperties) {
+				boundProperties[key].bind(kwArgs.bindingContext, lang.hitch(widget, "set", key));
 			}
 
 			var eventMap = this.eventMap;
 			for (var key in eventMap) {
-				// TODO:  Data bind
 				widget.on(key, eventMap[key].getValue(kwArgs.bindingContext));
 			}
 
