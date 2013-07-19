@@ -11,10 +11,8 @@ define([ "require", "./patch-dijit!" ], function (require) {
 					"./patch/disable-view-resizing",
 					"./patch/ensure-mblView-class",
 					"./patch/16183",
-					"./patch/16311",
 					"./patch/16313",
 					"./patch/16314",
-					"./patch/16275-16349",
 					"./patch/16316",
 					"./patch/16347",
 					"./patch/16350"
