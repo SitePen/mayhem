@@ -2,9 +2,8 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/declare',
 	'dojo/dom-construct',
-	'dbind/bind',
 	'dojo/date/locale'
-], function (lang, declare, domConstruct, bind, dateLocale) {
+], function (lang, declare, domConstruct, dateLocale) {
 
 	// Helper functions that can be called in data binding expressions.
 	var bindingHelperFunctions = {
@@ -42,7 +41,7 @@ define([
 		//		A DOM comment marking the end of the DOM nodes owned by this template node.
 		endMarker: null,
 
-		constructor: function (/*kwArgs*/) {
+		constructor: function () {
 			// summary:
 			//		Create the template node.
 			// kwArgs: __TemplateNodeArgs
