@@ -2,11 +2,10 @@ define([
 	'dojo/_base/declare',
 	'dojo/_base/array',
 	'dojo/_base/lang',
-	'dbind/bind',
 	'dojo/Stateful',
 	'./StatefulArray',
 	'./Component'
-], function (declare, array, lang, bind, Stateful, StatefulArray, Component) {
+], function (declare, array, lang, Stateful, StatefulArray, Component) {
 
 	var View = declare(Component, {
 
