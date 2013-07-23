@@ -77,7 +77,6 @@ define([
 					kwArgs[k] = self[k];
 				}
 
-				// Mix in path arguments
 				lang.mixin(kwArgs, self.parse(event.newPath));
 
 				has('debug') && console.log('new route state for', self.id, kwArgs);
