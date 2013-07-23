@@ -77,9 +77,15 @@ define([
 			//	returns: object
 			//		A handle to remove the subView
 
-			// TODO: make subViews and the placeholder lists something that can be observed.  then
-			// the template can observe the placeholder lists and incrementally update the rendering
-			var subViewArray = this._lookupSubviewArray(destination);
+
+			destination = destination || 'default';
+
+			var subViews = this.subViews,
+				subViewArray = subViews.get(destination);
+			if (!subViewArray) {
+				subViewArray = new StatefulArray();
+				subViews.set(destination, subViewArray);
+			}
 			subViewArray.push(view);
 
 			return {
@@ -129,19 +135,6 @@ define([
 			}
 
 			this.inherited(arguments);
-		},
-
-		_lookupSubviewArray: function (location) {
-			location = location || 'default';
-
-			var subViews = this.subViews,
-				subView = subViews.get(location);
-			if (!subView) {
-				subView = new StatefulArray();
-				subViews.set(location, subView);
-			}
-
-			return subView;
 		}
 	});
 
