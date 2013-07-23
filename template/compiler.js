@@ -124,7 +124,7 @@ define([
 			var templateAst = templateParser.parse(templateSource),
 				aliases = arrayUtil.map(templateAst.aliases, function (alias) {
 					return {
-						fromPattern: new RegExp('(?:^|/)(' + alias.from + ')(?:$|/)'),
+						fromPattern: new RegExp('(?:^)(' + alias.from + ')(?:$|/)'),
 						to: alias.to
 					};
 				}),
