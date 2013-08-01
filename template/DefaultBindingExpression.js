@@ -103,7 +103,7 @@ define([
 			}
 
 			if (object && targetProperty in object) {
-				bind(object).get(expressionAst.target).getValue(callback);
+				bind(object).get(expressionAst.target).receive(callback);
 			}
 			else {
 				// TODO: Report errors to the console instead and add such reporting to getValue and function resolution.
@@ -114,6 +114,7 @@ define([
 			var name = expressionAst.name,
 				negate = name.negated,
 				argumentAsts = expressionAst.arguments,
+				// TODO: The function itself should be bound
 				func = lang.hitch(resolve(context, name.references), name.target);
 
 			if (negate) {
