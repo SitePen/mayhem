@@ -26,7 +26,7 @@ define([
 				update = lang.hitch(this, '_evaluateConditions', kwArgs);
 			for (var i = 0; i < conditionalBlocks.length; i++) {
 				// TODO: Is there a way to avoid having update() called when binding to each condition?
-				conditionalBlocks[i].condition.bind(kwArgs.bindingContext, update);
+				this.own(conditionalBlocks[i].condition.bind(kwArgs.bindingContext, update));
 			}
 		},
 
