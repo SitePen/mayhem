@@ -154,9 +154,18 @@ define([
 			// summary:
 			//		Destroy the template node.
 
-			// TODO: Remove data bindings.
-
+			var ownedHandles = this._ownedHandles;
+			while (ownedHandles.length > 0) {
+				ownedHandles.pop().remove();
+			}
 			this.remove();
+		},
+
+		own: function (/*Object...*/) {
+			// summary:
+			//		Takes ownership of one or more handles.
+			var ownedHandles = this._ownedHandles;
+			ownedHandles.push.apply(ownedHandles, arguments);
 		}
 	});
 });

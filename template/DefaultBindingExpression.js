@@ -161,6 +161,12 @@ define([
 		}
 
 		// TODO: Return handle with remove() method.
+		return {
+			remove: function(){
+				// TODO: Is the only place to define remove.
+				// TODO: Make it actually remove.
+			}
+		};
 	}
 
 	function DefaultBindingExpression(/*String|Object*/ expression) {
