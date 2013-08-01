@@ -76,7 +76,7 @@ define([
 						var rawAttributeExpression = boundAttributeMap[attributeName],
 							// TODO: Instantiating AttributeBinding should only occur once for a template AST node, not every time it is rendered. Fix this as part of the major refactoring.
 							attributeBinding = new AttributeBinding(rawAttributeExpression);
-						attributeBinding.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName));
+						this.own(attributeBinding.bind(bindingContext, lang.hitch(element, 'setAttribute', attributeName)));
 					}
 				}
 				else if (has('debug')) {

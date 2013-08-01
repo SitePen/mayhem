@@ -36,7 +36,7 @@ define([
 
 			var boundProperties = this.boundProperties;
 			for (var key in boundProperties) {
-				boundProperties[key].bind(kwArgs.bindingContext, lang.hitch(widget, "set", key));
+				this.own(boundProperties[key].bind(kwArgs.bindingContext, lang.hitch(widget, "set", key)));
 			}
 
 			var eventMap = this.eventMap;

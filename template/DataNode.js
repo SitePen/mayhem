@@ -20,12 +20,12 @@ define([
 
 			var dataNode = this;
 
-			this.var.bind(kwArgs.bindingContext, function (value) {
+			this.own(this.var.bind(kwArgs.bindingContext, function (value) {
 				dataNode._removeContent();
 
 				var newContent = dataNode.safe ? domConstruct.toDom(value) : document.createTextNode(value);
 				domConstruct.place(newContent, dataNode.beginMarker, 'after');
-			});
+			}));
 		},
 
 		_removeContent: function () {

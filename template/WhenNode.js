@@ -64,7 +64,7 @@ define([
 				}
 			}
 
-			this.promise.bind(kwArgs.bindingContext, function (promise) {
+			this.own(this.promise.bind(kwArgs.bindingContext, function (promise) {
 				promise && promise.then(
 					createCallback('ResolvedTemplate'),
 					createCallback('ErrorTemplate'),

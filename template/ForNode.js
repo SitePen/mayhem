@@ -26,7 +26,7 @@ define([
 
 		_create: function (kwArgs) {
 			this.inherited(arguments);
-			this.each.bind(kwArgs.bindingContext, lang.hitch(this, '_update', kwArgs));
+			this.own(this.each.bind(kwArgs.bindingContext, lang.hitch(this, '_update', kwArgs)));
 		},
 
 		_update: function (kwArgs, array) {
