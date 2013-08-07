@@ -50,9 +50,9 @@ define({
 
 	// Non-functional test suite(s) to run in each browser
 	suites: [
-		'mayhem/test/routing',
-		'mayhem/test/Model',
-		'mayhem/test/auth'
+		'mayhem/tests/routing',
+		'mayhem/tests/Model',
+		'mayhem/tests/auth'
 	],
 
 	// Functional test suite(s) to run in each browser once non-functional tests are completed
