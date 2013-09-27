@@ -84,7 +84,7 @@ interface IWidget {
 	placeAt(destination:IContainer, position?:PlacePosition): IHandle;
 	placeAt(destination:IContainer, position?:number): IHandle;
 	placeAt(destination:IContainer, placeholder?:string): IHandle;
-	bind(propertyName:string, binding:string): IDataBinderHandle;
+	bind(propertyName:string, binding:string): IDataBindingHandle;
 //	watch(callback:(value:any, oldValue:any, name:string) => any): IHandle; // not sure about this one. dbind? promises?
 //	watch(name:string, callback:(value:any, oldValue:any, name:string) => any): IHandle; // not sure about this one. dbind? promises?
 	destroy(): void;

@@ -1,10 +1,11 @@
 /// <reference path="../interfaces.ts" />
+/// <reference path="interfaces.ts" />
 /// <reference path="../binding/interfaces.ts" />
 
 import Component = require('../Component');
 
 class Widget extends Component implements IWidget {
-	private _bindings:Object;
+	private _bindings:{ [propertyName:string]: IDataBindingHandle[] };
 	private _mediator:IMediator;
 
 	private _mediatorGetter():IMediator {
@@ -13,13 +14,15 @@ class Widget extends Component implements IWidget {
 
 	private _mediatorSetter(value?:IMediator):void {
 		this._mediator = value;
-		this._bindings.forEach(function (binding:IDataBinderHandle) {
-			binding.to = value;
-		});
+		for (var k in this._bindings) {
+			this._bindings[k].forEach(function (binding:IDataBindingHandle) {
+				binding.to = value;
+			});
+		}
 	}
 
-	bind(propertyName:string, binding:string):IDataBinderHandle {
-		var handle:IDataBinderHandle = this.app.dataBindingRegistry({
+	bind(propertyName:string, binding:string):IDataBindingHandle {
+		var handle:IDataBindingHandle = this.app.dataBindingRegistry({
 			from: this,
 			property: propertyName,
 			// where it goes depends on the syntax!

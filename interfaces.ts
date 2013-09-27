@@ -5,7 +5,7 @@ interface IHandle {
 }
 
 interface IApplication {
-	dataBindingRegistry: IDataBinderRegistry;
+	dataBindingRegistry: IDataBindingRegistry;
 }
 
 interface IComponent {
@@ -19,7 +19,7 @@ interface IMediator {
 
 class Mediator {
 	constructor(public routeState) {}
-	notify(property:string, value:any) {
+	notify(property:string, value:any):void {
 
 	}
 }

@@ -1,43 +1,31 @@
 /// <reference path="../interfaces.ts" />
 
-interface IDataBinderRegistry {
-	add(binder:IDataBinder, index:number): IHandle;
-	test(binding:string, source:Object, destination:Object): boolean;
-	bind(binding:string, source:Object, destination:Object): IDataBinderHandle;
+interface IDataBindingArguments {
+	from:Object;
+	property:string;
+	to:Object;
+	binding:string;
 }
 
-interface IDataBinder {
-	test(binding:string, source:Object, destination:Object): boolean;
-	bind(binding:string, source:Object, destination:Object, callback:(value:any) => void): IDataBinderHandle;
+interface IDataBindingRegistry {
+	add(binder:IDataBinding, index:number): IHandle;
+	test(kwArgs:IDataBindingArguments): boolean;
+	bind(kwArgs:IDataBindingArguments): IDataBindingHandle;
+}
+
+interface IDataBinding {
+	test(kwArgs:IDataBindingArguments): boolean;
+	bind(kwArgs:IDataBindingArguments): IDataBindingHandle;
 }
 
 interface IComputedProperty {
 	isComputed: boolean;
 	get(): any;
 	set?(value:any): void;
+	dependencies: string[];
 }
 
-interface IDataBinderHandle extends IHandle {
-	to:IMediator;
+interface IDataBindingHandle extends IHandle {
+	to:Object;
 	notify(value:any): void;
 }
-
-/*class DefaultDataBinder implements IDataBinder {
-	test(binding:string) {
-
-
-		return true;
-	}
-
-	bind(binding:string, context:IMediator) {
-		var property:string = 'foo';
-		if(context[property].isComputed){}
-
-		return {
-			remove: function () {
-
-			}
-		};
-	}
-}
-*/
