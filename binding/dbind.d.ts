@@ -1,3 +1,5 @@
+/// <reference path="../interfaces.ts" />
+
 interface Stateful {
 	get(key:string): any;
 	set(key:string, value:any): void;
@@ -10,10 +12,11 @@ interface Binding {
 
 	value:any;
 	source:Object;
+	callbacks:Array<(value:any) => void>;
 
-	receive(callback?:(value:any) => void):void;
+	receive(callback?:(value:any) => void):IHandle;
 	getValue(callback:(value:any) => void):void;
-	get(key:string, callback:(value:any) => void):any;
+	get(key:string, callback:(value:any) => void):IHandle;
 	get(key:string):Binding;
 	put(value:Object):void;
 	set(name:string, value:any):void;

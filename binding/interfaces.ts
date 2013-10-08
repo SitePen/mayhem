@@ -26,6 +26,7 @@ interface IComputedProperty {
 }
 
 interface IDataBindingHandle extends IHandle {
-	to:Object;
-	notify(value:any): void;
+	to: Object;
+	listen(callback:(value:any, oldValue:any) => void): IHandle;
+	set(value:any): void;
 }
