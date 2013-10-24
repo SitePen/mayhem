@@ -6,19 +6,18 @@ import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
 import has = require('dojo/has');
 
-class StatefulDataBinding implements IDataBinding {
-	test(kwArgs:IDataBindingArguments) {
-		return kwArgs.to &&
-			('watch' in kwArgs.to) &&
-			('get' in kwArgs.to) &&
-			('set' in kwArgs.to) &&
-			/[a-zA-Z0-9_$\.]/.test(kwArgs.binding);
+class StatefulDataBinder implements IDataBinder {
+	test(kwArgs:IDataBindingArguments):boolean {
+		return array.every([ 'source', 'target' ], function (objectType) {
+			var object = kwArgs[objectType];
+			return 'watch' in object && 'get' in object && 'set' in object;
+		});
 	}
 
 	bind(kwArgs:IDataBindingArguments):IDataBindingHandle {
 		// 'to' is the mediator object when used with the framework
-		var to:IStateful = <IStateful> kwArgs.to,
-			bindKey:string[] = kwArgs.binding.split('.'),
+		var target:IStateful = <IStateful> kwArgs.target,
+			bindKey:string[] = kwArgs.targetBinding.split('.'),
 			callbacks:Array<(value:any, oldValue:any) => void> = [],
 			boundObject:IStateful,
 			boundKey:string = bindKey[bindKey.length - 1],
@@ -78,11 +77,11 @@ class StatefulDataBinding implements IDataBinding {
 			var _callbacks = callbacks.slice(0);
 
 			for (var i = 0, j = _callbacks.length; i < j; ++i) {
-				_callbacks[i].call(to, newValue, oldValue);
+				_callbacks[i].call(target, newValue, oldValue);
 			}
 		}
 
-		rebind(to, 0);
+		rebind(target, 0);
 
 		return {
 			get to():IStateful {
@@ -135,3 +134,5 @@ class StatefulDataBinding implements IDataBinding {
 		};
 	}
 }
+
+export = StatefulDataBinder;

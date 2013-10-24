@@ -1,10 +1,10 @@
 /// <reference path="../interfaces.ts" />
 
 interface IDataBindingArguments {
-	from:Object;
-	fromBinding:string;
-	to:Object;
-	toBinding:string;
+	source:Object;
+	sourceBinding:string;
+	target:Object;
+	targetBinding:string;
 }
 
 interface IDataBindingRegistry {
@@ -44,7 +44,7 @@ interface IComputedProperty {
 }
 
 interface IDataBindingHandle extends IHandle {
-	to: Object;
-	listen(callback:(value:any, oldValue:any) => void): IHandle;
-	set(value:any): void;
+//	to: Object;
+//	listen(callback:(value:any, oldValue:any) => void): IHandle;
+//	set(value:any): void;
 }

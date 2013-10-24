@@ -45,14 +45,18 @@ define({
 	// used here
 	loader: {
 		// Packages that should be registered with the loader in each testing environment
-		packages: [ 'mayhem', 'dojo' ]
+		packages: [
+			{ name: 'mayhem', location: '.' },
+			{ name: 'dojo', location: '../dojo' }
+		]
 	},
 
 	// Non-functional test suite(s) to run in each browser
 	suites: [
-		'mayhem/tests/routing',
-		'mayhem/tests/Model',
-		'mayhem/tests/auth'
+		'mayhem/tests/binding'
+//		'mayhem/tests/routing',
+//		'mayhem/tests/Model',
+//		'mayhem/tests/auth'
 	],
 
 	// Functional test suite(s) to run in each browser once non-functional tests are completed

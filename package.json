@@ -1,7 +1,10 @@
 {
-	"name": "framework",
-	"version": "1.0",
+	"name": "mayhem",
+	"version": "1.0.0",
 	"main": "main",
-	"description": "Mobile Application Framework. Helper utilities and widgets for mobile development.",
-	"dojoBuild": "package.js"
+	"description": "Mayhem. A framework for rich Internet applications.",
+	"dojoBuild": "package.js",
+	"devDependencies": {
+		"intern": "1.2.1"
+	}
 }

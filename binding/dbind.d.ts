@@ -1,11 +1,5 @@
 /// <reference path="../interfaces.ts" />
-
-interface Stateful {
-	get(key:string): any;
-	set(key:string, value:any): void;
-	set(kwArgs:Object): void;
-	watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void): void;
-}
+/// <reference path="../dojo.d.ts" />
 
 interface Binding {
 	new (value:Object):Binding;
@@ -16,8 +10,8 @@ interface Binding {
 
 	receive(callback?:(value:any) => void):IHandle;
 	getValue(callback:(value:any) => void):void;
-	get(key:string, callback:(value:any) => void):IHandle;
 	get(key:string):Binding;
+	get(key:string, callback:(value:any) => void):IHandle;
 	put(value:Object):void;
 	set(name:string, value:any):void;
 	is(value:any):void;
@@ -26,18 +20,19 @@ interface Binding {
 }
 
 interface StatefulBinding extends Binding {
-	new (stateful:Stateful):StatefulBinding;
+	new (stateful:IStateful):StatefulBinding;
 
-	stateful:Stateful;
+	stateful:IStateful;
 
 	get(key:string):StatefulPropertyBinding;
+	get(key:string, callback:(value:any) => void):IHandle;
 	to(source:Object, property?:string):StatefulBinding;
 }
 
 interface StatefulPropertyBinding extends Binding {
-	new (stateful:Stateful, name:string):StatefulPropertyBinding;
+	new (stateful:IStateful, name:string):StatefulPropertyBinding;
 
-	stateful:Stateful;
+	stateful:IStateful;
 	name:string;
 }
 
@@ -76,26 +71,24 @@ interface FunctionBinding {
 	keys():void;
 }
 
-interface Dbind {
-	<T>(binding:{ _binding: T }, ...args:any[]):T;
-	(binding:{ get: any; is: any; }, ...args:any[]):Binding;
-	(statefulObject:{ get: any; }, ...args:any[]):StatefulBinding;
-	(element:{ nodeType: any; }, ...args:any[]):ElementBinding;
-	(fn:Function, ...args:any[]):FunctionBinding;
-	(array:Array, ...args:any[]):ArrayBinding;
-	(binding:Object, ...args:any[]):Binding;
-
-	get(object:Object, key:string, callback:Function):PropertyBinding;
-	get(object:Object, callback:Function):void;
-
-	Element:ElementBinding;
-	Container:ContainerBinding;
-	Binding:Binding;
-
-	when(value:any, callback:Function):any;
-}
-
 declare module 'dbind' {
-	var bind:Dbind;
+	var bind:{
+		<T>(binding:{ _binding: T }, ...args:any[]):T;
+		(binding:{ get: any; is: any; }, ...args:any[]):Binding;
+		(statefulObject:{ get: any; }, ...args:any[]):StatefulBinding;
+		(element:{ nodeType: any; }, ...args:any[]):ElementBinding;
+		(fn:Function, ...args:any[]):FunctionBinding;
+		(array:Array, ...args:any[]):ArrayBinding;
+		(binding:Object, ...args:any[]):Binding;
+
+		get(object:Object, key:string, callback:Function):PropertyBinding;
+		get(object:Object, callback:Function):void;
+
+		Element:ElementBinding;
+		Container:ContainerBinding;
+		Binding:Binding;
+
+		when(value:any, callback:Function):any;
+	};
 	export = bind;
 }
