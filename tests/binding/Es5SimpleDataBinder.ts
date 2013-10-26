@@ -45,7 +45,42 @@ registerSuite({
 	},
 
 	'accessor binding': function () {
+		var a = {
+				_foo: 'world!',
+				get foo() {
+					return 'hello ' + this._foo;
+				},
+				set foo(value) {
+					this._foo = value + '!';
+				}
+			},
+			b = { foo: null },
+			binding:IDataBindingArguments = {
+				source: a,
+				sourceBinding: 'foo',
+				target: b,
+				targetBinding: 'foo'
+			};
 
+		var canBind = binder.test(binding);
+
+		assert.isTrue(canBind);
+
+		var handle = binder.bind(binding);
+
+		assert.strictEqual(b.foo, 'hello world!', 'When binding source to target, target should receive current ' +
+			'computed value of source');
+
+		a.foo = 'universe';
+
+		assert.strictEqual(b.foo, 'hello universe!', 'Changing bound source property should update target property');
+
+		handle.remove();
+
+		a.foo = 'multiverse';
+
+		assert.strictEqual(a.foo, 'hello multiverse!', 'When removing binding, source should still be writable');
+		assert.strictEqual(b.foo, 'hello universe!', 'After binding is removed, target should not be updated');
 	},
 
 	'invalid binding': function () {
@@ -63,5 +98,8 @@ registerSuite({
 		var canBind = binder.test(binding);
 
 		assert.isFalse(canBind);
+		assert.throws(function () {
+			binder.bind(binding);
+		}, /^Cannot redefine property/);
 	}
 });
