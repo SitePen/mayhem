@@ -1,7 +1,6 @@
 /// <reference path="interfaces.ts" />
 /// <reference path="dojo.d.ts" />
 
-import Stateful = require('dojo/Stateful');
 import has = require('dojo/has');
 
 // TODO: Abstract and expose as a utility function
@@ -144,15 +143,14 @@ class Mediator implements IMediator {
 					this[key] = value;
 				}
 
-				var watchers = this._watchers[key];
-
-				if (watchers) {
+				var watchers = (this._watchers[key] || []).concat(this._watchers['*'] || []);
+				if (watchers.length) {
 					notifier.schedule({
 						object: this,
 						key: key,
 						oldValue: oldValue,
 						newValue: value,
-						callbacks: watchers.slice(0)
+						callbacks: watchers
 					});
 				}
 			}

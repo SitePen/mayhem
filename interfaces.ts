@@ -12,7 +12,6 @@ interface IComponent extends IStateful {
 interface IMediator extends IComponent {
 	routeState: Object;
 	model: IModel;
-//	notify: (property:string, value:any) => void;
 }
 
 interface IModel extends IComponent {}

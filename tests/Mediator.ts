@@ -43,7 +43,7 @@ registerSuite({
 			'defined on the mediator object');
 	},
 
-	'watch tests': function () {
+	'watch single property': function () {
 		var mediator:Mediator = new Mediator({
 				foo: 'hello'
 			}),
@@ -71,5 +71,44 @@ registerSuite({
 
 		mediator.set('foo', 'world');
 		mediator.set('foo', 'universe');
+	},
+
+	'watch all properties': function () {
+		var mediator:Mediator = new Mediator({
+				foo: 'hello',
+				bar: undefined
+			}),
+			dfd:IInternDeferred<void> = this.async(500),
+			numCallbacks = 0,
+			expected = [ 'foo', 'hello', 'universe', 'bar', undefined, 'red' ],
+			actual = [];
+
+		var handle = mediator.watch(dfd.rejectOnError(function (key:string, oldValue:string, newValue:string) {
+			++numCallbacks;
+
+			actual.push(key, oldValue, newValue);
+
+			if (numCallbacks === 2) {
+				handle.remove();
+				mediator.set('foo', 'multiverse');
+				mediator.set('bar', 'green');
+
+				// TODO: When the scheduler is exposed publicly, it should expose a mechanism for telling whether or not
+				// a callback is scheduled in future and retrieving a promise that resolves when the next notification
+				// fires. For the moment we set a timeout that resolves the promise
+				setTimeout(dfd.callback(function () {
+					assert.deepEqual(actual, expected);
+				}), 50);
+			}
+		}));
+
+		mediator.set({
+			foo: 'world',
+			bar: 'blue'
+		});
+		mediator.set({
+			foo: 'universe',
+			bar: 'red'
+		});
 	}
 });
