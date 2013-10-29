@@ -41,6 +41,12 @@ class Property {
 	 */
 	private _bindingHandles:IHandle[] = [];
 
+	constructor(root:IStateful, binding:string) {
+		this._binding = binding.split('.');
+		this._property = this._binding[this._binding.length - 1];
+		this._rebind(root, 0);
+	}
+
 	/**
 	 * Removes and rebinds to all objects in the object chain.
 	 */
@@ -95,20 +101,17 @@ class Property {
 		}
 	}
 
+	/**
+	 * Updates the bound target property with the given value.
+	 */
 	private _update(value:any):void {
 		this._value = value;
 		this._target && this._target.set(value);
 	}
 
-	constructor(root:IStateful, binding:string) {
-		this._binding = binding.split('.');
-		this._property = this._binding[this._binding.length - 1];
-		this._rebind(root, 0);
-	}
-
 	/**
-	 * Sets the value of this property. This is intended to be used to update the value by another bound property and
-	 * so will not be propagated to the target object, if one exists.
+	 * Sets the value of this property. This is intended to be used to update the value of this property from another
+	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
 	set(value:any):void {
 		if (this._value === value || /* both values are NaN */ (this._value !== this._value && value !== value)) {

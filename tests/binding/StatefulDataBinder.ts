@@ -14,6 +14,10 @@ registerSuite({
 		binder = new StatefulDataBinder();
 	},
 
+	teardown: function () {
+		binder = null;
+	},
+
 	'basic binding': function () {
 		var a = new Stateful({ foo: 'hello' }),
 			b = new Stateful({ foo: null }),

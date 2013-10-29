@@ -1,5 +1,11 @@
 /// <reference path="chai.d.ts" />
 /// <reference path="chai-assert.d.ts" />
+/// <reference path="../dojo.d.ts" />
+
+interface IInternDeferred<T> extends IDeferred<T> {
+	callback<U>(callback:U):U;
+	rejectOnError<U>(callback:U):U;
+}
 
 declare module 'intern!object' {
 	var createSuite:{

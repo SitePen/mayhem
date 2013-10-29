@@ -53,7 +53,8 @@ define({
 
 	// Non-functional test suite(s) to run in each browser
 	suites: [
-		'mayhem/tests/binding'
+		'mayhem/tests/binding',
+		'mayhem/tests/Mediator'
 //		'mayhem/tests/routing',
 //		'mayhem/tests/Model',
 //		'mayhem/tests/auth'
@@ -63,5 +64,5 @@ define({
 	functionalSuites: [ ],
 
 	// A regular expression matching URLs to files that should not be included in code coverage analysis
-	excludeInstrumentation: /^intern\/dojo\//
+	excludeInstrumentation: /^mayhem\/tests\//
 });

@@ -1,49 +1,18 @@
 /// <reference path="binding/interfaces.ts" />
-
-interface IHandle {
-	remove: () => void;
-}
+/// <reference path="dojo.d.ts" />
 
 interface IApplication {
 	dataBindingRegistry: IDataBindingRegistry;
 }
 
-interface IComponent {
+interface IComponent extends IStateful {
 	app: IApplication;
 }
 
-interface IMediator {
+interface IMediator extends IComponent {
 	routeState: Object;
-	notify: (property:string, value:any) => void;
+	model: IModel;
+//	notify: (property:string, value:any) => void;
 }
 
-class Mediator {
-	constructor(public routeState) {}
-	notify(property:string, value:any):void {
-
-	}
-}
-
-function computed(descriptor:/*Object*/any):IComputedProperty {
-	descriptor = <IComputedProperty> Object.create(descriptor, {
-		isComputed: { value: true }
-	});
-
-	return descriptor;
-}
-
-var mediator:IMediator = new Mediator({
-	routeState: null,
-	computedProperty: computed({
-		get: function () {
-			return this.a + ' ' + this.b;
-		},
-		set: function (value:any) {
-			value = value.split(' ');
-			this.set({
-				a: value[0],
-				b: value[1]
-			});
-		}
-	})
-});
+interface IModel extends IComponent {}

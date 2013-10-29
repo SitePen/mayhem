@@ -1,11 +1,15 @@
 /// <reference path="interfaces.ts" />
 
+interface IHandle {
+	remove: () => void;
+}
+
 interface IStateful {
 	get(key:string):any;
 	set(kwArgs:Object):void;
 	set(key:string, value:any):void;
-	watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
 	watch(callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
+	watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
 }
 
 interface IPromise<T> {
@@ -28,6 +32,7 @@ interface IPromise<T> {
 }
 
 interface IDeferred<T> extends IPromise<T> {
+	promise:IPromise<T>;
 	resolve<U>(value:U, strict?:boolean):IPromise<U>;
 	reject<U>(reason:U, strict?:boolean):IPromise<U>;
 	progress<U>(update:U, strict?:boolean):IPromise<U>;

@@ -13,6 +13,10 @@ registerSuite({
 		binder = new Es5SimpleDataBinder();
 	},
 
+	teardown: function () {
+		binder = null;
+	},
+
 	'basic binding': function () {
 		var a = { foo: 'hello' },
 			b = { foo: null },
