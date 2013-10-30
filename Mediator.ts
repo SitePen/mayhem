@@ -2,6 +2,7 @@
 /// <reference path="dojo.d.ts" />
 
 import has = require('dojo/has');
+import arrayUtil = require('dojo/_base/array');
 
 // TODO: Abstract and expose as a utility function
 function isEqual(a:any, b:any):boolean {
@@ -79,6 +80,8 @@ class Mediator implements IMediator {
 	model:IModel;
 	routeState:Object;
 
+	computedProperties:{ [sourceProperty:string]:string[]; } = {};
+
 	private _id:string;
 	private _watchers:{ [ key:string ]:Array<(key:string, oldValue:any, newValue:any) => void>; } = {};
 
@@ -86,7 +89,8 @@ class Mediator implements IMediator {
 		this._id = String(++uuid);
 
 		// TODO: This assumes that the kwArgs object provided to the constructor defines the properties of the
-		// mediator at startup.
+		// mediator at startup. This may not be a good assumption to make, and instead everything should come
+		// from the prototype only.
 		for (var k in kwArgs) {
 			if (k.charAt(0) === '_') {
 				continue;
@@ -134,7 +138,10 @@ class Mediator implements IMediator {
 				hasSetter = setter in this;
 
 			if (hasSetter || (key in this)) {
-				var oldValue = this.get(key);
+				var keysToNotify = [ key ].concat(this.computedProperties[key] || []),
+					oldValues = arrayUtil.map(keysToNotify, function (key:string) {
+						return this.get(key);
+					}, this);
 
 				if (hasSetter) {
 					this[setter](value);
@@ -143,16 +150,18 @@ class Mediator implements IMediator {
 					this[key] = value;
 				}
 
-				var watchers = (this._watchers[key] || []).concat(this._watchers['*'] || []);
-				if (watchers.length) {
-					notifier.schedule({
-						object: this,
-						key: key,
-						oldValue: oldValue,
-						newValue: value,
-						callbacks: watchers
-					});
-				}
+				arrayUtil.forEach(keysToNotify, function (key:string, index:number) {
+					var watchers = (this._watchers[key] || []).concat(this._watchers['*'] || []);
+					if (watchers.length) {
+						notifier.schedule({
+							object: this,
+							key: key,
+							oldValue: oldValues[index],
+							newValue: this.get(key),
+							callbacks: watchers
+						});
+					}
+				}, this);
 			}
 			else if (this.model) {
 				this.model.set(key, value);

@@ -5,6 +5,28 @@ import assert = require('intern/chai!assert');
 import Mediator = require('../Mediator');
 import Stateful = require('dojo/Stateful');
 
+class ComputedTestMediator extends Mediator {
+	computedProperties = {
+		firstName: [ 'fullName' ],
+		lastName: [ 'fullName' ]
+	};
+
+	firstName:string = '';
+	lastName:string = '';
+
+	private _fullNameGetter():string {
+		return this.firstName + ' ' + this.lastName;
+	}
+
+	private _fullNameSetter(fullName:string):void {
+		var name = fullName.split(' ');
+		this.set({
+			firstName: name[0],
+			lastName: name[1]
+		});
+	}
+}
+
 registerSuite({
 	name: 'Mediator',
 
@@ -109,6 +131,32 @@ registerSuite({
 		mediator.set({
 			foo: 'universe',
 			bar: 'red'
+		});
+	},
+
+	'computed property': function () {
+		var mediator:ComputedTestMediator = new ComputedTestMediator(),
+			dfd = this.async(250),
+			numCallbacks = 0;
+
+		mediator.watch('fullName', dfd.rejectOnError(function (key:string, oldValue:string, newValue:string) {
+			++numCallbacks;
+
+			assert.strictEqual(newValue, 'Joe Bloggs', 'Computed property callback should fire when its dependent ' +
+				'properties are changed and use the correct final value');
+
+			// TODO: When the scheduler is exposed publicly, it should expose a mechanism for telling whether or not
+			// a callback is scheduled in future and retrieving a promise that resolves when the next notification
+			// fires. For the moment we set a timeout that resolves the promise
+			setTimeout(dfd.callback(function () {
+				assert.strictEqual(numCallbacks, 1, 'Callback should only be called once on a computed property, ' +
+					'just like a regular property with multiple updates per event loop');
+			}), 50);
+		}));
+
+		mediator.set({
+			firstName: 'Joe',
+			lastName: 'Bloggs'
 		});
 	}
 });
