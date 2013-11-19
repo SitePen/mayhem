@@ -66,7 +66,6 @@ declare module 'dojo/_base/lang' {
 		mixin<T>(target:T, ...source:Object[]):T;
 		getObject(key:string, create?:boolean, context?:Object):any;
 		setObject(key:string, value:any, context?:Object):any;
-		hitch<T>(context:Object, fn:T): T;
 		hitch(context:Object, property:string, ...prefixedArgs:Object[]):Function;
 		hitch(context:Object, fn:Function, ...prefixedArgs:Object[]):Function;
 		partial<T>(fn:T): T;

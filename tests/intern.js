@@ -44,17 +44,19 @@ define({
 	// Configuration options for the module loader; any AMD configuration options supported by the Dojo loader can be
 	// used here
 	loader: {
+		baseUrl: '../',
 		// Packages that should be registered with the loader in each testing environment
 		packages: [
-			{ name: 'mayhem', location: '.' },
-			{ name: 'dojo', location: '../dojo' }
+			{ name: 'mayhem', location: 'framework' },
+			{ name: 'dojo', location: 'dojo' }
 		]
 	},
 
 	// Non-functional test suite(s) to run in each browser
 	suites: [
 		'mayhem/tests/binding',
-		'mayhem/tests/Mediator'
+		'mayhem/tests/Mediator',
+		'mayhem/tests/integration'
 //		'mayhem/tests/routing',
 //		'mayhem/tests/Model',
 //		'mayhem/tests/auth'
@@ -64,5 +66,5 @@ define({
 	functionalSuites: [ ],
 
 	// A regular expression matching URLs to files that should not be included in code coverage analysis
-	excludeInstrumentation: /^mayhem\/tests\//
+	excludeInstrumentation: /^(?:dojo|framework\/tests|framework\/node_modules)\//
 });

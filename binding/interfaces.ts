@@ -5,10 +5,11 @@ interface IDataBindingArguments {
 	sourceBinding:string;
 	target:Object;
 	targetBinding:string;
+	direction?:number;
 }
 
-interface IDataBindingRegistry {
-	add(binder:IDataBinder, index?:number): IHandle;
+interface IDataBindingRegistry extends IComponent {
+	add(Ctor:IBoundPropertyConstructor, index?:number): IHandle;
 	test(kwArgs:IDataBindingArguments): boolean;
 	bind(kwArgs:IDataBindingArguments): IDataBindingHandle;
 }
@@ -16,6 +17,19 @@ interface IDataBindingRegistry {
 interface IDataBinder {
 	test(kwArgs:IDataBindingArguments): boolean;
 	bind(kwArgs:IDataBindingArguments): IDataBindingHandle;
+}
+
+interface IBoundPropertyConstructor {
+	new (object:Object, binding:string):IBoundProperty;
+	test(object:Object, binding:string):boolean;
+}
+
+interface IBoundProperty {
+	id:string;
+	get():any;
+	set(value:any):void;
+	bindTo(property:IBoundProperty):IHandle;
+	destroy():void;
 }
 
 interface IComputedProperty {
@@ -43,8 +57,4 @@ interface IComputedProperty {
 	dependencies: string[];
 }
 
-interface IDataBindingHandle extends IHandle {
-//	to: Object;
-//	listen(callback:(value:any, oldValue:any) => void): IHandle;
-//	set(value:any): void;
-}
+interface IDataBindingHandle extends IHandle {}

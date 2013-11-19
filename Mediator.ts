@@ -3,75 +3,9 @@
 
 import has = require('dojo/has');
 import arrayUtil = require('dojo/_base/array');
+import Notifier = require('./Notifier');
 
-// TODO: Abstract and expose as a utility function
-function isEqual(a:any, b:any):boolean {
-	return a === b || (/* a is NaN*/ a !== a && /* b is NaN */ b !== b);
-}
-
-// TODO: Abstract and expose notifier as a general 'event loop' interface
-interface INotification {
-	object:Mediator;
-	key:string;
-	oldValue:any;
-	newValue:any;
-	callbacks:Array<(key:string, oldValue:any, newValue:any) => void>;
-}
-
-var notifier = (function () {
-	var timer = null,
-		notifications:{ [id:string]:INotification; } = {};
-
-	return {
-		schedule: function (kwArgs:INotification) {
-			var notificationId = kwArgs.object + '.' + kwArgs.key,
-				notification = notifications[notificationId];
-
-			if (notification) {
-				// properties that used to be changed but now are the same again should not notify
-				if (isEqual(notification.oldValue, kwArgs.newValue)) {
-					notifications[notificationId] = null;
-				}
-				else {
-					notification.newValue = kwArgs.newValue;
-					// TODO: callbacks added after the set but before the notification is dispatched should not
-					// receive the notification, but changes to the callback list after the initial set should be
-					// accounted for? For now we just assume that the list of callbacks at the last set is the
-					// correct list.
-					notification.callbacks = kwArgs.callbacks;
-				}
-			}
-			else if (!isEqual(kwArgs.oldValue, kwArgs.newValue)) {
-				notifications[notificationId] = kwArgs;
-			}
-
-			if (!timer) {
-				timer = setTimeout(this.dispatch, 0);
-			}
-		},
-
-		dispatch: function () {
-			clearTimeout(timer);
-			timer = null;
-
-			for (var k in notifications) {
-				var notification = notifications[k];
-
-				// a notification that was set and subsequently removed because the new value became the same as the
-				// old value
-				if (!notification) {
-					continue;
-				}
-
-				for (var i = 0, callback; (callback = notification.callbacks[i]); ++i) {
-					callback.call(notification.object, notification.key, notification.oldValue, notification.newValue);
-				}
-			}
-
-			notifications = {};
-		}
-	};
-})();
+var notifier = new Notifier();
 
 var uuid = 0;
 

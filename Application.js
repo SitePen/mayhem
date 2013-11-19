@@ -31,6 +31,9 @@ define([
 				modules: {
 					router: {
 						constructor: 'framework/routing/NullRouter'
+					},
+					scheduler: {
+						constructor: 'framework/Scheduler'
 					}
 				}
 			};
