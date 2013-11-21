@@ -14,14 +14,14 @@ interface IStateful {
 
 interface IPromise<T> {
 	cancel<U>(reason:U, strict?:boolean):U;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>): IPromise<U>;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>): IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>): IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>): IPromise<U>;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U): IPromise<U>;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => U): IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U): IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U): IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
 	otherwise<U>(errback:(reason:any) => IPromise<U>):IPromise<U>;
 	otherwise<U>(errback:(reason:any) => U):IPromise<U>;
 	always<U>(callback:(valueOrError:any) => U):IPromise<U>;
@@ -79,11 +79,11 @@ declare module 'dojo/_base/lang' {
 
 declare module 'dojo/Deferred' {
 	var Deferred:{
-		new (canceler:(reason:any) => any): IDeferred<any>;
-		when<T>(value:T): IPromise<T>;
-		when<T>(value:IPromise<T>): IPromise<T>;
-		when<T,U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>): IPromise<U>;
-		when<T,U>(valueOrPromise:T, callback?:(value:T) => U): IPromise<U>;
+		new (canceler:(reason:any) => any):IDeferred<any>;
+		when<T>(value:T):IPromise<T>;
+		when<T>(value:IPromise<T>):IPromise<T>;
+		when<T,U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
+		when<T,U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
 	};
 	export = Deferred;
 }
@@ -99,4 +99,14 @@ declare module 'dojo/has' {
 declare module 'dojo/Stateful' {
 	var Stateful:new (kwArgs:Object) => IStateful;
 	export = Stateful;
+}
+
+declare module 'dojo/when' {
+	var when:{
+		<T>(value:T):IPromise<T>;
+		<T>(value:IPromise<T>):IPromise<T>;
+		<T,U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
+		<T,U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
+	};
+	export = when;
 }

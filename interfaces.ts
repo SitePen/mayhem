@@ -1,15 +1,6 @@
 /// <reference path="binding/interfaces.ts" />
 /// <reference path="dojo.d.ts" />
 
-interface INotification {
-	id?:any;
-	object:IStateful;
-	key:string;
-	oldValue:any;
-	newValue:any;
-	callbacks:Array<(key:string, oldValue:any, newValue:any) => void>;
-}
-
 interface IScheduler {
 	schedule(id:string, callback:Function):void;
 	dispatch():void;

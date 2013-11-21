@@ -4,30 +4,36 @@ import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
 import Property = require('./Property');
 import util = require('../../util');
-import BindingError = require('../BindingError');
 
 class Es5Property extends Property implements IBoundProperty {
-	static test(object:Object, binding:string):boolean {
-		if (!Object.getOwnPropertyDescriptor) {
+	static test(kwArgs:IPropertyBinderTestArguments):boolean {
+		if (!Object.getOwnPropertyDescriptor || !kwArgs.object) {
 			return false;
 		}
 
-		var descriptor = Object.getOwnPropertyDescriptor(object, binding);
-		return descriptor ? descriptor.configurable : Object.isExtensible(object);
+		var descriptor = Object.getOwnPropertyDescriptor(kwArgs.object, kwArgs.binding);
+		return descriptor ? descriptor.configurable && ('value' in descriptor || 'set' in descriptor) :
+			Object.isExtensible(kwArgs.object);
 	}
 
 	private _object:Object;
 	private _property:string;
 	private _value:any;
+	private _target:IBoundProperty;
+	private _originalDescriptor:PropertyDescriptor;
 
-	constructor(object:Object, binding:string) {
-		super(object, binding);
+	constructor(kwArgs:IPropertyBinderArguments) {
+		super(kwArgs);
+
+		var object = kwArgs.object,
+			binding = kwArgs.binding;
 
 		this._object = object;
 		this._property = binding;
 
-		var value = object[binding],
-			descriptor = Object.getOwnPropertyDescriptor(object, binding),
+		var self = this,
+			value = object[binding],
+			descriptor = this._originalDescriptor = Object.getOwnPropertyDescriptor(object, binding),
 			newDescriptor:PropertyDescriptor = {
 				enumerable: descriptor ? descriptor.enumerable : true,
 				configurable: descriptor ? descriptor.configurable : true
@@ -38,12 +44,12 @@ class Es5Property extends Property implements IBoundProperty {
 
 			if (!descriptor.set) {
 				// TODO: Correct data to BindingError
-				throw new BindingError('Cannot bind to a read-only property');
+				throw new Error('Binding to a read-only property is not possible because this binder does not support computed properties');
 			}
 			else {
 				newDescriptor.set = function (newValue) {
 					descriptor.set.apply(this, arguments);
-					self._update(descriptor.get ? descriptor.get.call(this) : newValue);
+					descriptor.get && self._update(descriptor.get.call(this));
 				};
 			}
 		}
@@ -58,14 +64,6 @@ class Es5Property extends Property implements IBoundProperty {
 
 		Object.defineProperty(object, binding, newDescriptor);
 		this._update(value);
-
-		return {
-			remove: function () {
-				this.remove = function () {};
-				Object.defineProperty(kwArgs.source, kwArgs.sourceBinding, descriptor);
-				descriptor = kwArgs = null;
-			}
-		};
 	}
 
 	private _update(value:any):void {
@@ -82,10 +80,36 @@ class Es5Property extends Property implements IBoundProperty {
 	}
 
 	bindTo(target:IBoundProperty):IHandle {
+		this._target = target;
 
+		if (!target) {
+			return;
+		}
+
+		target.set(this._value);
+
+		var self = this;
+		return {
+			remove: function () {
+				this.remove = function () {};
+				self = self._target = null;
+			}
+		};
 	}
 
 	destroy():void {
+		this.destroy = function () {};
 
+		var descriptor = this._originalDescriptor || {
+			value: this._value,
+			writable: true,
+			enumerable: true,
+			configurable: true
+		};
+
+		Object.defineProperty(this._object, this._property, descriptor);
+		this._originalDescriptor = this._object = this._target = this._value = null;
 	}
 }
+
+export = Es5Property;

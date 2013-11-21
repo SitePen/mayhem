@@ -80,24 +80,24 @@ declare module chai
 
 		//alias frenzy
 		throw(fn:Function, msg?:string):void;
-		throw(fn:Function, regExp:RegExp):void;
+		throw(fn:Function, regExp:RegExp, msg?:string):void;
 		throw(fn:Function, errType:Function, msg?:string):void;
-		throw(fn:Function, errType:Function, regExp:RegExp):void;
+		throw(fn:Function, errType:Function, regExp:RegExp, msg?:string):void;
 
 		throws(fn:Function, msg?:string):void;
-		throws(fn:Function, regExp:RegExp):void;
+		throws(fn:Function, regExp:RegExp, msg?:string):void;
 		throws(fn:Function, errType:Function, msg?:string):void;
-		throws(fn:Function, errType:Function, regExp:RegExp):void;
+		throws(fn:Function, errType:Function, regExp:RegExp, msg?:string):void;
 
 		Throw(fn:Function, msg?:string):void;
-		Throw(fn:Function, regExp:RegExp):void;
+		Throw(fn:Function, regExp:RegExp, msg?:string):void;
 		Throw(fn:Function, errType:Function, msg?:string):void;
-		Throw(fn:Function, errType:Function, regExp:RegExp):void;
+		Throw(fn:Function, errType:Function, regExp:RegExp, msg?:string):void;
 
 		doesNotThrow(fn:Function, msg?:string):void;
-		doesNotThrow(fn:Function, regExp:RegExp):void;
+		doesNotThrow(fn:Function, regExp:RegExp, msg?:string):void;
 		doesNotThrow(fn:Function, errType:Function, msg?:string):void;
-		doesNotThrow(fn:Function, errType:Function, regExp:RegExp):void;
+		doesNotThrow(fn:Function, errType:Function, regExp:RegExp, msg?:string):void;
 
 		operator(val:any, operator:string, val2:any, msg?:string):void;
 		closeTo(act:number, exp:number, delta:number, msg?:string):void;

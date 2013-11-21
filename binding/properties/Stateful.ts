@@ -6,10 +6,11 @@ import Property = require('./Property');
 import util = require('../../util');
 
 class StatefulProperty extends Property implements IBoundProperty {
-	static test(object:Object, binding:string):boolean {
-		return typeof object['get'] === 'function' &&
+	static test(kwArgs:IPropertyBinderArguments):boolean {
+		var object = kwArgs.object;
+		return Boolean(object && typeof object['get'] === 'function' &&
 			typeof object['set'] === 'function' &&
-			typeof object['watch'] === 'function';
+			typeof object['watch'] === 'function');
 	}
 
 	/**
@@ -42,15 +43,17 @@ class StatefulProperty extends Property implements IBoundProperty {
 	 */
 	private _bindingHandles:IHandle[] = [];
 
-	constructor(object:IStateful, binding:string) {
-		super(object, binding);
-		this._binding = binding.split('.');
+	constructor(kwArgs:IPropertyBinderArguments) {
+		super(kwArgs);
+
+		this._binding = kwArgs.binding.split('.');
 		this._property = this._binding[this._binding.length - 1];
-		this._rebind(object, 0);
+		this._rebind(<IStateful> kwArgs.object, 0);
 	}
 
 	/**
 	 * Removes and rebinds to all objects in the object chain.
+	 * TODO: This mechanism should delegate to the registry so chains of mixed objects can be bound instead.
 	 */
 	private _rebind(fromObject:IStateful, fromIndex:number):void {
 		var self = this,
@@ -68,10 +71,10 @@ class StatefulProperty extends Property implements IBoundProperty {
 			var key:string,
 				index = fromIndex,
 				object = fromObject;
-			(key = this._binding[index]) && index < this._binding.length - 1;
+			(key = this._binding[index]) && index < this._binding.length - 1 && object;
 			++index
 		) {
-			if (!object.watch) {
+			if (typeof object.watch !== 'function') {
 				throw new Error('Object is not Stateful');
 			}
 
@@ -90,7 +93,12 @@ class StatefulProperty extends Property implements IBoundProperty {
 
 		// If `object` exists, it will be the final object in the chain, the one on which we are actually looking
 		// for values
+		var value:any;
 		if (object) {
+			if (typeof object.watch !== 'function') {
+				throw new Error('Object is not Stateful');
+			}
+
 			// If the values on this final object change we only need to update the value, not rebind
 			// any intermediate objects
 			handles.push(object.watch(key, <(key, oldValue, newValue) => void>
@@ -98,11 +106,11 @@ class StatefulProperty extends Property implements IBoundProperty {
 					self._update(newValue);
 				})));
 
-			var value = object.get(key);
-
-			this._object = object;
-			this._update(value);
+			value = object.get(key);
 		}
+
+		this._object = object;
+		this._update(value);
 	}
 
 	/**
@@ -113,6 +121,9 @@ class StatefulProperty extends Property implements IBoundProperty {
 		this._target && this._target.set(value);
 	}
 
+	/**
+	 * Gets the current value of this property.
+	 */
 	get():any {
 		return this._value;
 	}
@@ -135,6 +146,11 @@ class StatefulProperty extends Property implements IBoundProperty {
 	 */
 	bindTo(target:IBoundProperty):IHandle {
 		this._target = target;
+
+		if (!target) {
+			return;
+		}
+
 		target.set(this._value);
 
 		var self = this;
@@ -143,7 +159,7 @@ class StatefulProperty extends Property implements IBoundProperty {
 				this.remove = function () {};
 				self = self._target = null;
 			}
-		}
+		};
 	}
 
 	/**

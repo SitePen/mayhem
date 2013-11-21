@@ -5,7 +5,7 @@ import lang = require('dojo/_base/lang');
 
 class BindingError implements Error {
 	name:string = 'BindingError';
-	message:string = 'Could not bind from "{fromBinding}" on {from} to "{toBinding}" on {to}. {message}';
+	message:string = 'Could not bind from "{sourceBinding}" on {source} to "{targetBinding}" on {target}. {message}';
 
 	constructor(message:string, public binding:IDataBindingArguments) {
 		if (message) {

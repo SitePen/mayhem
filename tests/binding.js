@@ -1,4 +1,4 @@
 define([
-	'./binding/Es5SimpleDataBinder',
-	'./binding/StatefulDataBinder'
+	'./binding/properties/Stateful',
+	'./binding/properties/Es5'
 ]);

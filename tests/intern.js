@@ -55,8 +55,8 @@ define({
 	// Non-functional test suite(s) to run in each browser
 	suites: [
 		'mayhem/tests/binding',
-		'mayhem/tests/Mediator',
-		'mayhem/tests/integration'
+//		'mayhem/tests/Mediator',
+//		'mayhem/tests/integration'
 //		'mayhem/tests/routing',
 //		'mayhem/tests/Model',
 //		'mayhem/tests/auth'

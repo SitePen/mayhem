@@ -1,5 +1,12 @@
 /// <reference path="../interfaces.ts" />
 
+interface IDataBindingRegistry extends IComponent {
+	add(Binder:IPropertyBinder, index?:number):IHandle;
+	createProperty(object:Object, binding:string):IBoundProperty;
+	test(kwArgs:IDataBindingArguments):boolean;
+	bind(kwArgs:IDataBindingArguments):IHandle;
+}
+
 interface IDataBindingArguments {
 	source:Object;
 	sourceBinding:string;
@@ -8,27 +15,25 @@ interface IDataBindingArguments {
 	direction?:number;
 }
 
-interface IDataBindingRegistry extends IComponent {
-	add(Ctor:IBoundPropertyConstructor, index?:number): IHandle;
-	test(kwArgs:IDataBindingArguments): boolean;
-	bind(kwArgs:IDataBindingArguments): IDataBindingHandle;
+interface IPropertyBinder {
+	new (kwArgs:IPropertyBinderArguments):IBoundProperty;
+	test(kwArgs:IPropertyBinderTestArguments):boolean;
 }
 
-interface IDataBinder {
-	test(kwArgs:IDataBindingArguments): boolean;
-	bind(kwArgs:IDataBindingArguments): IDataBindingHandle;
+interface IPropertyBinderTestArguments {
+	object:Object;
+	binding:string;
 }
 
-interface IBoundPropertyConstructor {
-	new (object:Object, binding:string):IBoundProperty;
-	test(object:Object, binding:string):boolean;
+interface IPropertyBinderArguments extends IPropertyBinderTestArguments {
+	registry:IDataBindingRegistry;
 }
 
 interface IBoundProperty {
 	id:string;
 	get():any;
 	set(value:any):void;
-	bindTo(property:IBoundProperty):IHandle;
+	bindTo(target:IBoundProperty):IHandle;
 	destroy():void;
 }
 
@@ -56,5 +61,3 @@ interface IComputedProperty {
 	 */
 	dependencies: string[];
 }
-
-interface IDataBindingHandle extends IHandle {}

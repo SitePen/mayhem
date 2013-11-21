@@ -5,12 +5,14 @@ var oidKey = '__PropertyOid' + Math.random(),
 
 /* abstract */ class Property /* implements IBoundProperty */ {
 	id:string;
-	constructor(object:Object, binding:string) {
+	constructor(kwArgs:IPropertyBinderArguments) {
+		var object = kwArgs.object;
+
 		if (!object[oidKey]) {
 			object[oidKey] = (++oid);
 		}
 
-		this.id = object[oidKey] + '/' + binding;
+		this.id = object[oidKey] + '/' + kwArgs.binding;
 	}
 }
 
