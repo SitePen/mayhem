@@ -1,6 +1,6 @@
 /// <reference path="dojo.d.ts" />
 
-import has = require('dojo/has');
+import has = require('./has');
 
 export var getObjectKeys = has('es5-object-keys') ? Object.keys : function (object:Object):string[] {
 	var keys = [],
