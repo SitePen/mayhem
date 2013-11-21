@@ -24,24 +24,22 @@ class MethodProperty extends Property implements IBoundProperty {
 		var matches:string[] = methodExpression.exec(kwArgs.binding);
 
 		this._mutator = MethodProperty.methods[matches[1]];
-		this._source = kwArgs.registry.createProperty(kwArgs.object, matches[2]);
+		this._source = kwArgs.registry.createProperty(kwArgs.object, matches[2], { scheduled: false });
 
 		var self = this;
 		this._source.bindTo(<IBoundProperty> {
 			set: function (value:any):void {
-				self._target && when(self._mutator(value)).then(function (value) {
-					self._target && self._target.set(value);
-				});
+				self._target && self._target.set(self._mutator(value));
 			}
 		});
 	}
 
 	get():any {
-		return this._mutator(this._source.get());
+		return this._source ? this._mutator(this._source.get()) : undefined;
 	}
 
 	set(value:any):void {
-		this._source.set(value);
+		this._source && this._source.set(value);
 	}
 
 	bindTo(target:IBoundProperty):IHandle {
@@ -50,6 +48,8 @@ class MethodProperty extends Property implements IBoundProperty {
 		if (!target) {
 			return;
 		}
+
+		target.set(this.get());
 
 		var self = this;
 		return {
@@ -61,6 +61,8 @@ class MethodProperty extends Property implements IBoundProperty {
 	}
 
 	destroy():void {
+		this.destroy = function () {};
+
 		this._source.destroy();
 		this._source = this._mutator = this._target = null;
 	}

@@ -56,7 +56,7 @@ class PropertyRegistry implements IDataBindingRegistry {
 		return false;
 	}
 
-	createProperty(object:Object, binding:string):IBoundProperty {
+	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; } = {}):IBoundProperty {
 		var binders = this._binders,
 			app = this.app,
 			registry = this;
@@ -75,13 +75,15 @@ class PropertyRegistry implements IDataBindingRegistry {
 		}
 
 		var property:IBoundProperty;
-		for (var i = 0, Binder; (Binder = binders[i]); ++i) {
-			if (Binder.test(object, binding)) {
-				return scheduled(new Binder({
+		for (var i = 0, Binder:IPropertyBinder; (Binder = binders[i]); ++i) {
+			if (Binder.test({ object: object, binding: binding, registry: this })) {
+				var property = new Binder({
 					object: object,
 					binding: binding,
 					registry: this
-				}));
+				});
+
+				return options.scheduled === false ? property : scheduled(property);
 			}
 		}
 

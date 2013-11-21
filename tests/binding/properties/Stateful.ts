@@ -98,7 +98,7 @@ registerSuite({
 
 		source.destroy();
 		sourceObject.set('foo', '7');
-		assert.strictEqual(source.get(), null, 'Destroyed source property should no longer have a value from the source property object');
+		assert.isUndefined(source.get(), 'Destroyed source property should no longer have a value from the source property object');
 
 		try {
 			source.destroy();

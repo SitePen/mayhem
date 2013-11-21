@@ -2,7 +2,8 @@
 
 interface IDataBindingRegistry extends IComponent {
 	add(Binder:IPropertyBinder, index?:number):IHandle;
-	createProperty(object:Object, binding:string):IBoundProperty;
+	// TODO: This really is only applicable to the PropertyRegistry
+	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; }):IBoundProperty;
 	test(kwArgs:IDataBindingArguments):boolean;
 	bind(kwArgs:IDataBindingArguments):IHandle;
 }

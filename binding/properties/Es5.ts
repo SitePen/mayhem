@@ -18,7 +18,6 @@ class Es5Property extends Property implements IBoundProperty {
 
 	private _object:Object;
 	private _property:string;
-	private _value:any;
 	private _target:IBoundProperty;
 	private _originalDescriptor:PropertyDescriptor;
 
@@ -55,10 +54,11 @@ class Es5Property extends Property implements IBoundProperty {
 		}
 		else {
 			newDescriptor.get = function () {
-				return self._value;
+				return value;
 			};
-			newDescriptor.set = function (value) {
-				self._update(value);
+			newDescriptor.set = function (newValue) {
+				value = newValue;
+				self._update(newValue);
 			};
 		}
 
@@ -67,16 +67,15 @@ class Es5Property extends Property implements IBoundProperty {
 	}
 
 	private _update(value:any):void {
-		this._value = value;
 		this._target && this._target.set(value);
 	}
 
 	get():any {
-		return this._value;
+		return this._object ? this._object[this._property] : undefined;
 	}
 
 	set(value:any):void {
-		this._object[this._property] = value;
+		this._object && (this._object[this._property] = value);
 	}
 
 	bindTo(target:IBoundProperty):IHandle {
@@ -86,7 +85,7 @@ class Es5Property extends Property implements IBoundProperty {
 			return;
 		}
 
-		target.set(this._value);
+		target.set(this._object[this._property]);
 
 		var self = this;
 		return {
@@ -101,14 +100,14 @@ class Es5Property extends Property implements IBoundProperty {
 		this.destroy = function () {};
 
 		var descriptor = this._originalDescriptor || {
-			value: this._value,
+			value: this._object[this._property],
 			writable: true,
 			enumerable: true,
 			configurable: true
 		};
 
 		Object.defineProperty(this._object, this._property, descriptor);
-		this._originalDescriptor = this._object = this._target = this._value = null;
+		this._originalDescriptor = this._object = this._target = null;
 	}
 }
 

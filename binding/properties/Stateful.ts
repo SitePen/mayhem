@@ -173,7 +173,8 @@ class StatefulProperty extends Property implements IBoundProperty {
 			handle.remove();
 		}
 
-		this._object = this._target = this._value = null;
+		this._object = this._target = null;
+		this._value = undefined;
 	}
 }
 
