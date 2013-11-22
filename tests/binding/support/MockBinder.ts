@@ -15,6 +15,7 @@ class MockBinder extends Property implements IBoundProperty {
 	constructor(kwArgs:IPropertyBinderArguments) {
 		super(kwArgs);
 		this.kwArgs = kwArgs;
+		this.kwArgs.object && (this.kwArgs.object['mockBinder'] = this);
 	}
 
 	get():any {
@@ -51,6 +52,7 @@ class MockBinder extends Property implements IBoundProperty {
 	destroy():void {
 		this.destroy = function () {};
 		this.destroyed = true;
+		this.kwArgs.object && (this.kwArgs.object['mockBinder'] = undefined);
 		this.kwArgs = this.value = this.target = null;
 	}
 }
