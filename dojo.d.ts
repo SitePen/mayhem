@@ -38,6 +38,17 @@ interface IDeferred<T> extends IPromise<T> {
 	progress<U>(update:U, strict?:boolean):IPromise<U>;
 }
 
+interface IEvented {
+	on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
+	on(type:string, listener:(event:Event) => void):IHandle;
+	emit(type:string, event:Event):void;
+}
+
+declare var require:{
+	(config:Object, dependencies:string[], callback:(...modules:any[]) => void);
+	(dependencies:string[], callback:(...modules:any[]) => void);
+};
+
 declare module 'dojo/_base/array' {
 	var array:{
 		forEach<T>(array:T[], callback:(value:T, index:number, array:T[]) => void, thisArg?:any): void;
@@ -88,6 +99,16 @@ declare module 'dojo/Deferred' {
 	export = Deferred;
 }
 
+declare module 'dojo/Evented' {
+	class Evented implements IEvented {
+		on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
+		on(type:string, listener:(event:Event) => void):IHandle;
+		emit(type:string, event:Event):void;
+	}
+
+	export = Evented;
+}
+
 declare module 'dojo/has' {
 	var has:{
 		(feature:string):any;
@@ -96,8 +117,36 @@ declare module 'dojo/has' {
 	export = has;
 }
 
+declare module 'dojo/promise/all' {
+	var all:{
+		(object:Object):IPromise<Object>;
+		<T>(array:T[]):IPromise<T[]>;
+	};
+	export = all;
+}
+
+declare module 'dojo/request/util' {
+	var util:{
+		deepCopy<T>(target:T, source:Object):T;
+		deepCreate<T>(source:T, properties:Object):T;
+		deferred(response:Object /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function);
+		addCommonMethods(provider:any, methods:string[]):void;
+		parseArgs(url, options, skipData):{ url:string; options:string; getHeader:(name:string) => string; };
+		checkStatus(status:number):boolean;
+	};
+	export = util;
+}
+
 declare module 'dojo/Stateful' {
-	var Stateful:new (kwArgs:Object) => IStateful;
+	class Stateful implements IStateful {
+		constructor(kwArgs:Object);
+		get(key:string):any;
+		set(kwArgs:Object):void;
+		set(key:string, value:any):void;
+		watch(callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
+		watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
+	}
+
 	export = Stateful;
 }
 

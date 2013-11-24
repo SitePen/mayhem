@@ -1,17 +1,16 @@
 /// <reference path="interfaces.ts" />
 
-class Component {
-	get(key:string):any {
+import Stateful = require('dojo/Stateful');
+import Evented = require('dojo/Evented');
 
-	}
-
-	set(options:Object);
-	set(key:string, value:any):void {
-
-	}
-
-	watch(callback:(value:any, oldValue:any, key:string) => void):IHandle;
-	watch(key:string, callback:(value:any, oldValue:any, key:string) => void):IHandle {
-
+class Component extends Stateful implements IComponent, IEvented {
+	app:IApplication;
+	on;
+	emit;
+	constructor(kwArgs:Object) {
+		super(kwArgs);
+		Evented.apply(this, arguments);
 	}
 }
+Component.prototype.on = Evented.prototype.on;
+Component.prototype.emit = Evented.prototype.emit;

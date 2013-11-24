@@ -50,5 +50,29 @@ registerSuite({
 		scheduler.afterNext(dfd.callback(function () {
 			assert.deepEqual(actual, expected, 'Scheduler should execute in expected order');
 		}));
+	},
+
+	'scheduling from callback': function () {
+		var scheduler = new Scheduler(),
+			actual = [],
+			expected = [ 'a', 'b', 'c', 'd', 'e', 'f' ],
+			dfd:IInternDeferred<any> = this.async(1000);
+
+		scheduler.schedule('a', function () {
+			actual.push('a');
+			// Rescheduling with the same ID from within the callback should schedule for the next loop
+			scheduler.schedule('a', function () { actual.push('c'); });
+		});
+		scheduler.afterNext(dfd.rejectOnError(function () {
+			// Scheduling within a post-callback should wait for the next event loop
+			scheduler.schedule('b', function () { actual.push('d'); });
+			scheduler.schedule('c', function () { actual.push('e'); });
+			actual.push('b');
+			// Adding a post-dispatch callback within a callback should wait for the next event loop
+			scheduler.afterNext(dfd.callback(function () {
+				actual.push('f');
+				assert.deepEqual(actual, expected);
+			}));
+		}));
 	}
 });
