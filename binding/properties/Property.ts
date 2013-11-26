@@ -1,5 +1,7 @@
 /// <reference path="../interfaces.ts" />
 
+import has = require('../../has');
+
 var oidKey = '__PropertyOid' + Math.random(),
 	oid = 0;
 
@@ -9,7 +11,15 @@ var oidKey = '__PropertyOid' + Math.random(),
 		var object = kwArgs.object;
 
 		if (!object[oidKey]) {
-			object[oidKey] = (++oid);
+			if (has('es5')) {
+				Object.defineProperty(object, oidKey, {
+					value: (++oid),
+					configurable: true
+				});
+			}
+			else {
+				object[oidKey] = (++oid);
+			}
 		}
 
 		this.id = object[oidKey] + '/' + kwArgs.binding;

@@ -12,10 +12,7 @@ class Mediator implements IMediator {
 	model:IModel;
 	routeState:Object;
 
-	computedProperties:{ [sourceProperty:string]:string[]; } = {};
-
 	private _watchers:{ [ key:string ]:Array<(key:string, oldValue:any, newValue:any) => void>; } = {};
-	private _id:string;
 
 	constructor(kwArgs?:Object) {
 		// TODO: This assumes that the kwArgs object provided to the constructor defines the properties of the
@@ -36,8 +33,6 @@ class Mediator implements IMediator {
 				this[k] = value;
 			}
 		}
-
-		this._id = 'Mediator' + (++uuid);
 	}
 
 	get(key:string):any {
@@ -68,7 +63,8 @@ class Mediator implements IMediator {
 			}
 		}
 		else {
-			var setter = '_' + key + 'Setter',
+			var oldValue = this.get(key),
+				setter = '_' + key + 'Setter',
 				notify = false;
 
 			if (setter in this) {
@@ -84,6 +80,20 @@ class Mediator implements IMediator {
 			}
 			else if (has('debug')) {
 				console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+			}
+
+			if (notify) {
+				var newValue = this.get(value);
+
+				if (!util.isEqual(oldValue, newValue)) {
+					var watchers = [].concat(this._watchers['*'] || [], this._watchers[key] || []);
+					// TODO: Should watcher notifications be scheduled? It might be a good idea, or it might cause
+					// data-binding to inefficiently take two cycles through the event loop.
+					var watcher:(key:string, oldValue:any, newValue:any) => void;
+					for (var i = 0; (watcher = watchers[i]); ++i) {
+						watcher.call(this, key, oldValue, newValue);
+					}
+				}
 			}
 		}
 	}

@@ -10,9 +10,9 @@ class PropertyRegistry implements IDataBindingRegistry {
 	private _binders:IPropertyBinder[] = [];
 	app:IApplication;
 
-	constructor(kwArgs:Object) {
-		this.app = kwArgs['app'];
-		this._binders = kwArgs['binders'] || [];
+	constructor(kwArgs:{ app:IApplication; binders?:IPropertyBinder[]; }) {
+		this.app = kwArgs.app;
+		this._binders = kwArgs.binders || [];
 	}
 
 	add(Binder:IPropertyBinder, index:number = Infinity):IHandle {

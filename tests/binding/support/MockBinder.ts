@@ -3,7 +3,7 @@
 import Property = require('../../../binding/properties/Property');
 
 class MockBinder extends Property implements IBoundProperty {
-	static test(kwArgs:IPropertyBinderTestArguments):boolean {
+	static test(kwArgs:IPropertyBinderArguments):boolean {
 		return true;
 	}
 

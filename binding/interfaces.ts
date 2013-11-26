@@ -2,10 +2,13 @@
 
 interface IDataBindingRegistry extends IComponent {
 	add(Binder:IPropertyBinder, index?:number):IHandle;
-	// TODO: This really is only applicable to the PropertyRegistry
-	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; }):IBoundProperty;
 	test(kwArgs:IDataBindingArguments):boolean;
 	bind(kwArgs:IDataBindingArguments):IHandle;
+}
+
+interface IPropertyRegistry extends IDataBindingRegistry {
+	createProperty(object:Object, binding:string):IBoundProperty;
+	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; }):IBoundProperty;
 }
 
 interface IDataBindingArguments {
@@ -18,16 +21,13 @@ interface IDataBindingArguments {
 
 interface IPropertyBinder {
 	new (kwArgs:IPropertyBinderArguments):IBoundProperty;
-	test(kwArgs:IPropertyBinderTestArguments):boolean;
+	test(kwArgs:IPropertyBinderArguments):boolean;
 }
 
-interface IPropertyBinderTestArguments {
+interface IPropertyBinderArguments {
 	object:Object;
 	binding:string;
-}
-
-interface IPropertyBinderArguments extends IPropertyBinderTestArguments {
-	registry:IDataBindingRegistry;
+	registry:IPropertyRegistry;
 }
 
 interface IBoundProperty {

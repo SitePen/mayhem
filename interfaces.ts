@@ -8,19 +8,19 @@ interface IScheduler {
 }
 
 interface IApplication {
-	dataBindingRegistry: IDataBindingRegistry;
-	scheduler: IScheduler;
+	dataBindingRegistry:IDataBindingRegistry;
+	scheduler:IScheduler;
 }
 
 interface IComponent {
-	app: IApplication;
+	app:IApplication;
 }
 
 interface IApplicationComponent extends IComponent {}
 
 interface IMediator extends IComponent, IStateful {
-	routeState: Object;
-	model: IModel;
+	routeState:Object;
+	model:IModel;
 }
 
 interface IModel extends IComponent, IStateful {}

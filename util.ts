@@ -2,7 +2,7 @@
 
 import has = require('./has');
 
-export var getObjectKeys = has('es5-object-keys') ? Object.keys : function (object:Object):string[] {
+export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):string[] {
 	var keys = [],
 		hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -44,4 +44,13 @@ export function spliceMatch(haystack:Array, needle:any) {
  */
 export function isEqual(a:any, b:any):boolean {
 	return a === b || /* both values are NaN */ (a !== a && b !== b);
+}
+
+/**
+ * Determines whether or not a value is an Object, in the EcmaScript specification
+ * sense of an Object.
+ */
+export function isObject(object:any):boolean {
+	var type:string = typeof object;
+	return object != null && (type === 'object' || type === 'function');
 }

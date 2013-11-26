@@ -4,11 +4,8 @@
 
 import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
-import util = require('../util');
 import Es5Binder = require('../../../binding/properties/Es5');
 import MockBinder = require('../support/MockBinder');
-
-var registry:IDataBindingRegistry;
 
 function createBasicTests(sourceObject:{ foo?:string; }) {
 	return function () {
@@ -29,28 +26,25 @@ function createBasicTests(sourceObject:{ foo?:string; }) {
 		assert.strictEqual(target.get(), source.get(), 'Bound target value should match source value');
 
 		source.set('2');
-		assert.strictEqual(source.get(), '2', 'Bound source property should match value of source property object');
+		assert.strictEqual(source.get(), '2', 'Bound source property should match value of source property object when updated with source.set');
 		assert.strictEqual(sourceObject.foo, '2', 'Setting source property value should update original object');
 
 		sourceObject.foo = '3';
-		assert.strictEqual(source.get(), '3', 'Bound source property should match value of source property object');
+		assert.strictEqual(source.get(), '3', 'Bound source property should match value of source property object when object is updated');
 		assert.strictEqual(target.get(), '3', 'Setting source property value should update target property');
 
 		handle.remove();
 		sourceObject.foo = '4';
-		assert.strictEqual(source.get(), '4', 'Bound source property should match value of source property object');
+		assert.strictEqual(source.get(), '4', 'Bound source property should match value of source property object even when target is removed');
 		assert.strictEqual(target.get(), '3', 'Removing binding should stop old target property from updating');
 
-		try {
+		assert.doesNotThrow(function () {
 			handle.remove();
-		}
-		catch (error) {
-			assert.fail(error, null, 'Removing handle a second time should be a no-op');
-		}
+		}, 'Removing handle a second time should be a no-op');
 
 		source.bindTo(target);
 		sourceObject.foo = '5';
-		assert.strictEqual(target.get(), '5', 'Setting source property value should update target property');
+		assert.strictEqual(target.get(), '5', 'Setting source property value should update target property when rebound');
 
 		source.bindTo(null);
 		sourceObject.foo = '6';
@@ -60,17 +54,14 @@ function createBasicTests(sourceObject:{ foo?:string; }) {
 		sourceObject.foo = '7';
 		assert.isUndefined(source.get(), 'Destroyed source property should no longer have a value from the source property object');
 
-		try {
+		assert.doesNotThrow(function () {
 			source.destroy();
-		}
-		catch (error) {
-			assert.fail(error, null, 'Destroying property a second time should be a no-op');
-		}
+		}, 'Destroying property a second time should be a no-op');
 	};
 }
 
 registerSuite({
-	name: 'binding/properties/Stateful',
+	name: 'binding/properties/Es5',
 
 	'.test': function () {
 		var result = Es5Binder.test({

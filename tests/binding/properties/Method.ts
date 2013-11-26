@@ -9,7 +9,7 @@ import MethodBinder = require('../../../binding/properties/Method');
 import Es5Binder = require('../../../binding/properties/Es5');
 import MockBinder = require('../support/MockBinder');
 
-var registry:IDataBindingRegistry;
+var registry:IPropertyRegistry;
 
 registerSuite({
 	name: 'binding/properties/Method',

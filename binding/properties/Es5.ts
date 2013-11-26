@@ -4,10 +4,11 @@ import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
 import Property = require('./Property');
 import util = require('../../util');
+import has = require('../../has');
 
 class Es5Property extends Property implements IBoundProperty {
-	static test(kwArgs:IPropertyBinderTestArguments):boolean {
-		if (!Object.getOwnPropertyDescriptor || !kwArgs.object) {
+	static test(kwArgs:IPropertyBinderArguments):boolean {
+		if (!has('es5') || !util.isObject(kwArgs.object)) {
 			return false;
 		}
 

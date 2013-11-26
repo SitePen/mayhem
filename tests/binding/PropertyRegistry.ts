@@ -34,19 +34,19 @@ registerSuite({
 			expected = [ 1, 1, 2, 2, 3, 3 ];
 
 		var FirstBinder = <IPropertyBinder> {
-				test: function (kwArgs:IPropertyBinderTestArguments) {
+				test: function (kwArgs:IPropertyBinderArguments) {
 					actual.push(1);
 					return false;
 				}
 			},
 			SecondBinder = <IPropertyBinder> {
-				test: function (kwArgs:IPropertyBinderTestArguments) {
+				test: function (kwArgs:IPropertyBinderArguments) {
 					actual.push(2);
 					return false;
 				}
 			},
 			ThirdBinder = <IPropertyBinder> {
-				test: function (kwArgs:IPropertyBinderTestArguments) {
+				test: function (kwArgs:IPropertyBinderArguments) {
 					actual.push(3);
 					return false;
 				}
