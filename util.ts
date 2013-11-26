@@ -29,7 +29,7 @@ export function createSetter(propertyName:string, childName:string, childPropert
 	};
 };
 
-export function spliceMatch(haystack:Array, needle:any) {
+export function spliceMatch(haystack:any[], needle:any) {
 	for (var i = 0; i < haystack.length; ++i) {
 		if (haystack[i] === needle) {
 			haystack.splice(i, 1);

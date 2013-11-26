@@ -10,7 +10,7 @@ var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
 class MethodProperty extends Property implements IBoundProperty {
 	static methods:{ [name:string]: Function } = {};
 	static test(kwArgs:IPropertyBinderArguments):boolean {
-		var matches:string[];
+		var matches:RegExpExecArray;
 		return Boolean((matches = methodExpression.exec(kwArgs.binding)) && this.methods[matches[1]]);
 	}
 
@@ -21,7 +21,7 @@ class MethodProperty extends Property implements IBoundProperty {
 	constructor(kwArgs:IPropertyBinderArguments) {
 		super(kwArgs);
 
-		var matches:string[] = methodExpression.exec(kwArgs.binding);
+		var matches:RegExpExecArray = methodExpression.exec(kwArgs.binding);
 
 		this._mutator = MethodProperty.methods[matches[1]];
 		this._source = kwArgs.registry.createProperty(kwArgs.object, matches[2], { scheduled: false });

@@ -64,8 +64,8 @@ declare module 'dojo/_base/array' {
 
 declare module 'dojo/_base/declare' {
 	var decl:{
-		<T>(superclass:new () => Object, properties:T):new () => T;
-		<T>(superclass:Array<new () => Object>, properties:T):new () => T;
+		(superclass:any, properties?:Object):new () => any;
+		(superclass:any[], properties?:Object):new () => any;
 		safeMixin<T>(target:T, source:Object):T;
 	};
 

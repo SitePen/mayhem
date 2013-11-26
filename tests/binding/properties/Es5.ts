@@ -102,15 +102,19 @@ registerSuite({
 
 	'basic tests, no descriptor': createBasicTests({}),
 	'basic tests, property descriptor': createBasicTests({ foo: '1' }),
-	'basic tests, accessor descriptor': createBasicTests({
-		_foo: '1',
-		get foo():string {
-			return this._foo;
-		},
-		set foo(value:string) {
-			this._foo = value;
-		}
-	}),
+	// TODO: IIFE is a workaround for a bug in TypeScript 0.9.5; see
+	// https://typescript.codeplex.com/workitem/1951
+	'basic tests, accessor descriptor': (function () {
+		return createBasicTests({
+			_foo: '1',
+			get foo():string {
+				return this._foo;
+			},
+			set foo(value:string) {
+				this._foo = value;
+			}
+		});
+	})(),
 
 	'read-only property': function () {
 		var sourceObject = {

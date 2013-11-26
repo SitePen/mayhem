@@ -6,25 +6,20 @@ import Deferred = require('dojo/Deferred');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 import util = require('dojo/request/util');
-import Evented = require('dojo/Evented');
+import StatefulEvented = require('./StatefulEvented');
 
-class Application extends Evented implements IApplication {
+class Application extends StatefulEvented implements IApplication {
 	dataBindingRegistry:IDataBindingRegistry;
 	scheduler:IScheduler;
-	modules:{ [ propertyName:string ]:{ constructor: any; } } = {};
+	modules:{ [ propertyName:string ]:{ constructor: any; } };
 
 	/**
 	 * Replaces the configuration kwArgs object that gets passed to the constructor with one that
 	 * includes defaults and reapplies properties to the application instance.
 	 */
 	constructor(kwArgs:Object) {
-		super();
-
-		var config:typeof kwArgs = util.deepCopy(this._getDefaultConfig(), kwArgs);
-
-		for (var k in config) {
-			this[k] = config[k];
-		}
+		this.modules = {};
+		super(util.deepCopy(this._getDefaultConfig(), kwArgs));
 	}
 
 	/**
@@ -77,7 +72,7 @@ class Application extends Evented implements IApplication {
 
 					var Module = config.constructor;
 
-					this[key] = new Module(config);
+					this.set(key, new Module(config));
 				}
 
 				dfd.resolve();
