@@ -1,16 +1,15 @@
 /// <reference path="../../intern.d.ts" />
-/// <reference path="../../../binding/interfaces.ts" />
-/// <reference path="../../../interfaces.ts" />
 
 import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
 import util = require('../util');
+import binding = require('../../../binding/interfaces');
 import StatefulBinder = require('../../../binding/properties/Stateful');
 import Stateful = require('dojo/Stateful');
 import DataBindingDirection = require('../../../binding/DataBindingDirection');
 import MockBinder = require('../support/MockBinder');
 
-var registry:IDataBindingRegistry;
+var registry:binding.IDataBindingRegistry;
 
 registerSuite({
 	name: 'binding/properties/Stateful',

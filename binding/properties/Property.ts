@@ -1,13 +1,12 @@
-/// <reference path="../interfaces.ts" />
-
+import binding = require('../interfaces');
 import has = require('../../has');
 
 var oidKey = '__PropertyOid' + Math.random(),
 	oid = 0;
 
-/* abstract */ class Property /* implements IBoundProperty */ {
+/* abstract */ class Property /* implements binding.IBoundProperty */ {
 	id:string;
-	constructor(kwArgs:IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		var object = kwArgs.object;
 
 		if (!object[oidKey]) {
@@ -22,7 +21,7 @@ var oidKey = '__PropertyOid' + Math.random(),
 			}
 		}
 
-		this.id = object[oidKey] + '/' + kwArgs.binding;
+		this.id = 'Property' + object[oidKey] + '/' + kwArgs.binding;
 	}
 }
 

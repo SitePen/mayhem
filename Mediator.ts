@@ -5,6 +5,10 @@ import has = require('dojo/has');
 import arrayUtil = require('dojo/_base/array');
 import util = require('./util');
 
+import Stateful = require('dojo/Stateful');
+import Evented = require('dojo/Evented');
+import declare = require('dojo/_base/declare');
+
 var uuid = 0;
 
 class Mediator implements IMediator {
@@ -86,7 +90,7 @@ class Mediator implements IMediator {
 				var newValue = this.get(value);
 
 				if (!util.isEqual(oldValue, newValue)) {
-					var watchers = [].concat(this._watchers['*'] || [], this._watchers[key] || []);
+					var watchers = [].concat(this._watchers['*'] || [], this._watchers['*' + key] || []);
 					// TODO: Should watcher notifications be scheduled? It might be a good idea, or it might cause
 					// data-binding to inefficiently take two cycles through the event loop.
 					var watcher:(key:string, oldValue:any, newValue:any) => void;
@@ -103,8 +107,13 @@ class Mediator implements IMediator {
 	watch(key:any, callback?:(key:string, oldValue:any, newValue:any) => void):IHandle {
 		if (typeof key === 'function') {
 			callback = key;
-			key = '*';
+			key = '';
 		}
+
+		// Prefix all keys as a simple way to avoid collisions if someone uses a name for a watch that is also on
+		// `Object.prototype`
+		// TODO: In ES5 we can just use `Object.create(null)` instead
+		key = '*' + key;
 
 		var watchers = this._watchers[key] = (this._watchers[key] || []);
 		watchers.push(callback);

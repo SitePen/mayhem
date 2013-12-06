@@ -29,13 +29,18 @@ export function createSetter(propertyName:string, childName:string, childPropert
 	};
 };
 
-export function spliceMatch(haystack:any[], needle:any) {
+/**
+ * Finds and removes `needle` from `haystack`, if it exists.
+ */
+export function spliceMatch<T>(haystack:T[], needle:T):boolean {
 	for (var i = 0; i < haystack.length; ++i) {
 		if (haystack[i] === needle) {
 			haystack.splice(i, 1);
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 /**
@@ -53,4 +58,17 @@ export function isEqual(a:any, b:any):boolean {
 export function isObject(object:any):boolean {
 	var type:string = typeof object;
 	return object != null && (type === 'object' || type === 'function');
+}
+
+/**
+ * Escapes a string of text for injection into a serialization of HTML or XML.
+ */
+export function escapeXml(text:string, forAttribute:boolean = false):string {
+	text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+	if (forAttribute) {
+		text = text.replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	}
+
+	return text;
 }

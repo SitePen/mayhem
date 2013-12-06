@@ -1,5 +1,3 @@
-/// <amd-dependency="require" />
-
 import lang = require('dojo/_base/lang');
 import has = require('./has');
 import Deferred = require('dojo/Deferred');

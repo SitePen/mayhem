@@ -1,6 +1,4 @@
 /// <reference path="../../intern.d.ts" />
-/// <reference path="../../../binding/interfaces.ts" />
-/// <reference path="../../../interfaces.ts" />
 
 import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');

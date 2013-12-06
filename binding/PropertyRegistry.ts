@@ -1,21 +1,21 @@
-/// <reference path="interfaces.ts" />
-
+import core = require('../interfaces');
+import binding = require('./interfaces');
 import DataBindingDirection = require('./DataBindingDirection');
 
 /**
  * A data binding registry that uses opaque Property objects to enable binding between arbitrary properties of
  * two different objects.
  */
-class PropertyRegistry implements IDataBindingRegistry {
-	private _binders:IPropertyBinder[] = [];
-	app:IApplication;
+class PropertyRegistry implements binding.IPropertyRegistry {
+	private _binders:binding.IPropertyBinder[] = [];
+	app:core.IApplication;
 
-	constructor(kwArgs:{ app:IApplication; binders?:IPropertyBinder[]; }) {
+	constructor(kwArgs:{ app:core.IApplication; binders?:binding.IPropertyBinder[]; }) {
 		this.app = kwArgs.app;
 		this._binders = kwArgs.binders || [];
 	}
 
-	add(Binder:IPropertyBinder, index:number = Infinity):IHandle {
+	add(Binder:binding.IPropertyBinder, index:number = Infinity):IHandle {
 		var binders = this._binders;
 
 		binders.splice(index, 0, Binder);
@@ -36,7 +36,7 @@ class PropertyRegistry implements IDataBindingRegistry {
 		};
 	}
 
-	test(kwArgs:IDataBindingArguments):boolean {
+	test(kwArgs:binding.IDataBindingArguments):boolean {
 		var sourceBindingValid = false,
 			targetBindingValid = false;
 
@@ -56,12 +56,12 @@ class PropertyRegistry implements IDataBindingRegistry {
 		return false;
 	}
 
-	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; } = {}):IBoundProperty {
+	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; } = {}):binding.IBoundProperty {
 		var binders = this._binders,
 			app = this.app,
 			registry = this;
 
-		function scheduled(property:IBoundProperty):IBoundProperty {
+		function scheduled(property:binding.IBoundProperty):binding.IBoundProperty {
 			var oldSet = property.set;
 			property.set = function (value:any):void {
 				var self = this,
@@ -74,8 +74,8 @@ class PropertyRegistry implements IDataBindingRegistry {
 			return property;
 		}
 
-		var property:IBoundProperty;
-		for (var i = 0, Binder:IPropertyBinder; (Binder = binders[i]); ++i) {
+		var property:binding.IBoundProperty;
+		for (var i = 0, Binder:binding.IPropertyBinder; (Binder = binders[i]); ++i) {
 			if (Binder.test({ object: object, binding: binding, registry: this })) {
 				var property = new Binder({
 					object: object,
@@ -91,7 +91,7 @@ class PropertyRegistry implements IDataBindingRegistry {
 		throw new Error('No registered property binders understand the requested binding');
 	}
 
-	bind(kwArgs:IDataBindingArguments):IHandle {
+	bind(kwArgs:binding.IDataBindingArguments):binding.IBindingHandle {
 		var source = this.createProperty(kwArgs.source, kwArgs.sourceBinding),
 			target = this.createProperty(kwArgs.target, kwArgs.targetBinding);
 
@@ -102,6 +102,26 @@ class PropertyRegistry implements IDataBindingRegistry {
 		}
 
 		return {
+			// TODO: For ES5, use getters/setters
+			setSource: (newSource:Object, newSourceBinding:string = kwArgs.sourceBinding):void => {
+				source.destroy();
+				source = this.createProperty(newSource, newSourceBinding);
+				source.bindTo(target);
+				if (kwArgs.direction === DataBindingDirection.TWO_WAY) {
+					target.bindTo(source);
+				}
+			},
+			setTarget: (newTarget:Object, newTargetBinding:string = kwArgs.targetBinding):void => {
+				target.destroy();
+				target = this.createProperty(newTarget, newTargetBinding);
+				source.bindTo(target);
+				if (kwArgs.direction === DataBindingDirection.TWO_WAY) {
+					target.bindTo(source);
+				}
+			},
+			setDirection: (newDirection:DataBindingDirection):void => {
+				target.bindTo(kwArgs.direction === DataBindingDirection.TWO_WAY ? source : null);
+			},
 			remove: function () {
 				this.remove = function () {};
 				source.destroy();

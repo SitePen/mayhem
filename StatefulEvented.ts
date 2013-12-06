@@ -1,6 +1,6 @@
-/// <reference path="interfaces.ts" />
 /// <reference path="dojo.d.ts" />
 
+import core = require('./interfaces');
 import Stateful = require('dojo/Stateful');
 import Evented = require('dojo/Evented');
 

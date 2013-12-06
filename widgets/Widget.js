@@ -1,19 +1,20 @@
-/// <reference path="../interfaces.ts" />
-/// <reference path="interfaces.ts" />
-/// <reference path="../binding/interfaces.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", '../Component'], function(require, exports, __Component__) {
-    var Component = '../Component';
+define(["require", "exports", '../StatefulEvented', 'dojo/_base/lang', '../util'], function(require, exports, StatefulEvented, lang, util) {
+    var uid = 0;
 
     var Widget = (function (_super) {
         __extends(Widget, _super);
-        function Widget() {
-            _super.apply(this, arguments);
+        function Widget(kwArgs) {
+            _super.call(this, kwArgs);
+
+            if (!this.id) {
+                this.id = 'Widget' + (++uid);
+            }
         }
         Widget.prototype._mediatorGetter = function () {
             return this._mediator || this.parent.mediator;
@@ -21,28 +22,36 @@ define(["require", "exports", '../Component'], function(require, exports, __Comp
 
         Widget.prototype._mediatorSetter = function (value) {
             this._mediator = value;
-            for (var k in this._bindings) {
-                this._bindings[k].forEach(function (binding) {
-                    binding.to = value;
-                });
-            }
+            // TODO: Reset all bindings to mediator
         };
 
         Widget.prototype.bind = function (propertyName, binding) {
-            var handle = this.app.dataBindingRegistry({
-                from: this,
-                property: propertyName,
-                // where it goes depends on the syntax!
-                // foo -> mediator.foo
-                // mediator.foo -> mediator.foo
-                // model.foo -> mediator.model.foo
-                // app.foo -> mediator.app.foo
-                to: this.get('mediator'),
-                binding: binding
+            var bindings = this._bindings, handle = this.app.dataBindingRegistry({
+                source: this._mediator,
+                sourceBinding: binding,
+                target: this,
+                targetBinding: propertyName
             });
-            this._bindings.push(handle);
-            return handle;
+
+            bindings.push(handle);
+            return {
+                remove: function () {
+                    this.remove = function () {
+                    };
+                    handle.remove();
+                    util.spliceMatch(bindings, handle);
+                }
+            };
+        };
+
+        Widget.prototype.destroy = function () {
+            var binding;
+            for (var i = 0; (binding = this._bindings); ++i) {
+                binding.remove();
+            }
+
+            this._bindings = this._mediator = this.app = null;
         };
         return Widget;
-    })(Component);
+    })(StatefulEvented);
 });

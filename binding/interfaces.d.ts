@@ -1,17 +1,24 @@
-/// <reference path="../interfaces.ts" />
+import core = require('../interfaces');
+import DataBindingDirection = require('./DataBindingDirection');
 
-interface IDataBindingRegistry extends IComponent {
+export interface IDataBindingRegistry extends core.IComponent {
 	add(Binder:IPropertyBinder, index?:number):IHandle;
 	test(kwArgs:IDataBindingArguments):boolean;
-	bind(kwArgs:IDataBindingArguments):IHandle;
+	bind(kwArgs:IDataBindingArguments):IBindingHandle;
 }
 
-interface IPropertyRegistry extends IDataBindingRegistry {
+export interface IPropertyRegistry extends IDataBindingRegistry {
 	createProperty(object:Object, binding:string):IBoundProperty;
 	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; }):IBoundProperty;
 }
 
-interface IDataBindingArguments {
+export interface IBindingHandle extends IHandle {
+	setSource(source:Object, sourceBinding?:string):void;
+	setTarget(target:Object, targetBinding?:string):void;
+	setDirection(direction:DataBindingDirection):void;
+}
+
+export interface IDataBindingArguments {
 	source:Object;
 	sourceBinding:string;
 	target:Object;
@@ -19,18 +26,18 @@ interface IDataBindingArguments {
 	direction?:number;
 }
 
-interface IPropertyBinder {
+export interface IPropertyBinder {
 	new (kwArgs:IPropertyBinderArguments):IBoundProperty;
 	test(kwArgs:IPropertyBinderArguments):boolean;
 }
 
-interface IPropertyBinderArguments {
+export interface IPropertyBinderArguments {
 	object:Object;
 	binding:string;
 	registry:IPropertyRegistry;
 }
 
-interface IBoundProperty {
+export interface IBoundProperty {
 	id:string;
 	get():any;
 	set(value:any):void;
@@ -38,7 +45,7 @@ interface IBoundProperty {
 	destroy():void;
 }
 
-interface IComputedProperty {
+export interface IComputedProperty {
 	/**
 	 * Inferrence for whether or not an object on a data model is actually a computed property.
 	 * Will always be `true`.

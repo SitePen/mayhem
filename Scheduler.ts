@@ -1,6 +1,6 @@
-/// <reference path="interfaces.ts" />
 /// <reference path="dojo.d.ts" />
 
+import core = require('./interfaces');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
@@ -15,7 +15,7 @@ function createTimer(callback:Function):IHandle {
 	};
 }
 
-class Scheduler implements IScheduler {
+class Scheduler implements core.IScheduler {
 	private _callbacks:{ [id:string]:() => void; } = {};
 	private _postCallbacks:Function[] = [];
 	private _timer:IHandle;

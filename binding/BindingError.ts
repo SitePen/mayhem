@@ -1,13 +1,12 @@
-/// <reference path="interfaces.ts" />
-/// <reference path="../dojo.d.ts" />
-
+import binding = require('./interfaces');
 import lang = require('dojo/_base/lang');
 
+// TODO: This class is not currently used?
 class BindingError implements Error {
 	name:string = 'BindingError';
 	message:string = 'Could not bind from "{sourceBinding}" on {source} to "{targetBinding}" on {target}. {message}';
 
-	constructor(message:string, public binding:IDataBindingArguments) {
+	constructor(message:string, public binding:binding.IDataBindingArguments) {
 		if (message) {
 			this.message = message;
 		}

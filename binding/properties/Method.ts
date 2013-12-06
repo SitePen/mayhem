@@ -1,24 +1,24 @@
-/// <reference path="../interfaces.ts" />
 /// <reference path="../../dojo.d.ts" />
 
+import binding = require('../interfaces');
 import Property = require('./Property');
 import lang = require('dojo/_base/lang');
 import when = require('dojo/when');
 
 var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
 
-class MethodProperty extends Property implements IBoundProperty {
+class MethodProperty extends Property implements binding.IBoundProperty {
 	static methods:{ [name:string]: Function } = {};
-	static test(kwArgs:IPropertyBinderArguments):boolean {
+	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		var matches:RegExpExecArray;
 		return Boolean((matches = methodExpression.exec(kwArgs.binding)) && this.methods[matches[1]]);
 	}
 
 	private _mutator:Function;
-	private _source:IBoundProperty;
-	private _target:IBoundProperty;
+	private _source:binding.IBoundProperty;
+	private _target:binding.IBoundProperty;
 
-	constructor(kwArgs:IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 
 		var matches:RegExpExecArray = methodExpression.exec(kwArgs.binding);
@@ -27,7 +27,7 @@ class MethodProperty extends Property implements IBoundProperty {
 		this._source = kwArgs.registry.createProperty(kwArgs.object, matches[2], { scheduled: false });
 
 		var self = this;
-		this._source.bindTo(<IBoundProperty> {
+		this._source.bindTo(<binding.IBoundProperty> {
 			set: function (value:any):void {
 				self._target && self._target.set(self._mutator(value));
 			}
@@ -42,7 +42,7 @@ class MethodProperty extends Property implements IBoundProperty {
 		this._source && this._source.set(value);
 	}
 
-	bindTo(target:IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty):IHandle {
 		this._target = target;
 
 		if (!target) {

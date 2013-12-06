@@ -1,5 +1,3 @@
-/// <reference path="interfaces.ts" />
-
 interface IHandle {
 	remove: () => void;
 }

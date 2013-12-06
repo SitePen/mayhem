@@ -1,24 +1,25 @@
-/// <reference path="../interfaces.ts" />
+/// <reference path="../../dojo.d.ts" />
 
+import binding = require('../interfaces');
 import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
 import Property = require('./Property');
 import util = require('../../util');
 
-class NestedProperty extends Property implements IBoundProperty {
-	static test(kwArgs:IPropertyBinderArguments):boolean {
+class NestedProperty extends Property implements binding.IBoundProperty {
+	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		return kwArgs.object != null && kwArgs.binding.indexOf('.') !== -1;
 	}
 
 	/**
 	 * The property at the end of the bound chain of properties.
 	 */
-	private _source:IBoundProperty;
+	private _source:binding.IBoundProperty;
 
 	/**
 	 * The target property.
 	 */
-	private _target:IBoundProperty;
+	private _target:binding.IBoundProperty;
 
 	/**
 	 * The string that identifies the sub-property to be bound.
@@ -28,14 +29,14 @@ class NestedProperty extends Property implements IBoundProperty {
 	/**
 	 * The property registry to bind sub-properties with.
 	 */
-	private _registry:IPropertyRegistry;
+	private _registry:binding.IPropertyRegistry;
 
 	/**
 	 * The watch handles for each binding.
 	 */
-	private _properties:IBoundProperty[] = [];
+	private _properties:binding.IBoundProperty[] = [];
 
-	constructor(kwArgs:IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 
 		this._registry = kwArgs.registry;
@@ -51,14 +52,14 @@ class NestedProperty extends Property implements IBoundProperty {
 
 		// Stop watching objects that are no longer part of this binding's object chain because a parent object
 		// was replaced
-		array.forEach(properties.splice(fromIndex), function (property:IBoundProperty) {
+		array.forEach(properties.splice(fromIndex), function (property:binding.IBoundProperty) {
 			property.destroy();
 		});
 
 		var binding:string,
 			index:number = fromIndex,
 			object:Object = fromObject,
-			property:IBoundProperty,
+			property:binding.IBoundProperty,
 			initialBind:boolean = true;
 
 		// If any of the intermediate objects between `object` and the property we are actually binding
@@ -66,7 +67,7 @@ class NestedProperty extends Property implements IBoundProperty {
 		for (; index < this._binding.length - 1 && object; ++index) {
 			binding = this._binding[index];
 			property = this._registry.createProperty(object, binding, { scheduled: false });
-			property.bindTo(<IBoundProperty> {
+			property.bindTo(<binding.IBoundProperty> {
 				set: lang.hitch(this, function (index:number, value:Object):void {
 					// The `set` method of this fake target will be immediately called by the source `property` if
 					// a value exists for that property; in order to avoid this causing a premature rebinding in the
@@ -93,7 +94,7 @@ class NestedProperty extends Property implements IBoundProperty {
 			// If the values on this final object change we only need to update the value, not rebind
 			// any intermediate objects
 			property = this._registry.createProperty(object, this._binding[index], { scheduled: false });
-			property.bindTo(<IBoundProperty> {
+			property.bindTo(<binding.IBoundProperty> {
 				set: (value:any):void => {
 					this._update(value);
 				}
@@ -134,7 +135,7 @@ class NestedProperty extends Property implements IBoundProperty {
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -159,7 +160,7 @@ class NestedProperty extends Property implements IBoundProperty {
 		this.destroy = function () {};
 
 		var properties = this._properties;
-		for (var i = 0, property:IBoundProperty; (property = properties[i]); ++i) {
+		for (var i = 0, property:binding.IBoundProperty; (property = properties[i]); ++i) {
 			property.destroy();
 		}
 

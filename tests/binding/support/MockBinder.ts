@@ -1,18 +1,17 @@
-/// <reference path="../../../binding/interfaces.ts" />
-
+import binding = require('../../../binding/interfaces');
 import Property = require('../../../binding/properties/Property');
 
-class MockBinder extends Property implements IBoundProperty {
-	static test(kwArgs:IPropertyBinderArguments):boolean {
+class MockBinder extends Property implements binding.IBoundProperty {
+	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		return true;
 	}
 
-	kwArgs:IPropertyBinderArguments;
+	kwArgs:binding.IPropertyBinderArguments;
 	value:any;
-	target:IBoundProperty;
+	target:binding.IBoundProperty;
 	destroyed:boolean = false;
 
-	constructor(kwArgs:IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 		this.kwArgs = kwArgs;
 		this.kwArgs.object && (this.kwArgs.object['mockBinder'] = this);
@@ -31,7 +30,7 @@ class MockBinder extends Property implements IBoundProperty {
 		this.value = value;
 	}
 
-	bindTo(target:IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty):IHandle {
 		this.target = target;
 
 		if (!target) {

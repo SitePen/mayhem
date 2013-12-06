@@ -3,13 +3,14 @@
 import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
 import util = require('./util');
+import binding = require('../../binding/interfaces');
 import PropertyRegistry = require('../../binding/PropertyRegistry');
 import DataBindingDirection = require('../../binding/DataBindingDirection');
 import MockBinder = require('./support/MockBinder');
 import lang = require('dojo/_base/lang');
 
 var registry:PropertyRegistry,
-	emptyBinding:IDataBindingArguments = {
+	emptyBinding:binding.IDataBindingArguments = {
 		source: {},
 		sourceBinding: '',
 		target: {},
@@ -33,20 +34,20 @@ registerSuite({
 		var actual = [],
 			expected = [ 1, 1, 2, 2, 3, 3 ];
 
-		var FirstBinder = <IPropertyBinder> {
-				test: function (kwArgs:IPropertyBinderArguments) {
+		var FirstBinder = <binding.IPropertyBinder> {
+				test: function (kwArgs:binding.IPropertyBinderArguments) {
 					actual.push(1);
 					return false;
 				}
 			},
-			SecondBinder = <IPropertyBinder> {
-				test: function (kwArgs:IPropertyBinderArguments) {
+			SecondBinder = <binding.IPropertyBinder> {
+				test: function (kwArgs:binding.IPropertyBinderArguments) {
 					actual.push(2);
 					return false;
 				}
 			},
-			ThirdBinder = <IPropertyBinder> {
-				test: function (kwArgs:IPropertyBinderArguments) {
+			ThirdBinder = <binding.IPropertyBinder> {
+				test: function (kwArgs:binding.IPropertyBinderArguments) {
 					actual.push(3);
 					return false;
 				}

@@ -1,12 +1,11 @@
-/// <reference path="../interfaces.ts" />
-
+import binding = require('../interfaces');
 import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
 import Property = require('./Property');
 import util = require('../../util');
 
-class StatefulProperty extends Property implements IBoundProperty {
-	static test(kwArgs:IPropertyBinderArguments):boolean {
+class StatefulProperty extends Property implements binding.IBoundProperty {
+	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		var object = <IStateful> kwArgs.object;
 		return Boolean(object != null && typeof object.get === 'function' &&
 			typeof object.set === 'function' &&
@@ -26,14 +25,14 @@ class StatefulProperty extends Property implements IBoundProperty {
 	/**
 	 * The target property.
 	 */
-	private _target:IBoundProperty;
+	private _target:binding.IBoundProperty;
 
 	/**
 	 * The watch handle for the bound object.
 	 */
 	private _handle:IHandle;
 
-	constructor(kwArgs:IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 
 		var object = this._object = <IStateful> kwArgs.object;
@@ -73,7 +72,7 @@ class StatefulProperty extends Property implements IBoundProperty {
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty):IHandle {
 		this._target = target;
 
 		if (!target) {

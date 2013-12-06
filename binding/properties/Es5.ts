@@ -1,13 +1,14 @@
-/// <reference path="../interfaces.ts" />
+/// <reference path="../../dojo.d.ts" />
 
+import binding = require('../interfaces');
 import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
 import Property = require('./Property');
 import util = require('../../util');
 import has = require('../../has');
 
-class Es5Property extends Property implements IBoundProperty {
-	static test(kwArgs:IPropertyBinderArguments):boolean {
+class Es5Property extends Property implements binding.IBoundProperty {
+	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		if (!has('es5') || !util.isObject(kwArgs.object)) {
 			return false;
 		}
@@ -19,10 +20,10 @@ class Es5Property extends Property implements IBoundProperty {
 
 	private _object:Object;
 	private _property:string;
-	private _target:IBoundProperty;
+	private _target:binding.IBoundProperty;
 	private _originalDescriptor:PropertyDescriptor;
 
-	constructor(kwArgs:IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 
 		var object = kwArgs.object,
@@ -79,7 +80,7 @@ class Es5Property extends Property implements IBoundProperty {
 		this._object && (this._object[this._property] = value);
 	}
 
-	bindTo(target:IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty):IHandle {
 		this._target = target;
 
 		if (!target) {

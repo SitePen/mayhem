@@ -1,39 +1,67 @@
-/// <reference path="../interfaces.ts" />
-/// <reference path="interfaces.ts" />
-/// <reference path="../binding/interfaces.ts" />
+import core = require('../interfaces');
+import widgets = require('./interfaces');
+import style = require('./style/interfaces');
+import binding = require('../binding/interfaces');
+import StatefulEvented = require('../StatefulEvented');
+import lang = require('dojo/_base/lang');
+import util = require('../util');
 
-import Component = require('../Component');
+var uid = 0;
 
-class Widget extends Component implements IWidget {
-	private _bindings:{ [propertyName:string]: IDataBindingHandle[] };
-	private _mediator:IMediator;
+class Widget extends StatefulEvented implements widgets.IWidget {
+	id:string;
+	style:style.IStyle;
+	classList:widgets.IClassList;
+	app:core.IApplication;
+	previous:widgets.IWidget;
+	next:widgets.IWidget;
+	parent:widgets.IWidget;
 
-	private _mediatorGetter():IMediator {
-		return this._mediator || this.parent.mediator;
-	}
+	private _mediator:core.IMediator;
+	private _bindings:IBindingHandle[];
 
-	private _mediatorSetter(value?:IMediator):void {
-		this._mediator = value;
-		for (var k in this._bindings) {
-			this._bindings[k].forEach(function (binding:IDataBindingHandle) {
-				binding.to = value;
-			});
+	constructor(kwArgs:Object) {
+		super(kwArgs);
+
+		if (!this.id) {
+			this.id = 'Widget' + (++uid);
 		}
 	}
 
-	bind(propertyName:string, binding:string):IDataBindingHandle {
-		var handle:IDataBindingHandle = this.app.dataBindingRegistry({
-			from: this,
-			property: propertyName,
-			// where it goes depends on the syntax!
-			// foo -> mediator.foo
-			// mediator.foo -> mediator.foo
-			// model.foo -> mediator.model.foo
-			// app.foo -> mediator.app.foo
-			to: this.get('mediator'),
-			binding: binding
-		});
-		this._bindings.push(handle);
-		return handle;
+	private _mediatorGetter():core.IMediator {
+		return this._mediator || this.parent.mediator;
+	}
+
+	private _mediatorSetter(value?:core.IMediator):void {
+		this._mediator = value;
+		// TODO: Reset all bindings to mediator
+	}
+
+	bind(propertyName:string, binding:string):IHandle {
+		var bindings = this._bindings,
+			handle:binding.IBindingHandle = this.app.dataBindingRegistry({
+				source: this._mediator,
+				sourceBinding: binding,
+				target: this,
+				targetBinding: propertyName
+			});
+
+		bindings.push(handle);
+		return {
+			remove: function () {
+				this.remove = function () {};
+				handle.remove();
+				util.spliceMatch(bindings, handle);
+			}
+		};
+	}
+
+	destroy():void {
+		var binding:IBindingHandle;
+		for (var i = 0; (binding = this._bindings); ++i) {
+			binding.remove();
+		}
+
+		this._bindings = this._mediator = this.app = null;
 	}
 }
