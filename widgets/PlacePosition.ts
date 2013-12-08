@@ -1,3 +1,4 @@
+// These values should match those of AddPosition
 enum PlacePosition {
 	FIRST = -1,
 	LAST = -2,

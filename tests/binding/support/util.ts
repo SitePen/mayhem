@@ -1,6 +1,6 @@
-import core = require('../../interfaces');
-import PropertyRegistry = require('../../binding/PropertyRegistry');
-import Scheduler = require('../../Scheduler');
+import core = require('../../../interfaces');
+import PropertyRegistry = require('../../../binding/PropertyRegistry');
+import Scheduler = require('../../../Scheduler');
 
 export function createPropertyRegistry():PropertyRegistry {
 	return new PropertyRegistry({

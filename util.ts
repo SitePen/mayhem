@@ -2,18 +2,9 @@
 
 import has = require('./has');
 
-export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):string[] {
-	var keys = [],
-		hasOwnProperty = Object.prototype.hasOwnProperty;
-
-	for (var key in object) {
-		hasOwnProperty.call(object, key) && keys.push(key);
-	}
-	return keys;
-};
-
 /**
  * Creates a simple _setXXXAttr function to map a widget property to the property of an object on the widget.
+ * TODO: This is not relevant to the new widget API and should be removed.
  * @param propertyName
  * The name of the property being mapped.
  * @param childName
@@ -30,18 +21,30 @@ export function createSetter(propertyName:string, childName:string, childPropert
 };
 
 /**
- * Finds and removes `needle` from `haystack`, if it exists.
+ * Escapes a string of text for injection into a serialization of HTML or XML.
  */
-export function spliceMatch<T>(haystack:T[], needle:T):boolean {
-	for (var i = 0; i < haystack.length; ++i) {
-		if (haystack[i] === needle) {
-			haystack.splice(i, 1);
-			return true;
-		}
+export function escapeXml(text:string, forAttribute:boolean = false):string {
+	text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+	if (forAttribute) {
+		text = text.replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 	}
 
-	return false;
+	return text;
 }
+
+/**
+ * Retrieves all enumerable keys from an object.
+ */
+export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):string[] {
+	var keys:string[] = [],
+		hasOwnProperty = Object.prototype.hasOwnProperty;
+
+	for (var key in object) {
+		hasOwnProperty.call(object, key) && keys.push(key);
+	}
+	return keys;
+};
 
 /**
  * Determines whether two values are strictly equal, also treating
@@ -61,14 +64,15 @@ export function isObject(object:any):boolean {
 }
 
 /**
- * Escapes a string of text for injection into a serialization of HTML or XML.
+ * Finds and removes `needle` from `haystack`, if it exists.
  */
-export function escapeXml(text:string, forAttribute:boolean = false):string {
-	text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-
-	if (forAttribute) {
-		text = text.replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+export function spliceMatch<T>(haystack:T[], needle:T):boolean {
+	for (var i = 0; i < haystack.length; ++i) {
+		if (haystack[i] === needle) {
+			haystack.splice(i, 1);
+			return true;
+		}
 	}
 
-	return text;
+	return false;
 }

@@ -1,13 +1,13 @@
 /// <reference path="../../intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
-import util = require('../util');
 import binding = require('../../../binding/interfaces');
-import StatefulBinder = require('../../../binding/properties/Stateful');
-import Stateful = require('dojo/Stateful');
 import DataBindingDirection = require('../../../binding/DataBindingDirection');
 import MockBinder = require('../support/MockBinder');
+import registerSuite = require('intern!object');
+import Stateful = require('dojo/Stateful');
+import StatefulBinder = require('../../../binding/properties/Stateful');
+import util = require('../support/util');
 
 var registry:binding.IDataBindingRegistry;
 
@@ -111,10 +111,10 @@ registerSuite({
 		var fakeStateful = {
 				numSets: 0,
 				value: '1',
-				get: function () {
+				get: function ():any {
 					return this.value;
 				},
-				set: function (key, value) {
+				set: function (key:string, value:any):void {
 					var oldValue = this.value;
 					++this.numSets;
 				},

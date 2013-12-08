@@ -1,5 +1,5 @@
-import core = require('../interfaces');
 import binding = require('./interfaces');
+import core = require('../interfaces');
 import DataBindingDirection = require('./DataBindingDirection');
 
 /**
@@ -7,8 +7,8 @@ import DataBindingDirection = require('./DataBindingDirection');
  * two different objects.
  */
 class PropertyRegistry implements binding.IPropertyRegistry {
-	private _binders:binding.IPropertyBinder[] = [];
 	app:core.IApplication;
+	private _binders:binding.IPropertyBinder[] = [];
 
 	constructor(kwArgs:{ app:core.IApplication; binders?:binding.IPropertyBinder[]; }) {
 		this.app = kwArgs.app;
@@ -24,7 +24,7 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 			remove: function () {
 				this.remove = function () {};
 
-				for (var i = 0, OtherBinder; (OtherBinder = binders[i]); ++i) {
+				for (var i = 0, OtherBinder:binding.IPropertyBinder; (OtherBinder = binders[i]); ++i) {
 					if (Binder === OtherBinder) {
 						binders.splice(i, 1);
 						break;
@@ -34,61 +34,6 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 				Binder = binders = null;
 			}
 		};
-	}
-
-	test(kwArgs:binding.IDataBindingArguments):boolean {
-		var sourceBindingValid = false,
-			targetBindingValid = false;
-
-		for (var i = 0, Binder; (Binder = this._binders[i]); ++i) {
-			if (!sourceBindingValid && Binder.test(kwArgs.source, kwArgs.sourceBinding)) {
-				sourceBindingValid = true;
-			}
-			if (!targetBindingValid && Binder.test(kwArgs.target, kwArgs.targetBinding)) {
-				targetBindingValid = true;
-			}
-
-			if (sourceBindingValid && targetBindingValid) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; } = {}):binding.IBoundProperty {
-		var binders = this._binders,
-			app = this.app,
-			registry = this;
-
-		function scheduled(property:binding.IBoundProperty):binding.IBoundProperty {
-			var oldSet = property.set;
-			property.set = function (value:any):void {
-				var self = this,
-					args = arguments;
-
-				app.scheduler.schedule(property.id, value === property.get() ? null : function () {
-					oldSet.apply(self, args);
-				});
-			};
-			return property;
-		}
-
-		var property:binding.IBoundProperty;
-		for (var i = 0, Binder:binding.IPropertyBinder; (Binder = binders[i]); ++i) {
-			if (Binder.test({ object: object, binding: binding, registry: this })) {
-				var property = new Binder({
-					object: object,
-					binding: binding,
-					registry: this
-				});
-
-				return options.scheduled === false ? property : scheduled(property);
-			}
-		}
-
-		// TODO: Use BindingError
-		throw new Error('No registered property binders understand the requested binding');
 	}
 
 	bind(kwArgs:binding.IDataBindingArguments):binding.IBindingHandle {
@@ -129,6 +74,70 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 				source = target = null;
 			}
 		};
+	}
+
+	createProperty(object:Object, binding:string, options:{ scheduled?:boolean; } = {}):binding.IBoundProperty {
+		var binders = this._binders,
+			app = this.app,
+			registry = this;
+
+		function scheduled(property:binding.IBoundProperty):binding.IBoundProperty {
+			var oldSet = property.set;
+			property.set = function (value:any):void {
+				var self = this,
+					args = arguments;
+
+				app.scheduler.schedule(property.id, value === property.get() ? null : function () {
+					oldSet.apply(self, args);
+				});
+			};
+			return property;
+		}
+
+		var property:binding.IBoundProperty;
+		for (var i = 0, Binder:binding.IPropertyBinder; (Binder = binders[i]); ++i) {
+			if (Binder.test({ object: object, binding: binding, registry: this })) {
+				var property = new Binder({
+					object: object,
+					binding: binding,
+					registry: this
+				});
+
+				return options.scheduled === false ? property : scheduled(property);
+			}
+		}
+
+		// TODO: Use BindingError
+		throw new Error('No registered property binders understand the requested binding');
+	}
+
+	test(kwArgs:binding.IDataBindingArguments):boolean {
+		var sourceBindingValid = false,
+			targetBindingValid = false;
+
+		for (var i = 0, Binder:binding.IPropertyBinder; (Binder = this._binders[i]); ++i) {
+			if (!sourceBindingValid && Binder.test({
+				object: kwArgs.source,
+				binding: kwArgs.sourceBinding,
+				registry: this
+			})) {
+				sourceBindingValid = true;
+			}
+
+			if (!targetBindingValid && Binder.test({
+				object: kwArgs.target,
+				binding: kwArgs.targetBinding,
+				registry: this
+			})) {
+				targetBindingValid = true;
+			}
+
+			if (sourceBindingValid && targetBindingValid) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
 

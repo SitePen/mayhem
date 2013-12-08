@@ -1,15 +1,17 @@
-import lang = require('dojo/_base/lang');
-import has = require('./has');
+import binding = require('./binding/interfaces');
+import core = require('./interfaces');
 import Deferred = require('dojo/Deferred');
+import has = require('./has');
+import lang = require('dojo/_base/lang');
+import StatefulEvented = require('./StatefulEvented');
+import util = require('dojo/request/util');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
-import util = require('dojo/request/util');
-import StatefulEvented = require('./StatefulEvented');
 
-class Application extends StatefulEvented implements IApplication {
-	dataBindingRegistry:IDataBindingRegistry;
-	scheduler:IScheduler;
+class Application extends StatefulEvented implements core.IApplication {
+	dataBindingRegistry:binding.IDataBindingRegistry;
 	modules:{ [ propertyName:string ]:{ constructor: any; } };
+	scheduler:core.IScheduler;
 
 	/**
 	 * Replaces the configuration kwArgs object that gets passed to the constructor with one that
@@ -43,7 +45,7 @@ class Application extends StatefulEvented implements IApplication {
 	 * Loads application components and attaches them to the application object.
 	 */
 	private _loadModules():IPromise<void> {
-		var dfd = new Deferred<void>(),
+		var dfd:IDeferred<void> = new Deferred<void>(),
 			lazyConstructors:{ [key:string]: number; } = {},
 			moduleIdsToLoad:string[] = [];
 
@@ -73,7 +75,7 @@ class Application extends StatefulEvented implements IApplication {
 					this.set(key, new Module(config));
 				}
 
-				dfd.resolve();
+				dfd.resolve(undefined);
 			}
 			catch (error) {
 				dfd.reject(error);
@@ -95,7 +97,7 @@ class Application extends StatefulEvented implements IApplication {
 			});
 		}
 
-		var dfd = new Deferred<Application>();
+		var dfd:IDeferred<Application> = new Deferred<Application>();
 
 		this._loadModules().then(() => {
 			var promises:IPromise<any>[] = [],

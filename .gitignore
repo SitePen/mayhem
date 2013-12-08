@@ -1,3 +1,4 @@
 *.js
 !tests/intern.js
 !tests/binding.js
+!tests/support/lcovhtml.js

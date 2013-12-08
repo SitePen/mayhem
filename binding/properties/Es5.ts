@@ -1,11 +1,11 @@
 /// <reference path="../../dojo.d.ts" />
 
-import binding = require('../interfaces');
-import lang = require('dojo/_base/lang');
 import array = require('dojo/_base/array');
+import binding = require('../interfaces');
+import has = require('../../has');
+import lang = require('dojo/_base/lang');
 import Property = require('./Property');
 import util = require('../../util');
-import has = require('../../has');
 
 class Es5Property extends Property implements binding.IBoundProperty {
 	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
@@ -19,9 +19,9 @@ class Es5Property extends Property implements binding.IBoundProperty {
 	}
 
 	private _object:Object;
+	private _originalDescriptor:PropertyDescriptor;
 	private _property:string;
 	private _target:binding.IBoundProperty;
-	private _originalDescriptor:PropertyDescriptor;
 
 	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
@@ -68,18 +68,6 @@ class Es5Property extends Property implements binding.IBoundProperty {
 		this._update(value);
 	}
 
-	private _update(value:any):void {
-		this._target && this._target.set(value);
-	}
-
-	get():any {
-		return this._object ? this._object[this._property] : undefined;
-	}
-
-	set(value:any):void {
-		this._object && (this._object[this._property] = value);
-	}
-
 	bindTo(target:binding.IBoundProperty):IHandle {
 		this._target = target;
 
@@ -110,6 +98,18 @@ class Es5Property extends Property implements binding.IBoundProperty {
 
 		Object.defineProperty(this._object, this._property, descriptor);
 		this._originalDescriptor = this._object = this._target = null;
+	}
+
+	get():any {
+		return this._object ? this._object[this._property] : undefined;
+	}
+
+	set(value:any):void {
+		this._object && (this._object[this._property] = value);
+	}
+
+	private _update(value:any):void {
+		this._target && this._target.set(value);
 	}
 }
 

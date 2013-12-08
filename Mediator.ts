@@ -1,21 +1,19 @@
-/// <reference path="interfaces.ts" />
 /// <reference path="dojo.d.ts" />
 
-import has = require('dojo/has');
 import arrayUtil = require('dojo/_base/array');
-import util = require('./util');
-
-import Stateful = require('dojo/Stateful');
-import Evented = require('dojo/Evented');
+import core = require('./interfaces');
 import declare = require('dojo/_base/declare');
+import Evented = require('dojo/Evented');
+import has = require('dojo/has');
+import Stateful = require('dojo/Stateful');
+import util = require('./util');
 
 var uuid = 0;
 
-class Mediator implements IMediator {
-	app:IApplication;
-	model:IModel;
+class Mediator implements core.IMediator {
+	app:core.IApplication;
+	model:core.IModel;
 	routeState:Object;
-
 	private _watchers:{ [ key:string ]:Array<(key:string, oldValue:any, newValue:any) => void>; } = {};
 
 	constructor(kwArgs?:Object) {

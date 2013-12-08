@@ -1,12 +1,12 @@
 /// <reference path="../../intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
-import util = require('../util');
 import binding = require('../../../binding/interfaces');
-import MethodBinder = require('../../../binding/properties/Method');
 import Es5Binder = require('../../../binding/properties/Es5');
+import MethodBinder = require('../../../binding/properties/Method');
 import MockBinder = require('../support/MockBinder');
+import registerSuite = require('intern!object');
+import util = require('../support/util');
 
 var registry:binding.IPropertyRegistry;
 

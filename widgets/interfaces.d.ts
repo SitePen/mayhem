@@ -12,22 +12,6 @@ export interface IClassList { // stateful array instead?
 	toggle(className:string, forceState?:boolean):void;
 }
 
-export interface IWidget extends IStateful, IEvented {
-	// TODO: Not sure there should be a hard dependency on mediator for widgets
-	mediator:core.IMediator;
-	style:style.IStyle;
-	classList:IClassList;
-	canHaveChildren?:boolean;
-	previous:IWidget;
-	next:IWidget;
-	parent:IContainer;
-	placeAt(destination:IContainer, position:PlacePosition):IHandle;
-	placeAt(destination:IContainer, position:number):IHandle;
-	placeAt(destination:IContainer, placeholder:string):IHandle;
-	bind(propertyName:string, binding:string, options?:{ direction:DataBindingDirection; }):IHandle;
-	destroy():void;
-}
-
 export interface IContainer extends IWidget {
 	add(widget:IWidget, position:AddPosition):IHandle;
 	add(widget:IWidget, position:number):IHandle;
@@ -40,4 +24,22 @@ export interface IContainer extends IWidget {
 
 export interface IView extends IWidget {
 	mediator:core.IMediator;
+}
+
+export interface IWidget extends IStateful, IEvented {
+	// TODO: Not sure there should be a hard dependency on mediator for widgets
+	canHaveChildren?:boolean;
+	classList:IClassList;
+	mediator:core.IMediator;
+	next:IWidget;
+	parent:IContainer;
+	previous:IWidget;
+	style:style.IStyle;
+
+	bind(propertyName:string, binding:string, options?:{ direction:DataBindingDirection; }):IHandle;
+	destroy():void;
+	placeAt(destination:IContainer, position:PlacePosition):IHandle;
+	placeAt(destination:IContainer, position:number):IHandle;
+	placeAt(destination:IContainer, placeholder:string):IHandle;
+	resize?(bounds?:{ width:number; height:number; }):void;
 }

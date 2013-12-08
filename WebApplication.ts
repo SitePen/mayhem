@@ -1,11 +1,10 @@
-/// <reference path="interfaces.ts" />
-
-import util = require('dojo/request/util');
 import Application = require('./Application');
+import core = require('./interfaces');
+import util = require('dojo/request/util');
 
 class WebApplication extends Application {
-	router:IRouter;
-	ui:IView;
+	router:core.IRouter;
+	ui:core.IView;
 
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepCopy(super._getDefaultConfig(), {
@@ -21,7 +20,7 @@ class WebApplication extends Application {
 		});
 	}
 
-	place(view, placeholder) {
+	place(view:core.IView, placeholder?:string) {
 		return this.ui.add(view, placeholder);
 	}
 

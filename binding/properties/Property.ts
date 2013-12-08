@@ -6,6 +6,7 @@ var oidKey = '__PropertyOid' + Math.random(),
 
 /* abstract */ class Property /* implements binding.IBoundProperty */ {
 	id:string;
+
 	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		var object = kwArgs.object;
 

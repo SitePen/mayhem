@@ -6,28 +6,15 @@ class MockBinder extends Property implements binding.IBoundProperty {
 		return true;
 	}
 
-	kwArgs:binding.IPropertyBinderArguments;
-	value:any;
-	target:binding.IBoundProperty;
 	destroyed:boolean = false;
+	kwArgs:binding.IPropertyBinderArguments;
+	target:binding.IBoundProperty;
+	value:any;
 
 	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 		this.kwArgs = kwArgs;
 		this.kwArgs.object && (this.kwArgs.object['mockBinder'] = this);
-	}
-
-	get():any {
-		return this.value;
-	}
-
-	emulateUpdate(value:any):void {
-		this.value = value;
-		this.target && this.target.set(value);
-	}
-
-	set(value:any):void {
-		this.value = value;
 	}
 
 	bindTo(target:binding.IBoundProperty):IHandle {
@@ -53,6 +40,19 @@ class MockBinder extends Property implements binding.IBoundProperty {
 		this.destroyed = true;
 		this.kwArgs.object && (this.kwArgs.object['mockBinder'] = undefined);
 		this.kwArgs = this.value = this.target = null;
+	}
+
+	emulateUpdate(value:any):void {
+		this.value = value;
+		this.target && this.target.set(value);
+	}
+
+	get():any {
+		return this.value;
+	}
+
+	set(value:any):void {
+		this.value = value;
 	}
 }
 

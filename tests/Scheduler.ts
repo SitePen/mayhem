@@ -1,7 +1,7 @@
 /// <reference path="intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
+import registerSuite = require('intern!object');
 import Scheduler = require('../Scheduler');
 
 registerSuite({
@@ -9,7 +9,7 @@ registerSuite({
 
 	'basic tests': function () {
 		var scheduler = new Scheduler(),
-			actual = [],
+			actual:string[] = [],
 			expected = [
 				// only the last scheduled item for a given ID should execute
 				'z2',
@@ -53,7 +53,7 @@ registerSuite({
 
 	'scheduling from callback': function () {
 		var scheduler = new Scheduler(),
-			actual = [],
+			actual:string[] = [],
 			expected = [ 'a', 'b', 'c', 'd', 'e', 'f' ],
 			dfd:IInternDeferred<any> = this.async(1000);
 

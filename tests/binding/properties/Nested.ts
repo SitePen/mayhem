@@ -1,15 +1,15 @@
 /// <reference path="../../intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
-import util = require('../util');
 import binding = require('../../../binding/interfaces');
-import NestedBinder = require('../../../binding/properties/Nested');
-import StatefulBinder = require('../../../binding/properties/Stateful');
-import Es5Binder = require('../../../binding/properties/Es5');
-import Stateful = require('dojo/Stateful');
 import DataBindingDirection = require('../../../binding/DataBindingDirection');
+import Es5Binder = require('../../../binding/properties/Es5');
 import MockBinder = require('../support/MockBinder');
+import NestedBinder = require('../../../binding/properties/Nested');
+import registerSuite = require('intern!object');
+import Stateful = require('dojo/Stateful');
+import StatefulBinder = require('../../../binding/properties/Stateful');
+import util = require('../support/util');
 
 var registry:binding.IPropertyRegistry;
 

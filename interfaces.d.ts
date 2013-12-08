@@ -2,47 +2,49 @@
 
 import binding = require('./binding/interfaces');
 
-export interface IScheduler {
-	schedule(id:string, callback:Function):void;
-	dispatch():void;
-	afterNext(callback:Function):void;
-}
-
 export interface IApplication {
 	dataBindingRegistry:binding.IDataBindingRegistry;
 	scheduler:IScheduler;
 }
 
+// TODO: Unused?
+export interface IApplicationComponent extends IComponent {}
+
 export interface IComponent {
 	app:IApplication;
 }
 
-export interface IApplicationComponent extends IComponent {}
-
 export interface IMediator extends IComponent, IStateful {
-	routeState:Object;
 	model:IModel;
+	routeState:Object;
 }
 
 export interface IModel extends IComponent, IStateful {}
-
-export interface IRouter extends IApplicationComponent {
-	defaultRoute:string;
-	notFoundRoute:string;
-	startup:() => IPromise<void>;
-	destroy:() => void;
-	resume:() => void;
-	pause:() => void;
-	go:(routeId:string, kwArgs:Object) => void;
-	resetPath:(path:string, replace:boolean) => void;
-	createPath:(routeId:string, kwArgs:Object) => string;
-	normalizeId:(routeId:string) => string;
-}
 
 export interface IRoute {
 	router:IRouter;
 }
 
+export interface IRouter extends IApplicationComponent {
+	createPath:(routeId:string, kwArgs:Object) => string;
+	defaultRoute:string;
+	destroy:() => void;
+	go:(routeId:string, kwArgs:Object) => void;
+	normalizeId:(routeId:string) => string;
+	notFoundRoute:string;
+	pause:() => void;
+	resetPath:(path:string, replace:boolean) => void;
+	resume:() => void;
+	startup:() => IPromise<void>;
+}
+
+export interface IScheduler {
+	afterNext(callback:Function):void;
+	dispatch():void;
+	schedule(id:string, callback:Function):void;
+}
+
+// TODO: Defined twice, also defined in widgets/interfaces
 export interface IView extends IComponent, IStateful {
 	add(subView:IView, placeholder:string):IHandle;
 	placeAt(element:Element):IHandle;

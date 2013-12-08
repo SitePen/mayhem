@@ -1,8 +1,8 @@
 /// <reference path="../../dojo.d.ts" />
 
 import binding = require('../interfaces');
-import Property = require('./Property');
 import lang = require('dojo/_base/lang');
+import Property = require('./Property');
 import when = require('dojo/when');
 
 var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
@@ -34,14 +34,6 @@ class MethodProperty extends Property implements binding.IBoundProperty {
 		});
 	}
 
-	get():any {
-		return this._source ? this._mutator(this._source.get()) : undefined;
-	}
-
-	set(value:any):void {
-		this._source && this._source.set(value);
-	}
-
 	bindTo(target:binding.IBoundProperty):IHandle {
 		this._target = target;
 
@@ -65,6 +57,14 @@ class MethodProperty extends Property implements binding.IBoundProperty {
 
 		this._source.destroy();
 		this._source = this._mutator = this._target = null;
+	}
+
+	get():any {
+		return this._source ? this._mutator(this._source.get()) : undefined;
+	}
+
+	set(value:any):void {
+		this._source && this._source.set(value);
 	}
 }
 

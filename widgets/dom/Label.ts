@@ -1,45 +1,39 @@
 import DomWidget = require('./Widget');
+import has = require('../../has');
 import util = require('../../util');
 
 class Label extends DomWidget {
-	node:HTMLLabelElement = document.createElement('label');
-	private _text:string;
-	private _formattedText:string;
-	// TODO: DomFormWidget?
-	private _for:DomWidget;
+	/* protected */ _node:HTMLLabelElement;
+	text:string;
+	formattedText:string;
+	for:string;
 
-	_textGetter():string {
-		return this._text;
+	constructor(kwArgs:Object) {
+		super(kwArgs);
+		this._node = document.createElement('label');
 	}
 
 	_textSetter(value:string):void {
-		this._text = value;
-		this._formattedText = util.escapeXml(value);
-		this.node.innerHTML = this._formattedText;
-	}
-
-	_formattedTextGetter():string {
-		return this._formattedText;
+		this.text = value;
+		this.formattedText = util.escapeXml(value);
+		this._node.innerHTML = this.formattedText;
 	}
 
 	_formattedTextSetter(value:string):void {
-		this._formattedText = value;
-		this.node.innerHTML = value;
-		// TODO: Branch for old IE?
-		this._text = this.node.textContent || this.node.innerText;
+		this.formattedText = value;
+		this._node.innerHTML = value;
+		// TODO: has-branch for old IE?
+		this.text = this._node.textContent || this._node.innerText;
 	}
 
-	_forGetter():DomWidget {
-		return this._for;
-	}
-
-	_forSetter(widget:DomWidget):void {
-		this._for = widget;
-		this.node.htmlFor = widget.node.id;
+	_forSetter(id:string):void {
+		this.for = id;
+		this._node.htmlFor = id;
 	}
 
 	destroy():void {
-
+		super.destroy();
+		this.for = this.text = this.formattedText = null;
 	}
 }
 

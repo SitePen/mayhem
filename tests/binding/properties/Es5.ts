@@ -1,9 +1,9 @@
 /// <reference path="../../intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
 import Es5Binder = require('../../../binding/properties/Es5');
 import MockBinder = require('../support/MockBinder');
+import registerSuite = require('intern!object');
 
 function createBasicTests(sourceObject:{ foo?:string; }) {
 	return function () {

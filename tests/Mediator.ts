@@ -1,8 +1,8 @@
 /// <reference path="intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
 import Mediator = require('../Mediator');
+import registerSuite = require('intern!object');
 import Stateful = require('dojo/Stateful');
 
 class ComputedTestMediator extends Mediator {
@@ -103,7 +103,7 @@ registerSuite({
 			dfd:IInternDeferred<void> = this.async(500),
 			numCallbacks = 0,
 			expected = [ 'foo', 'hello', 'universe', 'bar', undefined, 'red' ],
-			actual = [];
+			actual:any[] = [];
 
 		var handle = mediator.watch(dfd.rejectOnError(function (key:string, oldValue:string, newValue:string) {
 			++numCallbacks;

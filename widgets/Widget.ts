@@ -1,11 +1,11 @@
-import core = require('../interfaces');
-import widgets = require('./interfaces');
-import style = require('./style/interfaces');
 import binding = require('../binding/interfaces');
-import StatefulEvented = require('../StatefulEvented');
+import core = require('../interfaces');
 import lang = require('dojo/_base/lang');
-import util = require('../util');
 import PlacePosition = require('./PlacePosition');
+import StatefulEvented = require('../StatefulEvented');
+import style = require('./style/interfaces');
+import util = require('../util');
+import widgets = require('./interfaces');
 
 var uid = 0;
 
@@ -94,3 +94,5 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		this._bindings = this.mediator = this.app = null;
 	}
 }
+
+export = Widget;

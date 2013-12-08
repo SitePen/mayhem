@@ -17,26 +17,25 @@ function createTimer(callback:Function):IHandle {
 
 class Scheduler implements core.IScheduler {
 	private _callbacks:{ [id:string]:() => void; } = {};
+	private _dispatch:Function;
 	private _postCallbacks:Function[] = [];
 	private _timer:IHandle;
-	private _dispatch:Function;
 
 	constructor() {
 		this._dispatch = lang.hitch(this, 'dispatch');
 	}
 
-	schedule(id:string, callback:() => void):IHandle {
-		var callbacks = this._callbacks;
-		callbacks[id] = callback;
+	afterNext(callback:Function):IHandle {
+		var callbacks = this._postCallbacks,
+			spliceMatch = util.spliceMatch;
 
-		if (!this._timer) {
-			this._timer = createTimer(this._dispatch);
-		}
+		callbacks.push(callback);
 
 		return {
 			remove: function () {
 				this.remove = function () {};
-				callbacks = id = callbacks[id] = null;
+				spliceMatch(callbacks, callback);
+				spliceMatch = callbacks = callback = null;
 			}
 		};
 	}
@@ -68,17 +67,18 @@ class Scheduler implements core.IScheduler {
 		}
 	}
 
-	afterNext(callback:Function):IHandle {
-		var callbacks = this._postCallbacks,
-			spliceMatch = util.spliceMatch;
+	schedule(id:string, callback:() => void):IHandle {
+		var callbacks = this._callbacks;
+		callbacks[id] = callback;
 
-		callbacks.push(callback);
+		if (!this._timer) {
+			this._timer = createTimer(this._dispatch);
+		}
 
 		return {
 			remove: function () {
 				this.remove = function () {};
-				spliceMatch(callbacks, callback);
-				spliceMatch = callbacks = callback = null;
+				callbacks = id = callbacks[id] = null;
 			}
 		};
 	}

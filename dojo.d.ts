@@ -1,5 +1,41 @@
+interface IDeferred<T> extends IPromise<T> {
+	progress<U>(update:U, strict?:boolean):IPromise<U>;
+	promise:IPromise<T>;
+	reject<U>(reason:U, strict?:boolean):IPromise<U>;
+	resolve<U>(value:U, strict?:boolean):IPromise<U>;
+}
+
+interface IEvented {
+	emit(type:string, event:Event):void;
+	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
+	on(type:string, listener:(event:Event) => void):IHandle;
+}
+
+interface IExtensionEvent {
+	(target:Object, callback:(event:Event) => void):IHandle;
+}
+
 interface IHandle {
 	remove: () => void;
+}
+
+interface IPromise<T> {
+	always<U>(callback:(valueOrError:any) => U):IPromise<U>;
+	cancel<U>(reason:U, strict?:boolean):U;
+	isCanceled():boolean;
+	isFulfilled():boolean;
+	isRejected():boolean;
+	isResolved():boolean;
+	otherwise<U>(errback:(reason:any) => IPromise<U>):IPromise<U>;
+	otherwise<U>(errback:(reason:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
+	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
 }
 
 interface IStateful {
@@ -10,56 +46,20 @@ interface IStateful {
 	watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
 }
 
-interface IPromise<T> {
-	cancel<U>(reason:U, strict?:boolean):U;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
-	then<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
-	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
-	otherwise<U>(errback:(reason:any) => IPromise<U>):IPromise<U>;
-	otherwise<U>(errback:(reason:any) => U):IPromise<U>;
-	always<U>(callback:(valueOrError:any) => U):IPromise<U>;
-	isResolved():boolean;
-	isRejected():boolean;
-	isFulfilled():boolean;
-	isCanceled():boolean;
-}
-
-interface IDeferred<T> extends IPromise<T> {
-	promise:IPromise<T>;
-	resolve<U>(value:U, strict?:boolean):IPromise<U>;
-	reject<U>(reason:U, strict?:boolean):IPromise<U>;
-	progress<U>(update:U, strict?:boolean):IPromise<U>;
-}
-
-interface IExtensionEvent {
-	(target:Object, callback:(event:Event) => void):IHandle;
-}
-
-interface IEvented {
-	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
-	on(type:string, listener:(event:Event) => void):IHandle;
-	emit(type:string, event:Event):void;
-}
-
 declare var require:{
-	(config:Object, dependencies:string[], callback:(...modules:any[]) => void);
-	(dependencies:string[], callback:(...modules:any[]) => void);
+	(config:Object, dependencies:string[], callback:(...modules:any[]) => void):void;
+	(dependencies:string[], callback:(...modules:any[]) => void):void;
 };
 
 declare module 'dojo/_base/array' {
 	var array:{
-		forEach<T>(array:T[], callback:(value:T, index:number, array:T[]) => void, thisArg?:any): void;
-		map<T>(array:T[], callback:(value:T, index:number, array:T[]) => T, thisArg?:any):T[];
-		filter<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):T[];
 		every<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
-		some<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
+		filter<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):T[];
+		forEach<T>(array:T[], callback:(value:T, index:number, array:T[]) => void, thisArg?:any): void;
 		indexOf<T>(array:T[], value:T, fromIndex?:number, findLast?:boolean):number;
 		lastIndexOf<T>(array:T[], value:T, fromIndex?:number):number;
+		map<T>(array:T[], callback:(value:T, index:number, array:T[]) => T, thisArg?:any):T[];
+		some<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
 	};
 	export = array;
 }
@@ -76,16 +76,16 @@ declare module 'dojo/_base/declare' {
 
 declare module 'dojo/_base/lang' {
 	var lang:{
-		mixin<T>(target:T, ...source:Object[]):T;
+		delegate<T>(object:T, properties?:Object):T;
 		getObject(key:string, create?:boolean, context?:Object):any;
-		setObject(key:string, value:any, context?:Object):any;
 		hitch(context:Object, property:string, ...prefixedArgs:Object[]):Function;
 		hitch(context:Object, fn:Function, ...prefixedArgs:Object[]):Function;
+		mixin<T>(target:T, ...source:Object[]):T;
 		partial<T>(fn:T): T;
 		partial(fn:Function, ...prefixedArgs:any[]): Function;
-		delegate<T>(object:T, properties?:Object):T;
-		trim(string:string):string;
 		replace(template:string, kwArgs:Object, pattern?:RegExp):string;
+		setObject(key:string, value:any, context?:Object):any;
+		trim(string:string):string;
 	};
 	export = lang;
 }
@@ -103,9 +103,9 @@ declare module 'dojo/Deferred' {
 
 declare module 'dojo/Evented' {
 	class Evented implements IEvented {
+		emit(type:string, event:Event):void;
 		on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
 		on(type:string, listener:(event:Event) => void):IHandle;
-		emit(type:string, event:Event):void;
 	}
 
 	export = Evented;
@@ -129,12 +129,12 @@ declare module 'dojo/promise/all' {
 
 declare module 'dojo/request/util' {
 	var util:{
+		addCommonMethods(provider:any, methods:string[]):void;
+		checkStatus(status:number):boolean;
 		deepCopy<T>(target:T, source:Object):T;
 		deepCreate<T>(source:T, properties:Object):T;
-		deferred(response:Object /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function);
-		addCommonMethods(provider:any, methods:string[]):void;
-		parseArgs(url, options, skipData):{ url:string; options:string; getHeader:(name:string) => string; };
-		checkStatus(status:number):boolean;
+		deferred(response:Object /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function):void;
+		parseArgs(url:any, options:any, skipData:any):{ url:string; options:string; getHeader:(name:string) => string; };
 	};
 	export = util;
 }

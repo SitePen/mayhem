@@ -1,13 +1,13 @@
 /// <reference path="../intern.d.ts" />
 
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
-import util = require('./util');
 import binding = require('../../binding/interfaces');
-import PropertyRegistry = require('../../binding/PropertyRegistry');
 import DataBindingDirection = require('../../binding/DataBindingDirection');
-import MockBinder = require('./support/MockBinder');
 import lang = require('dojo/_base/lang');
+import MockBinder = require('./support/MockBinder');
+import PropertyRegistry = require('../../binding/PropertyRegistry');
+import registerSuite = require('intern!object');
+import util = require('./support/util');
 
 var registry:PropertyRegistry,
 	emptyBinding:binding.IDataBindingArguments = {
@@ -31,7 +31,7 @@ registerSuite({
 	'#add': function () {
 		// TODO: Mock Property binders to test add, createProperty, test, bind
 
-		var actual = [],
+		var actual:number[] = [],
 			expected = [ 1, 1, 2, 2, 3, 3 ];
 
 		var FirstBinder = <binding.IPropertyBinder> {

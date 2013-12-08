@@ -1,6 +1,6 @@
+import array = require('dojo/_base/array');
 import binding = require('../interfaces');
 import lang = require('dojo/_base/lang');
-import array = require('dojo/_base/array');
 import Property = require('./Property');
 import util = require('../../util');
 
@@ -11,6 +11,11 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 			typeof object.set === 'function' &&
 			typeof object.watch === 'function');
 	}
+
+	/**
+	 * The watch handle for the bound object.
+	 */
+	private _handle:IHandle;
 
 	/**
 	 * The object containing the final property to be bound.
@@ -27,11 +32,6 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	 */
 	private _target:binding.IBoundProperty;
 
-	/**
-	 * The watch handle for the bound object.
-	 */
-	private _handle:IHandle;
-
 	constructor(kwArgs:binding.IPropertyBinderArguments) {
 		super(kwArgs);
 
@@ -41,32 +41,6 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 		this._handle = object.watch(kwArgs.binding, (key:string, oldValue:any, newValue:any) => {
 			this._update(newValue);
 		});
-	}
-
-	/**
-	 * Updates the bound target property with the given value.
-	 */
-	private _update(value:any):void {
-		this._target && this._target.set(value);
-	}
-
-	/**
-	 * Gets the current value of this property.
-	 */
-	get():any {
-		return this._object ? this._object.get(this._property) : undefined;
-	}
-
-	/**
-	 * Sets the value of this property. This is intended to be used to update the value of this property from another
-	 * bound property and so will not be propagated to the target object, if one exists.
-	 */
-	set(value:any):void {
-		if (util.isEqual(this.get(), value)) {
-			return;
-		}
-
-		this._object && this._object.set(this._property, value);
 	}
 
 	/**
@@ -98,6 +72,32 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 
 		this._handle.remove();
 		this._handle = this._object = this._target = null;
+	}
+
+	/**
+	 * Gets the current value of this property.
+	 */
+	get():any {
+		return this._object ? this._object.get(this._property) : undefined;
+	}
+
+	/**
+	 * Sets the value of this property. This is intended to be used to update the value of this property from another
+	 * bound property and so will not be propagated to the target object, if one exists.
+	 */
+	set(value:any):void {
+		if (util.isEqual(this.get(), value)) {
+			return;
+		}
+
+		this._object && this._object.set(this._property, value);
+	}
+
+	/**
+	 * Updates the bound target property with the given value.
+	 */
+	private _update(value:any):void {
+		this._target && this._target.set(value);
 	}
 }
 
