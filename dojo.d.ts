@@ -36,8 +36,12 @@ interface IDeferred<T> extends IPromise<T> {
 	progress<U>(update:U, strict?:boolean):IPromise<U>;
 }
 
+interface IExtensionEvent {
+	(target:Object, callback:(event:Event) => void):IHandle;
+}
+
 interface IEvented {
-	on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
+	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
 	on(type:string, listener:(event:Event) => void):IHandle;
 	emit(type:string, event:Event):void;
 }

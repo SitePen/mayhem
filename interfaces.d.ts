@@ -2,16 +2,6 @@
 
 import binding = require('./binding/interfaces');
 
-export interface IEventTarget {
-	on(type:string, callback:(event:IExtensionEvent) => void):IHandle;
-}
-
-export interface IExtensionEvent extends CustomEvent {}
-
-export interface IExtensionEventListener {
-	(target:IEventTarget, callback:(event:IExtensionEvent) => void):IHandle;
-}
-
 export interface IScheduler {
 	schedule(id:string, callback:Function):void;
 	dispatch():void;
