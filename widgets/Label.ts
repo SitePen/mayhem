@@ -1,7 +1,10 @@
-import Widget = require('./Widget');
+/// <reference path="../dojo.d.ts" />
+/// <amd-dependency path="../has!host-browser?./dom/Label" />
 
-class Label extends Widget {
+var Label = require('../has!host-browser?./dom/Label');
 
+if (!Label) {
+	throw new Error('Label is not supported on this platform');
 }
 
 export = Label;

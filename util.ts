@@ -47,6 +47,13 @@ export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):s
 };
 
 /**
+ * A reference to the global object, regardless of engine mode.
+ */
+export var global:Object = (function () {
+	return this || new Function('return this')();
+})();
+
+/**
  * Determines whether two values are strictly equal, also treating
  * NaN as equal to NaN.
  */

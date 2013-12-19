@@ -22,6 +22,12 @@ export interface IContainer extends IWidget {
 	remove(child:IWidget):void;          // not sure about this one. always use handle?
 }
 
+export interface IDomContainer extends IContainer {
+	addNode(node:Node, position:AddPosition):IHandle;
+	addNode(node:Node, position:number):IHandle;
+	addNode(node:Node, placeholder:string):IHandle;
+}
+
 export interface IView extends IWidget {
 	mediator:core.IMediator;
 }

@@ -1,6 +1,7 @@
 /// <reference path="dojo.d.ts" />
 
 import has = require('dojo/has');
+import util = require('./util');
 
 has.add('debug', true);
 

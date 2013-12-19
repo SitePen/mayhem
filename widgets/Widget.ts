@@ -10,16 +10,16 @@ import widgets = require('./interfaces');
 var uid = 0;
 
 class Widget extends StatefulEvented implements widgets.IWidget {
-	id:string;
-	style:style.IStyle;
-	classList:widgets.IClassList;
 	app:core.IApplication;
-	previous:widgets.IWidget;
+	private _bindings:binding.IBindingHandle[];
+	classList:widgets.IClassList;
+	id:string;
+	// TODO: Not sure if mediator belongs here. Should go to IView?
+	mediator:core.IMediator;
 	next:widgets.IWidget;
 	parent:widgets.IContainer;
-	mediator:core.IMediator;
-
-	private _bindings:binding.IBindingHandle[];
+	previous:widgets.IWidget;
+	style:style.IStyle;
 
 	constructor(kwArgs:Object) {
 		super(kwArgs);
@@ -27,6 +27,34 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		if (!this.id) {
 			this.id = 'Widget' + (++uid);
 		}
+	}
+
+	bind(propertyName:string, binding:string):IHandle {
+		var bindings = this._bindings,
+			handle:binding.IBindingHandle = this.app.dataBindingRegistry.bind({
+				source: this.mediator,
+				sourceBinding: binding,
+				target: this,
+				targetBinding: propertyName
+			});
+
+		bindings.push(handle);
+		return {
+			remove: function () {
+				this.remove = function () {};
+				handle.remove();
+				util.spliceMatch(bindings, handle);
+			}
+		};
+	}
+
+	destroy():void {
+		var binding:binding.IBindingHandle;
+		for (var i = 0; (binding = this._bindings[i]); ++i) {
+			binding.remove();
+		}
+
+		this._bindings = this.mediator = this.app = null;
 	}
 
 	private _mediatorGetter():core.IMediator {
@@ -64,34 +92,6 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		}
 
 		return handle;
-	}
-
-	bind(propertyName:string, binding:string):IHandle {
-		var bindings = this._bindings,
-			handle:binding.IBindingHandle = this.app.dataBindingRegistry.bind({
-				source: this.mediator,
-				sourceBinding: binding,
-				target: this,
-				targetBinding: propertyName
-			});
-
-		bindings.push(handle);
-		return {
-			remove: function () {
-				this.remove = function () {};
-				handle.remove();
-				util.spliceMatch(bindings, handle);
-			}
-		};
-	}
-
-	destroy():void {
-		var binding:binding.IBindingHandle;
-		for (var i = 0; (binding = this._bindings[i]); ++i) {
-			binding.remove();
-		}
-
-		this._bindings = this.mediator = this.app = null;
 	}
 }
 

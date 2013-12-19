@@ -49,6 +49,7 @@ interface IStateful {
 declare var require:{
 	(config:Object, dependencies:string[], callback:(...modules:any[]) => void):void;
 	(dependencies:string[], callback:(...modules:any[]) => void):void;
+	(moduleId:string):any;
 };
 
 declare module 'dojo/_base/array' {
@@ -99,6 +100,13 @@ declare module 'dojo/Deferred' {
 		when<T,U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
 	};
 	export = Deferred;
+}
+
+declare module 'dojo/dom-construct' {
+	var domConstruct:{
+		toDom(html:string):Node;
+	};
+	export = domConstruct;
 }
 
 declare module 'dojo/Evented' {

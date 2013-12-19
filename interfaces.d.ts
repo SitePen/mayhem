@@ -44,8 +44,10 @@ export interface IScheduler {
 	schedule(id:string, callback:Function):void;
 }
 
-// TODO: Defined twice, also defined in widgets/interfaces
-export interface IView extends IComponent, IStateful {
-	add(subView:IView, placeholder:string):IHandle;
-	placeAt(element:Element):IHandle;
+export interface IStatefulArray<T> extends Array<T> {
+	set(index:number, value:any):void;
+}
+
+export interface IStatefulArrayWatcher<T> {
+	(index:number, removals:T[], additions:T[]):void;
 }
