@@ -68,6 +68,10 @@ class StatefulArray<T> /* implements core.IStatefulArray<T> */ {
 		}
 	}
 
+	get(index:number):any {
+		return this[index];
+	}
+
 	indexOf(searchElement:T, fromIndex?:number):number {
 		if (has('es5')) {
 			return Array.prototype.indexOf.apply(this, arguments);
@@ -180,19 +184,14 @@ class StatefulArray<T> /* implements core.IStatefulArray<T> */ {
 	reverse():StatefulArray<T> {
 		var removals = Array.prototype.slice.call(this, 0);
 		Array.prototype.reverse.call(this);
+		// TODO: Weird intermediate casting to <any> is required due to TS#1977
 		this._notify(0, removals, <T[]> <any> this);
 		return this;
 	}
 
 	set(index:number, value:T):void {
 		var oldValue = this[index];
-
 		this[index] = value;
-
-		if (index > this.length) {
-			this.length = index + 1;
-		}
-
 		this._notify(index, [ oldValue ], [ value ]);
 	}
 
@@ -222,6 +221,7 @@ class StatefulArray<T> /* implements core.IStatefulArray<T> */ {
 	sort(compareFn?:(a:T, b:T) => number):StatefulArray<T> {
 		var removals = Array.prototype.slice.call(this, 0);
 		Array.prototype.sort.apply(this, arguments);
+		// TODO: Weird intermediate casting to <any> is required due to TS#1977
 		this._notify(0, removals, <T[]> <any> this);
 		return this;
 	}
