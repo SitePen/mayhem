@@ -14,6 +14,7 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	private _bindings:binding.IBindingHandle[];
 	classList:widgets.IClassList;
 	id:string;
+	index:number;
 	// TODO: Not sure if mediator belongs here. Should go to IView?
 	mediator:core.IMediator;
 	next:widgets.IWidget;
@@ -44,11 +45,20 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 				this.remove = function () {};
 				handle.remove();
 				util.spliceMatch(bindings, handle);
+				bindings = handle = null;
 			}
 		};
 	}
 
+	detach():void {
+		this.parent = this.index = this.next = this.previous = null;
+	}
+
 	destroy():void {
+		this.destroy = function () {};
+
+		this.detach();
+
 		var binding:binding.IBindingHandle;
 		for (var i = 0; (binding = this._bindings[i]); ++i) {
 			binding.remove();
@@ -68,23 +78,22 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		}
 	}
 
-	placeAt(destination:widgets.IContainer, position:PlacePosition):IHandle;
+	placeAt(destination:widgets.IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:widgets.IContainer, position:number):IHandle;
 	placeAt(destination:widgets.IContainer, placeholder:string):IHandle;
 	placeAt(destination:widgets.IContainer, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
-		// TODO: IWidget.index?
 		if (position === PlacePosition.BEFORE) {
-			handle = destination.parent.add(this, destination.parent.getChildIndex(destination));
+			handle = destination.parent.add(this, destination.index);
 		}
 		else if (position === PlacePosition.AFTER) {
-			handle = destination.parent.add(this, destination.parent.getChildIndex(destination) + 1);
+			handle = destination.parent.add(this, destination.index + 1);
 		}
 		else if (position === PlacePosition.REPLACE) {
-			var index = destination.parent.getChildIndex(destination),
+			var index = destination.index,
 				parent = destination.parent;
-			destination.destroy();
+			destination.detach();
 			handle = parent.add(this, index);
 		}
 		else {

@@ -1,39 +1,30 @@
 import domUtil = require('./util');
+import DomWidget = require('./Widget');
 import widgets = require('../interfaces');
 
-class Placeholder extends Widget {
-	private _startNode:Comment;
-	private _endNode:Comment;
-
+class DomPlaceholder extends DomWidget {
 	content:widgets.IWidget;
-
-	constructor() {
-		this._startNode = document.createComment(this.id);
-		this._endNode = document.createComment('/' + this.id);
-	}
+	firstNode:Comment;
+	lastNode:Comment;
 
 	placeAt(container:widgets.IContainer, position:any):IHandle {
-		var fragment = document.createDocumentFragment();
-		fragment.appendChild(this._startNode);
-		fragment.appendChild(this._endNode);
-		container.addNode(fragment, position);
-
-		var self = this;
-		return {
-			remove: function () {
-				this.remove = function () {};
-				domUtil.getRange(self._startNode, self._endNode).deleteContents();
-			}
-		};
+		return container.add(this, position);
 	}
 
-	set(widget:widgets.IWidget) {
-		domUtil.getRange(this._startNode, this._endNode).deleteContents();
+	_contentSetter(widget:widgets.IDomWidget):void {
+		this.content && this.content.detach();
+		this.content = widget;
 
-		if (widget && this._endNode) {
-			this._endNode.parentNode.insertBefore(widgets.node, this._endNode);
+		if (widget) {
+			var node:Node = widget.detach();
+			this.lastNode.parentNode.insertBefore(node, this.lastNode);
 		}
+	}
+
+	remove():void {
+		this.content.detach();
+		this.content = this.content.parent = null;
 	}
 }
 
-export = Placeholder;
+export = DomPlaceholder;

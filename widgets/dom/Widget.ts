@@ -1,14 +1,30 @@
+import domUtil = require('./util');
+import DomContainer = require('./Container');
 import Widget = require('../Widget');
+import widgets = require('../interfaces');
 
-class DomWidget extends Widget {
-	// The node needs to be publicly accessible because container widgets have to interact with it directly in order
-	// to place the widget. It is marked with underscore to indicate users should not use it
-	_node:HTMLElement;
+class DomWidget extends Widget implements widgets.IDomWidget {
+	firstNode:Node;
+	parent:DomContainer;
+	lastNode:Node;
+
+	constructor(kwArgs:Object) {
+		super(kwArgs);
+
+		var commentId:string = this.id.replace(/--/g, '\u2010\u2010');
+		this.firstNode = document.createComment(commentId);
+		this.lastNode = document.createComment('/' + commentId);
+		// TODO: Do not expose the widget to the DOM to discourage people from dipping into it?
+		this.firstNode['widget'] = this.lastNode['widget'] = this;
+	}
+
+	detach():DocumentFragment {
+		this.parent && this.parent.remove(this);
+		return domUtil.getRange(this.firstNode, this.lastNode).extractContents();
+	}
 
 	destroy():void {
 		super.destroy();
-		this._node.parentNode && this._node.parentNode.removeChild(this._node);
-		this._node = null;
 	}
 }
 

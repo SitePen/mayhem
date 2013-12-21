@@ -1,5 +1,6 @@
-class Placeholder {
-	set(widget:IWidget) {
+import widgets = require('./interfaces');
 
-	}
+class Placeholder {
 }
+
+export = Placeholder;
