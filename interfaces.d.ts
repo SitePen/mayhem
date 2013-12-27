@@ -19,7 +19,11 @@ export interface IMediator extends IComponent, IStateful {
 	routeState:Object;
 }
 
-export interface IModel extends IComponent, IStateful {}
+export interface IModel extends IComponent, IStateful {
+	scenario:string;
+
+	isFieldRequired(key:string):boolean;
+}
 
 export interface IRoute {
 	router:IRouter;

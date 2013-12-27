@@ -6,7 +6,7 @@ interface IDeferred<T> extends IPromise<T> {
 }
 
 interface IEvented {
-	emit(type:string, event:Event):void;
+	emit(type:string, event?:Event):void;
 	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
 	on(type:string, listener:(event:Event) => void):IHandle;
 }
@@ -17,6 +17,11 @@ interface IExtensionEvent {
 
 interface IHandle {
 	remove: () => void;
+}
+
+interface ILoaderPlugin {
+	load(resourceId:string, contextRequire:typeof require, load:(...modules:any[]) => void):void;
+	normalize?(resourceId:string, normalize:(id:string) => string):string;
 }
 
 interface IPromise<T> {
@@ -111,7 +116,7 @@ declare module 'dojo/dom-construct' {
 
 declare module 'dojo/Evented' {
 	class Evented implements IEvented {
-		emit(type:string, event:Event):void;
+		emit(type:string, event?:Event):void;
 		on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
 		on(type:string, listener:(event:Event) => void):IHandle;
 	}

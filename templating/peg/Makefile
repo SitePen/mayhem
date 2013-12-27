@@ -1,5 +1,5 @@
-PEGJSSRC=templateParser.pegjs
-PEGJSOUT=templateParser.js
+PEGJSSRC=html.pegjs
+PEGJSOUT=html.js
 
 # TODO: add pegjs to devDependencies and use via ./node_modules/etc.
 parser: $(PEGJSSRC)

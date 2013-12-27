@@ -11,10 +11,21 @@ class Element extends DomContainer {
 	html:string;
 
 	constructor(kwArgs:Object) {
+		this.on('attached', () => {
+			this.set('html', this.html);
+		});
+
 		super(kwArgs);
 	}
 
-	_htmlSetter(html:string):void {
+	private _htmlSetter(html:string):void {
+		this.html = html;
+
+		// TODO: Create and used `isAttached`, or something?
+		if (!this.parent) {
+			return;
+		}
+
 		this.empty();
 		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
 		this.lastNode.parentNode.insertBefore(domConstruct.toDom(html), this.lastNode);

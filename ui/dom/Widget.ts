@@ -18,6 +18,12 @@ class DomWidget extends Widget implements widgets.IDomWidget {
 		this.firstNode['widget'] = this.lastNode['widget'] = this;
 	}
 
+	attachToDom(node:Element):void {
+		node.appendChild(this.detach());
+		this.parent = <DomContainer> <any> new DomWidget({});
+		this.emit('attached');
+	}
+
 	detach():DocumentFragment {
 		this.parent && this.parent.remove(this);
 		return domUtil.getRange(this.firstNode, this.lastNode).extractContents();

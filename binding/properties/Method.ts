@@ -7,8 +7,15 @@ import when = require('dojo/when');
 
 var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
 
+/**
+ * This property binder adds the ability to register methods that can be used to transform the value of a bound
+ * property when its value is set on its bound target.
+ */
 class MethodProperty extends Property implements binding.IBoundProperty {
-	static methods:{ [name:string]: Function } = {};
+	/**
+	 * The map of available transformation methods.
+	 */
+	static methods:{ [name:string]: (value:any) => any } = {};
 	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		var matches:RegExpExecArray;
 		return Boolean((matches = methodExpression.exec(kwArgs.binding)) && this.methods[matches[1]]);

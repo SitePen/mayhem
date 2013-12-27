@@ -10,7 +10,7 @@ class StatefulEvented extends Stateful implements IEvented {
 		Evented.apply(this, arguments);
 	}
 
-	emit(type:any, event:Event):void {
+	emit(type:any, event?:Event):void {
 		Evented.prototype.emit.apply(this, arguments);
 	}
 

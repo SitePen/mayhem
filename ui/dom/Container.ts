@@ -66,6 +66,11 @@ class DomContainer extends DomWidget implements widgets.IContainer {
 
 			this.children.splice(position, 0, widget);
 			referenceNode.parentNode.insertBefore(node, referenceNode);
+
+			widget.next = this.children[position + 1] || null;
+			widget.parent = this;
+			widget.previous = this.children[position - 1] || null;
+			widget.emit('attached');
 		}
 
 		return handle;

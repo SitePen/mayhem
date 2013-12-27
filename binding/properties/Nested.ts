@@ -6,6 +6,10 @@ import lang = require('dojo/_base/lang');
 import Property = require('./Property');
 import util = require('../../util');
 
+/**
+ * This property binder adds the ability to bind to arbitrarily deep children of the source object, including
+ * properties that may not yet exist at the time the object is initially bound.
+ */
 class NestedProperty extends Property implements binding.IBoundProperty {
 	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		return kwArgs.object != null && kwArgs.binding.indexOf('.') !== -1;

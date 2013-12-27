@@ -4,6 +4,9 @@ import lang = require('dojo/_base/lang');
 import Property = require('./Property');
 import util = require('../../util');
 
+/**
+ * This property binder enables the ability to bind to Dojo 1 Stateful objects.
+ */
 class StatefulProperty extends Property implements binding.IBoundProperty {
 	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		var object = <IStateful> kwArgs.object;

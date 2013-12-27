@@ -7,6 +7,10 @@ import lang = require('dojo/_base/lang');
 import Property = require('./Property');
 import util = require('../../util');
 
+/**
+ * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
+ * that support EcmaScript 5.
+ */
 class Es5Property extends Property implements binding.IBoundProperty {
 	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		if (!has('es5') || !util.isObject(kwArgs.object)) {

@@ -1,5 +1,8 @@
+/// <reference path="../dojo.d.ts" />
+
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
+import has = require('../has');
 import lang = require('dojo/_base/lang');
 import PlacePosition = require('./PlacePosition');
 import StatefulEvented = require('../StatefulEvented');
@@ -7,9 +10,18 @@ import style = require('./style/interfaces');
 import util = require('../util');
 import widgets = require('./interfaces');
 
-var uid = 0;
+var uid = 0,
+	platform = has('host-browser') ? 'dom/' : '';
 
 class Widget extends StatefulEvented implements widgets.IWidget {
+	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
+		require([ resourceId ], load);
+	}
+
+	static normalize(resourceId:string, normalize:(id:string) => string):string {
+		return normalize('./' + platform + resourceId);
+	}
+
 	app:core.IApplication;
 	private _bindings:binding.IBindingHandle[];
 	classList:widgets.IClassList;

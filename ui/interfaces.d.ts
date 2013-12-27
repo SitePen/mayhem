@@ -3,7 +3,6 @@ import style = require('./style/interfaces');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import PlacePosition = require('./PlacePosition');
-import StatefulArray = require('../StatefulArray');
 
 export interface IClassList { // stateful array instead?
 	add(className:string):void;
