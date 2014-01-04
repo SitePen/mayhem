@@ -1,21 +1,26 @@
 import DomPlaceholder = require('./Placeholder');
-import DomWidget = require('./Widget');
 import has = require('../../has');
 import PlacePosition = require('../PlacePosition');
-import StatefulArray = require('../../StatefulArray');
+import StatefulEvented = require('../../StatefulEvented');
+import util = require('../../util');
 import widgets = require('../interfaces');
 
-class DomContainer extends DomWidget implements widgets.IContainer {
+/* abstract */ class DomContainer implements widgets.IContainer {
 	children:widgets.IDomWidget[] = [];
 	placeholders:{ [id:string]: DomPlaceholder; } = {};
+
+	// widgets.IWidget
+	firstNode:Node;
+	get:(key:string) => any;
+	id:string;
+	lastNode:Node;
+	parent:widgets.IContainerWidget;
 
 	add(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
 	add(widget:widgets.IDomWidget, position:number):IHandle;
 	add(widget:widgets.IDomWidget, placeholder:string):IHandle;
 	add(widget:widgets.IDomWidget, position:any = PlacePosition.LAST):IHandle {
-		var handle:IHandle,
-			node:Node = widget.detach(),
-			referenceNode:Node;
+		var handle:IHandle;
 
 		if (typeof position === 'string') {
 			var placeholder = this.placeholders[position];
@@ -35,10 +40,10 @@ class DomContainer extends DomWidget implements widgets.IContainer {
 			};
 		}
 		else if (position === PlacePosition.BEFORE) {
-			handle = this.parent.add(widget, this.index);
+			handle = this.parent.add(widget, this.get('index'));
 		}
 		else if (position === PlacePosition.AFTER) {
-			handle = this.parent.add(widget, this.index + 1);
+			handle = this.parent.add(widget, this.get('index') + 1);
 		}
 		else {
 			if (position === PlacePosition.ONLY) {
@@ -47,33 +52,47 @@ class DomContainer extends DomWidget implements widgets.IContainer {
 			}
 
 			if (position === PlacePosition.FIRST) {
-				// TODO: If firstNode equals lastNode then this is a single-node container, not a ranged container, and
-				// we should be peeking into its children probably since otherwise this is going to place outside the
-				// container.
-				referenceNode = this.firstNode.nextSibling;
 				position = 0;
 			}
 			else if (position === PlacePosition.LAST) {
-				referenceNode = this.lastNode;
 				position = this.children.length;
 			}
 			else {
 				position = Math.max(0, Math.min(this.children.length, position));
-
-				var referenceWidget:widgets.IDomWidget = this.children[position];
-				referenceNode = referenceWidget ? referenceWidget.firstNode : this.lastNode;
 			}
 
 			this.children.splice(position, 0, widget);
-			referenceNode.parentNode.insertBefore(node, referenceNode);
+			this._addToContainer(widget, this.children[position]);
 
-			widget.next = this.children[position + 1] || null;
-			widget.parent = this;
-			widget.previous = this.children[position - 1] || null;
-			widget.emit('attached');
+			widget.set('parent', this);
+
+			var self = this;
+			handle = {
+				remove: function () {
+					this.remove = function () {};
+					util.spliceMatch(self.children, widget);
+					widget.detach();
+					widget = self = null;
+				}
+			};
 		}
 
 		return handle;
+	}
+
+	/* protected */ _addToContainer(widget:widgets.IDomWidget, referenceWidget:widgets.IWidget) {
+		var widgetNode:Node = widget.detach(),
+			referenceNode:Node = referenceWidget ? referenceWidget.get('firstNode') : null;
+
+		// TODO: Allow users to specify a placeholder widget for use as the actual container for objects added to the
+		// widget, a la Dijit `containerNode`?
+
+		if (this.firstNode === this.lastNode) {
+			this.firstNode.insertBefore(widgetNode, referenceNode);
+		}
+		else {
+			this.firstNode.parentNode.insertBefore(widgetNode, referenceNode || this.lastNode);
+		}
 	}
 
 	empty():void {

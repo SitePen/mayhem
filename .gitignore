@@ -1,3 +1,4 @@
+*.js.map
 *.js
 !tests/intern.js
 !tests/binding.js

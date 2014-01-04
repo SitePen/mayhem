@@ -29,9 +29,9 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	index:number;
 	// TODO: Not sure if mediator belongs here. Should go to IView?
 	mediator:core.IMediator;
-	next:widgets.IWidget;
-	parent:widgets.IContainer;
-	previous:widgets.IWidget;
+	/* readonly */ next:widgets.IWidget;
+	parent:widgets.IContainerWidget;
+	/* readonly */ previous:widgets.IWidget;
 	style:style.IStyle;
 
 	constructor(kwArgs:Object) {
@@ -62,10 +62,6 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		};
 	}
 
-	detach():void {
-		this.parent = this.index = this.next = this.previous = null;
-	}
-
 	destroy():void {
 		this.destroy = function () {};
 
@@ -79,8 +75,12 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		this._bindings = this.mediator = this.app = null;
 	}
 
+	detach():void {
+		this.parent && this.parent.remove(this);
+	}
+
 	private _mediatorGetter():core.IMediator {
-		return this.mediator || this.parent.get('mediator');
+		return this.mediator || (this.parent ? this.parent.get('mediator') : null);
 	}
 
 	private _mediatorSetter(value?:core.IMediator):void {
@@ -90,21 +90,42 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		}
 	}
 
+	private _nextGetter():widgets.IWidget {
+		var index:number = this.parent.children.indexOf(this);
+		return this.parent.children[index + 1];
+	}
+
 	placeAt(destination:widgets.IWidget, position:PlacePosition):IHandle;
-	placeAt(destination:widgets.IContainer, position:number):IHandle;
-	placeAt(destination:widgets.IContainer, placeholder:string):IHandle;
-	placeAt(destination:widgets.IContainer, position:any = PlacePosition.LAST):IHandle {
+	placeAt(destination:widgets.IContainerWidget, position:number):IHandle;
+	placeAt(destination:widgets.IContainerWidget, placeholder:string):IHandle;
+	placeAt(destination:widgets.IContainerWidget, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
+		if (has('debug') && !destination) {
+			throw new Error('Cannot place widget at undefined destination');
+		}
+
 		if (position === PlacePosition.BEFORE) {
+			if (has('debug') && !destination.parent) {
+				throw new Error('Destination widget ' + destination.id + ' must have a parent in order to place before it');
+			}
+
 			handle = destination.parent.add(this, destination.index);
 		}
 		else if (position === PlacePosition.AFTER) {
+			if (has('debug') && !destination.parent) {
+				throw new Error('Destination widget ' + destination.id + ' must have a parent in order to place after it');
+			}
+
 			handle = destination.parent.add(this, destination.index + 1);
 		}
 		else if (position === PlacePosition.REPLACE) {
-			var index = destination.index,
-				parent = destination.parent;
+			if (has('debug') && !destination.parent) {
+				throw new Error('Destination widget ' + destination.id + ' must have a parent in order to replace it');
+			}
+
+			var index:number = destination.get('index'),
+				parent:widgets.IContainer = destination.get('parent');
 			destination.detach();
 			handle = parent.add(this, index);
 		}
@@ -113,6 +134,11 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		}
 
 		return handle;
+	}
+
+	private _previousGetter():widgets.IWidget {
+		var index:number = this.parent.children.indexOf(this);
+		return this.parent.children[index - 1];
 	}
 }
 

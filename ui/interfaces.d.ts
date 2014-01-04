@@ -11,7 +11,7 @@ export interface IClassList { // stateful array instead?
 	toggle(className:string, forceState?:boolean):void;
 }
 
-export interface IContainer extends IWidget {
+export interface IContainer {
 	children:IWidget[];
 	placeholders:{ [ id:string ]:IPlaceholder };
 
@@ -23,11 +23,12 @@ export interface IContainer extends IWidget {
 	remove(widget:IWidget):void;
 }
 
-export interface IDomWidget extends IWidget {
-	firstNode:Node;
-	lastNode:Node;
+export interface IContainerWidget extends IWidget, IContainer {}
 
-	detach():Node; // Element or DocumentFragment
+export interface IDomWidget extends IWidget {
+	firstNode:Node; // Comment|Element
+
+	detach():Node; // Element|DocumentFragment
 }
 
 export interface IPlaceholder extends IWidget {
