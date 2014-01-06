@@ -52,8 +52,8 @@ interface IStateful {
 }
 
 declare var require:{
-	(config:Object, dependencies:string[], callback:(...modules:any[]) => void):void;
-	(dependencies:string[], callback:(...modules:any[]) => void):void;
+	(config:Object, dependencies:string[], callback:Function):void;
+	(dependencies:string[], callback:Function):void;
 	(moduleId:string):any;
 };
 
@@ -87,8 +87,8 @@ declare module 'dojo/_base/lang' {
 		hitch(context:Object, property:string, ...prefixedArgs:Object[]):Function;
 		hitch(context:Object, fn:Function, ...prefixedArgs:Object[]):Function;
 		mixin<T>(target:T, ...source:Object[]):T;
-		partial<T>(fn:T): T;
-		partial(fn:Function, ...prefixedArgs:any[]): Function;
+		partial<T>(fn:T):T;
+		partial(fn:Function, ...prefixedArgs:any[]):Function;
 		replace(template:string, kwArgs:Object, pattern?:RegExp):string;
 		setObject(key:string, value:any, context?:Object):any;
 		trim(string:string):string;
@@ -134,8 +134,8 @@ declare module 'dojo/has' {
 
 declare module 'dojo/promise/all' {
 	var all:{
-		(object:Object):IPromise<Object>;
 		<T>(array:T[]):IPromise<T[]>;
+		(object:Object):IPromise<Object>;
 	};
 	export = all;
 }

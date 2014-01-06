@@ -31,9 +31,17 @@ class Application extends StatefulEvented implements core.IApplication {
 	/* protected */ _getDefaultConfig():Object {
 		return {
 			modules: {
-				router: {
-					constructor: 'framework/routing/NullRouter'
+				dataBindingRegistry: {
+					constructor: 'framework/binding/PropertyRegistry',
+					binders: [
+						'framework/binding/properties/Nested',
+						'framework/binding/properties/Stateful'
+					]
 				},
+// TODO: Fix-up and re-enable
+//				router: {
+//					constructor: 'framework/routing/NullRouter'
+//				},
 				scheduler: {
 					constructor: 'framework/Scheduler'
 				}
@@ -64,7 +72,7 @@ class Application extends StatefulEvented implements core.IApplication {
 
 					// want to keep original config intact to avoid any confusing changes in original configuration;
 					// also want to add a reference to the app first (so it is set before others)
-					var config:any = lang.mixin({ app: self }, this.modules[key]);
+					var config:any = lang.mixin({ app: this }, this.modules[key]);
 
 					if (key in lazyConstructors) {
 						config.constructor = loadedModules[lazyConstructors[key]];

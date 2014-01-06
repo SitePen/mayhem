@@ -72,14 +72,16 @@ class Es5Property extends Property implements binding.IBoundProperty {
 		this._update(value);
 	}
 
-	bindTo(target:binding.IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
 			return;
 		}
 
-		target.set(this._object[this._property]);
+		if (options.setValue !== false) {
+			target.set(this._object[this._property]);
+		}
 
 		var self = this;
 		return {

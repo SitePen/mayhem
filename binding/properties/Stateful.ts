@@ -49,14 +49,16 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:binding.IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
 			return;
 		}
 
-		target.set(this.get());
+		if (options.setValue !== false) {
+			target.set(this.get());
+		}
 
 		var self = this;
 		return {

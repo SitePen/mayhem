@@ -61,10 +61,12 @@ import widgets = require('../interfaces');
 				position = Math.max(0, Math.min(this.children.length, position));
 			}
 
+			var referenceWidget:widgets.IWidget = this.children[position];
 			this.children.splice(position, 0, widget);
-			this._addToContainer(widget, this.children[position]);
+			this._addToContainer(widget, referenceWidget);
 
 			widget.set('parent', this);
+			widget.emit('attach');
 
 			var self = this;
 			handle = {

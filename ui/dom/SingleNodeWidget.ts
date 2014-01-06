@@ -7,6 +7,10 @@ class SingleNodeWidget extends Widget implements widgets.IDomWidget {
 
 	constructor(kwArgs:Object) {
 		super(kwArgs);
+		this.render();
+	}
+
+	render():void {
 		this.firstNode = this.lastNode = document.createElement('div');
 	}
 

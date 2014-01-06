@@ -9,7 +9,19 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 
 	constructor(kwArgs:Object) {
 		super(kwArgs);
+		this.render();
+	}
 
+	detach():DocumentFragment {
+		if (!this._fragment) {
+			this._fragment = domUtil.getRange(this.firstNode, this.lastNode, true).extractContents();
+		}
+
+		super.detach();
+		return this._fragment;
+	}
+
+	render():void {
 		var commentId:string = this.id.replace(/--/g, '\u2010\u2010');
 		this.firstNode = document.createComment(commentId);
 		this.lastNode = document.createComment('/' + commentId);
@@ -17,12 +29,11 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 		var fragment:DocumentFragment = this._fragment = document.createDocumentFragment();
 		fragment.appendChild(this.firstNode);
 		fragment.appendChild(this.lastNode);
-	}
 
-	detach():DocumentFragment {
-		this._fragment = domUtil.getRange(this.firstNode, this.lastNode, true).extractContents();
-		super.detach();
-		return this._fragment;
+		// TODO: Figure out a better way to declaratively apply event handlers to self.
+		this.on('attach', () => {
+			this._fragment = null;
+		});
 	}
 }
 

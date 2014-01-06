@@ -41,14 +41,16 @@ class MethodProperty extends Property implements binding.IBoundProperty {
 		});
 	}
 
-	bindTo(target:binding.IBoundProperty):IHandle {
+	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
 			return;
 		}
 
-		target.set(this.get());
+		if (options.setValue !== false) {
+			target.set(this.get());
+		}
 
 		var self = this;
 		return {

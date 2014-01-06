@@ -1,6 +1,8 @@
 import binding = require('./interfaces');
 import core = require('../interfaces');
 import DataBindingDirection = require('./DataBindingDirection');
+import Deferred = require('dojo/Deferred');
+import whenAll = require('dojo/promise/all');
 
 /**
  * A data binding registry that uses opaque Property objects to enable binding between arbitrary properties of
@@ -8,11 +10,13 @@ import DataBindingDirection = require('./DataBindingDirection');
  */
 class PropertyRegistry implements binding.IPropertyRegistry {
 	app:core.IApplication;
-	private _binders:binding.IPropertyBinder[] = [];
+	private _binders:binding.IPropertyBinder[];
+	useScheduler:boolean;
 
-	constructor(kwArgs:{ app:core.IApplication; binders?:binding.IPropertyBinder[]; }) {
+	constructor(kwArgs:{ app:core.IApplication; binders?:binding.IPropertyBinder[]; useScheduler?:boolean; }) {
 		this.app = kwArgs.app;
 		this._binders = kwArgs.binders || [];
+		this.useScheduler = kwArgs.useScheduler != null ? kwArgs.useScheduler : true;
 	}
 
 	add(Binder:binding.IPropertyBinder, index:number = Infinity):IHandle {
@@ -37,20 +41,20 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 	}
 
 	bind(kwArgs:binding.IDataBindingArguments):binding.IBindingHandle {
-		var source = this.createProperty(kwArgs.source, kwArgs.sourceBinding),
-			target = this.createProperty(kwArgs.target, kwArgs.targetBinding);
+		var source = this.createProperty(kwArgs.source, kwArgs.sourceBinding, { scheduled: this.useScheduler }),
+			target = this.createProperty(kwArgs.target, kwArgs.targetBinding, { scheduled: this.useScheduler });
 
 		source.bindTo(target);
 
 		if (kwArgs.direction === DataBindingDirection.TWO_WAY) {
-			target.bindTo(source);
+			target.bindTo(source, { setValue: false });
 		}
 
 		return {
 			// TODO: For ES5, use getters/setters
 			setSource: (newSource:Object, newSourceBinding:string = kwArgs.sourceBinding):void => {
 				source.destroy();
-				source = this.createProperty(newSource, newSourceBinding);
+				source = this.createProperty(newSource, newSourceBinding, { scheduled: this.useScheduler });
 				source.bindTo(target);
 				if (kwArgs.direction === DataBindingDirection.TWO_WAY) {
 					target.bindTo(source);
@@ -58,7 +62,7 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 			},
 			setTarget: (newTarget:Object, newTargetBinding:string = kwArgs.targetBinding):void => {
 				target.destroy();
-				target = this.createProperty(newTarget, newTargetBinding);
+				target = this.createProperty(newTarget, newTargetBinding, { scheduled: this.useScheduler });
 				source.bindTo(target);
 				if (kwArgs.direction === DataBindingDirection.TWO_WAY) {
 					target.bindTo(source);
@@ -109,6 +113,31 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 
 		// TODO: Use BindingError
 		throw new Error('No registered property binders understand the requested binding');
+	}
+
+	startup():IPromise<any[]> {
+		var binders = this._binders;
+
+		function loadBinder(index:number, moduleId:string):IPromise<void> {
+			var dfd:IDeferred<void> = new Deferred<void>();
+
+			require([ moduleId ], function (binder:binding.IPropertyBinder):void {
+				binders.splice(index, 1, binder);
+				dfd.resolve(null);
+			});
+
+			return dfd.promise;
+		}
+
+		var promises:IPromise<void>[] = [];
+
+		for (var i = 0, binder:any; (binder = this._binders[i]); ++i) {
+			if (typeof binder === 'string') {
+				promises.push(loadBinder(i, binder));
+			}
+		}
+
+		return whenAll(promises);
 	}
 
 	test(kwArgs:binding.IDataBindingArguments):boolean {

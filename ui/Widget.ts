@@ -2,6 +2,8 @@
 
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
+// TODO: Shorten that vv
+import DataBindingDirection = require('../binding/DataBindingDirection');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
 import PlacePosition = require('./PlacePosition');
@@ -35,6 +37,7 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	style:style.IStyle;
 
 	constructor(kwArgs:Object) {
+		this._bindings = [];
 		super(kwArgs);
 
 		if (!this.id) {
@@ -42,13 +45,15 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		}
 	}
 
-	bind(propertyName:string, binding:string):IHandle {
+	// TODO: Change bind options to be an interface
+	bind(propertyName:string, binding:string, options:{ direction?:DataBindingDirection; } = {}):IHandle {
 		var bindings = this._bindings,
 			handle:binding.IBindingHandle = this.app.dataBindingRegistry.bind({
 				source: this.mediator,
 				sourceBinding: binding,
 				target: this,
-				targetBinding: propertyName
+				targetBinding: propertyName,
+				direction: options.direction || DataBindingDirection.ONE_WAY
 			});
 
 		bindings.push(handle);

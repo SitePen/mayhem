@@ -40,12 +40,16 @@ export interface IBoundProperty {
 	 * Binds the property to another target property. The target property is only notified of a change when the actual
 	 * property is updated; calling `set` on this bound property will *not* update the bound target value.
 	 */
-	bindTo(target:IBoundProperty):IHandle;
+	bindTo(target:IBoundProperty, options?:IBoundPropertyOptions):IHandle;
 
 	/**
 	 * Permanently destroys the binding to the original property.
 	 */
 	destroy():void;
+}
+
+export interface IBoundPropertyOptions {
+	setValue?:boolean;
 }
 
 /**

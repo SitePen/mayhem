@@ -85,7 +85,7 @@ class Mediator implements core.IMediator {
 			}
 
 			if (notify) {
-				var newValue = this.get(value);
+				var newValue = this.get(key);
 
 				if (!util.isEqual(oldValue, newValue)) {
 					var watchers = [].concat(this._watchers['*'] || [], this._watchers['*' + key] || []);
