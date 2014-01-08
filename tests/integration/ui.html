@@ -18,27 +18,46 @@ var dojoConfig = {
 		<script src="../../../dojo/dojo.js"></script>
 		<script>
 require([
+	'dstore/Model',
 	'framework/Application',
 	'framework/Mediator',
 	'framework/ui/Widget!Master',
 	'framework/ui/Widget!form/Input',
-//	'framework/ui/Widget!form/Error'
-], function (Application, Mediator, Master, Input, Error) {
+	'framework/ui/Widget!form/Error'
+], function (Model, Application, Mediator, Master, Input, FormError) {
 	var app = new Application();
 
 	app.startup().then(function () {
-		var mediator = window.mediator = new Mediator({
-			app: app,
+		var firstNameRE = /^[a-zA-Z]+$/;
+		var model = window.model = new Model({
+			schema: {
+				firstName: {
+					type: 'number',
+					required: true,
+					validate: function () {
+						if (!firstNameRE.test(this.get())) {
+							this.set('errors', ['poop']);
+						}
+					}
+				}
+			},
 			firstName: 'Joe',
 			lastName: 'Bloggs'
+		});
+		var mediator = window.mediator = new Mediator({
+			app: app,
+			model: model
 		});
 
 		var input = window.input = new Input({ app: app, mediator: mediator });
 		input.bind('value', 'firstName', { direction: 2 });
 
+		var error = window.formError = new FormError({ app: app, mediator: mediator, field: 'firstName' });
+
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
 		masterView.add(input);
+		masterView.add(error);
 	});
 });
 		</script>

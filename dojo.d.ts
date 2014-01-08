@@ -110,6 +110,11 @@ declare module 'dojo/Deferred' {
 declare module 'dojo/dom-construct' {
 	var domConstruct:{
 		toDom(html:string):Node;
+		place<T extends Element>(node:T, refNode:Node, position?:string):T;
+		place<T extends Element>(node:T, refNode:Node, position?:number):T;
+		create(tag:'div', attrs:Object, refNode?:Node, position?:string):HTMLDivElement;
+		create(tag:'li', attrs:Object, refNode?:Node, position?:string):HTMLLIElement;
+		create(tag:string, attrs:Object, refNode?:Node, position?:string):Element;
 	};
 	export = domConstruct;
 }

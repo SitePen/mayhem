@@ -18,34 +18,12 @@ export interface IBindingHandle extends IHandle {
  * needing to know the originally bound object, the name of the property, or even that the property exists at the time
  * that it is bound or set.
  */
-export interface IBoundProperty {
-	/**
-	 * An identifier for this bound property. Bound properties that bind to the same object using the same binding
-	 * string will have identical identifiers.
-	 */
-	id:string;
-
-	/**
-	 * Retrieves the current value of the bound property.
-	 */
-	get():any;
-
-	/**
-	 * Sets the value of the bound property. Setting the value of the property using this method does not cause the
-	 * value of any bound target property to change.
-	 */
-	set(value:any):void;
-
+export interface IBoundProperty extends core.IProperty {
 	/**
 	 * Binds the property to another target property. The target property is only notified of a change when the actual
 	 * property is updated; calling `set` on this bound property will *not* update the bound target value.
 	 */
 	bindTo(target:IBoundProperty, options?:IBoundPropertyOptions):IHandle;
-
-	/**
-	 * Permanently destroys the binding to the original property.
-	 */
-	destroy():void;
 }
 
 export interface IBoundPropertyOptions {
