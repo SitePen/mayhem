@@ -209,7 +209,7 @@ If '<if>'
 			return alternate;
 		}
 	)*
-	alternate:(OpenToken 'else' CloseToken content:Any { return content; })?
+	alternate:(ElseTag content:Any { return content; })?
 	IfTagClose {
 		conditional.content = consequent;
 
@@ -221,22 +221,22 @@ If '<if>'
 	}
 
 IfTagOpen '<if>'
-	= OpenToken 'if' attributes:AttributeMap CloseToken {
+	= OpenToken 'if'i attributes:AttributeMap CloseToken {
 		validate(attributes, { type: '<if>', required: [ 'condition' ] });
 		return attributes;
 	}
 
 IfTagClose '</if>'
-	= OpenToken '/if' CloseToken
+	= OpenToken '/if'i CloseToken
 
 ElseIfTag '<elseif>'
-	= OpenToken 'elseif' attributes:AttributeMap CloseToken {
+	= OpenToken 'elseif'i attributes:AttributeMap CloseToken {
 		validate(attributes, { type: '<elseif>', required: [ 'condition' ] });
 		return attributes;
 	}
 
 ElseTag '<else>'
-	= OpenToken 'else' CloseToken
+	= OpenToken 'else'i CloseToken
 
 // loops
 
@@ -248,13 +248,13 @@ For '<for>'
 	}
 
 ForTagOpen '<for>'
-	= OpenToken 'for' attributes:AttributeMap CloseToken {
+	= OpenToken 'for'i attributes:AttributeMap CloseToken {
 		validate(attributes, { type: '<for>', required: [ 'each', 'value' ] });
 		return attributes;
 	}
 
 ForTagClose '</for>'
-	= OpenToken '/for' CloseToken
+	= OpenToken '/for'i CloseToken
 
 // promises
 
@@ -272,19 +272,19 @@ When '<when>'
 	}
 
 WhenTagOpen '<when>'
-	= OpenToken 'when' attributes:AttributeMap CloseToken S* {
+	= OpenToken 'when'i attributes:AttributeMap CloseToken S* {
 		validate(attributes, { type: '<when>', required: [ 'promise' ], optional: [ 'value' ] });
 		return attributes;
 	}
 
 WhenTagClose '</when>'
-	= OpenToken '/when' CloseToken
+	= OpenToken '/when'i CloseToken
 
 WhenErrorTag '<error>'
-	= OpenToken 'error' CloseToken
+	= OpenToken 'error'i CloseToken
 
 WhenProgressTag '<progress>'
-	= OpenToken 'progress' CloseToken
+	= OpenToken 'progress'i CloseToken
 
 // widgets
 
@@ -298,25 +298,25 @@ Widget '<widget>'
 	}
 
 WidgetTagOpen '<widget>'
-	= OpenToken 'widget' attributes:AttributeMap CloseToken {
+	= OpenToken 'widget'i attributes:AttributeMap CloseToken {
 		validate(attributes, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
 		return attributes;
 	}
 
 WidgetTagClose '</widget>'
-	= OpenToken '/widget' CloseToken
+	= OpenToken '/widget'i CloseToken
 
 // all others
 
 Placeholder '<placeholder>'
-	= OpenToken 'placeholder' placeholder:AttributeMap CloseToken {
+	= OpenToken 'placeholder'i placeholder:AttributeMap CloseToken {
 		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
 		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
 		return placeholder;
 	}
 
 Data '<data>'
-	= OpenToken 'data' attributes:AttributeMap CloseToken {
+	= OpenToken 'data'i attributes:AttributeMap CloseToken {
 		validate(attributes, { type: '<data>', required: [ 'var' ], optional: [ 'safe' ] });
 
 		var label = {
@@ -328,7 +328,7 @@ Data '<data>'
 	}
 
 Alias '<alias>'
-	= OpenToken 'alias' alias:AttributeMap CloseToken {
+	= OpenToken 'alias'i alias:AttributeMap CloseToken {
 		validate(alias, { type: '<alias>', required: [ 'from', 'to' ] });
 		alias.line = line();
 		alias.column = column();
@@ -362,7 +362,11 @@ Attribute
 	}
 
 AttributeName
-	= nameChars:[a-zA-Z\-]+ { return nameChars.join(''); }
+	= nameChars:[a-zA-Z\-]+ {
+		return nameChars.join('').toLowerCase().replace(/-([a-z])/, function () {
+			return arguments[1].toUpperCase();
+		});
+	}
 
 AttributeValue
 	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return value.join(''); })
