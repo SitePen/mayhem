@@ -1,5 +1,3 @@
-/* Helpers */
-
 {
 	/**
 	 * Validates that the attributes provided in the given attribute map are correct according to the provided rules.
@@ -21,20 +19,22 @@
 
 		for (i = 0; i < required.length; ++i) {
 			if (!(required[i] in attributes)) {
-				throw new Error('Missing required attribute "' + required[i] + '" on' + type + ' node');
+				error('Missing required attribute "' + required[i] + '" on' + type + ' node');
 			}
 		}
 
-		for (var name in attributes) {
-			if (!(name in permitted)) {
-				throw new Error('Invalid attribute "' + name + '" on' + type + ' node');
+		if (!rules.allowAnyAttribute) {
+			for (var name in attributes) {
+				if (!(name in permitted)) {
+					error('Invalid attribute "' + name + '" on' + type + ' node');
+				}
 			}
 		}
 	}
 
-	var aliasMap = {};
-	var hasOwnProperty = Object.prototype.hasOwnProperty;
-
+	/**
+	 * Walks the widget tree, resolving constructor aliases for the given node and its children.
+	 */
 	function resolveAliases(node) {
 		for (var k in aliasMap) {
 			if (node.constructor.indexOf(k) === 0) {
@@ -48,75 +48,83 @@
 			}
 		}
 	}
+
+	/**
+	 * A map of constructor names, where the key is the unexpanded source and the value is the expanded destination.
+	 * Aliases are currently resolved in the order in which they are received, not by longest to shortest.
+	 */
+	var aliasMap = {};
 }
 
-/* Template Grammar */
+// template root
 
 Template
-	= content:Content? {
-		// If the root of the template contains multiple widgets, or the entire template is empty, it needs to be
-		// wrapped up into a single Element widget containing children
-		// TODO: Content should probably not return an array of things
-		if (!content || content instanceof Array) {
-			content = {
+	// TODO: This fails to fall through to Element if AnyNonElement matches when it sees more data instead of EOF.
+	= root:Any? {
+		if (!root) {
+			root = {
 				constructor: 'framework/ui/dom/Element',
 				html: '',
-				children: content || []
+				children: []
 			};
 		}
 
-		resolveAliases(content);
-		return content;
+		resolveAliases(root);
+		return root;
 	}
 
-Content
-	= nodes:(
-		If
-		/ For
-		/ When
-		/ Placeholder
-		/ Data
-		/ Alias
-		/ Widget
+// collections
+
+Any
+	= AnyNonElement
+	/ Element
+
+AnyNonElement
+	= If
+	/ For
+	/ When
+	/ Placeholder
+	/ Data
+	/ Alias
+	/ Widget
+
+// HTML
+
+Element 'HTML'
+	= content:(
+		AnyNonElement
 		/ HtmlFragment
 	)+ {
-		// Flatten content into a single HTML string
-		// with placeholder tags marking place for the template nodes.
-		var isHtmlFragment = false,
-			html = [],
+		var html = '',
 			children = [];
 
-		for (var i = 0, j = nodes.length; i < j; ++i) {
-			var node = nodes[i];
+		for (var i = 0, j = content.length; i < j; ++i) {
+			var node = content[i];
 
 			// An alias node will be transformed into a null node
 			if (!node) {
 				continue;
 			}
 
-			if (node.type === 'fragment') {
-				isHtmlFragment = true;
-				html.push(node.html);
+			if (typeof node === 'string') {
+				html += node;
 			}
 			else {
-				html.push('<!-- child#' + children.length + ' -->');
+				html += '<!-- child#' + children.length + ' -->';
 				children.push(node);
 			}
 		}
 
-		if (!isHtmlFragment) {
-			return children;
-		}
-
 		return {
 			constructor: 'framework/ui/dom/Element',
-			html: html.join(''),
+			html: html,
 			children: children
 		};
 	}
 
-HtmlFragment
+HtmlFragment 'HTML'
 	= content:(
+		// TODO: Not sure how valid these exclusions are
 		!(
 			& OpenToken // Optimization: Only check tag rules when the current position matches the OpenToken
 			IfTagOpen
@@ -137,111 +145,125 @@ HtmlFragment
 		)
 		character:. { return character; }
 	)+ {
-		return {
-			type: 'fragment',
-			html: content.join('')
-		};
+		return content.join('');
 	}
 
-If 'Widget'
-	= ifNode:IfTagOpen
-		content:Content?
-		elseIfNodes:(
-			elseIfNode:ElseIfTag
-			content:Content? {
-				elseIfNode.content = content;
-				return elseIfNode;
-			}
-		)*
-		elseContent:(ElseTag content:Content? { return content; })?
-	IfTagClose {
-		ifNode.content = content;
+// conditionals
 
-		// Combine 'if' and 'elseif' into ordered list of conditional blocks
-		var conditionalBlocks = [ ifNode ];
-
-		var elseIfNode;
-		while ((elseIfNode = elseIfNodes.shift())) {
-			conditionalBlocks.push(elseIfNode);
+If '<if>'
+	= conditional:IfTagOpen
+	consequent:Any
+	alternates:(
+		alternate:ElseIfTag
+		consequent:Any {
+			alternate.content = consequent;
+			return alternate;
 		}
+	)*
+	alternate:(OpenToken 'else' CloseToken content:Any { return content; })?
+	IfTagClose {
+		conditional.content = consequent;
 
 		return {
 			constructor: 'framework/templating/html/ui/Conditional',
-			conditions: conditionalBlocks,
-			alternate: elseContent
+			conditions: [ conditional ].concat(alternates),
+			alternate: alternate
 		};
 	}
 
-IfTagOpen 'Intermediate'
+IfTagOpen '<if>'
 	= OpenToken 'if' attributes:AttributeMap CloseToken {
 		validate(attributes, { required: [ 'condition' ] });
 		return attributes;
 	}
 
-IfTagClose 'Null'
+IfTagClose '</if>'
 	= OpenToken '/if' CloseToken
 
-ElseIfTag 'Intermediate'
+ElseIfTag '<elseif>'
 	= OpenToken 'elseif' attributes:AttributeMap CloseToken {
 		validate(attributes, { required: [ 'condition' ] });
 		return attributes;
 	}
 
-ElseTag 'Null'
+ElseTag '<else>'
 	= OpenToken 'else' CloseToken
 
-For
-	= attributes:ForTagOpen content:Content? ForTagClose {
-		attributes.constructor = 'framework/templating/html/ui/Iterator';
-		attributes.template = content;
-		return attributes;
+// loops
+
+For '<for>'
+	= forWidget:ForTagOpen template:Any ForTagClose {
+		forWidget.constructor = 'framework/templating/html/ui/Iterator';
+		forWidget.template = template;
+		return forWidget;
 	}
 
-ForTagOpen 'Intermediate'
+ForTagOpen '<for>'
 	= OpenToken 'for' attributes:AttributeMap CloseToken {
 		validate(attributes, { required: [ 'each', 'value' ] });
 		return attributes;
 	}
 
-ForTagClose 'Null'
+ForTagClose '</for>'
 	= OpenToken '/for' CloseToken
 
-When 'PromiseWidget'
-	= whenNode:WhenTagOpen
-		resolvedContent:Content?
-		errorContent:(WhenErrorTag content:Content? { return content; })?
-		progressContent:(WhenProgressTag content:Content? { return content; })?
+// promises
+
+When '<when>'
+	= when:WhenTagOpen
+	resolved:Any?
+	error:(WhenErrorTag content:Any? { return content; })?
+	progress:(WhenProgressTag content:Any? { return content; })?
 	WhenTagClose {
-		whenNode.resolvedContent = resolvedContent;
-		whenNode.errorContent = errorContent;
-		whenNode.progressContent = progressContent;
-		return whenNode;
+		when.constructor = 'framework/templating/html/ui/When';
+		when.resolved = resolved;
+		when.error = error;
+		when.progress = progress;
+		return when;
 	}
 
-WhenTagOpen 'Intermediate'
+WhenTagOpen '<when>'
 	= OpenToken 'when' attributes:AttributeMap CloseToken S* {
 		validate(attributes, { required: [ 'promise' ], optional: [ 'value' ] });
-		attributes.constructor = 'framework/templating/html/ui/Promise';
 		return attributes;
 	}
 
-WhenTagClose 'Null'
+WhenTagClose '</when>'
 	= OpenToken '/when' CloseToken
 
-WhenErrorTag 'Null'
+WhenErrorTag '<error>'
 	= OpenToken 'error' CloseToken
 
-WhenProgressTag 'Null'
+WhenProgressTag '<progress>'
 	= OpenToken 'progress' CloseToken
 
-Placeholder 'Intermediate'
-	= OpenToken 'placeholder' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'name' ] });
-		attributes.constructor = 'framework/templating/html/ui/Placeholder';
+// widgets
+
+Widget '<widget>'
+	= widget:WidgetTagOpen children:(Any)* WidgetTagClose {
+		widget.children = children;
+		return widget;
+	}
+
+WidgetTagOpen '<widget>'
+	= OpenToken 'widget' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'is' ], allowAnyAttribute: true });
 		return attributes;
 	}
 
-Data 'LabelWidget'
+WidgetTagClose '</widget>'
+	= OpenToken '/widget' CloseToken
+
+// all others
+
+Placeholder '<placeholder>'
+	= OpenToken 'placeholder' placeholder:AttributeMap CloseToken {
+		validate(placeholder, { required: [ 'name' ] });
+		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
+		return placeholder;
+	}
+
+Data '<data>'
 	= OpenToken 'data' attributes:AttributeMap CloseToken {
 		validate(attributes, { required: [ 'var' ], optional: [ 'safe' ] });
 
@@ -253,29 +275,17 @@ Data 'LabelWidget'
 		return label;
 	}
 
-Alias 'Null'
+Alias '<alias>'
 	= OpenToken 'alias' attributes:AttributeMap CloseToken {
 		validate(attributes, { required: [ 'from', 'to' ] });
 		if (aliasMap[attributes.from]) {
-			throw new Error('Alias "' + attributes.from + '" is already defined');
+			error('Alias "' + attributes.from + '" is already defined');
 		}
 		aliasMap[attributes.from] = attributes.to;
 		return null;
 	}
 
-Widget 'Widget'
-	= widgetNode:WidgetTagOpen content:Content? WidgetTagClose {
-		widgetNode.children = content;
-		return widgetNode;
-	}
-
-WidgetTagOpen 'Intermediate'
-	= OpenToken 'widget' attributes:AttributeMap CloseToken {
-		return attributes;
-	}
-
-WidgetTagClose 'Null'
-	= OpenToken '/widget' CloseToken
+// attributes
 
 AttributeMap
 	= attributes:Attribute* S* {
@@ -289,7 +299,7 @@ AttributeMap
 				attribute.name = 'constructor';
 			}
 
-			if (hasOwnProperty.call(attributeMap, attribute.name)) {
+			if (Object.prototype.hasOwnProperty.call(attributeMap, attribute.name)) {
 				throw new Error('Duplicate attribute "' + attribute.name + '"');
 			}
 
@@ -311,10 +321,12 @@ AttributeValue
 	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return value.join(''); })
 	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return value.join(''); })
 
-OpenToken
+// miscellaneous
+
+OpenToken '<'
 	= '<' S*
 
-CloseToken
+CloseToken '>'
 	= S* '>'
 
 S 'whitespace'
