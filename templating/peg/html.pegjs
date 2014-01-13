@@ -1,224 +1,124 @@
 /* Helpers */
 
 {
-	// Save a reference to the parser so we can call it manually
-	var parser = this;
+	/**
+	 * Validates that the attributes provided in the given attribute map are correct according to the provided rules.
+	 */
+	function validate(attributes, rules) {
+		var required = rules.required || [],
+			optional = rules.optional || [],
+			type = rules.type ? ' ' + rules.type : '';
 
-	var nextId = 1;
-	function getNextId() {
-		// summary:
-		//		Get the next template node id
+		var i = 0,
+			permitted = {};
 
-		return nextId++;
-	}
-
-	function createConditionalBlock(conditionalNode) {
-		// summary:
-		//		Create a conditional block object given a conditional template node.
-		// conditionalNode: IfNode|ElseIfNode
-		//		The node from which to create a conditional block
-		// returns: Object
-		//		A conditional block 
-
-		return {
-			condition: conditionalNode.condition,
-			content: conditionalNode.content
-		};
-	}
-
-	function createNodeConstructor(kwArgs) {
-		// summary:
-		//		Create a constructor for a tag's AST node.
-		// type:
-		//		The AST node type.
-		// requiredAttributes:
-		//		The attributes required by the tag.
-		// optionalAttributes:
-		//		Non-required attributes allowed by the tag.
-		// returns: Function
-		// 		A template node constructor
-
-		var type = kwArgs.type,
-			requiredAttributes = kwArgs.requiredAttributes || [],
-			optionalAttributes = kwArgs.optionalAttributes || [],
-			expressionAttributes = kwArgs.expressionAttributes || [];
-
-		var permittedAttributeSet = {};
-		for (var i = 0; i < requiredAttributes.length; i++) {
-			permittedAttributeSet[requiredAttributes[i]] = true;
+		for (i = 0; i < required.length; ++i) {
+			permitted[required[i]] = true;
 		}
-		for (var i = 0; i < optionalAttributes.length; i++) {
-			permittedAttributeSet[optionalAttributes[i]] = true;
+		for (i = 0; i < optional.length; ++i) {
+			permitted[optional[i]] = true;
 		}
 
-		var Constructor = function (attributeSet) {
-			// type is on the instance, not on the prototype, because the AST will be converted to JSON
-			this.type = kwArgs.type;
-
-			attributeSet = attributeSet || {};
-
-			// Make sure required attributes are present
-			var missingAttributes = [];
-			for (var i = 0; i < requiredAttributes.length; i++) {
-				if (!(requiredAttributes[i] in permittedAttributeSet)) {
-					missingAttributes.push(requiredAttributes[i]);
-				}
+		for (i = 0; i < required.length; ++i) {
+			if (!(required[i] in attributes)) {
+				throw new Error('Missing required attribute "' + required[i] + '" on' + type + ' node');
 			}
+		}
 
-			if (missingAttributes.length) {
-				throw new Error(
-					'Type ' + type + ' is missing required attribute(s): ' + missingAttributes.join(', ')
-				);
+		for (var name in attributes) {
+			if (!(name in permitted)) {
+				throw new Error('Invalid attribute "' + name + '" on' + type + ' node');
 			}
-
-			// Apply attributes
-			var unsupportedAttributes = [];
-			for (var name in attributeSet) {
-				if (name in permittedAttributeSet) {
-					this[name] = attributeSet[name];
-				}
-				else {
-					unsupportedAttributes.push(name);
-				}
-			}
-
-			// Report unsupported attributes
-			if (unsupportedAttributes.length > 0) {
-				throw new Error(
-					'Type ' + type + ' does not support the attribute(s): ' + unsupportedAttributes.join(', ')
-				);
-			}
-
-			// Parse data binding expressions
-			for (var i = 0, attributeName; i < expressionAttributes.length; i++) {
-				attributeName = expressionAttributes[i];
-				if (attributeName in this) {
-					// TODO: Fix this. This is a hack. Newer versions of pegjs generate a named parse() function that may be called directly here.
-					this[attributeName] = parser.parse(this[attributeName], 'DataBindingExpression');
-				}
-			}
-		};
-		Constructor.prototype = {
-			type: type
-		};
-		return Constructor;
+		}
 	}
-	var IfNode = createNodeConstructor({
-			type: 'if',
-			requiredAttributes: [ 'condition' ],
-			expressionAttributes: [ 'condition' ]
-		}),
-		ElseIfNode = createNodeConstructor({
-			type: 'elseif',
-			requiredAttributes: [ 'condition' ],
-			expressionAttributes: [ 'condition' ]
-		}),
-		ForNode = createNodeConstructor({
-			type: 'for',
-			requiredAttributes: [ 'each', 'value' ],
-			expressionAttributes: [ 'each' ]
-		}),
-		WhenNode = createNodeConstructor({
-			type: 'when',
-			requiredAttributes: [ 'promise' ],
-			optionalAttributes: [ 'value' ],
-			expressionAttributes: [ 'promise' ]
-		}),
-		PlaceholderNode = createNodeConstructor({
-			type: 'placeholder',
-			requiredAttributes: [ 'name' ]
-		}),
-		DataNode = createNodeConstructor({
-			type: 'data',
-			requiredAttributes: [ 'var' ],
-			optionalAttributes: [ 'safe' ],
-			expressionAttributes: [ 'var' ]
-		}),
-		AliasNode = createNodeConstructor({
-			type: 'alias',
-			requiredAttributes: [ 'from', 'to' ]
-		});
 
-	// Using constructor and prototype for HTML fragments to save memory.
-	// We don't do this for AST node types because they need to be persisted as JSON downstream,
-	// and inherited properties aren't included by JSON.stringify.
-	function HtmlFragmentNode(html) {
-		this.html = html;
+	var aliasMap = {};
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+	function resolveAliases(node) {
+		for (var k in aliasMap) {
+			if (node.constructor.indexOf(k) === 0) {
+				node.constructor = node.constructor.replace(k, aliasMap[k]);
+			}
+		}
+
+		if (node.children && node.children.length) {
+			for (var i = 0, child; (child = node.children[i]); ++i) {
+				resolveAliases(child);
+			}
+		}
 	}
-	HtmlFragmentNode.prototype = { type: 'fragment' };
-
-	var aliasMap = {},
-		NODE_ID_ATTRIBUTE_NAME = 'data-template-node-id';
 }
 
 /* Template Grammar */
 
 Template
-	= content:ContentOrEmpty {
-		if (content) {
-			// Include the node ID attribute name with the AST so dependent code can stay DRY.
-			content.nodeIdAttributeName = NODE_ID_ATTRIBUTE_NAME;
-
-			var aliases = [];
-			for (var alias in aliasMap) {
-				aliases.push({ from: alias, to: aliasMap[alias] });
-			}
-			content.aliases = aliases;
+	= content:Content? {
+		// If the root of the template contains multiple widgets, or the entire template is empty, it needs to be
+		// wrapped up into a single Element widget containing children
+		// TODO: Content should probably not return an array of things
+		if (!content || content instanceof Array) {
+			content = {
+				constructor: 'framework/ui/dom/Element',
+				html: '',
+				children: content || []
+			};
 		}
+
+		resolveAliases(content);
 		return content;
 	}
 
-ContentOrEmpty
-	= Content?
-
 Content
 	= nodes:(
-		IfTag
-		/ ForTag
-		/ WhenTag
-		/ PlaceholderTag
-		/ DataTag
-		/ AliasTag
-		/ WidgetTag
+		If
+		/ For
+		/ When
+		/ Placeholder
+		/ Data
+		/ Alias
+		/ Widget
 		/ HtmlFragment
 	)+ {
 		// Flatten content into a single HTML string
-		// with <script id></script> tags marking place for the template nodes.
-		var htmlFragmentBuffer = [],
-			templateNodes = [];
+		// with placeholder tags marking place for the template nodes.
+		var isHtmlFragment = false,
+			html = [],
+			children = [];
 
-		for(var i = 0; i < nodes.length; i++) {
+		for (var i = 0, j = nodes.length; i < j; ++i) {
 			var node = nodes[i];
-			if (node.type === 'fragment') {
-				htmlFragmentBuffer.push(node.html);
+
+			// An alias node will be transformed into a null node
+			if (!node) {
+				continue;
 			}
-			else if (node.type === 'alias') {
-				if (aliasMap[node.from]) {
-					throw new Error('Alias "' + node.from + '" has already been defined');
-				}
-				aliasMap[node.from] = node.to;
+
+			if (node.type === 'fragment') {
+				isHtmlFragment = true;
+				html.push(node.html);
 			}
 			else {
-				// TODO: Colin prefers the use of comment nodes, but it appears we'll need to stick w/ <script> for this step since it is queryable.
-				node.id = getNextId();
-				htmlFragmentBuffer.push('<script ' + NODE_ID_ATTRIBUTE_NAME + '="' + node.id + '"></script>');
-				templateNodes.push(node);
+				html.push('<!-- child#' + children.length + ' -->');
+				children.push(node);
 			}
 		}
 
-		// TODO: Make proper constructor for this.
+		if (!isHtmlFragment) {
+			return children;
+		}
+
 		return {
-			type: 'content',
-			html: htmlFragmentBuffer.join(''),
-			templateNodes: templateNodes
+			constructor: 'framework/ui/dom/Element',
+			html: html.join(''),
+			children: children
 		};
 	}
 
 HtmlFragment
 	= content:(
 		!(
-			& OpenToken	// Optimization: Only check tag rules
-						// when the current position matches the OpenToken
+			& OpenToken // Optimization: Only check tag rules when the current position matches the OpenToken
 			IfTagOpen
 			/ ElseIfTag
 			/ ElseTag
@@ -229,148 +129,171 @@ HtmlFragment
 			/ WhenTagClose
 			/ WhenErrorTag
 			/ WhenProgressTag
-			/ PlaceholderTag
-			/ DataTag
-			/ AliasTag
+			/ Placeholder
+			/ Data
+			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
 		)
 		character:. { return character; }
 	)+ {
-		return new HtmlFragmentNode(content.join(''));
+		return {
+			type: 'fragment',
+			html: content.join('')
+		};
 	}
 
-IfTag
+If 'Widget'
 	= ifNode:IfTagOpen
-		content:ContentOrEmpty
-		elseIfNodes:(elseIfNode:ElseIfTag content:ContentOrEmpty {
-			elseIfNode.content = content;
-			return elseIfNode;
-		})*
-		elseContent:(ElseTag content:ContentOrEmpty { return content; })?
+		content:Content?
+		elseIfNodes:(
+			elseIfNode:ElseIfTag
+			content:Content? {
+				elseIfNode.content = content;
+				return elseIfNode;
+			}
+		)*
+		elseContent:(ElseTag content:Content? { return content; })?
 	IfTagClose {
 		ifNode.content = content;
 
 		// Combine 'if' and 'elseif' into ordered list of conditional blocks
-		var conditionalBlocks = [ createConditionalBlock(ifNode) ];
-		while (elseIfNodes.length > 0) {
-			var elseIfNode = elseIfNodes.shift();
-			conditionalBlocks.push(createConditionalBlock(elseIfNode));
+		var conditionalBlocks = [ ifNode ];
+
+		var elseIfNode;
+		while ((elseIfNode = elseIfNodes.shift())) {
+			conditionalBlocks.push(elseIfNode);
 		}
 
-		// TODO: Create constructor for this transformed 'if' AST node
 		return {
-			type: 'if',
-			conditionalBlocks: conditionalBlocks,
-			elseBlock: elseContent ? { content: elseContent } : undefined
+			constructor: 'framework/templating/html/ui/Conditional',
+			conditions: conditionalBlocks,
+			alternate: elseContent
 		};
 	}
 
-IfTagOpen
-	= OpenToken 'if' attributes:AttributeSet CloseToken {
-		return new IfNode(attributes);
+IfTagOpen 'Intermediate'
+	= OpenToken 'if' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'condition' ] });
+		return attributes;
 	}
 
-IfTagClose
+IfTagClose 'Null'
 	= OpenToken '/if' CloseToken
 
-ElseIfTag
-	= OpenToken 'elseif' attributes:AttributeSet CloseToken {
-		return new ElseIfNode(attributes);
+ElseIfTag 'Intermediate'
+	= OpenToken 'elseif' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'condition' ] });
+		return attributes;
 	}
 
-ElseTag
+ElseTag 'Null'
 	= OpenToken 'else' CloseToken
 
-ForTag
-	= forNode:ForTagOpen content:ContentOrEmpty ForTagClose {
-		forNode.content = content;
-		return forNode;
+For
+	= attributes:ForTagOpen content:Content? ForTagClose {
+		attributes.constructor = 'framework/templating/html/ui/Iterator';
+		attributes.template = content;
+		return attributes;
 	}
 
-ForTagOpen
-	= OpenToken 'for' attributes:AttributeSet CloseToken {
-		return new ForNode(attributes);
+ForTagOpen 'Intermediate'
+	= OpenToken 'for' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'each', 'value' ] });
+		return attributes;
 	}
 
-ForTagClose
+ForTagClose 'Null'
 	= OpenToken '/for' CloseToken
 
-WhenTag
+When 'PromiseWidget'
 	= whenNode:WhenTagOpen
-		resolvedContent:ContentOrEmpty
-		errorContent:(WhenErrorTag content:ContentOrEmpty { return content; })?
-		progressContent:(WhenProgressTag content:ContentOrEmpty { return content; })?
+		resolvedContent:Content?
+		errorContent:(WhenErrorTag content:Content? { return content; })?
+		progressContent:(WhenProgressTag content:Content? { return content; })?
 	WhenTagClose {
-		whenNode.resolvedContent = resolvedContent || undefined;
-		whenNode.errorContent = errorContent || undefined;
-		whenNode.progressContent = progressContent || undefined;
+		whenNode.resolvedContent = resolvedContent;
+		whenNode.errorContent = errorContent;
+		whenNode.progressContent = progressContent;
 		return whenNode;
 	}
 
-WhenTagOpen
-	= OpenToken 'when' attributes:AttributeSet CloseToken {
-		return new WhenNode(attributes);
+WhenTagOpen 'Intermediate'
+	= OpenToken 'when' attributes:AttributeMap CloseToken S* {
+		validate(attributes, { required: [ 'promise' ], optional: [ 'value' ] });
+		attributes.constructor = 'framework/templating/html/ui/Promise';
+		return attributes;
 	}
 
-WhenTagClose
+WhenTagClose 'Null'
 	= OpenToken '/when' CloseToken
 
-WhenErrorTag
+WhenErrorTag 'Null'
 	= OpenToken 'error' CloseToken
 
-WhenProgressTag
+WhenProgressTag 'Null'
 	= OpenToken 'progress' CloseToken
 
-PlaceholderTag
-	= OpenToken 'placeholder' attributes:AttributeSet CloseToken {
-		return new PlaceholderNode(attributes);
+Placeholder 'Intermediate'
+	= OpenToken 'placeholder' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'name' ] });
+		attributes.constructor = 'framework/templating/html/ui/Placeholder';
+		return attributes;
 	}
 
-DataTag
-	= OpenToken 'data' attributes:AttributeSet CloseToken {
-		var node = new DataNode(attributes);
-		// If node is annotated with a safe property, make it a boolean.
-		if (node.safe) {
-			node.safe = true;
+Data 'LabelWidget'
+	= OpenToken 'data' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'var' ], optional: [ 'safe' ] });
+
+		var label = {
+			constructor: 'framework/ui/Widget!Label'
+		};
+
+		label[attributes.safe ? 'formattedText' : 'text'] = attributes['var'];
+		return label;
+	}
+
+Alias 'Null'
+	= OpenToken 'alias' attributes:AttributeMap CloseToken {
+		validate(attributes, { required: [ 'from', 'to' ] });
+		if (aliasMap[attributes.from]) {
+			throw new Error('Alias "' + attributes.from + '" is already defined');
 		}
-		return node;
+		aliasMap[attributes.from] = attributes.to;
+		return null;
 	}
 
-AliasTag
-	= OpenToken 'alias' attributes:AttributeSet CloseToken {
-		return new AliasNode(attributes);
-	}
-
-WidgetTag
-	= widgetNode:WidgetTagOpen content:ContentOrEmpty WidgetTagClose {
-		widgetNode.content = content;
+Widget 'Widget'
+	= widgetNode:WidgetTagOpen content:Content? WidgetTagClose {
+		widgetNode.children = content;
 		return widgetNode;
 	}
 
-WidgetTagOpen
-	= OpenToken 'widget' attributes:AttributeSet CloseToken {
-		return {
-			type: 'widget',
-			properties: attributes
-		};
+WidgetTagOpen 'Intermediate'
+	= OpenToken 'widget' attributes:AttributeMap CloseToken {
+		return attributes;
 	}
 
-
-WidgetTagClose
+WidgetTagClose 'Null'
 	= OpenToken '/widget' CloseToken
 
-AttributeSet
+AttributeMap
 	= attributes:Attribute* S* {
 		var attributeMap = {};
-		for (var i = 0; i < attributes.length; i++) {
-			var attribute = attributes[i];
-
-			if (attribute.name in attributeMap) {
-				throw new Error('A "' + attribute.name + '" has already been specified');
+		for (var i = 0, attribute; (attribute = attributes[i]); ++i) {
+			if (attribute.name === 'constructor') {
+				throw new Error('"constructor" is a reserved attribute name');
 			}
 
-			attributeMap[attribute.name] = attribute.value;
+			if (attribute.name === 'is') {
+				attribute.name = 'constructor';
+			}
+
+			if (hasOwnProperty.call(attributeMap, attribute.name)) {
+				throw new Error('Duplicate attribute "' + attribute.name + '"');
+			}
+
+			attributeMap[attribute.name] = attribute.value == null ? true : attribute.value;
 		}
 
 		return attributeMap;
@@ -385,97 +308,14 @@ AttributeName
 	= nameChars:[a-zA-Z\-]+ { return nameChars.join(''); }
 
 AttributeValue
-	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join(''); })
-	/ ('"' value:('\\"' { return '"' } / [^"\r\n])* '"' { return value.join(''); })
+	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return value.join(''); })
+	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return value.join(''); })
 
 OpenToken
 	= '<' S*
 
 CloseToken
 	= S* '>'
-
-/* Data-binding Expression Grammar */
-
-DataBindingExpression
-	= FunctionCall
-	/ DotExpression
-	/ StringLiteral
-	/ NumericLiteral
-
-// TODO: Support multiple arguments.
-// TODO: Support chained function calls.
-FunctionCall
-	= functionIdentifier:DotExpression '(' S*
-		leadingArgument:FunctionArgument? trailingArguments:(',' arg:FunctionArgument { return arg; })*
-	S* ')' S* {
-		var arguments = trailingArguments;
-		if (leadingArgument) {
-			arguments.unshift(leadingArgument);
-		}
-
-		return {
-			type: 'function-call',
-			name: functionIdentifier,
-			arguments: arguments
-		};
-	}
-
-FunctionArgument
-	= DotExpression / StringLiteral / NumericLiteral
-
-DotExpression
-	= negated:'!'? references:(identifier:PaddedIdentifier '.' { return identifier; })* target:PaddedIdentifier {
-		var expression = {
-			type: 'dot-expression',
-			references: references,
-			target: target
-		};
-		if (negated) {
-			expression.negated = true;
-		}
-		return expression;
-	}
-
-PaddedIdentifier
-	= S* identifier:Identifier S* { return identifier; }
-
-// TODO: This is a quick implementation that doesn't support all valid Ecmascript identifiers. Fix it.
-Identifier
-	= head:[$_a-zA-Z] tail:[$_a-zA-Z0-9]* {
-		return head + tail.join('');
-	}
-
-StringLiteral
-	= value:(
-		("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join(''); })
-		/ ('"' value:('\\"' { return '"' } / [^"\r\n])* '"' { return value.join(''); })
-	) {
-		return {
-			type: 'string',
-			value: value
-		};
-	}
-
-NumericLiteral
-	= DecimalLiteral
-
-// TODO: Hex literal
-// TODO: Octal literal
-
-// TODO: Update with full support for ECMAScript decimal literals
-DecimalLiteral
-	= numberString:(
-		(integer:[0-9]+ point:'.' fractional:[0-9]+ { return integer.join('') + point + fractional.join(''); })
-		/ (point: '.' fractional:[0-9]+ { return point + fractional; })
-		/ [0-9]+
-	) {
-		return {
-			type: 'number',
-			value: +numberString
-		};
-	}
-
-/* General-purpose Rules */
 
 S 'whitespace'
 	= [ \t\r\n]
