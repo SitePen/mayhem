@@ -52,6 +52,7 @@
 	/**
 	 * A map of constructor names, where the key is the unexpanded source and the value is the expanded destination.
 	 * Aliases are currently resolved in the order in which they are received, not by longest to shortest.
+	 * TODO: Longest to shortest, and delimited by slashes, would probably be a good idea.
 	 */
 	var aliasMap = {};
 }
@@ -126,7 +127,9 @@ HtmlFragment 'HTML'
 	= content:(
 		// TODO: Not sure how valid these exclusions are
 		!(
-			& OpenToken // Optimization: Only check tag rules when the current position matches the OpenToken
+			// Optimization: Only check tag rules when the current position matches the OpenToken
+			& OpenToken
+
 			IfTagOpen
 			/ ElseIfTag
 			/ ElseTag
@@ -139,7 +142,8 @@ HtmlFragment 'HTML'
 			/ WhenProgressTag
 			/ Placeholder
 			/ Data
-			/ Alias
+			// Alias rule has side-effects
+			/ (OpenToken 'alias' AttributeMap CloseToken)
 			/ WidgetTagOpen
 			/ WidgetTagClose
 		)
@@ -241,6 +245,9 @@ WhenProgressTag '<progress>'
 
 Widget '<widget>'
 	= widget:WidgetTagOpen children:(Any)* WidgetTagClose {
+		widget.constructor = widget.is;
+		delete widget.is;
+
 		widget.children = children;
 		return widget;
 	}
@@ -292,15 +299,11 @@ AttributeMap
 		var attributeMap = {};
 		for (var i = 0, attribute; (attribute = attributes[i]); ++i) {
 			if (attribute.name === 'constructor') {
-				throw new Error('"constructor" is a reserved attribute name');
-			}
-
-			if (attribute.name === 'is') {
-				attribute.name = 'constructor';
+				error('"constructor" is a reserved attribute name');
 			}
 
 			if (Object.prototype.hasOwnProperty.call(attributeMap, attribute.name)) {
-				throw new Error('Duplicate attribute "' + attribute.name + '"');
+				error('Duplicate attribute "' + attribute.name + '"');
 			}
 
 			attributeMap[attribute.name] = attribute.value == null ? true : attribute.value;
