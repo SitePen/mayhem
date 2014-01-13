@@ -5,7 +5,7 @@
 	function validate(attributes, rules) {
 		var required = rules.required || [],
 			optional = rules.optional || [],
-			type = rules.type ? ' ' + rules.type : '';
+			type = rules.type ? ' on ' + rules.type : '';
 
 		var i = 0,
 			permitted = {};
@@ -19,14 +19,14 @@
 
 		for (i = 0; i < required.length; ++i) {
 			if (!(required[i] in attributes)) {
-				error('Missing required attribute "' + required[i] + '" on' + type + ' node');
+				error('Missing required attribute "' + required[i] + '"' + type);
 			}
 		}
 
 		if (!rules.allowAnyAttribute) {
 			for (var name in attributes) {
 				if (!(name in permitted)) {
-					error('Invalid attribute "' + name + '" on' + type + ' node');
+					error('Invalid attribute "' + name + '"' + type);
 				}
 			}
 		}
@@ -222,7 +222,7 @@ If '<if>'
 
 IfTagOpen '<if>'
 	= OpenToken 'if' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'condition' ] });
+		validate(attributes, { type: '<if>', required: [ 'condition' ] });
 		return attributes;
 	}
 
@@ -231,7 +231,7 @@ IfTagClose '</if>'
 
 ElseIfTag '<elseif>'
 	= OpenToken 'elseif' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'condition' ] });
+		validate(attributes, { type: '<elseif>', required: [ 'condition' ] });
 		return attributes;
 	}
 
@@ -249,7 +249,7 @@ For '<for>'
 
 ForTagOpen '<for>'
 	= OpenToken 'for' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'each', 'value' ] });
+		validate(attributes, { type: '<for>', required: [ 'each', 'value' ] });
 		return attributes;
 	}
 
@@ -273,7 +273,7 @@ When '<when>'
 
 WhenTagOpen '<when>'
 	= OpenToken 'when' attributes:AttributeMap CloseToken S* {
-		validate(attributes, { required: [ 'promise' ], optional: [ 'value' ] });
+		validate(attributes, { type: '<when>', required: [ 'promise' ], optional: [ 'value' ] });
 		return attributes;
 	}
 
@@ -299,7 +299,7 @@ Widget '<widget>'
 
 WidgetTagOpen '<widget>'
 	= OpenToken 'widget' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'is' ], allowAnyAttribute: true });
+		validate(attributes, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
 		return attributes;
 	}
 
@@ -310,14 +310,14 @@ WidgetTagClose '</widget>'
 
 Placeholder '<placeholder>'
 	= OpenToken 'placeholder' placeholder:AttributeMap CloseToken {
-		validate(placeholder, { required: [ 'name' ] });
+		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
 		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
 		return placeholder;
 	}
 
 Data '<data>'
 	= OpenToken 'data' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'var' ], optional: [ 'safe' ] });
+		validate(attributes, { type: '<data>', required: [ 'var' ], optional: [ 'safe' ] });
 
 		var label = {
 			constructor: 'framework/ui/Widget!Label'
@@ -329,7 +329,7 @@ Data '<data>'
 
 Alias '<alias>'
 	= OpenToken 'alias' alias:AttributeMap CloseToken {
-		validate(alias, { required: [ 'from', 'to' ] });
+		validate(alias, { type: '<alias>', required: [ 'from', 'to' ] });
 		alias.line = line();
 		alias.column = column();
 		aliases.add(alias);
