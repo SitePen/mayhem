@@ -32,36 +32,96 @@
 		}
 	}
 
-	/**
-	 * Walks the widget tree, resolving constructor aliases for the given node and its children.
-	 */
-	function resolveAliases(node) {
-		for (var k in aliasMap) {
-			if (node.constructor.indexOf(k) === 0) {
-				node.constructor = node.constructor.replace(k, aliasMap[k]);
-			}
-		}
+	var aliases = {
+		_aliases: [],
+		_map: null,
 
-		if (node.children && node.children.length) {
-			for (var i = 0, child; (child = node.children[i]); ++i) {
-				resolveAliases(child);
-			}
-		}
-	}
+		/**
+		 * Adds a new alias to the alias list for this template.
+		 *
+		 * @param newAlias {Object}
+		 * An object with the following keys:
+		 *   * `from` (string): The module ID fragment to replace.
+		 *   * `to` (string): The replacement module ID fragment.
+		 *   * `line` (number): The one-indexed line number where the alias was defined in the template.
+		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
+		 */
+		add: function (newAlias) {
+			var aliases = this._aliases;
 
-	/**
-	 * A map of constructor names, where the key is the unexpanded source and the value is the expanded destination.
-	 * Aliases are currently resolved in the order in which they are received, not by longest to shortest.
-	 * TODO: Longest to shortest, and delimited by slashes, would probably be a good idea.
-	 */
-	var aliasMap = {};
+			// Ensure that aliases are limited to complete module ID fragments
+			newAlias.from = newAlias.from.replace(/\/*$/, '/');
+			newAlias.to = newAlias.to.replace(/\/*$/, '/');
+
+			for (var i = 0, oldAlias; (oldAlias = aliases[i]); ++i) {
+				// The same alias has already been parsed once before, probably by some look-ahead; do not add it
+				// again
+				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
+					return;
+				}
+
+				// Aliases are ordered and applied by length, then by entry order if the lengths are identical
+				if (oldAlias.from.length < newAlias.from.length) {
+					break;
+				}
+			}
+
+			aliases.splice(i, 0, newAlias);
+		},
+
+		/**
+		 * Walks the widget tree, resolving constructor aliases for the given node and its children.
+		 */
+		resolve: function (node) {
+			var aliasMap = this._map;
+
+			for (var k in aliasMap) {
+				if (node.constructor.indexOf(k) === 0) {
+					node.constructor = node.constructor.replace(k, aliasMap[k].to);
+				}
+			}
+
+			if (node.children && node.children.length) {
+				for (var i = 0, child; (child = node.children[i]); ++i) {
+					this.resolve(child);
+				}
+			}
+		},
+
+		/**
+		 * Validates that the collected aliases from the template are valid and do not contain duplicate definitions.
+		 */
+		validate: function () {
+			var aliases = this._aliases,
+				aliasMap = {};
+
+			for (var i = 0, alias; (alias = aliases[i]); ++i) {
+				if (aliasMap[alias.from]) {
+					var oldAlias = aliasMap[alias.from];
+					throw new Error('Line ' + alias.line + ', column ' + alias.column + ': Alias "' + alias.from +
+						'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
+				}
+
+				aliasMap[alias.from] = alias;
+			}
+
+			this._map = aliasMap;
+		}
+	};
 }
 
 // template root
 
 Template
-	// TODO: This fails to fall through to Element if AnyNonElement matches when it sees more data instead of EOF.
-	= root:Any? {
+	= root:(
+		// A non-element followed by anything other than EOF should be considered a child of a root Element widget,
+		// otherwise the parser fails on whatever follows. Changing this to capture zero or more Any tokens would
+		// require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky tree
+		// where the first widget is the first widget and then the second widget is an Element widget containing all
+		// the rest of the widgets
+		(widget:AnyNonElement !. { return widget; })
+		/ Element
+	)? {
 		if (!root) {
 			root = {
 				constructor: 'framework/ui/dom/Element',
@@ -70,24 +130,10 @@ Template
 			};
 		}
 
-		resolveAliases(root);
+		aliases.validate();
+		aliases.resolve(root);
 		return root;
 	}
-
-// collections
-
-Any
-	= AnyNonElement
-	/ Element
-
-AnyNonElement
-	= If
-	/ For
-	/ When
-	/ Placeholder
-	/ Data
-	/ Alias
-	/ Widget
 
 // HTML
 
@@ -142,8 +188,7 @@ HtmlFragment 'HTML'
 			/ WhenProgressTag
 			/ Placeholder
 			/ Data
-			// Alias rule has side-effects
-			/ (OpenToken 'alias' AttributeMap CloseToken)
+			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
 		)
@@ -283,12 +328,11 @@ Data '<data>'
 	}
 
 Alias '<alias>'
-	= OpenToken 'alias' attributes:AttributeMap CloseToken {
-		validate(attributes, { required: [ 'from', 'to' ] });
-		if (aliasMap[attributes.from]) {
-			error('Alias "' + attributes.from + '" is already defined');
-		}
-		aliasMap[attributes.from] = attributes.to;
+	= OpenToken 'alias' alias:AttributeMap CloseToken {
+		validate(alias, { required: [ 'from', 'to' ] });
+		alias.line = line();
+		alias.column = column();
+		aliases.add(alias);
 		return null;
 	}
 
@@ -325,6 +369,19 @@ AttributeValue
 	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return value.join(''); })
 
 // miscellaneous
+
+Any
+	= AnyNonElement
+	/ Element
+
+AnyNonElement
+	= If
+	/ For
+	/ When
+	/ Placeholder
+	/ Data
+	/ Alias
+	/ Widget
 
 OpenToken '<'
 	= '<' S*
