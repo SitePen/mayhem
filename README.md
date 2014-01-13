@@ -1,5 +1,11 @@
 # Mayhem
 
+## Setup
+
+* Clone the repo from the demo branch, `git clone --branch demo --recursive git@github.com:SitePen/mayhem.git`
+* Check out the framework submodule to track master, since this is where development will actually occur,
+  `cd src/framework && git checkout master`
+
 ## Conventions
 
 * Follows the [dojo2-core guidelines](https://github.com/csnover/dojo2-core#code-conventions) for all JavaScript
