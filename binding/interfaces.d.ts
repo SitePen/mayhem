@@ -18,15 +18,17 @@ export interface IBindingHandle extends IHandle {
  * needing to know the originally bound object, the name of the property, or even that the property exists at the time
  * that it is bound or set.
  */
-export interface IBoundProperty extends core.IProperty {
+export interface IBindingProxty<T> extends core.IProxty<T> {
 	/**
 	 * Binds the property to another target property. The target property is only notified of a change when the actual
 	 * property is updated; calling `set` on this bound property will *not* update the bound target value.
 	 */
-	bindTo(target:IBoundProperty, options?:IBoundPropertyOptions):IHandle;
+	bindTo(target:core.IProxty<T>, options?:IBindToOptions):IHandle;
 }
 
-export interface IBoundPropertyOptions {
+// TODO: This is needed in order to prevent race conditions when binding a source and a target together at the same
+// time when a scheduler is in use, but is an ugly hack. Can we do something better?
+export interface IBindToOptions {
 	setValue?:boolean;
 }
 
@@ -85,7 +87,7 @@ export interface IDataBindingRegistry extends core.IComponent {
  * additional static `test` function.
  */
 export interface IPropertyBinder {
-	new (kwArgs:IPropertyBinderArguments):IBoundProperty;
+	new (kwArgs:IPropertyBinderArguments):IBindingProxty<any>;
 
 	/**
 	 * Tests whether or not the property binder can successfully create a bound property from the given object and
@@ -131,7 +133,7 @@ export interface IPropertyRegistry extends IDataBindingRegistry {
 	 * Creates a bound property object from a given object and binding string. This method must be exposed publicly
 	 * in order to allow property binders to peel away sections of binding strings.
 	 */
-	createProperty(object:Object, binding:string, options?:{ scheduled?:boolean; }):IBoundProperty;
+	createProperty(object:Object, binding:string, options?:{ scheduled?:boolean; }):IBindingProxty<any>;
 }
 
 // TODO: Do something with this or delete it.

@@ -112,7 +112,7 @@ class PropertyRegistry implements binding.IPropertyRegistry {
 		}
 
 		// TODO: Use BindingError
-		throw new Error('No registered property binders understand the requested binding');
+		throw new Error('No registered property binders understand the requested binding "' + binding + '" on ' + object);
 	}
 
 	startup():IPromise<any[]> {

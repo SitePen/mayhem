@@ -112,7 +112,7 @@ class Application extends StatefulEvented implements core.IApplication {
 				promise:IPromise<Application>;
 
 			for (var key in this.modules) {
-				promise = this[key].startup && this[key].startup();
+				promise = this[key] && this[key].startup && this[key].startup();
 				if (promise && promise.then) {
 					promises.push(promise);
 				}

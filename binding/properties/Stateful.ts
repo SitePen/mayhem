@@ -10,9 +10,9 @@ import util = require('../../util');
 class StatefulProperty extends Property implements binding.IBoundProperty {
 	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
 		var object = <IStateful> kwArgs.object;
-		return Boolean(object != null && typeof object.get === 'function' &&
+		return object != null && typeof object.get === 'function' &&
 			typeof object.set === 'function' &&
-			typeof object.watch === 'function');
+			typeof object.watch === 'function';
 	}
 
 	/**

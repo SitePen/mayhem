@@ -4,13 +4,13 @@ import has = require('../../has');
 // `oidKey` intentionally uses a unique string so that it is easily discoverable within the source code for anyone
 // that notices the property appearing on their objects. Please don't be clever and try to save memory by reducing it
 // TODO: Two applications on one page using the same copy of Mayhem, binding to the same object, will break.
-var oidKey = '__PropertyOid' + Math.random(),
+var oidKey = '__BindingProxtyOid' + Math.random(),
 	oid = 0;
 
 /**
- * The Property class is the base class for all property binder implementations.
+ * The BindingProxty class is the base class for all property binder implementations.
  */
-/* abstract */ class Property /* implements binding.IBoundProperty */ {
+/* abstract */ class BindingProxty<T> /* implements binding.IBindingProxty<T> */ {
 	id:string;
 
 	constructor(kwArgs:binding.IPropertyBinderArguments) {
@@ -32,8 +32,8 @@ var oidKey = '__PropertyOid' + Math.random(),
 			}
 		}
 
-		this.id = 'Property' + object[oidKey] + '/' + kwArgs.binding;
+		this.id = 'BindingProxty' + object[oidKey] + '/' + kwArgs.binding;
 	}
 }
 
-export = Property;
+export = BindingProxty;

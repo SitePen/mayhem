@@ -25,7 +25,9 @@ require([
 	'framework/ui/Widget!form/Input',
 	'framework/ui/Widget!form/Error'
 ], function (Model, Application, Mediator, Master, Input, FormError) {
-	var app = new Application();
+	var app = new Application({
+		modules: { router: null }
+	});
 
 	app.startup().then(function () {
 		var firstNameRE = /^[a-zA-Z]+$/;
@@ -52,7 +54,7 @@ require([
 		var input = window.input = new Input({ app: app, mediator: mediator });
 		input.bind('value', 'firstName', { direction: 2 });
 
-		var error = window.formError = new FormError({ app: app, mediator: mediator, field: 'firstName' });
+		var error = window.formError = new FormError({ app: app, mediator: mediator, binding: 'firstName' });
 
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
