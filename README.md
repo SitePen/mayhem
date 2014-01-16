@@ -5,6 +5,7 @@
 * Clone the repo from the demo branch, `git clone --branch demo --recursive git@github.com:SitePen/mayhem.git`
 * Check out the framework submodule to track master, since this is where development will actually occur,
   `cd src/framework && git checkout master`
+* Compile TypeScript with `find . -name '*.ts' -exec tsc --sourcemap --noImplicitAny --target ES5 --module amd {} +`
 
 ## Conventions
 
@@ -12,7 +13,6 @@
   syntaxes
 * For type hints, there MUST NOT be whitespace between the identifier and its type (to differentiate between types
   and object literal keys)
-* Compiler should be executed with `--module AMD` and `--noImplicitAny` flags
 * Imports should be ordered alphabetically, case-insensitive, by identifier
 * Class properties should be ordered alphabetically, case-insensitive, ignoring leading underscores, in the following
   order:
