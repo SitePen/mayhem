@@ -119,6 +119,13 @@ declare module 'dojo/dom-construct' {
 	export = domConstruct;
 }
 
+declare module 'dojo/errors/create' {
+	var create:{
+		(name:string, ctor:Function, base:Function, props:{ [key:string]:any; }):any;
+	};
+	export = create;
+}
+
 declare module 'dojo/Evented' {
 	class Evented implements IEvented {
 		emit(type:string, event?:Event):void;

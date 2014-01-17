@@ -28,6 +28,8 @@ export interface IModel extends IComponent {
 	 */
 	scenario:string;
 
+	addError(key:string, error:Error /* TODO: ValidationError */):void;
+
 	/**
 	 * Retrieves the value of a property on the model.
 	 */
@@ -36,7 +38,7 @@ export interface IModel extends IComponent {
 	/**
 	 * Retrieves the proxty for a property on the model.
 	 */
-	getProxty(key:string):IProxty<any>;
+	// getProxty(key:string):IProxty<any>;
 
 	/**
 	 * Returns whether or not the model currently contains any validation errors.
@@ -196,5 +198,5 @@ export interface IScheduler {
 }
 
 export interface IValidator {
-	validate(model:IModel, key:string):void;
+	validate(model:IModel, key:string, proxty:IModelProxty<any>):void;
 }

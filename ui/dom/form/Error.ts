@@ -7,31 +7,30 @@ import lang = require('dojo/_base/lang');
 import SingleNodeWidget = require('../SingleNodeWidget');
 
 class FormError extends SingleNodeWidget {
-	binding:string;
+	private _errorsHandle:IHandle;
 	firstNode:HTMLUListElement;
-	private _handle:IHandle;
+	private _propertyHandle:IHandle;
+	model:string;
+	property:string;
 	lastNode:HTMLUListElement;
 
 	private _bindingSetter(value:string):void {
 		this.binding = value;
 
-		this._handle && this._handle.remove();
-		this._handle = this.app.binder
+		this._propertyHandle && this._propertyHandle.remove();
+		this._propertyHandle = this.app.binder
 			.createProxty(this.mediator, value)
-			// problem: this fixes our observation to the one specific proxty even though a parent might change
-			.getMetadata('errors')
-			.observe(<(value:Error[]) => void> lang.hitch(this, '_updateDisplay'));
-
-		var binder = this.app.binder;
-		var errors:core.IProxty<Error[]> = binder.createProxty(binder.createProxty(this.mediator, value), 'errors');
-		this._handle = errors.observe(<(value:Error[]) => void> lang.hitch(this, '_updateDisplay'));
+			.observe((modelProxty:core.IModelProxty<any>) => {
+				this._errorsHandle && this._errorsHandle.remove();
+				this._errorsHandle = modelProxty.errors.observe(<(value:Error[]) => void> lang.hitch(this, '_updateDisplay'));
+			});
 	}
 
 	render():void {
 		this.firstNode = this.lastNode = document.createElement('ul');
 	}
 
-	private _updateDisplay(errors:Error[]):void {
+	private _updateDisplay(errors:Error[] /* TODO: ValidationError[] */):void {
 		this.firstNode.innerHTML = '';
 
 		if (!errors) {
