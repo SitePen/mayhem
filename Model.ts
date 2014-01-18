@@ -13,7 +13,7 @@ class User extends Model {
 		label: 'Username',
 		validators: [ {
 			validate: function (model:core.IModel, key:string, proxty:ModelProxty<string>):void {
-				model.addError(key, new ValidationError('You broke it!'));
+				model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
 			}
 		} ]
 	});

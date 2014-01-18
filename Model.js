@@ -13,7 +13,7 @@ define(["require", "exports", './has', 'dojo/_base/array', 'dojo/when', 'dojo/De
                 label: 'Username',
                 validators: [{
                         validate: function (model, key, proxty) {
-                            model.addError(key, new ValidationError('You broke it!'));
+                            model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
                         }
                     }]
             });
