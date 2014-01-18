@@ -173,6 +173,12 @@ export interface IScheduler {
 	schedule(id:string, callback:Function):void;
 }
 
+export interface IValidatorOptions {
+	allowEmpty?:boolean;
+	scenarios?:string[];
+}
+
 export interface IValidator {
-	validate(model:IModel, key:string, proxty:IModelProxty<any>):void;
+	options?:IValidatorOptions;
+	validate(model:any/*IModel*/, key:string, proxty:IModelProxty<any>):void;
 }
