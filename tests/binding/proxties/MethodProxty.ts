@@ -2,55 +2,55 @@
 
 import assert = require('intern/chai!assert');
 import binding = require('../../../binding/interfaces');
-import Es5Binder = require('../../../binding/properties/Es5');
-import MethodBinder = require('../../../binding/properties/Method');
-import MockBinder = require('../support/MockBinder');
+import Es5Proxty = require('../../../binding/proxties/Es5Proxty');
+import MethodProxty = require('../../../binding/proxties/MethodProxty');
+import MockProxty = require('../support/MockProxty');
 import registerSuite = require('intern!object');
 import util = require('../support/util');
 
-var registry:binding.IPropertyRegistry;
+var binder:binding.IProxtyBinder;
 
 registerSuite({
-	name: 'binding/properties/Method',
+	name: 'binding/proxties/MethodProxty',
 
 	setup: function () {
-		MethodBinder.methods = {
+		MethodProxty.methods = {
 			toUpperCase: function (value:any):string {
 				return String(value).toUpperCase();
 			}
 		};
 
-		registry = util.createPropertyRegistry();
-		registry.add(MethodBinder);
-		registry.add(Es5Binder);
+		binder = util.createProxtyBinder();
+		binder.add(MethodProxty);
+		binder.add(Es5Proxty);
 	},
 
 	teardown: function () {
-		MethodBinder.methods = {};
-		registry = null;
+		MethodProxty.methods = {};
+		binder = null;
 	},
 
 	'.test': function () {
-		var result = MethodBinder.test({
+		var result = MethodProxty.test({
 			object: {},
 			binding: 'toUpperCase(foo)',
-			registry: registry
+			binder: binder
 		});
 
 		assert.isTrue(result, 'Should be able to bind an object when the method name is registered');
 
-		result = MethodBinder.test({
+		result = MethodProxty.test({
 			object: {},
 			binding: 'noSuchMethod(foo)',
-			registry: registry
+			binder: binder
 		});
 
 		assert.isFalse(result, 'Should not be able to bind an object when the method name is not registered');
 
-		result = MethodBinder.test({
+		result = MethodProxty.test({
 			object: {},
 			binding: 'foo',
-			registry: registry
+			binder: binder
 		});
 
 		assert.isFalse(result, 'Should not be able to bind an object when there is no method');
@@ -58,15 +58,15 @@ registerSuite({
 
 	'basic tests': function () {
 		var sourceObject = { foo: 'aaa' },
-			source = new MethodBinder({
+			source = new MethodProxty<string, string>({
 				object: sourceObject,
 				binding: 'toUpperCase(foo)',
-				registry: registry
+				binder: binder
 			}),
-			target = new MockBinder({
+			target = new MockProxty<string, string>({
 				object: {},
 				binding: '',
-				registry: null
+				binder: null
 			});
 
 		// TODO: Not sure if source.get() should be returning the mutated value or not; it may be that the mutated

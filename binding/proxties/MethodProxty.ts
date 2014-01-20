@@ -1,9 +1,8 @@
 /// <reference path="../../dojo.d.ts" />
 
 import binding = require('../interfaces');
-import lang = require('dojo/_base/lang');
-import Property = require('./Property');
-import when = require('dojo/when');
+import BindingProxty = require('../BindingProxty');
+import core = require('../../interfaces');
 
 var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
 
@@ -11,37 +10,37 @@ var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
  * This property binder adds the ability to register methods that can be used to transform the value of a bound
  * property when its value is set on its bound target.
  */
-class MethodProperty extends Property implements binding.IBoundProperty {
+class MethodProxty<SourceT, TargetT> extends BindingProxty<any, TargetT> implements binding.IProxty<any, TargetT> {
 	/**
 	 * The map of available transformation methods.
 	 */
-	static methods:{ [name:string]: (value:any) => any } = {};
-	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
+	static methods:{ [name:string]:(value:any) => any; } = {};
+	static test(kwArgs:binding.IProxtyArguments):boolean {
 		var matches:RegExpExecArray;
 		return Boolean((matches = methodExpression.exec(kwArgs.binding)) && this.methods[matches[1]]);
 	}
 
-	private _mutator:Function;
-	private _source:binding.IBoundProperty;
-	private _target:binding.IBoundProperty;
+	private _mutator:(value:SourceT) => TargetT;
+	private _source:binding.IProxty<SourceT, SourceT>;
+	private _target:core.IProxty<TargetT>;
 
-	constructor(kwArgs:binding.IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
 
 		var matches:RegExpExecArray = methodExpression.exec(kwArgs.binding);
 
-		this._mutator = MethodProperty.methods[matches[1]];
-		this._source = kwArgs.registry.createProperty(kwArgs.object, matches[2], { scheduled: false });
+		this._mutator = (<typeof MethodProxty> (<any> this).constructor).methods[matches[1]];
+		this._source = kwArgs.binder.createProxty<SourceT, SourceT>(kwArgs.object, matches[2], { scheduled: false });
 
 		var self = this;
-		this._source.bindTo(<binding.IBoundProperty> {
-			set: function (value:any):void {
+		this._source.bindTo(<core.IProxty<SourceT>> {
+			set: function (value:SourceT):void {
 				self._target && self._target.set(self._mutator(value));
 			}
 		});
 	}
 
-	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
+	bindTo(target:core.IProxty<TargetT>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -49,7 +48,7 @@ class MethodProperty extends Property implements binding.IBoundProperty {
 		}
 
 		if (options.setValue !== false) {
-			target.set(this.get());
+			target.set(<TargetT> <any> this.get());
 		}
 
 		var self = this;
@@ -68,13 +67,13 @@ class MethodProperty extends Property implements binding.IBoundProperty {
 		this._source = this._mutator = this._target = null;
 	}
 
-	get():any {
+	get():TargetT {
 		return this._source ? this._mutator(this._source.get()) : undefined;
 	}
 
-	set(value:any):void {
+	set(value:SourceT):void {
 		this._source && this._source.set(value);
 	}
 }
 
-export = MethodProperty;
+export = MethodProxty;

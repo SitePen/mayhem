@@ -12,11 +12,16 @@ interface ValidationError extends Error {
 	toString(options?:{ [key:string]:any; }):string;
 }
 
+var ValidationError:{
+	new (message:string, options?:{ [key:string]:any; }):ValidationError;
+};
+
+
 function Ctor(message:string, options?:{ [key:string]:any; }) {
 	this.options = options;
 }
 
-var ValidationError:{ new (message:string, options?:{ [key:string]:any; }):ValidationError; } = createError('ValidationError', Ctor, Error, {
+ValidationError = createError('ValidationError', Ctor, Error, {
 	toString: function (options?:{ [key:string]:any; }):string {
 		var dictionary = lang.mixin({ name: i18n.genericFieldName }, this.options, options);
 		return lang.replace(this.message, dictionary);

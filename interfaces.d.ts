@@ -2,9 +2,10 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
+import ValidationError = require('./validators/ValidationError');
 
 export interface IApplication {
-	dataBindingRegistry:binding.IDataBindingRegistry;
+	binder:binding.IBinder;
 	scheduler:IScheduler;
 }
 
@@ -12,7 +13,7 @@ export interface IComponent {
 	app:IApplication;
 }
 
-export interface IMediator extends IComponent, IStateful {
+export interface IMediator extends IComponent {
 	model:IModel;
 	routeState:Object;
 }
@@ -91,7 +92,8 @@ export interface IModel extends IComponent {
  */
 export interface IModelProxty<T> extends IProxty<T> {
 	default:T;
-	errors:IProxty<Error[]>;
+	// TODO: Make into StatefulArray?
+//	errors:IProxty<ValidationError[]>;
 	label:string;
 	validators:IValidator[];
 
@@ -103,33 +105,6 @@ export interface IModelProxty<T> extends IProxty<T> {
 
 export interface IObserver<T> {
 	(newValue:T, oldValue:T):void;
-}
-
-export interface IProperty {
-	/**
-	 * An identifier for this bound property. Bound properties that bind to the same object using the same binding
-	 * string will have identical identifiers.
-	 */
-	id:string;
-
-	/**
-	 * Permanently destroys the binding to the original property.
-	 */
-	destroy():void;
-
-	/**
-	 * Retrieves the current value of the bound property.
-	 */
-	get():any;
-
-	// TODO
-	observe?(callback:(value:any, oldValue:any) => IPromise<any>):IHandle;
-
-	/**
-	 * Sets the value of the bound property. Setting the value of the property using this method does not cause the
-	 * value of any bound target property to change.
-	 */
-	set(value:any):void;
 }
 
 /**
@@ -157,7 +132,7 @@ export interface IProxty<T> {
 	/**
 	 * Registers an observer that will be called whenever the value of the proxty changes.
 	 */
-	observe(callback:(value:T, oldValue:T) => void, invokeImmediately:boolean):IHandle;
+	observe(observer:IObserver<T>, invokeImmediately:boolean):IHandle;
 
 	/**
 	 * Replaces the value of the proxty with a new value. Observers will be notified of the set at some point in the
@@ -171,7 +146,7 @@ export interface IProxty<T> {
 	 * `get`, except in cases where the underlying value may have a different `valueOf` (like Date objects), in which
 	 * case the `valueOf` of the underlying value will be used.
 	 */
-	valueOf():T;
+	valueOf():any;
 }
 
 export interface IRoute {

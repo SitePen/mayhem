@@ -1,18 +1,17 @@
 /// <reference path="../../dojo.d.ts" />
 
-import array = require('dojo/_base/array');
 import binding = require('../interfaces');
+import BindingProxty = require('../BindingProxty');
+import core = require('../../interfaces');
 import has = require('../../has');
-import lang = require('dojo/_base/lang');
-import Property = require('./Property');
 import util = require('../../util');
 
 /**
  * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
  * that support EcmaScript 5.
  */
-class Es5Property extends Property implements binding.IBoundProperty {
-	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
+class Es5Proxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
+	static test(kwArgs:binding.IProxtyArguments):boolean {
 		if (!has('es5') || !util.isObject(kwArgs.object)) {
 			return false;
 		}
@@ -25,9 +24,9 @@ class Es5Property extends Property implements binding.IBoundProperty {
 	private _object:Object;
 	private _originalDescriptor:PropertyDescriptor;
 	private _property:string;
-	private _target:binding.IBoundProperty;
+	private _target:core.IProxty<TargetT>;
 
-	constructor(kwArgs:binding.IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
 
 		var object = kwArgs.object,
@@ -72,7 +71,7 @@ class Es5Property extends Property implements binding.IBoundProperty {
 		this._update(value);
 	}
 
-	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
+	bindTo(target:core.IProxty<TargetT>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -106,17 +105,17 @@ class Es5Property extends Property implements binding.IBoundProperty {
 		this._originalDescriptor = this._object = this._target = null;
 	}
 
-	get():any {
+	get():SourceT {
 		return this._object ? this._object[this._property] : undefined;
 	}
 
-	set(value:any):void {
+	set(value:SourceT):void {
 		this._object && (this._object[this._property] = value);
 	}
 
-	private _update(value:any):void {
+	private _update(value:TargetT):void {
 		this._target && this._target.set(value);
 	}
 }
 
-export = Es5Property;
+export = Es5Proxty;

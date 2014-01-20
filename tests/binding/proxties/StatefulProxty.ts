@@ -2,48 +2,48 @@
 
 import assert = require('intern/chai!assert');
 import binding = require('../../../binding/interfaces');
-import DataBindingDirection = require('../../../binding/DataBindingDirection');
-import MockBinder = require('../support/MockBinder');
+import BindDirection = require('../../../binding/BindDirection');
+import MockProxty = require('../support/MockProxty');
 import registerSuite = require('intern!object');
 import Stateful = require('dojo/Stateful');
-import StatefulBinder = require('../../../binding/properties/Stateful');
+import StatefulProxty = require('../../../binding/proxties/StatefulProxty');
 import util = require('../support/util');
 
-var registry:binding.IDataBindingRegistry;
+var binder:binding.IProxtyBinder;
 
 registerSuite({
-	name: 'binding/properties/Stateful',
+	name: 'binding/proxties/StatefulProxty',
 
 	setup: function () {
-		registry = util.createPropertyRegistry();
-		registry.add(StatefulBinder);
+		binder = util.createProxtyBinder();
+		binder.add(StatefulProxty);
 	},
 
 	teardown: function () {
-		registry = null;
+		binder = null;
 	},
 
 	'.test': function () {
-		var result = StatefulBinder.test({
+		var result = StatefulProxty.test({
 			object: new Stateful({}),
 			binding: 'a',
-			registry: null
+			binder: null
 		});
 
 		assert.isTrue(result, 'Should be able to bind to a Stateful object');
 
-		result = StatefulBinder.test({
+		result = StatefulProxty.test({
 			object: {},
 			binding: 'a',
-			registry: null
+			binder: null
 		});
 
 		assert.isFalse(result, 'Should not be able to bind to a non-Stateful object');
 
-		result = StatefulBinder.test({
+		result = StatefulProxty.test({
 			object: null,
 			binding: 'a',
-			registry: null
+			binder: null
 		});
 
 		assert.isFalse(result, 'Should not be able to bind to a null object');
@@ -51,15 +51,15 @@ registerSuite({
 
 	'basic tests': function () {
 		var sourceObject = new Stateful({ foo: '1' }),
-			source = new StatefulBinder({
+			source = new StatefulProxty<string, string>({
 				object: sourceObject,
 				binding: 'foo',
-				registry: null
+				binder: null
 			}),
-			target = new MockBinder({
+			target = new MockProxty<string, string>({
 				object: {},
 				binding: '',
-				registry: null
+				binder: null
 			});
 
 		assert.strictEqual(source.get(), sourceObject.get('foo'), 'Bound source property should match value of source property object');
@@ -124,10 +124,10 @@ registerSuite({
 					};
 				}
 			},
-			source = new StatefulBinder({
+			source = new StatefulProxty({
 				object: fakeStateful,
 				binding: 'foo',
-				registry: null
+				binder: null
 			});
 
 		assert.strictEqual(source.get(), '1');
@@ -137,12 +137,12 @@ registerSuite({
 		assert.strictEqual(fakeStateful.numSets, 1, 'Setting a different value should not be a no-op');
 	}/*,
 
-	'registry integration': function () {
+	'binder integration': function () {
 		var source = new Stateful({ foo: '1' }),
 			target = new Stateful({}),
 			dfd = this.async();
 
-		registry.bind({
+		binder.bind({
 			source: source,
 			sourceBinding: 'foo',
 			target: target,
@@ -157,7 +157,7 @@ registerSuite({
 		assert.strictEqual(source.get('foo'), '2', 'Source should update immediately');
 		assert.strictEqual(target.get('foo'), '1', 'Target should not update to source until after next scheduler tick');
 
-		registry.app.scheduler.afterNext(dfd.callback(function () {
+		binder.app.scheduler.afterNext(dfd.callback(function () {
 			assert.strictEqual(target.get('foo'), source.get('foo'), 'Source and target should match after scheduler tick');
 		}));
 	}*/

@@ -1,51 +1,51 @@
 /// <reference path="../../intern.d.ts" />
 
 import assert = require('intern/chai!assert');
+import BindDirection = require('../../../binding/BindDirection');
 import binding = require('../../../binding/interfaces');
-import DataBindingDirection = require('../../../binding/DataBindingDirection');
-import Es5Binder = require('../../../binding/properties/Es5');
-import MockBinder = require('../support/MockBinder');
-import NestedBinder = require('../../../binding/properties/Nested');
+import Es5Proxty = require('../../../binding/proxties/Es5Proxty');
+import MockProxty = require('../support/MockProxty');
+import NestedProxty = require('../../../binding/proxties/NestedProxty');
 import registerSuite = require('intern!object');
 import Stateful = require('dojo/Stateful');
-import StatefulBinder = require('../../../binding/properties/Stateful');
+import StatefulProxty = require('../../../binding/proxties/StatefulProxty');
 import util = require('../support/util');
 
-var registry:binding.IPropertyRegistry;
+var binder:binding.IProxtyBinder;
 
 registerSuite({
-	name: 'binding/properties/Nested',
+	name: 'binding/proxties/NestedProxty',
 
 	beforeEach: function () {
-		registry = util.createPropertyRegistry();
-		registry.add(StatefulBinder);
+		binder = util.createProxtyBinder();
+		binder.add(StatefulProxty);
 	},
 
 	teardown: function () {
-		registry = null;
+		binder = null;
 	},
 
 	'.test': function () {
-		var result = NestedBinder.test({
+		var result = NestedProxty.test({
 			object: new Stateful({}),
 			binding: 'a.b',
-			registry: null
+			binder: null
 		});
 
 		assert.isTrue(result, 'Should be able to bind when using a nested binding');
 
-		result = NestedBinder.test({
+		result = NestedProxty.test({
 			object: {},
 			binding: 'a',
-			registry: null
+			binder: null
 		});
 
 		assert.isFalse(result, 'Should not be able to bind when not using a nested binding');
 
-		result = NestedBinder.test({
+		result = NestedProxty.test({
 			object: null,
 			binding: 'a.b',
-			registry: null
+			binder: null
 		});
 
 		assert.isFalse(result, 'Should not be able to bind to a null object');
@@ -55,15 +55,15 @@ registerSuite({
 		var parentObject = new Stateful({ intermediate: null }),
 			intermediateObject = new Stateful({ child: null }),
 			childObject = new Stateful({ foo: '1' }),
-			source = new NestedBinder({
+			source = new NestedProxty<string, string>({
 				object: parentObject,
 				binding: 'intermediate.child.foo',
-				registry: registry
+				binder: binder
 			}),
-			target = new MockBinder({
+			target = new MockProxty<string, string>({
 				object: {},
 				binding: '',
-				registry: null
+				binder: null
 			}),
 			handle = source.bindTo(target);
 
@@ -87,16 +87,16 @@ registerSuite({
 
 		assert.throws(function () {
 			parentObject.set('intermediate', {});
-		}, /No registered property binders understand the requested binding/, 'Setting non-bindable object in binding chain should throw error');
+		}, /No registered proxty constructors understand the requested binding/, 'Setting non-bindable object in binding chain should throw error');
 
 		parentObject.set('intermediate', intermediateObject);
 		intermediateObject.set('child', null);
 
 		assert.throws(function () {
 			intermediateObject.set('child', { farbrausch: true });
-		}, /No registered property binders understand the requested binding/, 'Setting non-bindable object at end of binding chain should throw error');
+		}, /No registered proxty constructors understand the requested binding/, 'Setting non-bindable object at end of binding chain should throw error');
 
-		var registryHandle = registry.add(Es5Binder),
+		var binderHandle = binder.add(Es5Proxty),
 			plainIntermediateObject:{ child?:{ foo?:string; }; } = {};
 
 		assert.doesNotThrow(function () {

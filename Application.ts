@@ -9,7 +9,8 @@ import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends StatefulEvented implements core.IApplication {
-	dataBindingRegistry:binding.IDataBindingRegistry;
+	[applicationComponent:string]:any;
+	binder:binding.IBinder;
 	modules:{ [ propertyName:string ]:{ constructor: any; } };
 	scheduler:core.IScheduler;
 
@@ -34,8 +35,9 @@ class Application extends StatefulEvented implements core.IApplication {
 				dataBindingRegistry: {
 					constructor: 'framework/binding/PropertyRegistry',
 					binders: [
-						'framework/binding/properties/Nested',
-						'framework/binding/properties/Stateful'
+						'framework/binding/proxties/NestedProxty',
+						'framework/binding/proxties/DstoreProxty',
+						'framework/binding/proxties/StatefulProxty'
 					]
 				},
 // TODO: Fix-up and re-enable

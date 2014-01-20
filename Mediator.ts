@@ -11,10 +11,12 @@ import util = require('./util');
 var uuid = 0;
 
 class Mediator implements core.IMediator {
+// TODO: Needed for TS 1.0, broken for TS 0.9.1
+//	[key:string]:any;
 	app:core.IApplication;
 	model:core.IModel;
 	routeState:Object;
-	private _watchers:{ [ key:string ]:Array<(key:string, oldValue:any, newValue:any) => void>; } = {};
+	private _watchers:{ [key:string]:Array<(key:string, oldValue:any, newValue:any) => void>; } = {};
 
 	constructor(kwArgs?:Object) {
 		// TODO: This assumes that the kwArgs object provided to the constructor defines the properties of the
@@ -88,7 +90,8 @@ class Mediator implements core.IMediator {
 				var newValue = this.get(key);
 
 				if (!util.isEqual(oldValue, newValue)) {
-					var watchers = [].concat(this._watchers['*'] || [], this._watchers['*' + key] || []);
+					var watchers:Array<(key:string, oldValue:any, newValue:any) => void>;
+					watchers = (<typeof watchers> []).concat(this._watchers['*'] || [], this._watchers['*' + key] || []);
 					// TODO: Should watcher notifications be scheduled? It might be a good idea, or it might cause
 					// data-binding to inefficiently take two cycles through the event loop.
 					var watcher:(key:string, oldValue:any, newValue:any) => void;
@@ -113,7 +116,8 @@ class Mediator implements core.IMediator {
 		// TODO: In ES5 we can just use `Object.create(null)` instead
 		key = '*' + key;
 
-		var watchers = this._watchers[key] = (this._watchers[key] || []);
+		// TODO: Coercion only necessary for TS 0.9.1
+		var watchers = this._watchers[key] = (this._watchers[key] || <Array<(key:string, oldValue:any, newValue:any) => void>> []);
 		watchers.push(callback);
 
 		return {

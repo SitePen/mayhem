@@ -2,18 +2,24 @@
 
 import array = require('dojo/_base/array');
 import binding = require('../interfaces');
+import BindingProxty = require('../BindingProxty');
+import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
-import Property = require('./Property');
 import util = require('../../util');
 
 /**
  * This property binder adds the ability to bind to arbitrarily deep children of the source object, including
  * properties that may not yet exist at the time the object is initially bound.
  */
-class NestedProperty extends Property implements binding.IBoundProperty {
-	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
+class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
+	static test(kwArgs:binding.IProxtyArguments):boolean {
 		return kwArgs.object != null && kwArgs.binding.indexOf('.') !== -1;
 	}
+
+	/**
+	 * The binder to bind sub-properties with.
+	 */
+	private _binder:binding.IBinder;
 
 	/**
 	 * The string that identifies the sub-property to be bound.
@@ -23,27 +29,22 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * The watch handles for each binding.
 	 */
-	private _properties:binding.IBoundProperty[] = [];
-
-	/**
-	 * The property registry to bind sub-properties with.
-	 */
-	private _registry:binding.IPropertyRegistry;
+	private _proxties:binding.IProxty<any, any>[] = [];
 
 	/**
 	 * The property at the end of the bound chain of properties.
 	 */
-	private _source:binding.IBoundProperty;
+	private _source:binding.IProxty<SourceT, SourceT>;
 
 	/**
 	 * The target property.
 	 */
-	private _target:binding.IBoundProperty;
+	private _target:core.IProxty<TargetT>;
 
-	constructor(kwArgs:binding.IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
 
-		this._registry = kwArgs.registry;
+		this._binder = kwArgs.binder;
 		this._binding = kwArgs.binding.split('.');
 		this._rebind(kwArgs.object, 0);
 	}
@@ -51,7 +52,7 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
+	bindTo(target:core.IProxty<TargetT>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -59,7 +60,7 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 		}
 
 		if (options.setValue !== false) {
-			target.set(this.get());
+			target.set(<TargetT> <any> this.get());
 		}
 
 		var self = this;
@@ -77,9 +78,9 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 	destroy():void {
 		this.destroy = function () {};
 
-		var properties = this._properties;
-		for (var i = 0, property:binding.IBoundProperty; (property = properties[i]); ++i) {
-			property.destroy();
+		var proxties = this._proxties;
+		for (var i = 0, proxty:core.IProxty<any>; (proxty = proxties[i]); ++i) {
+			proxty.destroy();
 		}
 
 		this._source = this._target = null;
@@ -88,7 +89,7 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * Gets the current value of this property.
 	 */
-	get():any {
+	get():SourceT {
 		return this._source ? this._source.get() : undefined;
 	}
 
@@ -96,7 +97,7 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 	 * Sets the value of this property. This is intended to be used to update the value of this property from another
 	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
-	set(value:any):void {
+	set(value:SourceT):void {
 		this._source && this._source.set(value);
 	}
 
@@ -104,26 +105,26 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 	 * Removes and rebinds to all objects in the object chain.
 	 */
 	private _rebind(fromObject:Object, fromIndex:number):void {
-		var properties = this._properties;
+		var proxties = this._proxties;
 
 		// Stop watching objects that are no longer part of this binding's object chain because a parent object
 		// was replaced
-		array.forEach(properties.splice(fromIndex), function (property:binding.IBoundProperty) {
-			property.destroy();
+		array.forEach(proxties.splice(fromIndex), function (proxty:core.IProxty<any>) {
+			proxty.destroy();
 		});
 
 		var binding:string,
 			index:number = fromIndex,
 			object:Object = fromObject,
-			property:binding.IBoundProperty,
+			proxty:binding.IProxty<any, any>,
 			initialBind:boolean = true;
 
 		// If any of the intermediate objects between `object` and the property we are actually binding
 		// change, we need to rebind the entire object chain starting from the changed object
 		for (; index < this._binding.length - 1 && object; ++index) {
 			binding = this._binding[index];
-			property = this._registry.createProperty(object, binding, { scheduled: false });
-			property.bindTo(<binding.IBoundProperty> {
+			proxty = this._binder.createProxty(object, binding, { scheduled: false });
+			proxty.bindTo(<core.IProxty<Object>> {
 				set: lang.hitch(this, function (index:number, value:Object):void {
 					// The `set` method of this fake target will be immediately called by the source `property` if
 					// a value exists for that property; in order to avoid this causing a premature rebinding in the
@@ -132,11 +133,11 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 					initialBind || this._rebind(value, index + 1);
 				}, index)
 			});
-			properties.push(property);
+			proxties.push(proxty);
 
 			// If there is no object here, we cannot rebind any further; presumably, at some point in the future, an
 			// object will exist here and then binding can continue
-			if ((object = property.get()) == null) {
+			if ((object = proxty.get()) == null) {
 				break;
 			}
 		}
@@ -149,29 +150,29 @@ class NestedProperty extends Property implements binding.IBoundProperty {
 		if (object) {
 			// If the values on this final object change we only need to update the value, not rebind
 			// any intermediate objects
-			property = this._registry.createProperty(object, this._binding[index], { scheduled: false });
-			property.bindTo(<binding.IBoundProperty> {
-				set: (value:any):void => {
+			proxty = this._binder.createProxty(object, this._binding[index], { scheduled: false });
+			proxty.bindTo(<core.IProxty<TargetT>> {
+				set: (value:TargetT):void => {
 					this._update(value);
 				}
 			});
-			properties.push(property);
-			value = property.get();
+			proxties.push(proxty);
+			value = proxty.get();
 		}
 		else {
-			property = null;
+			proxty = null;
 		}
 
-		this._source = property;
+		this._source = proxty;
 		this._update(value);
 	}
 
 	/**
 	 * Updates the bound target property with the given value.
 	 */
-	private _update(value:any):void {
+	private _update(value:TargetT):void {
 		this._target && this._target.set(value);
 	}
 }
 
-export = NestedProperty;
+export = NestedProxty;

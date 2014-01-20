@@ -1,21 +1,21 @@
-/// <reference path="../../intern.d.ts" />
+/// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
-import Es5Binder = require('../../../binding/properties/Es5');
-import MockBinder = require('../support/MockBinder');
+import Es5Proxty = require('../../../binding/proxties/Es5Proxty');
+import MockProxty = require('../support/MockProxty');
 import registerSuite = require('intern!object');
 
 function createBasicTests(sourceObject:{ foo?:string; }) {
 	return function () {
-		var source = new Es5Binder({
+		var source = new Es5Proxty<string, string>({
 				object: sourceObject,
 				binding: 'foo',
-				registry: null
+				binder: null
 			}),
-			target = new MockBinder({
+			target = new MockProxty<string, string>({
 				object: {},
 				binding: '',
-				registry: null
+				binder: null
 			});
 
 		assert.strictEqual(source.get(), sourceObject.foo, 'Bound source property should match value of source property object');
@@ -59,21 +59,21 @@ function createBasicTests(sourceObject:{ foo?:string; }) {
 }
 
 registerSuite({
-	name: 'binding/properties/Es5',
+	name: 'binding/proxties/Es5Proxty',
 
 	'.test': function () {
-		var result = Es5Binder.test({
+		var result = Es5Proxty.test({
 			object: {},
 			binding: 'foo',
-			registry: null
+			binder: null
 		});
 
 		assert.isTrue(result, 'Should be able to bind to a plain object');
 
-		result = Es5Binder.test({
+		result = Es5Proxty.test({
 			object: { foo: true },
 			binding: 'foo',
-			registry: null
+			binder: null
 		});
 
 		assert.isTrue(result, 'Should be able to bind to a plain object where the property already exists');
@@ -81,18 +81,18 @@ registerSuite({
 		var frozenObject = {};
 		Object.freeze(frozenObject);
 
-		result = Es5Binder.test({
+		result = Es5Proxty.test({
 			object: frozenObject,
 			binding: 'foo',
-			registry: null
+			binder: null
 		});
 
 		assert.isFalse(result, 'Should not be able to bind to a frozen object');
 
-		result = Es5Binder.test({
+		result = Es5Proxty.test({
 			object: null,
 			binding: 'foo',
-			registry: null
+			binder: null
 		});
 
 		assert.isFalse(result, 'Should not be able to bind to null');
@@ -122,10 +122,10 @@ registerSuite({
 		};
 
 		assert.throws(function () {
-			var source = new Es5Binder({
+			var source = new Es5Proxty<string, string>({
 				object: sourceObject,
 				binding: 'foo',
-				registry: null
+				binder: null
 			});
 
 		}, /read-only/, 'Attempted binding to a read-only property should throw an error');
@@ -133,15 +133,15 @@ registerSuite({
 
 	'write-only property': function () {
 		var sourceObject = {
-				bar: undefined,
+				bar: <string> undefined,
 				set foo(value:string) {
 					this.bar = value;
 				}
 			},
-			source = new Es5Binder({
+			source = new Es5Proxty<string, string>({
 				object: sourceObject,
 				binding: 'foo',
-				registry: null
+				binder: null
 			});
 
 		assert.isUndefined(source.get(), 'Getting the value of a write-only property should return undefined');

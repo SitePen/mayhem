@@ -1,3 +1,8 @@
+// TODO: Not part of dojo, convenience type since the indexer was removed from Object
+interface Object {
+	[key:string]:any;
+}
+
 interface IDeferred<T> extends IPromise<T> {
 	progress<U>(update:U, strict?:boolean):IPromise<U>;
 	promise:IPromise<T>;
@@ -43,18 +48,14 @@ interface IPromise<T> {
 	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
 }
 
-interface IStateful {
-	get(key:string):any;
-	set(kwArgs:Object):void;
-	set(key:string, value:any):void;
-	watch(callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
-	watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
-}
+declare var define:{
+	(dependencies:string[], callback?:Function):void;
+};
 
 declare var require:{
-	(config:Object, dependencies:string[], callback:Function):void;
-	(dependencies:string[], callback:Function):void;
-	(moduleId:string):any;
+	(config:Object, dependencies:string[], callback?:Function):void;
+	(dependencies:string[], callback?:Function):void;
+	<T>(moduleId:string):T;
 };
 
 declare module 'dojo/_base/array' {
@@ -72,8 +73,8 @@ declare module 'dojo/_base/array' {
 
 declare module 'dojo/_base/declare' {
 	var decl:{
-		(superclass:any, properties?:Object):new () => any;
-		(superclass:any[], properties?:Object):new () => any;
+		<T>(superclass:any, properties?:Object):new (...args:any[]) => T;
+		<T>(superclass:any[], properties?:Object):new (...args:any[]) => T;
 		safeMixin<T>(target:T, source:Object):T;
 	};
 
@@ -165,7 +166,7 @@ declare module 'dojo/request/util' {
 }
 
 declare module 'dojo/Stateful' {
-	class Stateful implements IStateful {
+	class Stateful {
 		constructor(kwArgs:Object);
 		get(key:string):any;
 		set(kwArgs:Object):void;

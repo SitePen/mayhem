@@ -1,15 +1,17 @@
 import array = require('dojo/_base/array');
 import binding = require('../interfaces');
+import BindingProxty = require('../BindingProxty');
+import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
-import Property = require('./Property');
+import Stateful = require('dojo/Stateful');
 import util = require('../../util');
 
 /**
  * This property binder enables the ability to bind to Dojo 1 Stateful objects.
  */
-class StatefulProperty extends Property implements binding.IBoundProperty {
-	static test(kwArgs:binding.IPropertyBinderArguments):boolean {
-		var object = <IStateful> kwArgs.object;
+class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
+	static test(kwArgs:binding.IProxtyArguments):boolean {
+		var object = <Stateful> kwArgs.object;
 		return object != null && typeof object.get === 'function' &&
 			typeof object.set === 'function' &&
 			typeof object.watch === 'function';
@@ -23,7 +25,7 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * The object containing the final property to be bound.
 	 */
-	private _object:IStateful;
+	private _object:Stateful;
 
 	/**
 	 * The key for the final property to be bound.
@@ -33,12 +35,12 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * The target property.
 	 */
-	private _target:binding.IBoundProperty;
+	private _target:core.IProxty<TargetT>;
 
-	constructor(kwArgs:binding.IPropertyBinderArguments) {
+	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
 
-		var object = this._object = <IStateful> kwArgs.object;
+		var object = this._object = <Stateful> kwArgs.object;
 		this._property = kwArgs.binding;
 
 		this._handle = object.watch(kwArgs.binding, (key:string, oldValue:any, newValue:any) => {
@@ -49,7 +51,7 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:binding.IBoundProperty, options:binding.IBoundPropertyOptions = {}):IHandle {
+	bindTo(target:core.IProxty<TargetT>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -57,7 +59,7 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 		}
 
 		if (options.setValue !== false) {
-			target.set(this.get());
+			target.set(<TargetT> <any> this.get());
 		}
 
 		var self = this;
@@ -82,7 +84,7 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * Gets the current value of this property.
 	 */
-	get():any {
+	get():SourceT {
 		return this._object ? this._object.get(this._property) : undefined;
 	}
 
@@ -90,7 +92,7 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	 * Sets the value of this property. This is intended to be used to update the value of this property from another
 	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
-	set(value:any):void {
+	set(value:SourceT):void {
 		if (util.isEqual(this.get(), value)) {
 			return;
 		}
@@ -101,9 +103,9 @@ class StatefulProperty extends Property implements binding.IBoundProperty {
 	/**
 	 * Updates the bound target property with the given value.
 	 */
-	private _update(value:any):void {
+	private _update(value:TargetT):void {
 		this._target && this._target.set(value);
 	}
 }
 
-export = StatefulProperty;
+export = StatefulProxty;

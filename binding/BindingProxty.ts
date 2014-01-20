@@ -1,5 +1,8 @@
-import binding = require('../interfaces');
-import has = require('../../has');
+import binding = require('./interfaces');
+import core = require('../interfaces');
+import has = require('../has');
+import Proxty = require('../Proxty');
+import util = require('../util');
 
 // `oidKey` intentionally uses a unique string so that it is easily discoverable within the source code for anyone
 // that notices the property appearing on their objects. Please don't be clever and try to save memory by reducing it
@@ -10,11 +13,13 @@ var oidKey = '__BindingProxtyOid' + Math.random(),
 /**
  * The BindingProxty class is the base class for all property binder implementations.
  */
-/* abstract */ class BindingProxty<T> /* implements binding.IBindingProxty<T> */ {
+/* abstract */ class BindingProxty<SourceT, TargetT> extends Proxty<SourceT> /* implements binding.IProxty<SourceT, TargetT> */ {
 	id:string;
 
-	constructor(kwArgs:binding.IPropertyBinderArguments) {
-		var object = kwArgs.object;
+	constructor(kwArgs:binding.IProxtyArguments) {
+		super(null);
+
+		var object = <{ [key:string]:any; }> kwArgs.object;
 
 		// The objects being bound to needs to be able to be persistently uniquely identified in order to debounce
 		// multiple changes to properties within the scheduler. Since EcmaScript provides no mechanism for getting a

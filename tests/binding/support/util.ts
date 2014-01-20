@@ -1,9 +1,9 @@
 import core = require('../../../interfaces');
-import PropertyRegistry = require('../../../binding/PropertyRegistry');
+import ProxtyBinder = require('../../../binding/ProxtyBinder');
 import Scheduler = require('../../../Scheduler');
 
-export function createPropertyRegistry():PropertyRegistry {
-	return new PropertyRegistry({
+export function createProxtyBinder():ProxtyBinder {
+	return new ProxtyBinder({
 		app: <core.IApplication> { scheduler: <core.IScheduler> new Scheduler() }
 	});
 }
