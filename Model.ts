@@ -8,35 +8,37 @@ import Mediator = require('./Mediator');
 import ModelProxty = require('./ModelProxty');
 import ValidationError = require('./validators/ValidationError');
 
-class User extends Model {
-	username:core.IModelProxty<string> = new ModelProxty<string>({
-		label: 'Username',
-		validators: [ {
-			validate: function (model:core.IModel, key:string, proxty:ModelProxty<string>):void {
-				model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
-			}
-		} ]
-	});
 
-	firstName:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'Joe',
-		validators: []
-	});
+// class User extends Model {
+// 	username:core.IModelProxty<string> = new ModelProxty<string>({
+// 		label: 'Username',
+// 		validators: [ {
+// 			validate: function (model:core.IModel, key:string, proxty:ModelProxty<string>):IPromise<boolean> {
+// 				model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
+// 				return when(false);
+// 			}
+// 		} ]
+// 	});
 
-	lastName:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'Bloggs',
-		validators: []
-	});
-}
+// 	firstName:core.IModelProxty<string> = new ModelProxty<string>({
+// 		default: 'Joe',
+// 		validators: []
+// 	});
 
-class UserMediator extends Mediator {
-	fullName:core.IModelProxty<string> = new ModelProxty<string>({
-		get: function () {
-			return this.get('firstName') + ' ' + this.get('lastName');
-		},
-		dependencies: [ 'firstName', 'lastName' ]
-	});
-}
+// 	lastName:core.IModelProxty<string> = new ModelProxty<string>({
+// 		default: 'Bloggs',
+// 		validators: []
+// 	});
+// }
+
+// class UserMediator extends Mediator {
+// 	fullName:core.IModelProxty<string> = new ModelProxty<string>({
+// 		get: function () {
+// 			return this.get('firstName') + ' ' + this.get('lastName');
+// 		},
+// 		dependencies: [ 'firstName', 'lastName' ]
+// 	});
+// }
 
 class Model /*implements core.IModel*/ {
 	collection:any /*dstore.Collection*/;
@@ -65,46 +67,51 @@ class Model /*implements core.IModel*/ {
 		var key:string,
 			proxtyMap:{ [key:string]: core.IModelProxty<any>; } = {};
 		for (key in this) {
-			if (this[key] instanceof ModelProxty) proxtyMap[key] = this[key];
+			if (this[key] instanceof ModelProxty) {
+				proxtyMap[key] = this[key];
+			}
 		}
 		return proxtyMap;
 	}
 
 	addError(field:string, error:ValidationError):void {
-		var errors:Error[] /*ValidationError[]*/ = [ error ];
-		this[field].errors.set(errors);
+		this[field].addError(error);
 	}
 
 	getErrors(field?:string):Error[] /*ValidationError[]*/ {
 		if (field) {
-			return this[field].errors.get();
+			return this[field].getErrors();
 		}
 		// grab errors from all proxties
 		var proxtyMap = this._getProxtyMap(),
 			keys:string[] = util.getObjectKeys(proxtyMap),
-			errors:Error[] /*ValidationError[]*/ = [],
-			i:number;
-		for (i = 0; i < keys.length; ++i) {
-			errors.concat(proxtyMap[keys[i]].errors.get());
-		}
+			errors:Error[] /*ValidationError[]*/ = [];
+		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
+			var value = proxtyMap[key];
+			// FIXME is typescript getting the spread op?
+			// errors.push(...value.getErrors());
+			Array.prototype.push.apply(errors, value.getErrors());
+		});
 		return errors;
 	}
 
 	clearErrors():void {
 		var proxtyMap = this._getProxtyMap();
 		// TODO should we have a clearErrors call on ModelProxties?
-		array.forEach(util.getObjectKeys(proxtyMap), (key) => proxtyMap[key].errors.set([]));
+		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
+			proxtyMap[key].clearErrors();
+		});
 	}
 
 	isValid():boolean {
-		return Boolean(this.getErrors().length);
+		return !this.getErrors().length;
 	}
 
-	validate(fields?:string[]):IPromise<boolean> {
+	validate(fields?:string[]):IPromise<void> {
 		this.clearErrors();
 
 		var self = this,
-			dfd:IDeferred<boolean> = new Deferred<boolean>(),
+			dfd:IDeferred<void> = new Deferred<void>(),
 			proxtyMap = this._getProxtyMap(),
 			keys = util.getObjectKeys(proxtyMap),
 			i = 0;
@@ -140,14 +147,9 @@ class Model /*implements core.IModel*/ {
 
 				// If a validator returns false, we stop processing any other validators on this field;
 				// if there is an error, validation processing halts
-				var validationResult:any /*boolean | IPromise<boolean>*/ = validator.validate(self, key, value);
-				when(validationResult).then(function (continueProcessing) {
-					if (<boolean>continueProcessing === false) {
-						validateNextField();
-					}
-					else {
-						runNextValidator();
-					}
+				var validationResult = validator.validate(self, key, value);
+				when(validationResult).then(function () {
+					runNextValidator()
 				}, function (error) {
 					dfd.reject(error);
 				});
@@ -157,8 +159,8 @@ class Model /*implements core.IModel*/ {
                 proxty = proxtyMap[key],
                 j = 0;
 
-			if (!proxty && !proxty.validators) {
-				dfd.resolve(this.isValid());
+			if (!proxty || !proxty.validators) {
+				dfd.resolve(undefined);
 			}
 			else if (fields && array.indexOf(fields, key) === -1) {
 				validateNextField();

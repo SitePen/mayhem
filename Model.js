@@ -1,48 +1,31 @@
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 define(["require", "exports", './has', 'dojo/_base/array', 'dojo/when', 'dojo/Deferred', './util', './Mediator', './ModelProxty', './validators/ValidationError'], function(require, exports, has, array, when, Deferred, util, Mediator, ModelProxty, ValidationError) {
-    var User = (function (_super) {
-        __extends(User, _super);
-        function User() {
-            _super.apply(this, arguments);
-            this.username = new ModelProxty({
-                label: 'Username',
-                validators: [{
-                        validate: function (model, key, proxty) {
-                            model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
-                        }
-                    }]
-            });
-            this.firstName = new ModelProxty({
-                default: 'Joe',
-                validators: []
-            });
-            this.lastName = new ModelProxty({
-                default: 'Bloggs',
-                validators: []
-            });
-        }
-        return User;
-    })(Model);
-
-    var UserMediator = (function (_super) {
-        __extends(UserMediator, _super);
-        function UserMediator() {
-            _super.apply(this, arguments);
-            this.fullName = new ModelProxty({
-                get: function () {
-                    return this.get('firstName') + ' ' + this.get('lastName');
-                },
-                dependencies: ['firstName', 'lastName']
-            });
-        }
-        return UserMediator;
-    })(Mediator);
-
+    // class User extends Model {
+    // 	username:core.IModelProxty<string> = new ModelProxty<string>({
+    // 		label: 'Username',
+    // 		validators: [ {
+    // 			validate: function (model:core.IModel, key:string, proxty:ModelProxty<string>):IPromise<boolean> {
+    // 				model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
+    // 				return when(false);
+    // 			}
+    // 		} ]
+    // 	});
+    // 	firstName:core.IModelProxty<string> = new ModelProxty<string>({
+    // 		default: 'Joe',
+    // 		validators: []
+    // 	});
+    // 	lastName:core.IModelProxty<string> = new ModelProxty<string>({
+    // 		default: 'Bloggs',
+    // 		validators: []
+    // 	});
+    // }
+    // class UserMediator extends Mediator {
+    // 	fullName:core.IModelProxty<string> = new ModelProxty<string>({
+    // 		get: function () {
+    // 			return this.get('firstName') + ' ' + this.get('lastName');
+    // 		},
+    // 		dependencies: [ 'firstName', 'lastName' ]
+    // 	});
+    // }
     var Model = (function () {
         function Model() {
             this.isExtensible = true;
@@ -68,27 +51,31 @@ define(["require", "exports", './has', 'dojo/_base/array', 'dojo/when', 'dojo/De
         Model.prototype._getProxtyMap = function () {
             var key, proxtyMap = {};
             for (key in this) {
-                if (this[key] instanceof ModelProxty)
+                if (this[key] instanceof ModelProxty) {
                     proxtyMap[key] = this[key];
+                }
             }
             return proxtyMap;
         };
 
         Model.prototype.addError = function (field, error) {
-            var errors = [error];
-            this[field].errors.set(errors);
+            this[field].addError(error);
         };
 
         Model.prototype.getErrors = function (field) {
             if (field) {
-                return this[field].errors.get();
+                return this[field].getErrors();
             }
 
             // grab errors from all proxties
-            var proxtyMap = this._getProxtyMap(), keys = util.getObjectKeys(proxtyMap), errors = [], i;
-            for (i = 0; i < keys.length; ++i) {
-                errors.concat(proxtyMap[keys[i]].errors.get());
-            }
+            var proxtyMap = this._getProxtyMap(), keys = util.getObjectKeys(proxtyMap), errors = [];
+            array.forEach(util.getObjectKeys(proxtyMap), function (key) {
+                var value = proxtyMap[key];
+
+                // FIXME is typescript getting the spread op?
+                // errors.push(...value.getErrors());
+                Array.prototype.push.apply(errors, value.getErrors());
+            });
             return errors;
         };
 
@@ -97,12 +84,12 @@ define(["require", "exports", './has', 'dojo/_base/array', 'dojo/when', 'dojo/De
 
             // TODO should we have a clearErrors call on ModelProxties?
             array.forEach(util.getObjectKeys(proxtyMap), function (key) {
-                return proxtyMap[key].errors.set([]);
+                proxtyMap[key].clearErrors();
             });
         };
 
         Model.prototype.isValid = function () {
-            return Boolean(this.getErrors().length);
+            return !this.getErrors().length;
         };
 
         Model.prototype.validate = function (fields) {
@@ -142,12 +129,8 @@ define(["require", "exports", './has', 'dojo/_base/array', 'dojo/when', 'dojo/De
                     // If a validator returns false, we stop processing any other validators on this field;
                     // if there is an error, validation processing halts
                     var validationResult = validator.validate(self, key, value);
-                    when(validationResult).then(function (continueProcessing) {
-                        if (continueProcessing === false) {
-                            validateNextField();
-                        } else {
-                            runNextValidator();
-                        }
+                    when(validationResult).then(function () {
+                        runNextValidator();
                     }, function (error) {
                         dfd.reject(error);
                     });
@@ -155,8 +138,8 @@ define(["require", "exports", './has', 'dojo/_base/array', 'dojo/when', 'dojo/De
 
                 var key = keys[i++], proxty = proxtyMap[key], j = 0;
 
-                if (!proxty && !proxty.validators) {
-                    dfd.resolve(this.isValid());
+                if (!proxty || !proxty.validators) {
+                    dfd.resolve(undefined);
                 } else if (fields && array.indexOf(fields, key) === -1) {
                     validateNextField();
                 } else {

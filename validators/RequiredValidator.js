@@ -1,17 +1,22 @@
-define([
-	"dojo/_base/declare",
-	"dojo/i18n!../nls/validator",
-	"./_Validator",
-	"./ValidationError"
-], function (declare, i18n, _Validator, ValidationError) {
-	return declare(_Validator, {
-		//	summary:
-		//		Ensures that the value is not missing.
+define(["require", "exports", './ValidationError'], function(require, exports, ValidationError) {
+    var i18n = {
+        required: 'TODO field required error message'
+    };
 
-		validate: function (model, key, value) {
-			if (value == null || value === "") {
-				model.addError(key, new ValidationError(i18n.required));
-			}
-		}
-	});
+    var RequiredValidator = (function () {
+        function RequiredValidator() {
+        }
+        // TODO we need a way to define return as boolean | IPromise<boolean> (union types?)
+        RequiredValidator.prototype.validate = function (model /*IModel*/ , key, value) {
+            if (value == null || value == "") {
+                model.addError(key, new ValidationError(i18n.required));
+            }
+            return undefined;
+        };
+        return RequiredValidator;
+    })();
+
+    
+    return RequiredValidator;
 });
+//# sourceMappingURL=RequiredValidator.js.map

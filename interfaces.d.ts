@@ -94,6 +94,7 @@ export interface IModelProxty<T> extends IProxty<T> {
 	default:T;
 	// TODO: Make into StatefulArray?
 	// TODO: TS 0.9.1 has a bug that means can't use IProxty<ValidationError[]> because it claims it is a private type
+	//errors:IProxty<ValidationError[]>;
 	errors:IProxty<Error[]>;
 	label:string;
 	validators:IValidator[];
@@ -102,6 +103,18 @@ export interface IModelProxty<T> extends IProxty<T> {
 	 * Validates the underlying value of the proxty.
 	 */
 	validate():void;
+
+	addError(error:Error):void;
+
+	/**
+	 * Returns any errors accumulated on last validation.
+	 */
+	getErrors():Error[];
+
+	/**
+	 * Clears any errors accumulated on last validation.
+	 */
+	clearErrors():void;
 }
 
 export interface IObserver<T> {
@@ -180,5 +193,5 @@ export interface IValidatorOptions {
 
 export interface IValidator {
 	options?:IValidatorOptions;
-	validate(model:any/*IModel*/, key:string, proxty:IModelProxty<any>):void;
+	validate(model:any/*IModel*/, key:string, value:any):void;
 }
