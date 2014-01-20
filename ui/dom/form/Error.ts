@@ -2,35 +2,50 @@ import binding = require('../../../binding/interfaces');
 import core = require('../../../interfaces');
 import domConstruct = require('dojo/dom-construct');
 import domUtil = require('../util');
-import DstoreProperty = require('../../../binding/properties/Dstore');
 import lang = require('dojo/_base/lang');
 import SingleNodeWidget = require('../SingleNodeWidget');
+import ValidationError = require('../../../validators/ValidationError');
 
 class FormError extends SingleNodeWidget {
+	binding:string;
 	private _errorsHandle:IHandle;
 	firstNode:HTMLUListElement;
 	private _propertyHandle:IHandle;
-	model:string;
-	property:string;
 	lastNode:HTMLUListElement;
+	private __updateBinding:() => void;
+	private __updateDisplay:(errors:ValidationError[]) => void;
+
+	constructor(kwArgs:Object) {
+		super(kwArgs);
+		this.__updateBinding = <() => void> lang.hitch(this, '_updateBinding');
+		this.__updateDisplay = <(errors:ValidationError[]) => void> lang.hitch(this, '_updateDisplay');
+	}
 
 	private _bindingSetter(value:string):void {
 		this.binding = value;
+		this.app.scheduler.schedule(this.id, this.__updateBinding);
+	}
 
-		this._propertyHandle && this._propertyHandle.remove();
-		this._propertyHandle = this.app.binder
-			.createProxty(this.mediator, value)
-			.observe((modelProxty:core.IModelProxty<any>) => {
-				this._errorsHandle && this._errorsHandle.remove();
-				this._errorsHandle = modelProxty.errors.observe(<(value:Error[]) => void> lang.hitch(this, '_updateDisplay'));
-			});
+	/* protected */ _mediatorSetter(value:core.IMediator):void {
+		super._mediatorSetter(value);
+		this.app.scheduler.schedule(this.id, this.__updateBinding);
 	}
 
 	render():void {
 		this.firstNode = this.lastNode = document.createElement('ul');
 	}
 
-	private _updateDisplay(errors:Error[] /* TODO: ValidationError[] */):void {
+	private _updateBinding():void {
+		this._propertyHandle && this._propertyHandle.remove();
+		this._propertyHandle = this.app.binder
+			.createProxty<core.IModelProxty<any>, core.IModelProxty<any>>(this.mediator, this.binding)
+			.observe((modelProxty:core.IModelProxty<any>) => {
+				this._errorsHandle && this._errorsHandle.remove();
+				this._errorsHandle = modelProxty.errors.observe(this.__updateDisplay);
+			});
+	}
+
+	private _updateDisplay(errors:ValidationError[]):void {
 		this.firstNode.innerHTML = '';
 
 		if (!errors) {
@@ -39,16 +54,14 @@ class FormError extends SingleNodeWidget {
 
 		for (var i = 0, error:Error; (error = errors[i]); i++) {
 			var element = domConstruct.create('li', {}, this.firstNode);
-			// TODO: Figure out where human-readable name comes from
-			element.appendChild(document.createTextNode(error.toString(/*{
-				name: this.field
-			}*/)));
+			element.appendChild(document.createTextNode(error.toString()));
 		}
 	}
 
 	destroy():void {
-		this._property.destroy();
-		this._property = null;
+		this._errorsHandle && this._errorsHandle.remove();
+		this._propertyHandle && this._propertyHandle.remove();
+		this._errorsHandle = this._propertyHandle = null;
 
 		super.destroy();
 	}

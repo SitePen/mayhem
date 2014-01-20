@@ -1,8 +1,9 @@
-import DataBindingDirection = require('../binding/DataBindingDirection');
-import style = require('./style/interfaces');
+import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import PlacePosition = require('./PlacePosition');
+import StatefulEvented = require('../StatefulEvented');
+import style = require('./style/interfaces');
 
 export interface IClassList { // stateful array instead?
 	add(className:string):void;
@@ -39,7 +40,7 @@ export interface IView extends IWidget {
 	mediator:core.IMediator;
 }
 
-export interface IWidget extends IStateful, IEvented {
+export interface IWidget extends StatefulEvented {
 	canHaveChildren?:boolean;
 	classList:IClassList;
 	id:string;
@@ -51,7 +52,7 @@ export interface IWidget extends IStateful, IEvented {
 	previous:IWidget;
 	style:style.IStyle;
 
-	bind(propertyName:string, binding:string, options?:{ direction:DataBindingDirection; }):IHandle;
+	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
 	destroy():void;
 	detach():void;
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;

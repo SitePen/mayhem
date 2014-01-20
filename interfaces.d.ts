@@ -93,7 +93,8 @@ export interface IModel extends IComponent {
 export interface IModelProxty<T> extends IProxty<T> {
 	default:T;
 	// TODO: Make into StatefulArray?
-//	errors:IProxty<ValidationError[]>;
+	// TODO: TS 0.9.1 has a bug that means can't use IProxty<ValidationError[]> because it claims it is a private type
+	errors:IProxty<Error[]>;
 	label:string;
 	validators:IValidator[];
 
@@ -132,7 +133,7 @@ export interface IProxty<T> {
 	/**
 	 * Registers an observer that will be called whenever the value of the proxty changes.
 	 */
-	observe(observer:IObserver<T>, invokeImmediately:boolean):IHandle;
+	observe(observer:IObserver<T>, invokeImmediately?:boolean):IHandle;
 
 	/**
 	 * Replaces the value of the proxty with a new value. Observers will be notified of the set at some point in the

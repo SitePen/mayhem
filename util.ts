@@ -2,12 +2,11 @@
 
 import has = require('./has');
 
-var hasOwnProperty = Object.prototype.hasOwnProperty;
 export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
 	for (var i = 0, baseCtor:Function; (baseCtor = baseCtors[i]); ++i) {
 		var prototype = baseCtor.prototype;
 		for (var k in prototype) {
-			if (hasOwnProperty.call(prototype, k)) {
+			if (prototype[k] !== Object.prototype[k]) {
 				derivedCtor.prototype[k] = prototype[k];
 			}
 		}

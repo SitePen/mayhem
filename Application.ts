@@ -9,7 +9,8 @@ import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends StatefulEvented implements core.IApplication {
-	[applicationComponent:string]:any;
+// TODO: TS 0.9.1 does not like this
+//	[applicationComponent:string]:any;
 	binder:binding.IBinder;
 	modules:{ [ propertyName:string ]:{ constructor: any; } };
 	scheduler:core.IScheduler;
@@ -32,11 +33,11 @@ class Application extends StatefulEvented implements core.IApplication {
 	/* protected */ _getDefaultConfig():Object {
 		return {
 			modules: {
-				dataBindingRegistry: {
-					constructor: 'framework/binding/PropertyRegistry',
-					binders: [
+				binder: {
+					constructor: 'framework/binding/ProxtyBinder',
+					proxties: [
 						'framework/binding/proxties/NestedProxty',
-						'framework/binding/proxties/DstoreProxty',
+//						'framework/binding/proxties/DstoreProxty',
 						'framework/binding/proxties/StatefulProxty'
 					]
 				},

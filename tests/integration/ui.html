@@ -23,15 +23,16 @@ require([
 	'framework/Mediator',
 	'framework/ui/Widget!Master',
 	'framework/ui/Widget!form/Input',
-	'framework/ui/Widget!form/Error'
-], function (Model, Application, Mediator, Master, Input, FormError) {
+	'framework/ui/Widget!form/Error',
+	'framework/ModelProxty'
+], function (Model, Application, Mediator, Master, Input, FormError, ModelProxty) {
 	var app = new Application({
 		modules: { router: null }
 	});
 
 	app.startup().then(function () {
 		var firstNameRE = /^[a-zA-Z]+$/;
-		var model = window.model = new Model({
+/*		var model = window.model = new Model({
 			schema: {
 				firstName: {
 					type: 'number',
@@ -45,16 +46,22 @@ require([
 			},
 			firstName: 'Joe',
 			lastName: 'Bloggs'
-		});
+		});*/
 		var mediator = window.mediator = new Mediator({
 			app: app,
-			model: model
+			model: null,
+			firstName: new ModelProxty('Joe'),
+			lastName: new ModelProxty('Bloggs')
 		});
 
 		var input = window.input = new Input({ app: app, mediator: mediator });
 		input.bind('value', 'firstName', { direction: 2 });
 
-		var error = window.formError = new FormError({ app: app, mediator: mediator, binding: 'firstName' });
+		var error = window.formError = new FormError({
+			app: app,
+			mediator: mediator,
+			binding: 'firstName'
+		});
 
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);

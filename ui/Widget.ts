@@ -1,9 +1,8 @@
 /// <reference path="../dojo.d.ts" />
 
+import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
-// TODO: Shorten that vv
-import DataBindingDirection = require('../binding/DataBindingDirection');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
 import PlacePosition = require('./PlacePosition');
@@ -46,14 +45,14 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	}
 
 	// TODO: Change bind options to be an interface
-	bind(propertyName:string, binding:string, options:{ direction?:DataBindingDirection; } = {}):IHandle {
+	bind(propertyName:string, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
 		var bindings = this._bindings,
-			handle:binding.IBindingHandle = this.app.dataBindingRegistry.bind({
+			handle:binding.IBindingHandle = this.app.binder.bind({
 				source: this.mediator,
 				sourceBinding: binding,
 				target: this,
 				targetBinding: propertyName,
-				direction: options.direction || DataBindingDirection.ONE_WAY
+				direction: options.direction || BindDirection.ONE_WAY
 			});
 
 		bindings.push(handle);
@@ -88,7 +87,7 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		return this.mediator || (this.parent ? this.parent.get('mediator') : null);
 	}
 
-	private _mediatorSetter(value?:core.IMediator):void {
+	/* protected */ _mediatorSetter(value:core.IMediator):void {
 		this.mediator = value;
 		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
 			binding.setSource(value);

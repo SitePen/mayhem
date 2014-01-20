@@ -41,8 +41,19 @@ class Proxty<T> implements core.IProxty<T> {
 
 	set(value:T):void {
 		var oldValue:T = this._value;
+
+		// TODO: Probably necessary, but breaks the ability to just re-set ModelProxty `errors` with the same array,
+		// so `errors` should probably be a stateful array.
+		/* if (util.isEqual(oldValue, value)) {
+			return;
+		}*/
+
 		this._value = value;
 		this._notifyObservers(value, oldValue);
+	}
+
+	toString():string {
+		return '' + this.get();
 	}
 
 	valueOf():T {
