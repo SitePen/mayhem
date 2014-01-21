@@ -35,7 +35,7 @@ class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 		this.errors.set([]);
 	}
 
-	getErrors():Error[] {
+	getErrors():ValidationError[] {
 		return this.errors.get();
 	}
 

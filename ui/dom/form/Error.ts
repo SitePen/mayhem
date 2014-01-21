@@ -52,7 +52,7 @@ class FormError extends SingleNodeWidget {
 			return;
 		}
 
-		for (var i = 0, error:Error; (error = errors[i]); i++) {
+		for (var i = 0, error:ValidationError; (error = errors[i]); i++) {
 			var element = domConstruct.create('li', {}, this.firstNode);
 			element.appendChild(document.createTextNode(error.toString()));
 		}

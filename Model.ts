@@ -182,12 +182,6 @@ class Model /*implements core.IModel*/ {
 			}
 		}
 	}
-
-	// TODO stubs
-	remove():void {}
-	save(skipValidation?:boolean):IPromise<void> {
-		return when(undefined);
-	}
 }
 
 export = Model;

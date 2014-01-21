@@ -108,7 +108,7 @@ export interface IModelProxty<T> extends IProxty<T> {
 	/**
 	 * Returns any errors accumulated on last validation.
 	 */
-	getErrors():Error[];
+	getErrors():ValidationError[];
 
 	/**
 	 * Clears any errors accumulated on last validation.
