@@ -1,15 +1,14 @@
 /// <reference path="intern.d.ts" />
 
-import core = require('../interfaces');
-import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
+import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
 import Model = require('../Model');
 import Mediator = require('../Mediator');
 import ModelProxty = require('../ModelProxty');
-import ValidationError = require('../validators/ValidationError');
-import RequiredValidator = require('../validators/RequiredValidator');
-
+import registerSuite = require('intern!object');
+import RequiredValidator = require('../validation/RequiredValidator');
+import ValidationError = require('../validation/ValidationError');
 
 class PopulatedModel extends Model {
 	string:core.IModelProxty<string> = new ModelProxty<string>({

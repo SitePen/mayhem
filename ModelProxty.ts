@@ -2,17 +2,18 @@
 
 import core = require('./interfaces');
 import Proxty = require('./Proxty');
+import ValidationError = require('./validation/ValidationError');
 
 class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 	default:T;
-	label:string; // TODO: Proxty?
 	errors:core.IProxty<Error[]>;
+	label:string; // TODO: Proxty?
 	validators:core.IValidator[];
 
 	constructor(kwArgs:{
 		default?:T;
+		errors?:core.IProxty<ValidationError[]>;
 		label?:string;
-		errors?:core.IProxty<Error[]>;
 		validators?:core.IValidator[];
 	});
 	constructor(initialValue:T);
@@ -21,10 +22,9 @@ class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 			kwArgs = { 'default': kwArgs };
 		}
 
-		this.validators = [];
-		super(kwArgs.default);
-		this.errors = new Proxty([]);
+		this.errors = new Proxty<ValidationError[]>([]);
 		this.validators = kwArgs.validators || [];
+		super(kwArgs.default);
 	}
 
 	validate:() => IPromise<void>;

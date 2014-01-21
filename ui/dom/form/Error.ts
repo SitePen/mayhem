@@ -4,7 +4,7 @@ import domConstruct = require('dojo/dom-construct');
 import domUtil = require('../util');
 import lang = require('dojo/_base/lang');
 import SingleNodeWidget = require('../SingleNodeWidget');
-import ValidationError = require('../../../validators/ValidationError');
+import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends SingleNodeWidget {
 	binding:string;

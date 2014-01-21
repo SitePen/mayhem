@@ -2,7 +2,7 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
-import ValidationError = require('./validators/ValidationError');
+import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication {
 	binder:binding.IBinder;

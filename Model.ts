@@ -1,13 +1,12 @@
-import core = require('./interfaces');
-import has = require('./has');
 import array = require('dojo/_base/array');
-import when = require('dojo/when');
+import core = require('./interfaces');
 import Deferred = require('dojo/Deferred');
-import util = require('./util');
+import has = require('./has');
 import Mediator = require('./Mediator');
 import ModelProxty = require('./ModelProxty');
-import ValidationError = require('./validators/ValidationError');
-
+import util = require('./util');
+import ValidationError = require('./validation/ValidationError');
+import when = require('dojo/when');
 
 // class User extends Model {
 // 	username:core.IModelProxty<string> = new ModelProxty<string>({
@@ -45,8 +44,54 @@ class Model /*implements core.IModel*/ {
 	isExtensible:boolean = true;
 	scenario:string = 'insert';
 
+	addError(key:string, error:ValidationError):void {
+		this[key].addError(error);
+	}
+
+	clearErrors():void {
+		var proxtyMap = this._getProxtyMap();
+		// TODO should we have a clearErrors call on ModelProxties?
+		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
+			proxtyMap[key].clearErrors();
+		});
+	}
+
 	get(key:string):any {
 		return this[key] && this[key].get();
+	}
+
+	getErrors(key?:string):ValidationError[] {
+		if (key) {
+			return this[key].getErrors();
+		}
+
+		// grab errors from all proxties
+		var proxtyMap = this._getProxtyMap(),
+			keys:string[] = util.getObjectKeys(proxtyMap),
+			errors:ValidationError[] = [];
+
+		array.forEach(util.getObjectKeys(proxtyMap), function (key:string) {
+			var value = proxtyMap[key];
+			// TODO: is typescript getting the spread op?
+			// errors.push(...value.getErrors());
+			Array.prototype.push.apply(errors, value.getErrors());
+		});
+		return errors;
+	}
+
+	private _getProxtyMap():{ [key:string]: core.IModelProxty<any>; } {
+		var key:string,
+			proxtyMap:{ [key:string]: core.IModelProxty<any>; } = {};
+		for (key in this) {
+			if (this[key] instanceof ModelProxty) {
+				proxtyMap[key] = this[key];
+			}
+		}
+		return proxtyMap;
+	}
+
+	isValid():boolean {
+		return this.getErrors().length === 0;
 	}
 
 	set(key:string, value:any):void {
@@ -63,62 +108,7 @@ class Model /*implements core.IModel*/ {
 		this[key].set(value);
 	}
 
-	private _getProxtyMap():{ [key:string]: core.IModelProxty<any>; } {
-		var key:string,
-			proxtyMap:{ [key:string]: core.IModelProxty<any>; } = {};
-		for (key in this) {
-			if (this[key] instanceof ModelProxty) {
-				proxtyMap[key] = this[key];
-			}
-		}
-		return proxtyMap;
-	}
-
-	addError(field:string, error:ValidationError):void {
-		this[field].addError(error);
-	}
-
-	getErrors(field?:string):Error[] /*ValidationError[]*/ {
-		if (field) {
-			return this[field].getErrors();
-		}
-		// grab errors from all proxties
-		var proxtyMap = this._getProxtyMap(),
-			keys:string[] = util.getObjectKeys(proxtyMap),
-			errors:Error[] /*ValidationError[]*/ = [];
-		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
-			var value = proxtyMap[key];
-			// FIXME is typescript getting the spread op?
-			// errors.push(...value.getErrors());
-			Array.prototype.push.apply(errors, value.getErrors());
-		});
-		return errors;
-	}
-
-	clearErrors():void {
-		var proxtyMap = this._getProxtyMap();
-		// TODO should we have a clearErrors call on ModelProxties?
-		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
-			proxtyMap[key].clearErrors();
-		});
-	}
-
-	isValid():boolean {
-		return !this.getErrors().length;
-	}
-
 	validate(fields?:string[]):IPromise<void> {
-		this.clearErrors();
-
-		var self = this,
-			dfd:IDeferred<void> = new Deferred<void>(),
-			proxtyMap = this._getProxtyMap(),
-			keys = util.getObjectKeys(proxtyMap),
-			i = 0;
-
-		validateNextField();
-		return dfd.promise;
-
 		function validateNextField():void {
 			function runNextValidator():void {
 				var validator = proxty.validators[j++];
@@ -169,6 +159,17 @@ class Model /*implements core.IModel*/ {
 				runNextValidator();
 			}
 		}
+
+		this.clearErrors();
+
+		var self = this,
+			dfd:IDeferred<void> = new Deferred<void>(),
+			proxtyMap = this._getProxtyMap(),
+			keys = util.getObjectKeys(proxtyMap),
+			i = 0;
+
+		validateNextField();
+		return dfd.promise;
 	}
 
 	// TODO stubs
