@@ -77,7 +77,7 @@ class Mediator implements core.IMediator {
 			}
 			else if (key in this) {
 				notify = true;
-				this[key] = value;
+				this[key] && this[key].isProxty ? this[key].set(value) : (this[key] = value);
 			}
 			else if (this.model) {
 				this.model.set(key, value);

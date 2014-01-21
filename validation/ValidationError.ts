@@ -16,7 +16,6 @@ var ValidationError:{
 	new (message:string, options?:{ [key:string]:any; }):ValidationError;
 };
 
-
 function Ctor(message:string, options?:{ [key:string]:any; }) {
 	this.options = options;
 }

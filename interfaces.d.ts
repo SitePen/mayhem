@@ -30,7 +30,7 @@ export interface IModel extends IComponent {
 	 */
 	scenario:string;
 
-	addError(key:string, error:Error /* TODO: ValidationError */):void;
+	addError(key:string, error:ValidationError):void;
 
 	/**
 	 * Retrieves the value of a property on the model.
@@ -103,7 +103,7 @@ export interface IModelProxty<T> extends IProxty<T> {
 	 */
 	validate():void;
 
-	addError(error:Error):void;
+	addError(error:ValidationError):void;
 
 	/**
 	 * Returns any errors accumulated on last validation.

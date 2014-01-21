@@ -44,6 +44,12 @@ class Model /*implements core.IModel*/ {
 	isExtensible:boolean = true;
 	scenario:string = 'insert';
 
+	constructor(initialProperties:{ [key:string]:core.IModelProxty<any>; }) {
+		for (var k in initialProperties) {
+			this[k] = initialProperties[k];
+		}
+	}
+
 	addError(key:string, error:ValidationError):void {
 		this[key].addError(error);
 	}

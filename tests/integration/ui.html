@@ -32,19 +32,24 @@ require([
 
 	app.startup().then(function () {
 		var firstNameRE = /^[a-zA-Z]+$/;
-		var model = window.model = new Model({
-			firstName: new ModelProxty({
+
+		var MyModel = function(){
+			this.firstName = new ModelProxty({
 				default: 'Joe',
 				validators: [ {
 					validate: function (model, key, value) {
 						value !== 'Joe' && model.addError(key, 'No, you must be Joe!');
 					}
 				} ]
-			}),
-			lastName: new ModelProxty({
+			});
+
+			this.lastName = new ModelProxty({
 				default: 'Bloggs'
-			})
-		});
+			});
+		};
+		MyModel.prototype = new Model();
+
+		var model = window.model = new MyModel();
 		var mediator = window.mediator = new Mediator({
 			app: app,
 			model: model
