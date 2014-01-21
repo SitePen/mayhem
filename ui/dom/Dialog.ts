@@ -10,9 +10,10 @@ import widgets = require('../interfaces');
 class Element extends DomContainer {
 	html:string;
 
-	constructor(kwArgs:Object) {
-		super(kwArgs);
-	}
+	// TODO: no constructor on DomContainer
+	// constructor(kwArgs:Object) {
+	// 	super(kwArgs);
+	// }
 
 	_htmlSetter(html:string):void {
 		this.empty();

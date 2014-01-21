@@ -31,7 +31,7 @@ registerSuite({
 	name: 'Mediator',
 
 	'basic tests': function () {
-		var model:IStateful = new Stateful({
+		var model:Stateful = new Stateful({
 				bar: 'hi'
 			}),
 			mediator:Mediator = new Mediator({

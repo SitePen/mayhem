@@ -1,10 +1,11 @@
 import Application = require('./Application');
 import core = require('./interfaces');
+import ui = require('./ui/interfaces');
 import util = require('dojo/request/util');
 
 class WebApplication extends Application {
 	router:core.IRouter;
-	ui:core.IView;
+	ui:ui.IView;
 
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepCopy(super._getDefaultConfig(), {
@@ -20,7 +21,7 @@ class WebApplication extends Application {
 		});
 	}
 
-	place(view:core.IView, placeholder?:string) {
+	place(view:ui.IView, placeholder?:string) {
 		return this.ui.add(view, placeholder);
 	}
 
