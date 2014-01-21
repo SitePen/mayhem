@@ -109,6 +109,19 @@ class Model /*implements core.IModel*/ {
 	}
 
 	validate(fields?:string[]):IPromise<void> {
+
+		this.clearErrors();
+
+		var model = this,
+			dfd:IDeferred<void> = new Deferred<void>(),
+			proxtyMap = this._getProxtyMap(),
+			keys = util.getObjectKeys(proxtyMap),
+			i = 0;
+
+		validateNextField();
+		return dfd.promise;
+
+
 		function validateNextField():void {
 			function runNextValidator():void {
 				var validator = proxty.validators[j++];
@@ -130,19 +143,22 @@ class Model /*implements core.IModel*/ {
 					// Skip validators that are limited to certain scenarios and do not match the currently
 					// defined model scenario
 					var scenarios:string[] = validator.options.scenarios;
-					if (scenarios && length && array.indexOf(scenarios, this.scenario) === -1) {
+					if (scenarios && scenarios.length && array.indexOf(scenarios, model.scenario) === -1) {
 						return runNextValidator();
 					}
 				}
 
-				// If a validator returns false, we stop processing any other validators on this field;
 				// if there is an error, validation processing halts
-				var validationResult = validator.validate(self, key, value);
-				when(validationResult).then(function () {
-					runNextValidator()
-				}, function (error) {
+				try {
+					when(validator.validate(model, key, value)).then(function () {
+						runNextValidator();
+					}, function (error) {
+						dfd.reject(error);
+					});
+				}
+				catch (error) {
 					dfd.reject(error);
-				});
+				}
 			}
 
 			var key = keys[i++],
@@ -159,17 +175,6 @@ class Model /*implements core.IModel*/ {
 				runNextValidator();
 			}
 		}
-
-		this.clearErrors();
-
-		var self = this,
-			dfd:IDeferred<void> = new Deferred<void>(),
-			proxtyMap = this._getProxtyMap(),
-			keys = util.getObjectKeys(proxtyMap),
-			i = 0;
-
-		validateNextField();
-		return dfd.promise;
 	}
 
 	// TODO stubs

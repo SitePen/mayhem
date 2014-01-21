@@ -2,7 +2,9 @@
 
 import assert = require('intern/chai!assert');
 import core = require('../interfaces');
+import array = require('dojo/_base/array');
 import Deferred = require('dojo/Deferred');
+import util = require('../util');
 import Model = require('../Model');
 import Mediator = require('../Mediator');
 import ModelProxty = require('../ModelProxty');
@@ -40,12 +42,16 @@ class PopulatedModel extends Model {
 // 	});
 // }
 
-var syncStringIsBValidator = {
+
+var syncStringIsAValidator = {
 	validate: function (model:core.IModel, key:string, value:string):void {
-		if (value !== 'B') {
-			model.addError(key, new ValidationError(value + ' is not B'));
+		if (value !== 'A') {
+			model.addError(key, new ValidationError(value + ' is not A'));
 		}
 		return undefined;
+	},
+	options: {
+		allowEmpty: true
 	}
 };
 
@@ -65,11 +71,11 @@ var asyncStringIsBValidator = {
 class TestValidationModel extends Model {
 	syncA:core.IModelProxty<string> = new ModelProxty<string>({
 		default: 'A',
-		validators: [ syncStringIsBValidator ]
+		validators: [ syncStringIsAValidator ]
 	});
 	syncB:core.IModelProxty<string> = new ModelProxty<string>({
 		default: 'B',
-		validators: [ syncStringIsBValidator ]
+		validators: [ syncStringIsAValidator ]
 	});
 	asyncA:core.IModelProxty<string> = new ModelProxty<string>({
 		default: 'A',
@@ -81,9 +87,72 @@ class TestValidationModel extends Model {
 	});
 }
 
+
 class TestRequiredValidationModel extends TestValidationModel {
 	required:core.IModelProxty<string> = new ModelProxty<string>({
 		validators: [ new RequiredValidator() ]
+	})
+}
+
+
+class TestValidationExceptionsModel extends Model {
+	sync:core.IModelProxty<string> = new ModelProxty<string>({
+		validators: [ {
+			validate: function (model:core.IModel, key:string, value:string):IPromise<void> {
+				throw new Error('Boom');
+			}
+		} ]
+	})
+	async:core.IModelProxty<string> = new ModelProxty<string>({
+		validators: [ {
+			validate: function (model:core.IModel, key:string, value:string):IPromise<void> {
+				var dfd:IDeferred<void> = new Deferred<void>();
+				setTimeout(function () {
+					dfd.reject(new Error('BOOM'));
+				}, 0);
+				return dfd.promise;
+			}
+		} ]
+	})
+}
+
+
+var startsWithA = function (model:core.IModel, key:string, value:string):void {
+	if (!value || value[0] !== 'A') {
+		model.addError(key, new ValidationError(value + ' does not start with A'));
+	}
+	return undefined;
+};
+
+var endsWithB = function (model:core.IModel, key:string, value:string):void {
+	if (!value || value[value.length - 1] !== 'B') {
+		model.addError(key, new ValidationError(value + ' does not end with B'));
+	}
+	return undefined;
+};
+
+var lengthOf2 = function (model:core.IModel, key:string, value:string):void {
+	if (!value || value.length !== 2) {
+		model.addError(key, new ValidationError(value + ' should have a length of 2'));
+	}
+	return undefined;
+};
+
+class TestValidationScenarioModel extends Model {
+	prop:core.IModelProxty<string> = new ModelProxty<string>({
+		validators: [ {
+			validate: lengthOf2
+		}, {
+			validate: startsWithA,
+			options: {
+				scenarios: [ 'insert' ]
+			}
+		}, {
+			validate: endsWithB,
+			options: {
+				scenarios: [ 'insert', 'remove' ]
+			}
+		} ]
 	})
 }
 
@@ -211,12 +280,12 @@ registerSuite({
 			assert.isFalse(model.isValid(), 'Invalid model should validate to false');
 			assert.strictEqual(model.getErrors().length, 2, 'Model should have exactly 2 errors');
 
-			var errors = model.getErrors('syncA');
-			assert.strictEqual(errors.length, 1, 'Invalid model field should have only one error');
-			assert.strictEqual(errors[0].message, 'A is not B', 'Invalid model error should be set properly from validator');
-
-			errors = model.getErrors('syncB');
+			errors = model.getErrors('syncA');
 			assert.strictEqual(errors.length, 0, 'Valid model field should have zero errors');
+
+			var errors = model.getErrors('syncB');
+			assert.strictEqual(errors.length, 1, 'Invalid model field should have only one error');
+			assert.strictEqual(errors[0].message, 'B is not A', 'Invalid model error should be set properly from validator');
 
 			errors = model.getErrors('asyncA');
 			assert.strictEqual(errors.length, 1, 'Invalid model field should have only one error');
@@ -227,14 +296,14 @@ registerSuite({
 		});
 	},
 
-	'#validate specific fields': function() {
+	'#validate specific fields': function () {
 		var model = new TestValidationModel();
 
-		return model.validate([ 'syncB', 'asyncB' ]).then(function () {
+		return model.validate([ 'syncA', 'asyncB' ]).then(function () {
 			assert.isTrue(model.isValid(), 'Validating only known-valid fields should validate to true');
 			assert.strictEqual(model.getErrors().length, 0, 'Model should have no errors');
 
-			var errors = model.getErrors('syncB');
+			var errors = model.getErrors('syncA');
 			assert.strictEqual(errors.length, 0, 'Valid model field should have zero errors');
 
 			errors = model.getErrors('asyncB');
@@ -242,11 +311,11 @@ registerSuite({
 		});
 	},
 
-	'#validate required fields': function() {
+	'#validate required fields': function () {
 		var model = new TestRequiredValidationModel();
 
 		// Set inherited model fields to be valid
-		model.set('syncA', 'B');
+		model.set('syncB', 'A');
 		model.set('asyncA', 'B');
 		return model.validate().then(function () {
 			assert.isFalse(model.isValid(), 'Invalid model should validate to false');
@@ -258,8 +327,124 @@ registerSuite({
 			return model.validate().then(function () {
 				assert.isTrue(model.isValid(), 'Required field set so should validate to true');
 				assert.strictEqual(model.getErrors().length, 0, 'Model should have no errors');
-			})
+			});
 		});
+	},
+
+	'#validate with allowEmpty': function () {
+		var model = new TestValidationModel();
+
+		// Set inherited model fields to be valid
+		model.set('syncA', '');
+		model.set('syncB', '');
+		model.set('asyncA', '');
+		model.set('asyncB', '');
+		return model.validate().then(function () {
+			assert.isFalse(model.isValid(), 'Invalid model should validate to false');
+			var errors = model.getErrors();
+			assert.strictEqual(errors.length, 2, 'Model should have exactly 2 errors');
+
+			assert.strictEqual(model.getErrors('syncA').length, 0, 'Valid model field should have zero errors');
+			assert.strictEqual(model.getErrors('syncB').length, 0, 'Valid model field should have zero errors');
+			assert.strictEqual(model.getErrors('asyncA').length, 1, 'Invalid model field should have 1 error');
+			assert.strictEqual(model.getErrors('asyncB').length, 1, 'Invalid model field should have 1 error');
+		});
+	},
+
+	'#validate throws synchronously': function () {
+		var model = new TestValidationExceptionsModel();
+
+		return model.validate([ 'sync' ]).then(function () {
+			assert(false, 'Validation should not succeed');
+		}, function(error) {
+			assert.match(error.message, /boom/i, 'Validator for field should throw');
+		});
+	},
+
+	'#validate throws asynchronously': function () {
+		var model = new TestValidationExceptionsModel();
+
+		return model.validate([ 'async' ]).then(function () {
+			assert(false, 'Validation should not succeed');
+		}, function(error) {
+			assert.match(error.message, /boom/i, 'Validator for field should throw');
+		});
+	},
+
+	'#validate using scenarios': function () {
+		var scenarios = {
+			insert: { // lengthOf2, startsWithA, endsWithB
+				ABC: 2,
+				ABB: 1,
+				BBA: 3,
+				AAA: 2,
+				BBB: 2,
+				AB: 0,
+				AA: 1,
+				BB: 1,
+				BA: 2,
+				CC: 2,
+				A: 2,
+				B: 2,
+				C: 3,
+				'': 3
+			},
+			remove: { // lengthOf2, endsWithB
+				ABC: 2,
+				ABB: 1,
+				BBA: 2,
+				AAA: 2,
+				BBB: 1,
+				AB: 0,
+				AA: 1,
+				BB: 0,
+				BA: 1,
+				CC: 1,
+				A: 2,
+				B: 1,
+				C: 2,
+				'': 2
+			},
+			unknown: { // lengthOf2
+				ABC: 1,
+				ABB: 1,
+				BBA: 1,
+				AAA: 1,
+				BBB: 1,
+				AB: 0,
+				AA: 0,
+				BB: 0,
+				BA: 0,
+				CC: 0,
+				A: 1,
+				B: 1,
+				C: 1,
+				'': 1
+			}
+		};
+		var model = new TestValidationScenarioModel();
+
+		function revalidate(scenario:string, value:string, count:number):IPromise<void> {
+			model.scenario = scenario;
+			model.set('prop', value);
+			return model.validate().then(function ():IPromise<void> {
+				var message = 'Model with ' + scenario + ' scenario should have ' + count + ' errors for ' + value;
+				assert.strictEqual(model.getErrors().length, count, message);
+				return undefined;
+			});
+		}
+		var lastPromise = model.validate();
+
+		array.forEach(util.getObjectKeys(scenarios), function (scenario) {
+			var counts = scenarios[scenario];
+			array.forEach(util.getObjectKeys(counts), function (value) {
+				lastPromise = lastPromise.then(function () {
+					return revalidate(scenario, value, counts[value]);
+				});
+			});
+		});
+
+		return lastPromise;
 	},
 
 	// '#isFieldRequired': function () {
