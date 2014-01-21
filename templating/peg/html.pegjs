@@ -32,6 +32,10 @@
 		}
 	}
 
+	function parseBoundText(text) {
+		return parse(text, { startRule: 'BoundText' });
+	}
+
 	var aliases = {
 		_aliases: [],
 		_map: null,
@@ -164,7 +168,7 @@ Element 'HTML'
 
 		return {
 			constructor: 'framework/ui/dom/Element',
-			html: html,
+			html: parseBoundText(html),
 			children: children
 		};
 	}
@@ -196,6 +200,13 @@ HtmlFragment 'HTML'
 	)+ {
 		return content.join('');
 	}
+
+BoundText
+	// Curly brackets inside the actions needs to be escaped due to https://github.com/dmajda/pegjs/issues/89
+	= (
+		'{' value:('\\}' { return '\x7d'; } / [^}])* '}' { return { binding: value.join('') }; }
+		/ !'{' value:('\\{' { return '\x7b'; } / [^{])+ { return value.join(''); }
+	)*
 
 // conditionals
 
@@ -369,8 +380,8 @@ AttributeName
 	}
 
 AttributeValue
-	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return value.join(''); })
-	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return value.join(''); })
+	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return parseBoundText(value.join('')); })
+	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return parseBoundText(value.join('')); })
 
 // miscellaneous
 
