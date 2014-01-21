@@ -4,9 +4,9 @@ import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 // TODO: implements is commented out due to TS#1977
-class StatefulArray<T> /* implements core.IStatefulArray<T> */ {
+class StatefulArray<T> /* implements Array<T> */ {
 	[n:number]:T;
-	private _watchers:core.IStatefulArrayWatcher<T>[] = [];
+	private _observers:core.IStatefulArrayObserver<T>[] = [];
 	length:number;
 
 	constructor(array:T[] = []) {
@@ -130,8 +130,8 @@ class StatefulArray<T> /* implements core.IStatefulArray<T> */ {
 	}
 
 	private _notify(index:number, removals:T[], additions:T[]):void {
-		var watchers = this._watchers.slice(0);
-		for (var i = 0, callback:core.IStatefulArrayWatcher<T>; (callback = watchers[i]); ++i) {
+		var observers = this._observers.slice(0);
+		for (var i = 0, callback:core.IStatefulArrayObserver<T>; (callback = observers[i]); ++i) {
 			callback.call(this, index, removals, additions);
 		}
 	}
@@ -247,18 +247,18 @@ class StatefulArray<T> /* implements core.IStatefulArray<T> */ {
 		return this.length;
 	}
 
-	watch(callback:core.IStatefulArrayWatcher<T>):IHandle {
-		var watchers = this._watchers;
-		watchers.push(callback);
+	observe(callback:core.IStatefulArrayObserver<T>):IHandle {
+		var observers = this._observers;
+		observers.push(callback);
 		return {
 			remove: function () {
 				this.remove = function () {};
-				util.spliceMatch(watchers, callback);
-				watchers = callback = null;
+				util.spliceMatch(observers, callback);
+				observers = callback = null;
 			}
 		};
 	}
 }
 
-StatefulArray.prototype.watch['type'] = 'array';
+StatefulArray.prototype.observe['type'] = 'array';
 export = StatefulArray;

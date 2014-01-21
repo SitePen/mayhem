@@ -1,4 +1,4 @@
-/// <reference path="../../dojo.d.ts" />
+/// <reference path="../../dojo" />
 
 import array = require('dojo/_base/array');
 import binding = require('../interfaces');

@@ -9,7 +9,7 @@ import util = require('../../util');
 /**
  * This property binder enables the ability to bind to Dojo 1 Stateful objects.
  */
-class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
+class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
 		var object = <Stateful> kwArgs.object;
 		return object != null && typeof object.get === 'function' &&
@@ -35,7 +35,7 @@ class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> i
 	/**
 	 * The target property.
 	 */
-	private _target:core.IProxty<TargetT>;
+	private _target:core.IProxty<T>;
 
 	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
@@ -51,7 +51,7 @@ class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> i
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:core.IProxty<TargetT>, options:binding.IBindToOptions = {}):IHandle {
+	bindTo(target:core.IProxty<T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -59,7 +59,7 @@ class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> i
 		}
 
 		if (options.setValue !== false) {
-			target.set(<TargetT> <any> this.get());
+			target.set(this.get());
 		}
 
 		var self = this;
@@ -84,7 +84,7 @@ class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> i
 	/**
 	 * Gets the current value of this property.
 	 */
-	get():SourceT {
+	get():T {
 		return this._object ? this._object.get(this._property) : undefined;
 	}
 
@@ -92,7 +92,7 @@ class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> i
 	 * Sets the value of this property. This is intended to be used to update the value of this property from another
 	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
-	set(value:SourceT):void {
+	set(value:T):void {
 		if (util.isEqual(this.get(), value)) {
 			return;
 		}
@@ -103,7 +103,7 @@ class StatefulProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> i
 	/**
 	 * Updates the bound target property with the given value.
 	 */
-	private _update(value:TargetT):void {
+	private _update(value:T):void {
 		this._target && this._target.set(value);
 	}
 }

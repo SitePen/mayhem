@@ -1,4 +1,4 @@
-/// <reference path="../../dojo.d.ts" />
+/// <reference path="../../dojo" />
 
 import binding = require('../interfaces');
 import BindingProxty = require('../BindingProxty');
@@ -10,7 +10,7 @@ import util = require('../../util');
  * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
  * that support EcmaScript 5.
  */
-class Es5Proxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
+class Es5Proxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
 		if (!has('es5') || !util.isObject(kwArgs.object)) {
 			return false;
@@ -24,7 +24,7 @@ class Es5Proxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implem
 	private _object:Object;
 	private _originalDescriptor:PropertyDescriptor;
 	private _property:string;
-	private _target:core.IProxty<TargetT>;
+	private _target:core.IProxty<T>;
 
 	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
@@ -71,7 +71,7 @@ class Es5Proxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implem
 		this._update(value);
 	}
 
-	bindTo(target:core.IProxty<TargetT>, options:binding.IBindToOptions = {}):IHandle {
+	bindTo(target:core.IProxty<T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -105,15 +105,15 @@ class Es5Proxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implem
 		this._originalDescriptor = this._object = this._target = null;
 	}
 
-	get():SourceT {
+	get():T {
 		return this._object ? this._object[this._property] : undefined;
 	}
 
-	set(value:SourceT):void {
+	set(value:T):void {
 		this._object && (this._object[this._property] = value);
 	}
 
-	private _update(value:TargetT):void {
+	private _update(value:T):void {
 		this._target && this._target.set(value);
 	}
 }

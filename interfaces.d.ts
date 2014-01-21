@@ -2,6 +2,7 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
+import StatefulArray = require('./StatefulArray');
 import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication {
@@ -93,9 +94,7 @@ export interface IModel extends IComponent {
 export interface IModelProxty<T> extends IProxty<T> {
 	default:T;
 	// TODO: Make into StatefulArray?
-	// TODO: TS 0.9.1 has a bug that means can't use IProxty<ValidationError[]> because it claims it is a private type
-	//errors:IProxty<ValidationError[]>;
-	errors:IProxty<Error[]>;
+	errors:IProxty<ValidationError[]>;
 	label:string;
 	validators:IValidator[];
 
@@ -184,6 +183,10 @@ export interface IScheduler {
 	afterNext(callback:Function):void;
 	dispatch():void;
 	schedule(id:string, callback:Function):void;
+}
+
+export interface IStatefulArrayObserver<T> {
+	(index:number, inserted:StatefulArray<T>, removed:StatefulArray<T>):void;
 }
 
 export interface IValidatorOptions {

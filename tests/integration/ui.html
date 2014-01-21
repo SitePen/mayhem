@@ -18,7 +18,7 @@ var dojoConfig = {
 		<script src="../../../dojo/dojo.js"></script>
 		<script>
 require([
-	'dstore/Model',
+	'framework/Model',
 	'framework/Application',
 	'framework/Mediator',
 	'framework/ui/Widget!Master',
@@ -32,26 +32,22 @@ require([
 
 	app.startup().then(function () {
 		var firstNameRE = /^[a-zA-Z]+$/;
-/*		var model = window.model = new Model({
-			schema: {
-				firstName: {
-					type: 'number',
-					required: true,
-					validate: function () {
-						if (!firstNameRE.test(this.get())) {
-							this.set('errors', ['poop']);
-						}
+		var model = window.model = new Model({
+			firstName: new ModelProxty({
+				default: 'Joe',
+				validators: [ {
+					validate: function (model, key, value) {
+						value !== 'Joe' && model.addError(key, 'No, you must be Joe!');
 					}
-				}
-			},
-			firstName: 'Joe',
-			lastName: 'Bloggs'
-		});*/
+				} ]
+			}),
+			lastName: new ModelProxty({
+				default: 'Bloggs'
+			})
+		});
 		var mediator = window.mediator = new Mediator({
 			app: app,
-			model: null,
-			firstName: new ModelProxty('Joe'),
-			lastName: new ModelProxty('Bloggs')
+			model: model
 		});
 
 		var input = window.input = new Input({ app: app, mediator: mediator });

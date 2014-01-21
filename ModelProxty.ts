@@ -6,7 +6,7 @@ import ValidationError = require('./validation/ValidationError');
 
 class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 	default:T;
-	errors:core.IProxty<Error[]>;
+	errors:core.IProxty<ValidationError[]>;
 	label:string; // TODO: Proxty?
 	validators:core.IValidator[];
 
@@ -27,19 +27,19 @@ class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 		super(kwArgs.default);
 	}
 
-	validate:() => IPromise<void>;
-
-	getErrors():Error[] {
-		return this.errors.get();
-	}
-
-	addError(error:Error /* ValidationError */):void {
+	addError(error:ValidationError):void {
 		this.errors.set(this.errors.get().concat(error));
 	}
 
 	clearErrors():void {
 		this.errors.set([]);
 	}
+
+	getErrors():Error[] {
+		return this.errors.get();
+	}
+
+	validate:() => IPromise<void>;
 }
 
 export = ModelProxty;

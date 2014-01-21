@@ -29,7 +29,7 @@ class MethodProxty<SourceT, TargetT> extends BindingProxty<any, TargetT> impleme
 
 		var matches:RegExpExecArray = methodExpression.exec(kwArgs.binding);
 
-		this._mutator = (<typeof MethodProxty> (<any> this).constructor).methods[matches[1]];
+		this._mutator = (<typeof MethodProxty> this.constructor).methods[matches[1]];
 		this._source = kwArgs.binder.createProxty<SourceT, SourceT>(kwArgs.object, matches[2], { scheduled: false });
 
 		var self = this;
@@ -48,7 +48,7 @@ class MethodProxty<SourceT, TargetT> extends BindingProxty<any, TargetT> impleme
 		}
 
 		if (options.setValue !== false) {
-			target.set(<TargetT> <any> this.get());
+			target.set(this.get());
 		}
 
 		var self = this;
@@ -68,11 +68,11 @@ class MethodProxty<SourceT, TargetT> extends BindingProxty<any, TargetT> impleme
 	}
 
 	get():TargetT {
-		return this._source ? this._mutator(this._source.get()) : undefined;
+		return this._mutator(this._source.get());
 	}
 
 	set(value:SourceT):void {
-		this._source && this._source.set(value);
+		this._source.set(value);
 	}
 }
 

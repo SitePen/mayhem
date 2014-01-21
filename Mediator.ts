@@ -116,8 +116,7 @@ class Mediator implements core.IMediator {
 		// TODO: In ES5 we can just use `Object.create(null)` instead
 		key = '*' + key;
 
-		// TODO: Coercion only necessary for TS 0.9.1
-		var watchers = this._watchers[key] = (this._watchers[key] || <Array<(key:string, oldValue:any, newValue:any) => void>> []);
+		var watchers = this._watchers[key] = (this._watchers[key] || []);
 		watchers.push(callback);
 
 		return {
