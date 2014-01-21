@@ -18,7 +18,8 @@ registerSuite({
 
 	beforeEach: function () {
 		binder = util.createProxtyBinder();
-		binder.add(StatefulProxty);
+		// TODO: <any> casting is needed due to TS#1983
+		binder.add(<any> StatefulProxty);
 	},
 
 	teardown: function () {
@@ -60,7 +61,7 @@ registerSuite({
 				binding: 'intermediate.child.foo',
 				binder: binder
 			}),
-			target = new MockProxty<string, string>({
+			target = new MockProxty<string>({
 				object: {},
 				binding: '',
 				binder: null
@@ -96,7 +97,8 @@ registerSuite({
 			intermediateObject.set('child', { farbrausch: true });
 		}, /No registered proxty constructors understand the requested binding/, 'Setting non-bindable object at end of binding chain should throw error');
 
-		var binderHandle = binder.add(Es5Proxty),
+		// TODO: <any> casting is needed due to TS#1983
+		var binderHandle = binder.add(<any> Es5Proxty),
 			plainIntermediateObject:{ child?:{ foo?:string; }; } = {};
 
 		assert.doesNotThrow(function () {

@@ -7,12 +7,12 @@ import registerSuite = require('intern!object');
 
 function createBasicTests(sourceObject:{ foo?:string; }) {
 	return function () {
-		var source = new Es5Proxty<string, string>({
+		var source = new Es5Proxty<string>({
 				object: sourceObject,
 				binding: 'foo',
 				binder: null
 			}),
-			target = new MockProxty<string, string>({
+			target = new MockProxty<string>({
 				object: {},
 				binding: '',
 				binder: null
@@ -100,19 +100,15 @@ registerSuite({
 
 	'basic tests, no descriptor': createBasicTests({}),
 	'basic tests, property descriptor': createBasicTests({ foo: '1' }),
-	// TODO: IIFE is a workaround for a bug in TypeScript 0.9.5; see
-	// https://typescript.codeplex.com/workitem/1951
-	'basic tests, accessor descriptor': (function () {
-		return createBasicTests({
-			_foo: '1',
-			get foo():string {
-				return this._foo;
-			},
-			set foo(value:string) {
-				this._foo = value;
-			}
-		});
-	})(),
+	'basic tests, accessor descriptor': createBasicTests({
+		_foo: '1',
+		get foo():string {
+			return this._foo;
+		},
+		set foo(value:string) {
+			this._foo = value;
+		}
+	}),
 
 	'read-only property': function () {
 		var sourceObject = {
@@ -122,7 +118,7 @@ registerSuite({
 		};
 
 		assert.throws(function () {
-			var source = new Es5Proxty<string, string>({
+			var source = new Es5Proxty<string>({
 				object: sourceObject,
 				binding: 'foo',
 				binder: null
@@ -138,7 +134,7 @@ registerSuite({
 					this.bar = value;
 				}
 			},
-			source = new Es5Proxty<string, string>({
+			source = new Es5Proxty<string>({
 				object: sourceObject,
 				binding: 'foo',
 				binder: null

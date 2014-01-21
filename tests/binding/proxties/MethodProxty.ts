@@ -21,8 +21,9 @@ registerSuite({
 		};
 
 		binder = util.createProxtyBinder();
-		binder.add(MethodProxty);
-		binder.add(Es5Proxty);
+		// TODO: <any> casting is needed due to TS#1983
+		binder.add(<any> MethodProxty);
+		binder.add(<any> Es5Proxty);
 	},
 
 	teardown: function () {
@@ -63,7 +64,7 @@ registerSuite({
 				binding: 'toUpperCase(foo)',
 				binder: binder
 			}),
-			target = new MockProxty<string, string>({
+			target = new MockProxty<string>({
 				object: {},
 				binding: '',
 				binder: null

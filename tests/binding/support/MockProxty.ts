@@ -2,15 +2,15 @@ import binding = require('../../../binding/interfaces');
 import BindingProxty = require('../../../binding/BindingProxty');
 import core = require('../../../interfaces');
 
-class MockProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
+class MockProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
 		return true;
 	}
 
 	destroyed:boolean = false;
 	kwArgs:binding.IProxtyArguments;
-	target:core.IProxty<TargetT>;
-	value:SourceT;
+	target:core.IProxty<T>;
+	value:T;
 
 	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
@@ -18,14 +18,14 @@ class MockProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imple
 		this.kwArgs.object && (this.kwArgs.object['mockProxty'] = this);
 	}
 
-	bindTo(target:core.IProxty<TargetT>):IHandle {
+	bindTo(target:core.IProxty<T>):IHandle {
 		this.target = target;
 
 		if (!target) {
 			return;
 		}
 
-		target.set(<TargetT> <any> this.value);
+		target.set(<T> <any> this.value);
 
 		var self = this;
 		return {
@@ -43,16 +43,16 @@ class MockProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imple
 		this.kwArgs = this.value = this.target = null;
 	}
 
-	emulateUpdate(value:SourceT):void {
+	emulateUpdate(value:T):void {
 		this.value = value;
-		this.target && this.target.set(<TargetT> <any> value);
+		this.target && this.target.set(<T> <any> value);
 	}
 
-	get():SourceT {
+	get():T {
 		return this.value;
 	}
 
-	set(value:SourceT):void {
+	set(value:T):void {
 		this.value = value;
 	}
 }

@@ -16,7 +16,9 @@ registerSuite({
 
 	setup: function () {
 		binder = util.createProxtyBinder();
-		binder.add(StatefulProxty);
+
+		// TODO: <any> casting is needed due to TS#1983
+		binder.add(<any> StatefulProxty);
 	},
 
 	teardown: function () {
@@ -51,12 +53,12 @@ registerSuite({
 
 	'basic tests': function () {
 		var sourceObject = new Stateful({ foo: '1' }),
-			source = new StatefulProxty<string, string>({
+			source = new StatefulProxty<string>({
 				object: sourceObject,
 				binding: 'foo',
 				binder: null
 			}),
-			target = new MockProxty<string, string>({
+			target = new MockProxty<string>({
 				object: {},
 				binding: '',
 				binder: null

@@ -54,9 +54,10 @@ registerSuite({
 			};
 
 		var handles:IHandle[] = [
-			binder.add(SecondProxty),
-			binder.add(FirstProxty, 0),
-			binder.add(ThirdProxty)
+			// TODO: <any> casting is needed due to TS#1983
+			binder.add(<any> SecondProxty),
+			binder.add(<any> FirstProxty, 0),
+			binder.add(<any> ThirdProxty)
 		];
 
 		binder.test(emptyBinding);
@@ -74,7 +75,8 @@ registerSuite({
 	},
 
 	'#test': function () {
-		binder.add(MockProxty);
+		// TODO: <any> casting is needed due to TS#1983
+		binder.add(<any> MockProxty);
 
 		var result = binder.test(emptyBinding);
 
@@ -86,10 +88,11 @@ registerSuite({
 			binder.bind(emptyBinding);
 		}, /No registered proxty constructors understand the requested binding/, 'Attempting an impossible bind should throw');
 
-		binder.add(MockProxty);
+		// TODO: <any> casting is needed due to TS#1983
+		binder.add(<any> MockProxty);
 
-		var sourceObject:{ mockProxty:MockProxty<number, number>; } = { mockProxty: null },
-			targetObject:{ mockProxty:MockProxty<number, number>; } = { mockProxty: null },
+		var sourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			targetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
 			dfd:IInternDeferred<any> = this.async(1000),
 			handle:IHandle = binder.bind({
 				source: sourceObject,

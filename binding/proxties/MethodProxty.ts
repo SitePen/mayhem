@@ -68,7 +68,7 @@ class MethodProxty<SourceT, TargetT> extends BindingProxty<any, TargetT> impleme
 	}
 
 	get():TargetT {
-		return this._mutator(this._source.get());
+		return this._source ? this._mutator(this._source.get()) : undefined;
 	}
 
 	set(value:SourceT):void {
