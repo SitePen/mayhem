@@ -57,6 +57,8 @@ export interface IBinder extends core.IComponent {
 	 * interfaces exposed on subtypes of IProxty.
 	 */
 	createProxty<SourceT, TargetT>(object:Object, binding:string, options?:{ scheduled?:boolean; }):IProxty<SourceT, TargetT>;
+
+	getMetadata<T>(object:Object, binding:string):core.IProxty<Object /* TODO: some metadata interface? */>;
 }
 
 /**

@@ -97,6 +97,15 @@ declare module 'dojo/_base/lang' {
 	export = lang;
 }
 
+declare module 'dojo/aspect' {
+	var aspect:{
+		after(target:Object, methodName:string, advice:(...args:any[]) => any, receiveArguments:boolean):IHandle;
+		around(target:Object, methodName:string, advice:(...args:any[]) => any):IHandle;
+		before(target:Object, methodName:string, advice:(...args:any[]) => any):IHandle;
+	};
+	export = aspect;
+}
+
 declare module 'dojo/Deferred' {
 	var Deferred:{
 		new (canceler:(reason:any) => any):IDeferred<any>;

@@ -1,8 +1,10 @@
+import aspect = require('dojo/aspect');
 import BindDirection = require('./BindDirection');
 import binding = require('./interfaces');
 import BindingError = require('./BindingError');
 import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
+import Proxty = require('../Proxty');
 import whenAll = require('dojo/promise/all');
 
 /**
@@ -117,6 +119,42 @@ class ProxtyBinder implements binding.IBinder {
 				binder: this
 			}
 		);
+	}
+
+	getMetadata(object:Object, binding:string):core.IProxty<{ [key:string]:any; } /* TODO: metadata type */> {
+		var splitAt:number = binding.lastIndexOf('.'),
+			key:string;
+
+		// Getting metadata is like getting a property descriptor; we need to have a reference to the parent object
+		// of the key, and the key, in order to look it up
+		if (splitAt > -1) {
+			key = binding.slice(splitAt + 1);
+			binding = binding.slice(0, splitAt);
+		}
+		else {
+			key = binding;
+			binding = '';
+		}
+
+		var updateProxty = function (object:{ getMetadata:(key:string) => { [key:string]:any; } /* TODO: metadata type */ }):void {
+				proxty.set(object && object.getMetadata ? object.getMetadata(key) : null);
+			},
+			proxty:core.IProxty<{ [key:string]:any; } /* TODO: metadata type */> = new Proxty(null);
+
+		if (binding) {
+			var parentProxty = this.createProxty(object, binding);
+			parentProxty.observe(updateProxty);
+		}
+		else {
+			updateProxty(<any> object);
+		}
+
+		aspect.after(proxty, 'destroy', function () {
+			parentProxty.destroy();
+			parentProxty = null;
+		}, true);
+
+		return proxty;
 	}
 
 	startup():IPromise<any[]> {

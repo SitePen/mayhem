@@ -27,8 +27,13 @@ class Proxty<T> implements core.IProxty<T> {
 		}
 	}
 
-	observe(observer:core.IObserver<T>):IHandle {
+	observe(observer:core.IObserver<T>, invokeImmediately:boolean = true):IHandle {
 		this._observers.push(observer);
+
+		if (invokeImmediately) {
+			observer(this.get(), undefined);
+		}
+
 		var self = this;
 		return {
 			remove: function () {

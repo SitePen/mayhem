@@ -46,6 +46,17 @@ class Mediator implements core.IMediator {
 		return value;
 	}
 
+	// TODO: Fix implementation to not use getProxty
+	getMetadata(key:string):core.IModelProxty<any> {
+		try {
+			return this.getProxty(key);
+		}
+		catch (error) {
+			return null;
+		}
+	}
+
+	// TODO: This should go away, public proxty objects are limited and should go through the data binding interface
 	getProxty(key:string):core.IModelProxty<any> {
 		var getter = '_' + key + 'Getter',
 			value:any;

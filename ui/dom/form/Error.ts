@@ -8,10 +8,10 @@ import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends SingleNodeWidget {
 	binding:string;
-	private _bindingProxty:core.IModelProxty<any>;
 	private _errorsHandle:IHandle;
 	firstNode:HTMLUListElement;
 	lastNode:HTMLUListElement;
+	private _metadataProxty:core.IProxty<core.IModelProxty<any>>;
 	private __updateBinding:() => void;
 
 	constructor(kwArgs:Object) {
@@ -34,26 +34,29 @@ class FormError extends SingleNodeWidget {
 	}
 
 	private _updateBinding():void {
-/*		this._errorsHandle && this._errorsHandle.remove();
-		this._bindingProxty && this._bindingProxty.destroy();
+		this._errorsHandle && this._errorsHandle.remove();
+		this._metadataProxty && this._metadataProxty.destroy();
 
 		if (!this.mediator || !this.binding) {
 			return;
 		}
 
 		// TODO: Replace with some new getMetadata function from binder
-		var proxty = this._bindingProxty = <core.IModelProxty<any>> <any> this.app.binder.createProxty<core.IModelProxty<any>, core.IModelProxty<any>>(this.mediator, this.binding);
-
-		if (!proxty.errors) {
-			throw new Error('Attempting to bind to a non-model proxty');
-		}
-
-		this._errorsHandle = proxty.errors.observe((errors:ValidationError[]) => {
-			this._updateDisplay(errors);
-		});*/
+		var proxty = this._metadataProxty = <core.IProxty<core.IModelProxty<any>>> this.app.binder.getMetadata(this.mediator, this.binding);
+		proxty.observe((metadata:core.IModelProxty<any>) => {
+			this._errorsHandle && this._errorsHandle.remove();
+			this._errorsHandle = metadata.errors.observe((errors:ValidationError[]) => {
+				this._updateDisplay(errors);
+			});
+		});
 	}
 
 	private _updateDisplay(errors:ValidationError[]):void {
+		// TODO: Deal with this condition properly.
+		if (!this.firstNode) {
+			return;
+		}
+
 		this.firstNode.innerHTML = '';
 
 		if (!errors) {
@@ -68,8 +71,8 @@ class FormError extends SingleNodeWidget {
 
 	destroy():void {
 		this._errorsHandle && this._errorsHandle.remove();
-		this._bindingProxty && this._bindingProxty.destroy();
-		this._errorsHandle = this._bindingProxty = null;
+		this._metadataProxty && this._metadataProxty.destroy();
+		this._errorsHandle = this._metadataProxty = null;
 
 		super.destroy();
 	}
