@@ -21,53 +21,43 @@ require([
 	'framework/Model',
 	'framework/Application',
 	'framework/Mediator',
+	'framework/ModelProxty',
+	'framework/ui/Widget',
 	'framework/ui/Widget!Master',
 	'framework/ui/Widget!form/Input',
 	'framework/ui/Widget!form/Error',
-	'framework/ModelProxty'
-], function (Model, Application, Mediator, Master, Input, FormError, ModelProxty) {
+	'framework/ui/dom/Element',
+	'framework/templating/html'
+], function (Model, Application, Mediator, ModelProxty, Widget, Master, Input, FormError, Element, processTemplate) {
 	var app = new Application({
 		modules: { router: null }
 	});
 
 	app.startup().then(function () {
 		var firstNameRE = /^[a-zA-Z]+$/;
-
-		var MyModel = function(){
-			this.firstName = new ModelProxty({
+		var model = window.model = new Model({
+			firstName: new ModelProxty({
 				default: 'Joe',
 				validators: [ {
 					validate: function (model, key, value) {
 						value !== 'Joe' && model.addError(key, 'No, you must be Joe!');
 					}
 				} ]
-			});
-
-			this.lastName = new ModelProxty({
+			}),
+			lastName: new ModelProxty({
 				default: 'Bloggs'
-			});
-		};
-		MyModel.prototype = new Model();
-
-		var model = window.model = new MyModel();
+			})
+		});
 		var mediator = window.mediator = new Mediator({
 			app: app,
 			model: model
 		});
 
-		var input = window.input = new Input({ app: app, mediator: mediator });
-		input.bind('value', 'firstName', { direction: 2 });
-
-		var error = window.formError = new FormError({
-			app: app,
-			mediator: mediator,
-			binding: 'firstName'
-		});
-
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
-		masterView.add(input);
-		masterView.add(error);
+
+		var template = 'First Name: <widget is="form/Input" value="{firstName}"></widget> Errors: <widget is="form/Error" binding="firstName"></widget>';
+		processTemplate(template, app, mediator).then(masterView.add.bind(masterView));
 	});
 });
 		</script>

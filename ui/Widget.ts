@@ -35,7 +35,9 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	/* readonly */ previous:widgets.IWidget;
 	style:style.IStyle;
 
-	constructor(kwArgs:Object) {
+	constructor(kwArgs:any) { // can't use Object -- maybe define IWidgetOptions?
+		this.app = kwArgs.app;
+		this.mediator = kwArgs.mediator;
 		this._bindings = [];
 		super(kwArgs);
 
