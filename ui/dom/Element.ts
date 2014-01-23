@@ -13,7 +13,19 @@ class Element extends MultiNodeWidget {
 
 	html:string;
 
-	/*private*/ _fillPlaceholder(i:number, widget:widgets.IDomWidget):void {
+	// TODO: needs a better name
+	setContents(html:any, children?:widgets.IDomWidget[]) {
+		// TODO: make text nodes for individual binding slots
+		// TODO: but who should be responsible for doing the binding?
+		this.set('html', html.join(''));
+		if (children) {
+			for (var i = 0, length = children.length; i < length; ++i) {
+				this._fillPlaceholder(i, children[i]);
+			}
+		}
+	}
+
+	private _fillPlaceholder(i:number, widget:widgets.IDomWidget):void {
 		var node:Node = this.firstNode.nextSibling,
 			commentPattern:RegExp = /^\s*child#(\d+)\s*$/,
 			match:string[];
@@ -30,7 +42,7 @@ class Element extends MultiNodeWidget {
 		}
 	}
 
-	/*private*/ _htmlSetter(html:string):void {
+	private _htmlSetter(html:string):void {
 		this.html = html;
 
 //		this.empty();

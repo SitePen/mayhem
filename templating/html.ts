@@ -1,28 +1,33 @@
 /// <reference path="./peg/html.d.ts" />
 
-import parser = require('framework/templating/peg/html'); // FIXME
-import Element = require('../ui/dom/Element');
-import core = require('../interfaces');
+import parser = require('framework/templating/peg/html'); // TODO: is this the Right Way?
+import core = require('../interfaces');;
+import widgets = require('../ui/interfaces');
+import Element = require('../ui/dom/Element') // TODO: remove
+import util = require('../util');
+import array = require('dojo/_base/array');
 import Deferred = require('dojo/Deferred');
+
+
+// TODO: export
+function parse(input:string) {
+	return parser.parse(input);
+}
 
 function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 	var ast = parser.parse(input);
 	var dfd:IDeferred<Element> = new Deferred<Element>();
-	var el = new Element({
-		app: app,
-		mediator: mediator
-	});
-
-	// ignore bindings in html for now
-	el.set('html', ast.html.join(''));
 
 	// collect up our deps from ctor references
-	// TODO is it possible for ASTs to contain constructor references in addition to module ids?
 	var deps:string[] = [];
-	function depWalk(node:any) { // TODO IAstNode
-		// Assume constructor exists and is a 1-element array
-		var ctor = node.constructor[0];
-		deps.indexOf(ctor) < 0 && deps.push(ctor);
+	function depWalk(node:any) { // TODO IAstNode?
+		var ctor = node.constructor;
+		// flatten constructor if it's array like
+		if (ctor && typeof ctor.join === 'function') {
+			node.constructor = ctor = ctor.join('');
+		}
+		// add to list of deps if string module id
+		typeof ctor === 'string' && deps.indexOf(ctor) < 0 && deps.push(ctor);
 		var children = node.children;
 		if (!children || !children.length) {
 			return;
@@ -31,49 +36,55 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 			depWalk(children[i]);
 		}
 	}
-	ast.children.forEach(depWalk); // FIXME es5
+	depWalk(ast);
 
-	// TODO what's the correct way to load?
-	var remappedDeps = deps.map((d) => 'framework/ui/dom/' + d); // FIXME es5
-	require(remappedDeps, function() {
-		// map our deps
-		var depMap = {};
+	// TODO: what's the correct way to load deps?
+	require(deps, function() {
+		// map our resolved dependencies to their module ids
+		var depMap:any = {};
 		for (var i = 0, length = deps.length; i < length; ++i) {
 			depMap[deps[i]] = arguments[i];
 		}
 
-		// FIXME this is a hacky top level iteration
-		var child:any,
-			i:number = 0,
-			length:number = ast.children.length;
-		for (; i < length; ++i) {
-			child = ast.children[i];
-			// assume child.constructor is a 1-element array w/ ctor module id
-			// get the ctor module from the dep map
-			var Ctor = depMap[child.constructor[0]];
-			
+		function processNode(node:any) {
+			var widget:any, // TODO: widgets.IDomWidget
+				children:widgets.IDomWidget[],
+				i:number = 0,
+				length:number = ast.children.length;
+			// Walk children and process recursively
+			if (node.children) {
+				children = array.map(node.children, processNode);
+			}
 			var options:any = {
 				app: app,
 				mediator: mediator
 			};
-			if (child.binding) options.binding = child.binding[0]; // FIXME
-			var childEl = new Ctor(options);
+			// TODO: this is almost certainly not right
+			if (node.binding) options.binding = node.binding.join('');
 
-			var ignoreKeys = [ 'constructor', 'children', 'binding' ];
-			Object.keys(child).filter((k) => ignoreKeys.indexOf(k) < 0).forEach(function(key) { // FIXME es5
-				if (ignoreKeys.indexOf(key) >= 0) return;
-				var values = child[key];
+			var ctor:any = node.constructor;
+			// if node.constructor is a string get the ctor module from dependency map
+			var WidgetCtor = typeof ctor === 'string' ? depMap[ctor] : ctor;
+			widget = new WidgetCtor(options);
+
+			// TODO: is this the complete list of reserved keys?
+			// TODO: could we get the parser to put attributes in a separate namespace?
+			var reservedKeys = [ 'constructor', 'children', 'html', 'binding' ];
+			var attributes = array.filter(util.getObjectKeys(node), (k) => reservedKeys.indexOf(k) < 0);
+			array.forEach(attributes, function(key) {
+				var values = node[key];
 				var parts:string[] = [];
-				// this should be a lot cleaner, but i don't know enough about bindings to make it so
+				// TODO: this should be a lot cleaner, but i don't know enough about bindings to make it so
 				if (values.length === 1) {
-					child.bind(key, values[0], { direction: 2 });
+					debugger
+					widget.bind(key, values[0].binding, { direction: 2 });
 				}
 				else {
 					values.forEach(function(part:any) { // FIXME es5
 						if (part && part.binding) {
-							// FIXME what's the right way to do this? I thought mediator had a getProxty now?
+							// TODO: what's the right way to do this? I thought mediator had a getProxty now?
 							var proxty = mediator.model[part.binding];
-							// TODO proxty binder?
+							// TODO: proxty binder?
 							parts.push(proxty.get());
 						}
 						else {
@@ -81,15 +92,19 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 						}
 					});
 				}
-				// FIXME is this how we're supposed to be setting bindings?
-				childEl.set(key, parts.join(''));
+				// TODO: is this what we're supposed to do with attributes?
+				widget.set(key, parts.join(''));
 			});
-			// TODO bindings
-
-			el._fillPlaceholder(i, childEl);
+			widget.setContents && widget.setContents(node.html, children);
+			return widget;
 		}
-		dfd.resolve(el);
-		// TODO where to dfd.reject in amd require?
+		try {
+			dfd.resolve(processNode(ast));
+		}
+		catch (error) {
+			dfd.reject(error);
+		}
+		// TODO: where to catch for dfd.reject in amd require?
 	});
 
 	return dfd.promise;

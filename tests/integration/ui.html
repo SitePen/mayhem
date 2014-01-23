@@ -72,7 +72,7 @@ require([
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
 
-		var template = 'First Name: <widget is="form/Input" value="{firstName}"></widget> Errors: <widget is="form/Error" binding="firstName"></widget>';
+		var template = 'First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget> Errors: <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>';
 		processTemplate(template, app, mediator).then(masterView.add.bind(masterView));
 	});
 });
