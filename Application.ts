@@ -37,7 +37,8 @@ class Application extends StatefulEvented implements core.IApplication {
 					constructor: 'framework/binding/ProxtyBinder',
 					proxties: [
 						'framework/binding/proxties/NestedProxty',
-						'framework/binding/proxties/ModelProxty',
+// TODO: Broken
+//						'framework/binding/proxties/ModelProxty',
 						'framework/binding/proxties/ObservableProxty',
 						'framework/binding/proxties/StatefulProxty'
 					]

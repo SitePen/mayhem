@@ -6,6 +6,7 @@ import declare = require('dojo/_base/declare');
 import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
+import ModelProxty = require('./ModelProxty');
 import Stateful = require('dojo/Stateful');
 import util = require('./util');
 
@@ -15,10 +16,11 @@ class Mediator implements core.IMediator {
 	[key:string]:any;
 	app:core.IApplication;
 	model:core.IModel;
-	routeState:Object;
 	private _observers:{ [key:string]:core.IObserver<any>[]; } = {};
+	routeState:Object;
 
 	constructor(kwArgs:Object = {}) {
+		this.app = null;
 		this.model = null;
 		this.set(kwArgs);
 	}
@@ -35,6 +37,31 @@ class Mediator implements core.IMediator {
 		}
 		else if (this.model) {
 			value = this.model.get(key);
+		}
+
+		if (value instanceof ModelProxty) {
+			return value.get();
+		}
+
+		return value;
+	}
+
+	getProxty(key:string):core.IModelProxty<any> {
+		var getter = '_' + key + 'Getter',
+			value:any;
+
+		if (getter in this) {
+			value = this[getter]();
+		}
+		else if (key in this) {
+			value = this[key];
+		}
+		else if (this.model) {
+			value = this.model.getProxty(key);
+		}
+
+		if (!(value instanceof ModelProxty)) {
+			throw new Error('No proxty available for "' + key + '"');
 		}
 
 		return value;
@@ -126,7 +153,7 @@ class Mediator implements core.IMediator {
 			}
 			else if (key in this) {
 				notify = true;
-				this[key] = value;
+				this[key] && this[key].isProxty ? this[key].set(value) : (this[key] = value);
 			}
 			else if (this.model) {
 				this.model.set(key, value);

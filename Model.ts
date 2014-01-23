@@ -46,6 +46,7 @@ class Model implements core.IModel {
 	scenario:string = 'insert';
 
 	constructor(kwArgs:Object = {}) {
+		this.app = null;
 		this.set(kwArgs);
 	}
 
@@ -123,6 +124,11 @@ class Model implements core.IModel {
 		}
 
 		return (<core.IProxty<any>> this[key]).observe(observer);
+	}
+
+	remove():void {}
+	save(skipValidation?:boolean):IPromise<void> {
+		return;
 	}
 
 	set(kwArgs:Object):void;

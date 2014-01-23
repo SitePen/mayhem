@@ -3,6 +3,7 @@
 import binding = require('../interfaces');
 import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
+import CoreModelProxty = require('../../ModelProxty');
 import lang = require('dojo/_base/lang');
 import util = require('../../util');
 
@@ -12,6 +13,7 @@ class ModelProxty<T> implements binding.IProxty<T, T> {
 		if (object && object.getProxty) {
 			try {
 				object.getProxty(kwArgs.binding);
+				return true;
 			}
 			catch (error) {}
 		}

@@ -8,27 +8,25 @@ import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends SingleNodeWidget {
 	binding:string;
+	private _bindingProxty:core.IModelProxty<any>;
 	private _errorsHandle:IHandle;
 	firstNode:HTMLUListElement;
-	private _propertyHandle:IHandle;
 	lastNode:HTMLUListElement;
 	private __updateBinding:() => void;
-	private __updateDisplay:(errors:ValidationError[]) => void;
 
 	constructor(kwArgs:Object) {
 		super(kwArgs);
 		this.__updateBinding = <() => void> lang.hitch(this, '_updateBinding');
-		this.__updateDisplay = <(errors:ValidationError[]) => void> lang.hitch(this, '_updateDisplay');
 	}
 
 	private _bindingSetter(value:string):void {
 		this.binding = value;
-		this.app.scheduler.schedule(this.id, this.__updateBinding);
+		this._updateBinding();
 	}
 
 	/* protected */ _mediatorSetter(value:core.IMediator):void {
 		super._mediatorSetter(value);
-		this.app.scheduler.schedule(this.id, this.__updateBinding);
+		this._updateBinding();
 	}
 
 	render():void {
@@ -36,13 +34,23 @@ class FormError extends SingleNodeWidget {
 	}
 
 	private _updateBinding():void {
-		this._propertyHandle && this._propertyHandle.remove();
-		this._propertyHandle = this.app.binder
-			.createProxty<core.IModelProxty<any>, core.IModelProxty<any>>(this.mediator, this.binding)
-			.observe((modelProxty:core.IModelProxty<any>) => {
-				this._errorsHandle && this._errorsHandle.remove();
-				this._errorsHandle = modelProxty.errors.observe(this.__updateDisplay);
-			});
+/*		this._errorsHandle && this._errorsHandle.remove();
+		this._bindingProxty && this._bindingProxty.destroy();
+
+		if (!this.mediator || !this.binding) {
+			return;
+		}
+
+		// TODO: Replace with some new getMetadata function from binder
+		var proxty = this._bindingProxty = <core.IModelProxty<any>> <any> this.app.binder.createProxty<core.IModelProxty<any>, core.IModelProxty<any>>(this.mediator, this.binding);
+
+		if (!proxty.errors) {
+			throw new Error('Attempting to bind to a non-model proxty');
+		}
+
+		this._errorsHandle = proxty.errors.observe((errors:ValidationError[]) => {
+			this._updateDisplay(errors);
+		});*/
 	}
 
 	private _updateDisplay(errors:ValidationError[]):void {
@@ -60,8 +68,8 @@ class FormError extends SingleNodeWidget {
 
 	destroy():void {
 		this._errorsHandle && this._errorsHandle.remove();
-		this._propertyHandle && this._propertyHandle.remove();
-		this._errorsHandle = this._propertyHandle = null;
+		this._bindingProxty && this._bindingProxty.destroy();
+		this._errorsHandle = this._bindingProxty = null;
 
 		super.destroy();
 	}
