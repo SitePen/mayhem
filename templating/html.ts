@@ -76,7 +76,6 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 				var parts:string[] = [];
 				// TODO: this should be a lot cleaner, but i don't know enough about bindings to make it so
 				if (values.length === 1) {
-					debugger
 					widget.bind(key, values[0].binding, { direction: 2 });
 				}
 				else {
