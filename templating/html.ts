@@ -72,26 +72,26 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 			var reservedKeys = [ 'constructor', 'children', 'html', 'binding' ];
 			var attributes = array.filter(util.getObjectKeys(node), (k) => reservedKeys.indexOf(k) < 0);
 			array.forEach(attributes, function(key) {
-				var values = node[key];
-				var parts:string[] = [];
+				var parts = node[key];
+				var values:string[] = [];
 				// TODO: this should be a lot cleaner, but i don't know enough about bindings to make it so
-				if (values.length === 1 && values[0] && values[0].binding) {
-					widget.bind(key, values[0].binding, { direction: 2 });
+				if (parts.length === 1 && parts[0] && parts[0].binding) {
+					widget.bind(key, parts[0].binding, { direction: 2 });
 				}
 				else {
-					values.forEach(function(part:any) { // FIXME es5
+					parts.forEach(function(part:any) { // FIXME es5
 						if (part && part.binding) {
 							// TODO: what's the right way to do this? I thought mediator had a getProxty now?
 							var proxty = mediator.model[part.binding];
 							// TODO: proxty binder?
-							parts.push(proxty.get());
+							values.push(proxty.get());
 						}
 						else {
-							parts.push(part);
+							values.push(part);
 						}
 					});
 					// TODO: is this what we're supposed to do with attributes?
-					widget.set(key, parts.join(''));
+					widget.set(key, values.join(''));
 				}
 			});
 			widget.setContents && widget.setContents(node.html, children);
