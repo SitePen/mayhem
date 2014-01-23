@@ -75,7 +75,7 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 				var values = node[key];
 				var parts:string[] = [];
 				// TODO: this should be a lot cleaner, but i don't know enough about bindings to make it so
-				if (values.length === 1) {
+				if (values.length === 1 && values[0] && values[0].binding) {
 					widget.bind(key, values[0].binding, { direction: 2 });
 				}
 				else {
@@ -90,9 +90,9 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 							parts.push(part);
 						}
 					});
+					// TODO: is this what we're supposed to do with attributes?
+					widget.set(key, parts.join(''));
 				}
-				// TODO: is this what we're supposed to do with attributes?
-				widget.set(key, parts.join(''));
 			});
 			widget.setContents && widget.setContents(node.html, children);
 			return widget;
