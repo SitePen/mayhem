@@ -13,7 +13,7 @@ import util = require('../../util');
  */
 class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> implements binding.IProxty<SourceT, TargetT> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
-		return kwArgs.object != null && kwArgs.binding.indexOf('.') !== -1;
+		return kwArgs.object != null && kwArgs.binding && kwArgs.binding.indexOf('.') !== -1;
 	}
 
 	/**

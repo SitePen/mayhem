@@ -1,6 +1,6 @@
-/// <reference path="chai.d.ts" />
-/// <reference path="chai-assert.d.ts" />
-/// <reference path="../dojo.d.ts" />
+/// <reference path="./chai" />
+/// <reference path="./chai-assert" />
+/// <reference path="../dojo" />
 
 interface IInternDeferred<T> extends IDeferred<T> {
 	callback<U>(callback:U):U;

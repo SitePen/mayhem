@@ -1,4 +1,3 @@
-// TODO: Ensure all reference paths are updated to be module IDs
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
@@ -14,7 +13,7 @@ export interface IComponent {
 	app:IApplication;
 }
 
-export interface IMediator extends IComponent {
+export interface IMediator extends IComponent, IObservable {
 	model:IModel;
 	routeState:Object;
 }
@@ -23,7 +22,7 @@ export interface IMediator extends IComponent {
  * The IModel interface should be implemented by any object that is intended to be used as a data model within the
  * framework.
  */
-export interface IModel extends IComponent {
+export interface IModel extends IComponent, IObservable {
 	/**
 	 * The current validation scenario for the model. Defaults to 'insert' for new models, and 'update' for existing
 	 * models.
@@ -40,7 +39,7 @@ export interface IModel extends IComponent {
 	/**
 	 * Retrieves the proxty for a property on the model.
 	 */
-	// getProxty(key:string):IProxty<any>;
+	getProxty(key:string):IProxty<any>;
 
 	/**
 	 * Returns whether or not the model currently contains any validation errors.
@@ -116,8 +115,15 @@ export interface IModelProxty<T> extends IProxty<T> {
 	clearErrors():void;
 }
 
+export interface IObservable {
+	get(key:string):any;
+	observe<T>(observer:IObserver<T>):IHandle;
+	observe<T>(key:string, observer:IObserver<T>):IHandle;
+	set(key:string, value:any):void;
+}
+
 export interface IObserver<T> {
-	(newValue:T, oldValue:T):void;
+	(newValue:T, oldValue:T, key?:string):void;
 }
 
 /**
@@ -196,5 +202,5 @@ export interface IValidatorOptions {
 
 export interface IValidator {
 	options?:IValidatorOptions;
-	validate(model:any/*IModel*/, key:string, value:any):void;
+	validate(model:IModel, key:string, value:any):void;
 }

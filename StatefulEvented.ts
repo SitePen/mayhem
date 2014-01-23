@@ -1,4 +1,4 @@
-/// <reference path="dojo.d.ts" />
+/// <reference path="./dojo" />
 
 import core = require('./interfaces');
 import Evented = require('dojo/Evented');

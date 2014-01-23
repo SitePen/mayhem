@@ -1,4 +1,4 @@
-/// <reference path="../dojo.d.ts" />
+/// <reference path="../dojo" />
 
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
@@ -14,6 +14,7 @@ import widgets = require('./interfaces');
 var uid = 0,
 	platform = has('host-browser') ? 'dom/' : '';
 
+// TODO: Create and use ObservableEvented
 class Widget extends StatefulEvented implements widgets.IWidget {
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		require([ resourceId ], load);
@@ -35,15 +36,15 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	/* readonly */ previous:widgets.IWidget;
 	style:style.IStyle;
 
-	constructor(kwArgs:any) { // can't use Object -- maybe define IWidgetOptions?
-		this.app = kwArgs.app;
-		this.mediator = kwArgs.mediator;
+	constructor(kwArgs:Object = {}) {
 		this._bindings = [];
-		super(kwArgs);
 
-		if (!this.id) {
+		// Set ID as early as possible so that any setters that might require it can use it
+		if (!('id' in kwArgs)) {
 			this.id = 'Widget' + (++uid);
 		}
+
+		super(kwArgs);
 	}
 
 	// TODO: Change bind options to be an interface
@@ -94,6 +95,8 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
 			binding.setSource(value);
 		}
+
+		// TODO: Notify all children with null mediators of an update to the parent viewscope mediator
 	}
 
 	private _nextGetter():widgets.IWidget {

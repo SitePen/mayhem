@@ -1,4 +1,4 @@
-/// <reference path="../dojo.d.ts" />
+/// <reference path="../dojo" />
 /// <amd-dependency path="../has!host-browser?./dom/Label" />
 
 var Label = require('../has!host-browser?./dom/Label');

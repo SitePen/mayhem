@@ -39,15 +39,14 @@ import when = require('dojo/when');
 // 	});
 // }
 
-class Model /*implements core.IModel*/ {
+class Model implements core.IModel {
+	app:core.IApplication;
 	collection:any /*dstore.Collection*/;
-	isExtensible:boolean = true;
+	isExtensible:boolean = false;
 	scenario:string = 'insert';
 
-	constructor(initialProperties:{ [key:string]:core.IModelProxty<any>; }) {
-		for (var k in initialProperties) {
-			this[k] = initialProperties[k];
-		}
+	constructor(kwArgs:Object = {}) {
+		this.set(kwArgs);
 	}
 
 	addError(key:string, error:ValidationError):void {
@@ -85,6 +84,14 @@ class Model /*implements core.IModel*/ {
 		return errors;
 	}
 
+	getProxty(key:string):core.IModelProxty<any> {
+		if (this[key] && this[key].isProxty) {
+			return this[key];
+		}
+
+		throw new Error('No proxty for key ' + key);
+	}
+
 	private _getProxtyMap():{ [key:string]: core.IModelProxty<any>; } {
 		var key:string,
 			proxtyMap:{ [key:string]: core.IModelProxty<any>; } = {};
@@ -100,34 +107,55 @@ class Model /*implements core.IModel*/ {
 		return this.getErrors().length === 0;
 	}
 
-	set(key:string, value:any):void {
-		if (!(key in this)) {
-			if (this.isExtensible) {
-				this[key] = new ModelProxty<typeof value>({});
-			}
-			else if (has('debug')) {
-				console.warn('Not setting undefined property "' + key + '" on model');
-				return;
-			}
+	observe(observer:core.IObserver<any>):IHandle;
+	observe(key:string, observer:core.IObserver<any>):IHandle;
+	observe(key:any, observer?:core.IObserver<any>):IHandle {
+		if (!key) {
+			// TODO: This probably should be possible too, but need to think of an actual use case before making
+			// the implementation more difficult.
+			throw new Error('Cannot observe all properties of a model, please use a key');
 		}
 
-		this[key].set(value);
+		if (!this[key]) {
+			// TODO: Not correct, putting it here for now for moving forward-sake; we should really figure out how
+			// to manage dynamic models.
+			throw new Error('Cannot observe undefined key on model');
+		}
+
+		return (<core.IProxty<any>> this[key]).observe(observer);
 	}
 
-	validate(fields?:string[]):IPromise<void> {
+	set(kwArgs:Object):void;
+	set(key:string, value:any):void;
+	set(key:string, value?:any):void {
+		if (typeof key === 'object') {
+			var kwArgs:Object = key;
+			for (key in kwArgs) {
+				this.set(key, kwArgs[key]);
+			}
+		}
+		else {
+			if (!(key in this)) {
+				if (this.isExtensible) {
+					this[key] = new ModelProxty<typeof value>({});
+				}
+				else if (has('debug')) {
+					console.warn('Not setting undefined property "' + key + '" on model');
+					return;
+				}
+			}
 
-		this.clearErrors();
+			var proxty:ModelProxty<any> = this[key];
+			proxty.set(value);
 
-		var model = this,
-			dfd:IDeferred<void> = new Deferred<void>(),
-			proxtyMap = this._getProxtyMap(),
-			keys = util.getObjectKeys(proxtyMap),
-			i = 0;
+			// TODO: Make this better, validation into the proxty
+			if (proxty.validateOnSet) {
+				this.validate([ key ]);
+			}
+		}
+	}
 
-		validateNextField();
-		return dfd.promise;
-
-
+	validate(fields?:string[]):IPromise<boolean> {
 		function validateNextField():void {
 			function runNextValidator():void {
 				var validator = proxty.validators[j++];
@@ -172,7 +200,7 @@ class Model /*implements core.IModel*/ {
                 j = 0;
 
 			if (!proxty || !proxty.validators) {
-				dfd.resolve(undefined);
+				dfd.resolve(model.isValid());
 			}
 			else if (fields && array.indexOf(fields, key) === -1) {
 				validateNextField();
@@ -181,6 +209,18 @@ class Model /*implements core.IModel*/ {
 				runNextValidator();
 			}
 		}
+
+		// TODO: This ruins things when a validation is already in progress
+		this.clearErrors();
+
+		var model = this,
+			dfd:IDeferred<boolean> = new Deferred<boolean>(),
+			proxtyMap = this._getProxtyMap(),
+			keys = util.getObjectKeys(proxtyMap),
+			i = 0;
+
+		validateNextField();
+		return dfd.promise;
 	}
 }
 

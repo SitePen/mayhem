@@ -85,8 +85,8 @@ declare module 'dojo/_base/lang' {
 	var lang:{
 		delegate<T>(object:T, properties?:Object):T;
 		getObject(key:string, create?:boolean, context?:Object):any;
-		hitch(context:Object, property:string, ...prefixedArgs:Object[]):Function;
-		hitch(context:Object, fn:Function, ...prefixedArgs:Object[]):Function;
+		hitch(context:Object, property:string, ...prefixedArgs:Object[]):(...args:any[]) => any;
+		hitch(context:Object, fn:Function, ...prefixedArgs:Object[]):(...args:any[]) => any;
 		mixin<T>(target:T, ...source:Object[]):T;
 		partial<T>(fn:T):T;
 		partial(fn:Function, ...prefixedArgs:any[]):Function;

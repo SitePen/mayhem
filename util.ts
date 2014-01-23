@@ -1,4 +1,4 @@
-/// <reference path="dojo.d.ts" />
+/// <reference path="./dojo" />
 
 import has = require('./has');
 

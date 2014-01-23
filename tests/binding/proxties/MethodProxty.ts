@@ -1,4 +1,4 @@
-/// <reference path="../../intern.d.ts" />
+/// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
 import binding = require('../../../binding/interfaces');

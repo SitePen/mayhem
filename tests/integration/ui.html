@@ -33,22 +33,38 @@ require([
 		modules: { router: null }
 	});
 
+	var MyModel = function () {
+		this.firstName = new ModelProxty({
+			default: 'Joe',
+			validators: [ {
+				validate: function (model, key, value) {
+					value !== 'Joe' && model.addError(key, 'No, you must be Joe!');
+				}
+			} ]
+		});
+		this.lastName = new ModelProxty({
+			default: 'Bloggs'
+		});
+		Model.apply(this, arguments);
+	};
+	MyModel.prototype = new Model();
+	MyModel.prototype.constructor = MyModel;
+
+	var MyMediator = function () {
+		this.firstName = new ModelProxty({
+			get: function () {
+				return 'farts';
+			}
+		});
+		Mediator.apply(this, arguments);
+	};
+	MyMediator.prototype = new Mediator();
+	MyMediator.prototype.constructor = MyMediator;
+
 	app.startup().then(function () {
 		var firstNameRE = /^[a-zA-Z]+$/;
-		var model = window.model = new Model({
-			firstName: new ModelProxty({
-				default: 'Joe',
-				validators: [ {
-					validate: function (model, key, value) {
-						value !== 'Joe' && model.addError(key, 'No, you must be Joe!');
-					}
-				} ]
-			}),
-			lastName: new ModelProxty({
-				default: 'Bloggs'
-			})
-		});
-		var mediator = window.mediator = new Mediator({
+		var model = window.model = new MyModel();
+		var mediator = window.mediator = new MyMediator({
 			app: app,
 			model: model
 		});

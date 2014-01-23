@@ -1,4 +1,4 @@
-/// <reference path="dojo.d.ts" />
+/// <reference path="./dojo" />
 
 import has = require('dojo/has');
 import util = require('./util');
@@ -10,6 +10,8 @@ has.add('debug', true);
 // to branch for. `Date.now` just happens to be the shortest new ES5 API, so it is the one that is checked. Shims are
 // intentionally excluded since their code paths will effectively be the same as our non-ES5 code paths anyway.
 has.add('es5', Date.now && Date.now.toString().indexOf('[native code]') > -1);
+
+has.add('raf', typeof requestAnimationFrame === 'function');
 
 if (typeof window !== 'undefined') {
 	var minimumWindowDimension = Math.min(window.innerWidth, window.innerHeight);

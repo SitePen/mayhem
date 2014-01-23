@@ -9,6 +9,7 @@ class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 	errors:core.IProxty<ValidationError[]>;
 	label:string; // TODO: Proxty?
 	validators:core.IValidator[];
+	validateOnSet:boolean;
 
 	constructor(kwArgs:{
 		default?:T;
@@ -24,6 +25,7 @@ class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 
 		this.errors = new Proxty<ValidationError[]>([]);
 		this.validators = kwArgs.validators || [];
+		this.validateOnSet = kwArgs.validateOnSet != null ? kwArgs.validateOnSet : true;
 		super(kwArgs.default);
 	}
 
@@ -39,7 +41,8 @@ class ModelProxty<T> extends Proxty<T> implements core.IModelProxty<T> {
 		return this.errors.get();
 	}
 
-	validate:() => IPromise<void>;
+	// TODO: Wrong
+	validate:() => void;
 }
 
 export = ModelProxty;

@@ -1,23 +1,36 @@
-/// <reference path="dojo.d.ts" />
+/// <reference path="./dojo" />
 
 import core = require('./interfaces');
+import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
-function createTimer(callback:Function):IHandle {
-	var timerId = setTimeout(callback, 0);
-	return {
-		remove: function () {
-			this.remove = function () {};
-			clearTimeout(timerId);
-			timerId = null;
-		}
-	};
+function createTimer(callback:(...args:any[]) => void):IHandle {
+	if (has('raf')) {
+		var timerId = requestAnimationFrame(callback);
+		return {
+			remove: function () {
+				this.remove = function () {};
+				cancelAnimationFrame(timerId);
+				timerId = null;
+			}
+		};
+	}
+	else {
+		var timerId = setTimeout(callback, 0);
+		return {
+			remove: function () {
+				this.remove = function () {};
+				clearTimeout(timerId);
+				timerId = null;
+			}
+		};
+	}
 }
 
 class Scheduler implements core.IScheduler {
 	private _callbacks:{ [id:string]:() => void; } = {};
-	private _dispatch:Function;
+	private _dispatch:() => void;
 	private _postCallbacks:Function[] = [];
 	private _timer:IHandle;
 
@@ -68,6 +81,10 @@ class Scheduler implements core.IScheduler {
 	}
 
 	schedule(id:string, callback:() => void):IHandle {
+		if (has('debug') && !id) {
+			throw new Error('Cannot schedule without an identifier');
+		}
+
 		var callbacks = this._callbacks;
 		callbacks[id] = callback;
 

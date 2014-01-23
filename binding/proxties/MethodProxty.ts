@@ -1,4 +1,4 @@
-/// <reference path="../../dojo.d.ts" />
+/// <reference path="../../dojo" />
 
 import binding = require('../interfaces');
 import BindingProxty = require('../BindingProxty');

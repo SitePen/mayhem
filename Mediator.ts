@@ -1,42 +1,26 @@
-/// <reference path="dojo.d.ts" />
+/// <reference path="./dojo" />
 
 import arrayUtil = require('dojo/_base/array');
 import core = require('./interfaces');
 import declare = require('dojo/_base/declare');
 import Evented = require('dojo/Evented');
 import has = require('dojo/has');
+import lang = require('dojo/_base/lang');
 import Stateful = require('dojo/Stateful');
 import util = require('./util');
 
 var uuid = 0;
 
 class Mediator implements core.IMediator {
-// TODO: Needed for TS 1.0, broken for TS 0.9.1
-//	[key:string]:any;
+	[key:string]:any;
 	app:core.IApplication;
 	model:core.IModel;
 	routeState:Object;
-	private _watchers:{ [key:string]:Array<(key:string, oldValue:any, newValue:any) => void>; } = {};
+	private _observers:{ [key:string]:core.IObserver<any>[]; } = {};
 
-	constructor(kwArgs?:Object) {
-		// TODO: This assumes that the kwArgs object provided to the constructor defines the properties of the
-		// mediator at startup. This may not be a good assumption to make, and instead everything should come
-		// from the prototype only.
-		for (var k in kwArgs) {
-			if (k.charAt(0) === '_') {
-				continue;
-			}
-
-			var setter = '_' + k + 'Setter',
-				value = kwArgs[k];
-
-			if (setter in this) {
-				this[setter](value);
-			}
-			else {
-				this[k] = value;
-			}
-		}
+	constructor(kwArgs:Object = {}) {
+		this.model = null;
+		this.set(kwArgs);
 	}
 
 	get(key:string):any {
@@ -56,14 +40,79 @@ class Mediator implements core.IMediator {
 		return value;
 	}
 
+	private _notify(newValue:any, oldValue:any, key:string = ''):void {
+		var observers:core.IObserver<any>[];
+
+		if (key) {
+			observers = (<typeof observers> []).concat(this._observers['*'] || [], this._observers['*' + key] || []);
+		}
+		else {
+			observers = this._observers['*'] ? this._observers['*'].slice(0) : [];
+		}
+
+		// TODO: Should watcher notifications be scheduled? It might be a good idea, or it might cause
+		// data-binding to inefficiently take two cycles through the event loop.
+		var observer:core.IObserver<any>;
+		for (var i = 0; (observer = observers[i]); ++i) {
+			observer.call(this, newValue, oldValue, key);
+		}
+	}
+
+	observe(observer:core.IObserver<any>):IHandle;
+	observe(key:string, observer:core.IObserver<any>):IHandle;
+	observe(key:any, observer?:core.IObserver<any>):IHandle {
+		if (typeof key === 'function') {
+			observer = key;
+			key = '';
+		}
+
+		// Prefix all keys as a simple way to avoid collisions if someone uses a name for a watch that is also on
+		// `Object.prototype`
+		// TODO: In ES5 we can just use `Object.create(null)` instead
+		var observers:core.IObserver<any>[] = this._observers['*' + key] = (this._observers['*' + key] || []);
+		observers.push(observer);
+
+		// Keys not pre-defined on the mediator should be delegated to the model, and may change when the model
+		// changes
+		if (!(key in this) && !(('_' + key + 'Setter') in this)) {
+			var notifier = (newValue:any, oldValue:any):void => {
+					this._notify(newValue, oldValue, key);
+				},
+				modelPropertyHandle:IHandle,
+				modelHandle:IHandle = this.observe('model', (newModel:core.IModel, oldModel:core.IModel) => {
+					var oldValue:any = oldModel.get(key),
+						newValue:any = newModel.get(key);
+
+					modelPropertyHandle && modelPropertyHandle.remove();
+					modelPropertyHandle = newModel.observe(key, notifier);
+
+					if (!util.isEqual(oldValue[key], newValue[key])) {
+						this._notify(newValue[key], oldValue[key], key);
+					}
+				});
+
+			modelPropertyHandle = this.model && this.model.observe(key, notifier);
+		}
+
+		return {
+			remove: function () {
+				this.remove = function () {};
+
+				modelHandle && modelHandle.remove();
+				modelPropertyHandle && modelPropertyHandle.remove();
+				util.spliceMatch(observers, observer);
+				modelHandle = modelPropertyHandle = observers = observer = null;
+			}
+		};
+	}
+
 	set(kwArgs:Object):void;
 	set(key:string, value:any):void;
 	set(key:any, value?:any):void {
 		if (typeof key === 'object') {
 			var kwArgs:Object = key;
 			for (key in kwArgs) {
-				// only set keys that are not annotated as being private to allow
-				key.charAt(0) !== '_' && this.set(key, kwArgs[key]);
+				this.set(key, kwArgs[key]);
 			}
 		}
 		else {
@@ -77,7 +126,7 @@ class Mediator implements core.IMediator {
 			}
 			else if (key in this) {
 				notify = true;
-				this[key] && this[key].isProxty ? this[key].set(value) : (this[key] = value);
+				this[key] = value;
 			}
 			else if (this.model) {
 				this.model.set(key, value);
@@ -90,43 +139,10 @@ class Mediator implements core.IMediator {
 				var newValue = this.get(key);
 
 				if (!util.isEqual(oldValue, newValue)) {
-					var watchers:Array<(key:string, oldValue:any, newValue:any) => void>;
-					watchers = (<typeof watchers> []).concat(this._watchers['*'] || [], this._watchers['*' + key] || []);
-					// TODO: Should watcher notifications be scheduled? It might be a good idea, or it might cause
-					// data-binding to inefficiently take two cycles through the event loop.
-					var watcher:(key:string, oldValue:any, newValue:any) => void;
-					for (var i = 0; (watcher = watchers[i]); ++i) {
-						watcher.call(this, key, oldValue, newValue);
-					}
+					this._notify(newValue, oldValue, key);
 				}
 			}
 		}
-	}
-
-	watch(callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
-	watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
-	watch(key:any, callback?:(key:string, oldValue:any, newValue:any) => void):IHandle {
-		if (typeof key === 'function') {
-			callback = key;
-			key = '';
-		}
-
-		// Prefix all keys as a simple way to avoid collisions if someone uses a name for a watch that is also on
-		// `Object.prototype`
-		// TODO: In ES5 we can just use `Object.create(null)` instead
-		key = '*' + key;
-
-		var watchers = this._watchers[key] = (this._watchers[key] || []);
-		watchers.push(callback);
-
-		return {
-			remove: function () {
-				this.remove = function () {};
-
-				util.spliceMatch(watchers, callback);
-				watchers = callback = null;
-			}
-		};
 	}
 }
 
