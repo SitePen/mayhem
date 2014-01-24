@@ -2,6 +2,7 @@
 
 import parser = require('framework/templating/peg/html'); // TODO: is this the Right Way?
 import core = require('../interfaces');;
+import Proxty = require('../Proxty');
 import widgets = require('../ui/interfaces');
 import Element = require('../ui/dom/Element') // TODO: remove
 import util = require('../util');
@@ -72,18 +73,28 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 
 			var reservedKeys = [ 'constructor', 'children', 'html', 'binding' ];
 
-			var attributes = array.filter(util.getObjectKeys(node), (k) => reservedKeys.indexOf(k) < 0);
-			function fillBindings(parts:any, bindingValues:any) {
-				if (!bindingValues) {
-					return parts.join('');
-				}
+			function processBindings(parts:any[], bindings:any):string {
 				return array.map(parts, function(part:any /*String | Object*/) {
 					if (part.binding) {
-						return bindingValues[part.binding];
+						return bindings[part.binding].get();
 					}
 					return part;
-				});
+				}).join('');
 			}
+			function getProxty(parts:any[], bindings:any):core.IProxty<string> {
+				var value = processBindings(parts, bindings);
+				// TODO: should we enable coercion of some sort here?
+				var proxty = new Proxty<string>(value);
+				array.forEach(util.getObjectKeys(bindings), function(key:string) {
+					// TODO: drip drip
+					bindings[key].observe(function() {
+						proxty.set(processBindings(parts, bindings));
+					}, false);
+				});
+				return proxty;
+			}
+
+			var attributes = array.filter(util.getObjectKeys(node), (k:string) => reservedKeys.indexOf(k) < 0);
 			array.forEach(attributes, function(key) {
 				var parts = node[key];
 				var values:string[] = [];
@@ -94,23 +105,26 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 					// TODO: void out key and do this bind after widget construction
 				}
 				else {
-					var bindingValues:any;
+					var bindings:any;
 					array.forEach(parts, function(part:any) {
 						if (part.binding) {
-							bindingValues || (bindingValues = {});
-							var field = part.binding;
-							var proxty = mediator.model[field];
-							// TODO: hacky...use a proxty binder? what's the Right Thing here?
-							// oh, and we're leaking the handle
-							bindingValues[field] = proxty.get();
-							proxty.observe(function(newValue:any) {
-								bindingValues[field] = newValue;
-								widget.set(key, fillBindings(parts, bindingValues));
-							});
+							bindings || (bindings = {});
+							var field:string = part.binding;
+							bindings[field] = mediator.model[field];
 						}
 					});
-					// TODO: set on object and pass to constructor instead
-					widget.set(fillBindings(parts, bindingValues));
+					if (bindings) {
+						// TODO: Y U NO WUT?
+						var proxty = getProxty(parts, bindings);
+						//widget.bind(proxty, key, { direction: 1 });
+						proxty.observe(function(newValue:string) {
+							widget.set(key, newValue);
+						});
+					}
+					else {
+						// TODO: set on ctor options instead and construct later
+						widget.set(key, parts.join(''));
+					}
 				}
 			});
 			widget.setContent && widget.setContent(children, node.html);

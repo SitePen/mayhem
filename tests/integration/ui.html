@@ -75,7 +75,7 @@ require([
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
 
-		var template = 'First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget> Errors: <widget is="framework/ui/dom/form/Error" binding="firstName"></widget><widget is="framework/ui/dom/form/Button" value="Save"><b><i>Submit</b> for {lastName}</i></widget>';
+		var template = 'First Name: <widget is="framework/ui/dom/form/Input" value="{lastName}, {firstName}"></widget> Errors: <widget is="framework/ui/dom/form/Error" binding="firstName"></widget><widget is="framework/ui/dom/form/Button" value="Save"><b><i>Submit</b> for {lastName}</i></widget>';
 		processTemplate(template, app, mediator).then(function(el) {
 			masterView.add(el)
 		});
