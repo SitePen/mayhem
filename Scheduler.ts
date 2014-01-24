@@ -5,40 +5,17 @@ import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
-function createTimer(callback:(...args:any[]) => void):IHandle {
-	if (has('raf')) {
-		var timerId = requestAnimationFrame(callback);
-		return {
-			remove: function () {
-				this.remove = function () {};
-				cancelAnimationFrame(timerId);
-				timerId = null;
-			}
-		};
-	}
-	else {
-		var timerId = setTimeout(callback, 0);
-		return {
-			remove: function () {
-				this.remove = function () {};
-				clearTimeout(timerId);
-				timerId = null;
-			}
-		};
-	}
-}
-
 class Scheduler implements core.IScheduler {
 	private _callbacks:{ [id:string]:() => void; } = {};
 	private _dispatch:() => void;
-	private _postCallbacks:Function[] = [];
+	private _postCallbacks:Array<(...args:any[]) => void> = [];
 	private _timer:IHandle;
 
 	constructor() {
 		this._dispatch = lang.hitch(this, 'dispatch');
 	}
 
-	afterNext(callback:Function):IHandle {
+	afterNext(callback:(...args:any[]) => void):IHandle {
 		var callbacks = this._postCallbacks,
 			spliceMatch = util.spliceMatch;
 
@@ -59,7 +36,7 @@ class Scheduler implements core.IScheduler {
 
 		var callbacks = this._callbacks,
 			postCallbacks = this._postCallbacks,
-			callback:Function;
+			callback:() => void;
 
 		// Callbacks may schedule new callbacks, which should all execute on the next loop instead of the current
 		// loop, and should not conflict with existing callback IDs
@@ -89,7 +66,7 @@ class Scheduler implements core.IScheduler {
 		callbacks[id] = callback;
 
 		if (!this._timer) {
-			this._timer = createTimer(this._dispatch);
+			this._timer = util.createTimer(this._dispatch);
 		}
 
 		return {

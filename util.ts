@@ -31,6 +31,45 @@ export function createSetter(propertyName:string, childName:string, childPropert
 	};
 };
 
+export function createTimer(callback:(...args:any[]) => void, delay:number = 0):IHandle {
+	if (has('raf') && delay === 0) {
+		var timerId = requestAnimationFrame(callback);
+		return {
+			remove: function () {
+				this.remove = function () {};
+				cancelAnimationFrame(timerId);
+				timerId = null;
+			}
+		};
+	}
+	else {
+		var timerId = setTimeout(callback, delay);
+		return {
+			remove: function () {
+				this.remove = function () {};
+				clearTimeout(timerId);
+				timerId = null;
+			}
+		};
+	}
+}
+
+export function debounce<T extends (...args:any[]) => void>(callback:T, delay:number = 0):T {
+	var timer:IHandle;
+
+	return function () {
+		timer && timer.remove();
+
+		var self:any = this,
+			args:IArguments = arguments;
+
+		timer = createTimer(function () {
+			callback.apply(self, args);
+			self = args = timer = null;
+		}, delay);
+	};
+}
+
 /**
  * Escapes a string of text for injection into a serialization of HTML or XML.
  */
