@@ -18,7 +18,7 @@ function parse(input:string) {
 function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 	var ast = parser.parse(input);
 	console.log(ast);
-	var dfd:IDeferred<Element> = new Deferred<Element>();
+	var dfd:IDeferred<Element> = new Deferred<Element>(); // should be widgets.IDomWidget
 
 	// collect up our deps from ctor references
 	var deps:string[] = [];
@@ -70,35 +70,39 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 			return proxty;
 		}
 
-		function processNode(node:any) {
-			var children:widgets.IDomWidget[];
-			// Walk children and process recursively
+		function processNode(node:any):any /* widgets.IDomWidget */ {
+			var options:any = {},
+				ignoreKeys:string[] = [ 'children', 'html' ];
+			// walk children and process recursively
 			if (node.children) {
-				children = array.map(node.children, processNode);
+				options.children = array.map(node.children, processNode);
 			}
-			var options:any = {
-				app: app,
-				mediator: mediator
-			};
-
+			// preserve html as is
+			if (node.html) {
+				options.html = node.html;
+			}
 			var ctor:any = node.constructor;
 			// if node.constructor is a string get the ctor module from dependency map
 			var WidgetCtor = typeof ctor === 'string' ? depMap[ctor] : ctor;
+			var widget:any /* widgets.IDomWidget */,
+				fieldBindings:{ [key:string]: string; } = {},
+				proxtyBindings:{ [key:string]: core.IProxty<string>; } = {};
 
-			var widget:any /* widgets.IDomWidget */ = new WidgetCtor(options);
-			var reservedKeys = [ 'constructor', 'children', 'html', 'binding' ];
-			var attributes = array.filter(util.getObjectKeys(node), (k:string) => reservedKeys.indexOf(k) < 0);
-			array.forEach(attributes, function(key) {
+			array.forEach(util.getObjectKeys(node), function(key:string) {
+				if (key === 'constructor') return;
+				if (key === 'binding') return; // TODO remove
+				if (ignoreKeys.indexOf(key) >= 0) {
+					return;
+				}
 				var parts = node[key];
 				var values:string[] = [];
 				// TODO: this could probably be a lot cleaner
 				if (parts.length === 1) {
 					if (parts[0].binding) {
-						// TODO: Y U NO WORK BIDIRECTIONALLY?!!
-						widget.bind(key, parts[0].binding, { direction: 2 });
+						fieldBindings[key] = parts[0].binding;
 					}
 					else {
-						widget.set(key, parts[0]);
+						options[key] = parts[0];
 					}
 				}
 				else {
@@ -110,17 +114,30 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 							bindingMap[field] = mediator.model[field];
 						}
 					});
-					var proxty = getProxty(parts, bindingMap);
-					// TODO: can you bind a proxty?
-					//widget.bind(proxty, key, { direction: 1 });
-					// TODO: in lieu of binding...drip drip
-					proxty.observe(function(newValue:string) {
-						widget.set(key, newValue);
-					});
+					proxtyBindings[key] = getProxty(parts, bindingMap);
 				}
 			});
 			// TOOD: this setContent bs stinks, but we need to set html and children simultaneously
-			widget.setContent && widget.setContent(children, node.html);
+			//widget.setContent && widget.setContent(children, node.html);
+			options.app = app;
+			options.mediator = mediator;
+			widget = new WidgetCtor(options);
+			// set up widget bindings after construction
+			for (var key in fieldBindings) {
+				// TODO: Y U NO WORK BIDIRECTIONALLY?!!
+				widget.bind(key, fieldBindings[key], { direction: 2 });
+			}
+			// set up unidirectional bindings
+			var proxty:core.IProxty<string>;
+			for (var key in proxtyBindings) {
+				proxty = proxtyBindings[key];
+				// TODO: how are we supposed to set up a bind for a proxty?
+				//widget.bind(proxty, key, { direction: 1 });
+				// TODO: in lieu of binding...drip drip...
+				proxty.observe(function(newValue:string) {
+					widget.set(key, newValue);
+				});
+			}
 			return widget;
 		}
 

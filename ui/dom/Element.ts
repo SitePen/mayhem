@@ -13,11 +13,20 @@ import domConstruct = require('dojo/dom-construct');
 class Element extends MultiNodeWidget {
 
 	html:string;
-
 	children:widgets.IDomWidget[];
 
-	// TODO: move to constructor
-	setContent(children:widgets.IDomWidget[], fragments:any[]) {
+	constructor(kwArgs:any) {
+		// TODO: this is terribly hacky -- a move to the Observable style should improve it
+		var newArgs = {};
+		for (var key in kwArgs) {
+			if (key === 'html' || key === 'children') continue;
+			newArgs[key] = kwArgs[key];
+		}
+		super(newArgs);
+		this._setContent(kwArgs.children, kwArgs.html);
+	}
+
+	private _setContent(children:widgets.IDomWidget[], fragments:any[]) {
 		var processed:string[] = array.map(fragments, function(item:any, i:number) { // FIXME: es5
 			if (!item.binding) return item;
 			return '<!-- binding#' + i + ' -->';

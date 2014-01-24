@@ -6,6 +6,18 @@ class Button extends SingleNodeWidget {
 	lastNode:HTMLButtonElement;
 	value:string;
 
+	constructor(kwArgs:any) {
+		var newArgs = {};
+		for (var key in kwArgs) {
+			if (key === 'children' || key === 'value') continue;
+			newArgs[key] = kwArgs[key];
+		}
+		super(newArgs);
+		// TODO: this is shite
+		if (kwArgs.children && kwArgs.children[0]) this._setChildElement(kwArgs.children[0]);
+		this.set('value', kwArgs.value);
+	}
+
 	destroy():void {
 		this.firstNode.onclick = null;
 		super.destroy();
@@ -22,9 +34,7 @@ class Button extends SingleNodeWidget {
 		this.value = this.firstNode.value = value;
 	}
 
-	setContent(children:any) {
-		// TODO: for now we assume children is a 1 element MultiNodeWidget
-		var child = children[0];
+	private _setChildElement(child:any /* Element */) {
 		var range = domUtil.getRange(child.firstNode, child.lastNode);
 		range.surroundContents(this.firstNode);
 	}
