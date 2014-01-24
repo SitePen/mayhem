@@ -48,11 +48,30 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 			depMap[deps[i]] = arguments[i];
 		}
 
+		function getBindingString(parts:any[], bindingMap:any):string {
+			return array.map(parts, function(part:any /*String | Object*/) {
+				if (part.binding) {
+					return bindingMap[part.binding].get();
+				}
+				return part;
+			}).join('');
+		}
+
+		function getProxty(parts:any[], bindingMap:any):core.IProxty<string> {
+			var value = getBindingString(parts, bindingMap);
+			// TODO: should we enable coercion of some sort here?
+			var proxty = new Proxty<string>(value);
+			array.forEach(util.getObjectKeys(bindingMap), function(key:string) {
+				// TODO: drip drip
+				bindingMap[key].observe(function() {
+					proxty.set(getBindingString(parts, bindingMap));
+				}, false);
+			});
+			return proxty;
+		}
+
 		function processNode(node:any) {
-			var widget:any, // TODO: widgets.IDomWidget
-				children:widgets.IDomWidget[],
-				i:number = 0,
-				length:number = ast.children.length;
+			var children:widgets.IDomWidget[];
 			// Walk children and process recursively
 			if (node.children) {
 				children = array.map(node.children, processNode);
@@ -61,75 +80,50 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 				app: app,
 				mediator: mediator
 			};
-			// TODO: this is almost certainly not right
-			if (node.binding) options.binding = node.binding.join('');
 
 			var ctor:any = node.constructor;
 			// if node.constructor is a string get the ctor module from dependency map
 			var WidgetCtor = typeof ctor === 'string' ? depMap[ctor] : ctor;
-			widget = new WidgetCtor(options);
-			// void out node's constructor
-			// TODO node.constructor = undefined;
 
+			var widget:any /* widgets.IDomWidget */ = new WidgetCtor(options);
 			var reservedKeys = [ 'constructor', 'children', 'html', 'binding' ];
-
-			function processBindings(parts:any[], bindings:any):string {
-				return array.map(parts, function(part:any /*String | Object*/) {
-					if (part.binding) {
-						return bindings[part.binding].get();
-					}
-					return part;
-				}).join('');
-			}
-			function getProxty(parts:any[], bindings:any):core.IProxty<string> {
-				var value = processBindings(parts, bindings);
-				// TODO: should we enable coercion of some sort here?
-				var proxty = new Proxty<string>(value);
-				array.forEach(util.getObjectKeys(bindings), function(key:string) {
-					// TODO: drip drip
-					bindings[key].observe(function() {
-						proxty.set(processBindings(parts, bindings));
-					}, false);
-				});
-				return proxty;
-			}
-
 			var attributes = array.filter(util.getObjectKeys(node), (k:string) => reservedKeys.indexOf(k) < 0);
 			array.forEach(attributes, function(key) {
 				var parts = node[key];
 				var values:string[] = [];
-				// TODO: this should be a lot cleaner, but i don't know enough about bindings to make it so
-				if (parts.length === 1 && parts[0] && parts[0].binding) {
-					// TODO: Y U NO WORK BIDIRECTIONALLY?!!
-					widget.bind(key, parts[0].binding, { direction: 2 });
-					// TODO: void out key and do this bind after widget construction
-				}
-				else {
-					var bindings:any;
-					array.forEach(parts, function(part:any) {
-						if (part.binding) {
-							bindings || (bindings = {});
-							var field:string = part.binding;
-							bindings[field] = mediator.model[field];
-						}
-					});
-					if (bindings) {
-						// TODO: Y U NO WUT?
-						var proxty = getProxty(parts, bindings);
-						//widget.bind(proxty, key, { direction: 1 });
-						proxty.observe(function(newValue:string) {
-							widget.set(key, newValue);
-						});
+				// TODO: this could probably be a lot cleaner
+				if (parts.length === 1) {
+					if (parts[0].binding) {
+						// TODO: Y U NO WORK BIDIRECTIONALLY?!!
+						widget.bind(key, parts[0].binding, { direction: 2 });
 					}
 					else {
-						// TODO: set on ctor options instead and construct later
-						widget.set(key, parts.join(''));
+						widget.set(key, parts[0]);
 					}
 				}
+				else {
+					// if value array is more than 1 item it should have bindings and get a proxty
+					var bindingMap:any = {};
+					array.forEach(parts, function(part:any) {
+						if (part.binding) {
+							var field:string = part.binding;
+							bindingMap[field] = mediator.model[field];
+						}
+					});
+					var proxty = getProxty(parts, bindingMap);
+					// TODO: can you bind a proxty?
+					//widget.bind(proxty, key, { direction: 1 });
+					// TODO: in lieu of binding...drip drip
+					proxty.observe(function(newValue:string) {
+						widget.set(key, newValue);
+					});
+				}
 			});
+			// TOOD: this setContent bs stinks, but we need to set html and children simultaneously
 			widget.setContent && widget.setContent(children, node.html);
 			return widget;
 		}
+
 		try {
 			dfd.resolve(processNode(ast));
 		}
