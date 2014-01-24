@@ -35,6 +35,10 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 			this._fragment = null;
 		});
 	}
+
+	empty():void {
+		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
+	}
 }
 
 export = MultiNodeWidget;

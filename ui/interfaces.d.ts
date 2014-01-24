@@ -55,6 +55,7 @@ export interface IWidget extends StatefulEvented {
 	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
 	destroy():void;
 	detach():void;
+	empty():void;
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IContainer, position:number):IHandle;
 	placeAt(destination:IContainer, placeholder:string):IHandle;

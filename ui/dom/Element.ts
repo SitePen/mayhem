@@ -16,41 +16,65 @@ class Element extends MultiNodeWidget {
 
 	children:widgets.IDomWidget[];
 
-	// TODO: needs a better name
-	setContents(html:any, children:widgets.IDomWidget[]) {
-		// TODO: make text nodes for individual binding slots
-		// TODO: but who should be responsible for doing the binding?
-		this.set('html', html.join(''));
+	// TODO: move to constructor
+	setContent(children:widgets.IDomWidget[], fragments:any[]) {
+		var processed:string[] = array.map(fragments, function(item:any, i:number) { // FIXME: es5
+			if (!item.binding) return item;
+			return '<!-- binding#' + i + ' -->';
+		});
+		this.set('html', processed.join(''));
+		var model = this.mediator.model;
 		this.children = children;
-		for (var i = 0, length = children.length; i < length; ++i) {
-			this._fillPlaceholder(i, children[i]);
-		}
-	}
 
-	private _fillPlaceholder(i:number, widget:widgets.IDomWidget):void {
-		var node:Node = this.firstNode.nextSibling,
-			commentPattern:RegExp = /^\s*child#(\d+)\s*$/,
-			match:string[];
-		while (node != null) {
-			if (node.nodeType == Node.COMMENT_NODE) {
-				match = node.nodeValue.match(commentPattern);
-				if (match && Number(match[1]) === i) {
-					// TODO domUtil.getRange for MultiNodeWidgets?
-					this.firstNode.parentNode.replaceChild(widget.firstNode, node);
-					break;
+		// find and replace child and binding comments
+		
+		function sweep(node:Node) {
+			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
+				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
+				parent:Node = node.parentNode,
+				next:Node,
+				i:number,
+				length:number,
+				match:string[];
+			// iterate all siblings
+			while (node != null) {
+				// capture next sibling before we manipulate dom
+				next = node.nextSibling;
+				// recursively sweep children
+				for (i = 0, length = node.childNodes.length; i < length; ++i) {
+					sweep(node.childNodes[i]);
 				}
+				// we only care about comment nodes
+				if (node.nodeType == Node.COMMENT_NODE) {
+					// test for child comment
+					match = node.nodeValue.match(childPattern);
+					if (match) {
+						var widget = children[Number(match[1])];
+						parent.replaceChild(widget.firstNode, node);
+					}
+					// test for binding comment
+					match = node.nodeValue.match(bindingPattern);
+					if (match) {
+						var field:string = fragments[match[1]].binding;
+						// TODO: can we use proper bindings here?
+						var textNode = document.createTextNode(model.get(field));
+						parent.replaceChild(textNode, node);
+						// TODO: drip drip drip...
+						var handle = model[field].observe(function(newValue:any) {
+							textNode.nodeValue = newValue;
+						});
+					}
+				}
+				node = next;
 			}
-			node = node.nextSibling;
 		}
+		sweep(this.firstNode.nextSibling);
 	}
 
 	private _htmlSetter(html:string):void {
 		this.html = html;
-		this.children = [];
-		// this._destroyChildren();
-
-//		this.empty();
-		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
+		// TODO: clean up children
+		this.empty();
 		this.lastNode.parentNode.insertBefore(domConstruct.toDom(html), this.lastNode);
 	}
 

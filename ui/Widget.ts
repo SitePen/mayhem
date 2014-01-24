@@ -69,6 +69,10 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		};
 	}
 
+	empty():void {
+		
+	}
+
 	destroy():void {
 		this.destroy = function () {};
 

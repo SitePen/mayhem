@@ -16,6 +16,7 @@ function parse(input:string) {
 
 function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 	var ast = parser.parse(input);
+	console.log(ast);
 	var dfd:IDeferred<Element> = new Deferred<Element>();
 
 	// collect up our deps from ctor references
@@ -66,35 +67,53 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 			// if node.constructor is a string get the ctor module from dependency map
 			var WidgetCtor = typeof ctor === 'string' ? depMap[ctor] : ctor;
 			widget = new WidgetCtor(options);
+			// void out node's constructor
+			// TODO node.constructor = undefined;
 
-			// TODO: is this the complete list of reserved keys?
-			// TODO: could we get the parser to put attributes in a separate namespace?
 			var reservedKeys = [ 'constructor', 'children', 'html', 'binding' ];
+
 			var attributes = array.filter(util.getObjectKeys(node), (k) => reservedKeys.indexOf(k) < 0);
+			function fillBindings(parts:any, bindingValues:any) {
+				if (!bindingValues) {
+					return parts.join('');
+				}
+				return array.map(parts, function(part:any /*String | Object*/) {
+					if (part.binding) {
+						return bindingValues[part.binding];
+					}
+					return part;
+				});
+			}
 			array.forEach(attributes, function(key) {
 				var parts = node[key];
 				var values:string[] = [];
 				// TODO: this should be a lot cleaner, but i don't know enough about bindings to make it so
 				if (parts.length === 1 && parts[0] && parts[0].binding) {
+					// TODO: Y U NO WORK BIDIRECTIONALLY?!!
 					widget.bind(key, parts[0].binding, { direction: 2 });
+					// TODO: void out key and do this bind after widget construction
 				}
 				else {
-					parts.forEach(function(part:any) { // FIXME es5
-						if (part && part.binding) {
-							// TODO: what's the right way to do this? I thought mediator had a getProxty now?
-							var proxty = mediator.model[part.binding];
-							// TODO: proxty binder?
-							values.push(proxty.get());
-						}
-						else {
-							values.push(part);
+					var bindingValues:any;
+					array.forEach(parts, function(part:any) {
+						if (part.binding) {
+							bindingValues || (bindingValues = {});
+							var field = part.binding;
+							var proxty = mediator.model[field];
+							// TODO: hacky...use a proxty binder? what's the Right Thing here?
+							// oh, and we're leaking the handle
+							bindingValues[field] = proxty.get();
+							proxty.observe(function(newValue:any) {
+								bindingValues[field] = newValue;
+								widget.set(key, fillBindings(parts, bindingValues));
+							});
 						}
 					});
-					// TODO: is this what we're supposed to do with attributes?
-					widget.set(key, values.join(''));
+					// TODO: set on object and pass to constructor instead
+					widget.set(fillBindings(parts, bindingValues));
 				}
 			});
-			widget.setContents && widget.setContents(node.html, children);
+			widget.setContent && widget.setContent(children, node.html);
 			return widget;
 		}
 		try {
