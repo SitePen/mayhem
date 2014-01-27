@@ -90,7 +90,6 @@ function process(input:string, app:core.IApplication, mediator:core.IMediator) {
 
 			array.forEach(util.getObjectKeys(node), function(key:string) {
 				if (key === 'constructor') return;
-				if (key === 'binding') return; // TODO remove
 				if (ignoreKeys.indexOf(key) >= 0) {
 					return;
 				}
