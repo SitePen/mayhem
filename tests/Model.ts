@@ -4,6 +4,7 @@ import assert = require('intern/chai!assert');
 import core = require('../interfaces');
 import array = require('dojo/_base/array');
 import Deferred = require('dojo/Deferred');
+import when = require('dojo/when');
 import util = require('../util');
 import Model = require('../Model');
 import Mediator = require('../Mediator');
@@ -277,7 +278,7 @@ registerSuite({
 		var model = new TestValidationModel();
 
 		return model.validate().then(function () {
-			assert.isFalse(model.isValid(), 'Invalid model should validate to false');
+			assert.isFalse(model.isValid(), 'Invalid model `isValid` check should return false');
 			assert.strictEqual(model.getErrors().length, 2, 'Model should have exactly 2 errors');
 
 			errors = model.getErrors('syncA');
@@ -433,12 +434,12 @@ registerSuite({
 				return undefined;
 			});
 		}
-		var lastPromise = model.validate();
+		var lastPromise:IPromise<void>;
 
-		array.forEach(util.getObjectKeys(scenarios), function (scenario) {
+		array.forEach(util.getObjectKeys(scenarios), function (scenario:string) {
 			var counts = scenarios[scenario];
-			array.forEach(util.getObjectKeys(counts), function (value) {
-				lastPromise = lastPromise.then(function () {
+			array.forEach(util.getObjectKeys(counts), function (value:string) {
+				lastPromise = when(lastPromise, function () {
 					return revalidate(scenario, value, counts[value]);
 				});
 			});

@@ -26,8 +26,9 @@ class Element extends MultiNodeWidget {
 		this._setContent(kwArgs.children, kwArgs.html);
 	}
 
-	private _setContent(children:widgets.IDomWidget[], fragments:any[]) {
-		var processed:string[] = array.map(fragments, function(item:any, i:number) { // FIXME: es5
+	private _setContent(children:widgets.IDomWidget[], items:any[]) {
+		// replace bindings with html comments
+		var processed:string[] = array.map(items, function(item:any, i:number) {
 			if (!item.binding) return item;
 			return '<!-- binding#' + i + ' -->';
 		});
@@ -35,8 +36,7 @@ class Element extends MultiNodeWidget {
 		var model = this.mediator.model;
 		this.children = children;
 
-		// find and replace child and binding comments
-		
+		// recurse and handle comments representing child and binding placeholders
 		function sweep(node:Node) {
 			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
 				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
@@ -64,7 +64,7 @@ class Element extends MultiNodeWidget {
 					// test for binding comment
 					match = node.nodeValue.match(bindingPattern);
 					if (match) {
-						var field:string = fragments[match[1]].binding;
+						var field:string = items[match[1]].binding;
 						// TODO: can we use proper bindings here?
 						var textNode = document.createTextNode(model.get(field));
 						parent.replaceChild(textNode, node);
