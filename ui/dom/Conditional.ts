@@ -1,7 +1,7 @@
 import widgets = require('../interfaces');
 import DomPlaceholder = require('./Placeholder');
-import Element = require('./Element');
 import domUtil = require('./util');
+import array = require('dojo/_base/array');
 
 // TODO: extend Placeholder?
 class DomConditional extends DomPlaceholder {
@@ -13,52 +13,51 @@ class DomConditional extends DomPlaceholder {
 		}
 	}
 
-	private _predicates:Function[] = []; // array of predicates
-	private _clauses:widgets.IDomWidget[] = [];
-
-	content:widgets.IWidget;
+	private _predicates:Function[];
+	private _clauseWidgets:widgets.IDomWidget[]; // TODO: StatefulArray, perhaps?
+	private _parser:any;
 
 	constructor(kwArgs:any) {
+		this._parser = kwArgs.parser;
+		kwArgs.parser = undefined;
+		this._predicates = [];
+		this._clauseWidgets = [];
+
+		// Instantiate all conditional widgets, and alternate, regardless of predicate status
+		if (kwArgs.conditions) {
+			array.forEach(kwArgs.conditions, (condition:any) => {
+				this._predicates.push(DomConditional.eval(condition.condition));
+				this._clauseWidgets.push(this._parser.constructWidget(condition.content));
+			});
+			kwArgs.conditions = undefined;
+		}
+		if (kwArgs.alternate) {
+			this._clauseWidgets.push(this._parser.constructWidget(kwArgs.alternate));
+			kwArgs.alternate = undefined;
+		}
+
 		super(kwArgs);
 
-		// instantiate all conditional widgets, and alternate, regardless of predicate status
-		kwArgs.conditions && kwArgs.conditions.forEach(function(condition:any) { // FIXME es5
-			this._predicates.push(DomConditional.eval(condition.condition));
-			this._addClause(condition.content);
-		}, this);
-		if (kwArgs.alternate) {
-			this._addClause(kwArgs.alternate);
-		}
+		// TODO: bindings and whatnot
 		this._refresh();
 	}
 
-	private _addClause(options:any) {
-		// TODO: look up deps
-		options.app = this.app;
-		options.mediator = this.mediator;
-		this._clauses.push(new Element(options));
-	}
-
-	// evaluate predicate condition and switch currently attached widget if necessary
+	// Evaluate predicate condition and switch currently attached widget if necessary
 	private _refresh():void {
 		var i:number = 0,
-			length:number = this._clauses.length,
-			child:widgets.IDomWidget,
+			length:number = this._clauseWidgets.length,
+			widget:widgets.IDomWidget,
 			predicate:Function,
 			current:Node = this.firstNode;
 		for (; i < length; ++i) {
-			child = this._clauses[i];
+			widget = this._clauseWidgets[i];
 			predicate = this._predicates[i];
 			// if predicate exists test predicate, otherwise its the alternate clause
 			if (predicate && predicate() || !predicate) {
-				///this.firstNode = child.firstNode;
-				//var fragment = domUtil.getRange(this.firstNode, this.lastNode, true).extractContents()
-				current.parentNode.replaceChild(child.firstNode, current);
+				this.set('content', widget);
 				return;
 			}
 		}
-		///this.firstNode = document.createTextNode('conditional ' + this.id);
-		///current.parentNode.replaceChild(child.firstNode, current);
 	}
 
 }

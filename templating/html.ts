@@ -66,7 +66,6 @@ class Parser {
 
 	process(input:string):IPromise<widgets.IWidget> {
 		var ast = Parser.parse(input);
-		console.log(JSON.stringify(ast, null, 2))
 		var dependencies = Parser.scanForDependencies(ast);
 
 		return Widget.fetch(dependencies).then((dependencyCache) => {
@@ -165,7 +164,6 @@ class Parser {
 		else {
 			options.mediator = this.mediator;
 		}
-		console.log(WidgetCtor.name, options)
 		widget = new WidgetCtor(options);
 
 		if (html) widget.set('html', html);
