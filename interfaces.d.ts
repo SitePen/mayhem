@@ -1,6 +1,7 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
+import data = require('./data/interfaces');
 import StatefulArray = require('./StatefulArray');
 import ValidationError = require('./validation/ValidationError');
 
@@ -14,111 +15,14 @@ export interface IComponent {
 }
 
 export interface IMediator extends IComponent, IObservable {
-	model:IModel;
+	model:data.IModel;
 	routeState:Object;
-}
-
-/**
- * The IModel interface should be implemented by any object that is intended to be used as a data model within the
- * framework.
- */
-export interface IModel extends IComponent, IObservable {
-	/**
-	 * The current validation scenario for the model. Defaults to 'insert' for new models, and 'update' for existing
-	 * models.
-	 */
-	scenario:string;
-
-	addError(key:string, error:ValidationError):void;
-
-	/**
-	 * Retrieves the value of a property on the model.
-	 */
-	get(key:string):any;
-
-	/**
-	 * Retrieves the proxty for a property on the model.
-	 */
-	getProxty(key:string):IProxty<any>;
-
-	/**
-	 * Returns whether or not the model currently contains any validation errors.
-	 */
-	isValid():boolean;
-
-	/**
-	 * Removes the model from its source store.
-	 */
-	remove():any;
-
-	/**
-	 * Saves the model to its source store.
-	 *
-	 * @param skipValidation
-	 * Passing `true` will cause the validation step to be skipped. By default, validation will occur before the
-	 * model is saved.
-	 *
-	 * @returns
-	 * A promise that resolves when the data has been successfully saved, or is rejected with error if the store
-	 * reports a failure to save the data or if valiation fails.
-	 */
-	save(skipValidation?:boolean):IPromise<void>;
-
-	/**
-	 * Sets the value of a property on the model.
-	 */
-	set(value:{ [key:string]:any }):void;
-	set(key:string, value:any):void;
-
-	/**
-	 * Validates the data model.
-	 *
-	 * @param keys
-	 * Passing a list of keys will cause only those keys to be validated. By default, all keys on the model are
-	 * validated.
-	 *
-	 * @returns
-	 * A promise that resolves when validation completes, or is rejected with error if there is an unhandled exception
-	 * during validation. The resolved value is `true` if the model validated successfully, or `false` if the model
-	 * experienced a validation failure. Once validated, errors can be retrieved by calling
-	 * `Model#getMetadata('errors')` (for all model errors) or `Model#property(key).getMetadata('errors')` for a
-	 * specific field.
-	 */
-	validate(keys?:string[]):IPromise<boolean>;
-}
-
-/**
- * The IModelProxty interface extends a standard proxty with additional methods for data validation.
- */
-export interface IModelProxty<T> extends IProxty<T> {
-	default:T;
-	// TODO: Make into StatefulArray?
-	errors:IProxty<ValidationError[]>;
-	label:string;
-	validators:IValidator[];
-
-	/**
-	 * Validates the underlying value of the proxty.
-	 */
-	validate():void;
-
-	addError(error:ValidationError):void;
-
-	/**
-	 * Returns any errors accumulated on last validation.
-	 */
-	getErrors():ValidationError[];
-
-	/**
-	 * Clears any errors accumulated on last validation.
-	 */
-	clearErrors():void;
 }
 
 export interface IObservable {
 	get(key:string):any;
-	observe<T>(observer:IObserver<T>):IHandle;
-	observe<T>(key:string, observer:IObserver<T>):IHandle;
+	observe<T>(key:string, observer:IObserver<T>, invokeImmediately:boolean):IHandle;
+	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
 }
 
@@ -202,5 +106,5 @@ export interface IValidatorOptions {
 
 export interface IValidator {
 	options?:IValidatorOptions;
-	validate(model:IModel, key:string, value:any):void;
+	validate(model:data.IModel, key:string, value:any):void;
 }

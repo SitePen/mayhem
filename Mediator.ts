@@ -6,23 +6,23 @@ import declare = require('dojo/_base/declare');
 import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
-import ModelProxty = require('./ModelProxty');
+import ModelProxty = require('./data/Property');
+import Observable = require('./Observable');
 import Stateful = require('dojo/Stateful');
 import util = require('./util');
 
 var uuid = 0;
 
-class Mediator implements core.IMediator {
+class Mediator extends Observable implements core.IMediator {
 	[key:string]:any;
 	app:core.IApplication;
 	model:core.IModel;
-	private _observers:{ [key:string]:core.IObserver<any>[]; } = {};
 	routeState:Object;
 
 	constructor(kwArgs:Object = {}) {
 		this.app = null;
 		this.model = null;
-		this.set(kwArgs);
+		super(kwArgs);
 	}
 
 	get(key:string):any {
@@ -78,37 +78,12 @@ class Mediator implements core.IMediator {
 		return value;
 	}
 
-	private _notify(newValue:any, oldValue:any, key:string = ''):void {
-		var observers:core.IObserver<any>[];
-
-		if (key) {
-			observers = (<typeof observers> []).concat(this._observers['*'] || [], this._observers['*' + key] || []);
-		}
-		else {
-			observers = this._observers['*'] ? this._observers['*'].slice(0) : [];
-		}
-
-		// TODO: Should watcher notifications be scheduled? It might be a good idea, or it might cause
-		// data-binding to inefficiently take two cycles through the event loop.
-		var observer:core.IObserver<any>;
-		for (var i = 0; (observer = observers[i]); ++i) {
-			observer.call(this, newValue, oldValue, key);
-		}
-	}
-
-	observe(observer:core.IObserver<any>):IHandle;
-	observe(key:string, observer:core.IObserver<any>):IHandle;
-	observe(key:any, observer?:core.IObserver<any>):IHandle {
-		if (typeof key === 'function') {
-			observer = key;
-			key = '';
-		}
-
+	observe(key:string, observer:core.IObserver<any>):IHandle {
 		// Prefix all keys as a simple way to avoid collisions if someone uses a name for a watch that is also on
 		// `Object.prototype`
 		// TODO: In ES5 we can just use `Object.create(null)` instead
-		var observers:core.IObserver<any>[] = this._observers['*' + key] = (this._observers['*' + key] || []);
-		observers.push(observer);
+
+		var handle:IHandle = super.observe(key, observer);
 
 		// Keys not pre-defined on the mediator should be delegated to the model, and may change when the model
 		// changes
@@ -130,18 +105,16 @@ class Mediator implements core.IMediator {
 				});
 
 			modelPropertyHandle = this.model && this.model.observe(key, notifier);
+
+			var oldRemove = handle.remove;
+			handle.remove = function () {
+				oldRemove.apply(this, arguments);
+				modelHandle.remove();
+				modelPropertyHandle.remove();
+			};
 		}
 
-		return {
-			remove: function () {
-				this.remove = function () {};
-
-				modelHandle && modelHandle.remove();
-				modelPropertyHandle && modelPropertyHandle.remove();
-				util.spliceMatch(observers, observer);
-				modelHandle = modelPropertyHandle = observers = observer = null;
-			}
-		};
+		return handle;
 	}
 
 	set(kwArgs:Object):void;

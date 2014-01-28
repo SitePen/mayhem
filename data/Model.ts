@@ -1,64 +1,55 @@
 import array = require('dojo/_base/array');
-import core = require('./interfaces');
+import core = require('../interfaces');
+import data = require('./interfaces');
 import Deferred = require('dojo/Deferred');
-import has = require('./has');
-import Mediator = require('./Mediator');
-import ModelProxty = require('./ModelProxty');
-import util = require('./util');
-import ValidationError = require('./validation/ValidationError');
+import has = require('../has');
+import ModelProxty = require('./Property');
+import util = require('../util');
+import ValidationError = require('../validation/ValidationError');
 import when = require('dojo/when');
 
-// class User extends Model {
-// 	username:core.IModelProxty<string> = new ModelProxty<string>({
-// 		label: 'Username',
-// 		validators: [ {
-// 			validate: function (model:core.IModel, key:string, proxty:ModelProxty<string>):IPromise<boolean> {
-// 				model.addError(key, new ValidationError('You broke it!', { name: proxty.label }));
-// 				return when(false);
-// 			}
-// 		} ]
-// 	});
+// TODO: The clarity:
+// Model schema is implemented in _schema; this could be implemented another way later, but this is the way we are
+// implementing it.
+// Each property in the _schema is a property object that contains the metadata for the property
+// The value itself is stored on the Model, at property.model[property.key]
+// Mediators are just observables, so creating mutable properties for them is very easy
 
-// 	firstName:core.IModelProxty<string> = new ModelProxty<string>({
-// 		default: 'Joe',
-// 		validators: []
-// 	});
+class Model implements data.IModel {
+	static property<T>(kwArgs:Object):ModelProxty<T> {
+		return new ModelProxty<T>(kwArgs);
+	}
 
-// 	lastName:core.IModelProxty<string> = new ModelProxty<string>({
-// 		default: 'Bloggs',
-// 		validators: []
-// 	});
-// }
-
-// class UserMediator extends Mediator {
-// 	fullName:core.IModelProxty<string> = new ModelProxty<string>({
-// 		get: function () {
-// 			return this.get('firstName') + ' ' + this.get('lastName');
-// 		},
-// 		dependencies: [ 'firstName', 'lastName' ]
-// 	});
-// }
-
-class Model implements core.IModel {
 	app:core.IApplication;
 	collection:any /*dstore.Collection*/;
 	isExtensible:boolean = false;
 	scenario:string = 'insert';
+	/* protected */ _schema:{ [key:string]: any /* TODO: Compiler claims this is incompatible. core.IModelProxty<any> */ };
 
 	constructor(kwArgs:Object = {}) {
 		this.app = null;
+
+		for (var key in this._schema) {
+			var property:data.IProperty<any> = this._schema[key];
+			property.set({
+				key: key,
+				model: this
+			});
+			this[key] = this[key].get('default');
+		}
+
 		this.set(kwArgs);
 	}
 
 	addError(key:string, error:ValidationError):void {
-		this[key].addError(error);
+		this._schema[key].addError(error);
 	}
 
 	clearErrors():void {
 		var proxtyMap = this._getProxtyMap();
 		// TODO should we have a clearErrors call on ModelProxties?
 		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
-			proxtyMap[key].clearErrors();
+			proxtyMap[key].get('errors').splice(0, Infinity);
 		});
 	}
 
@@ -80,33 +71,18 @@ class Model implements core.IModel {
 			var value = proxtyMap[key];
 			// TODO: is typescript getting the spread op?
 			// errors.push(...value.getErrors());
-			Array.prototype.push.apply(errors, value.getErrors());
+			Array.prototype.push.apply(errors, value.get('errors'));
 		});
 		return errors;
 	}
 
-	// TODO: Fix implementation to not use getProxty
-	getMetadata(key:string):core.IModelProxty<any> {
-		try {
-			return this.getProxty(key);
-		}
-		catch (error) {
-			return null;
-		}
+	getMetadata(key:string):data.IProperty<any> {
+		return this._schema[key];
 	}
 
-	// TODO: This should go away, public proxty objects are limited and should go through the data binding interface
-	getProxty(key:string):core.IModelProxty<any> {
-		if (this[key] && this[key].isProxty) {
-			return this[key];
-		}
-
-		throw new Error('No proxty for key ' + key);
-	}
-
-	private _getProxtyMap():{ [key:string]: core.IModelProxty<any>; } {
+	private _getProxtyMap():{ [key:string]: data.IProperty<any>; } {
 		var key:string,
-			proxtyMap:{ [key:string]: core.IModelProxty<any>; } = {};
+			proxtyMap:{ [key:string]: data.IProperty<any>; } = {};
 		for (key in this) {
 			if (this[key] instanceof ModelProxty) {
 				proxtyMap[key] = this[key];
@@ -119,15 +95,7 @@ class Model implements core.IModel {
 		return this.getErrors().length === 0;
 	}
 
-	observe(observer:core.IObserver<any>):IHandle;
-	observe(key:string, observer:core.IObserver<any>):IHandle;
-	observe(key:any, observer?:core.IObserver<any>):IHandle {
-		if (!key) {
-			// TODO: This probably should be possible too, but need to think of an actual use case before making
-			// the implementation more difficult.
-			throw new Error('Cannot observe all properties of a model, please use a key');
-		}
-
+	observe(key:string, observer:core.IObserver<any>):IHandle {
 		if (!this[key]) {
 			// TODO: Not correct, putting it here for now for moving forward-sake; we should really figure out how
 			// to manage dynamic models.
@@ -166,7 +134,7 @@ class Model implements core.IModel {
 			proxty.set(value);
 
 			// TODO: Make this better, validation into the proxty
-			if (proxty.validateOnSet) {
+			if (proxty.get('validateOnSet')) {
 				this.validate([ key ]);
 			}
 		}
@@ -175,14 +143,14 @@ class Model implements core.IModel {
 	validate(fields?:string[]):IPromise<boolean> {
 		function validateNextField():void {
 			function runNextValidator():void {
-				var validator = proxty.validators[j++];
+				var validator = proxty.get('validators')[j++];
 
 				// end of list of validators for this field reached
 				if (!validator) {
 					return validateNextField();
 				}
 
-				var value = proxty.get();
+				var value = this.get(key);
 
 				if (validator.options) {
 					// Simply skip validators that are defined as allowing empty fields when the value is
@@ -216,7 +184,7 @@ class Model implements core.IModel {
                 proxty = proxtyMap[key],
                 j = 0;
 
-			if (!proxty || !proxty.validators) {
+			if (!proxty || !proxty.get('validators').length) {
 				dfd.resolve(model.isValid());
 			}
 			else if (fields && array.indexOf(fields, key) === -1) {
