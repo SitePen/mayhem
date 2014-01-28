@@ -21,10 +21,10 @@ class Element extends MultiNodeWidget {
 	children:widgets.IDomWidget[];
 
 	private _htmlSetter(markup:any):void {
-		// clear out element and some widget properties
+		// Clear out element and some widget properties
 		this.empty();
 		this._markup = markup;
-		 // TODO: clean up old bindings and children and such
+		 // TODO: Clean up old bindings and children and such
 		this.childPlaceholders = [];
 		//this.bindingPlaceholderMap = {};
 
@@ -94,7 +94,7 @@ class Element extends MultiNodeWidget {
 						var textNode = document.createTextNode(model.get(binding));
 						parent.replaceChild(textNode, node);
 						// TODO: drip drip drip...
-						var handle = model[binding].observe(function(newValue:any) {
+						var handle = model[binding].observe((newValue:any) => {
 							textNode.nodeValue = newValue;
 						});
 					}
@@ -136,9 +136,7 @@ class Element extends MultiNodeWidget {
 	// }
 
 	destroy():void {
-		array.forEach(this.children, function(child) {
-			child.destroy();
-		});
+		array.forEach(this.children, (child) => child.destroy());
 		this.children = null;
 		super.destroy();
 	}

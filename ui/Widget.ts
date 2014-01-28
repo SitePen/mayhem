@@ -33,7 +33,7 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 		var transformed:string[] = array.map(dependencies, (dep) => {
 			return dep[0] !== '!' ? dep : 'framework/ui/Widget' + dep;
 		});
-		require(transformed, function() {
+		require(transformed, () => {
 			for (var i = 0, length = dependencies.length; i < length; ++i) {
 				dependencyCache[dependencies[i]] = arguments[i];
 			}
