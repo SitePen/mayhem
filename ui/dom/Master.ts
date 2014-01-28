@@ -28,7 +28,7 @@ class DomMaster extends MultiNodeWidget implements widgets.IContainer {
 		(widget:widgets.IDomWidget, position:number):IHandle;
 		(widget:widgets.IDomWidget, placeholder:string):IHandle;
 	};
-	empty:() => void;
+	//empty:() => void;
 	remove:{ (index:number):void; (widget:widgets.IWidget):void; };
 }
 

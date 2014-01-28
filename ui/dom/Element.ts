@@ -1,6 +1,8 @@
+import util = require('../../util');
 import DomContainer = require('./Container');
 import domUtil = require('./util');
 import MultiNodeWidget = require('./MultiNodeWidget');
+import Placeholder = require('./Placeholder');
 import PlacePosition = require('../PlacePosition');
 import core = require('../../interfaces');
 import widgets = require('../interfaces');
@@ -13,63 +15,86 @@ import domConstruct = require('dojo/dom-construct');
 class Element extends MultiNodeWidget {
 
 	html:string;
+	private _markup:any; // string | binding descriptor
+	//bindingPlaceholderMap:{ [key:string]: Placeholder};
+	childPlaceholders:Placeholder[] = [];
 	children:widgets.IDomWidget[];
 
-	constructor(kwArgs:any) {
-		// TODO: this is terribly hacky -- a move to the Observable style should improve it
-		var newArgs = {};
-		for (var key in kwArgs) {
-			if (key === 'html' || key === 'children') continue;
-			newArgs[key] = kwArgs[key];
-		}
-		super(newArgs);
-		this._setContent(kwArgs.children, kwArgs.html);
-	}
+	private _htmlSetter(markup:any):void {
+		// clear out element and some widget properties
+		this.empty();
+		this._markup = markup;
+		 // TODO: clean up old bindings and children and such
+		this.childPlaceholders = [];
+		//this.bindingPlaceholderMap = {};
 
-	private _setContent(children:widgets.IDomWidget[], items:any[]) {
-		// replace bindings with html comments
-		var processed:string[] = array.map(items, function(item:any, i:number) {
+		if (typeof markup === 'string') {
+			// if markup is a string no need to do any fancy processing
+			this.html = markup;
+			this.lastNode.parentNode.insertBefore(domConstruct.toDom(markup), this.lastNode);
+			return;
+		}
+
+		// process and create placeholders for all bindings
+		// this should typically be followed by a call to set children
+		// TODO: make it so that ordering of set('html') / set('children') is unimportant
+		var processed:string[] = array.map(markup, (item:any, i:number) => {
 			if (!item.binding) return item;
+			// insert comment to mark binding location
 			return '<!-- binding#' + i + ' -->';
 		});
-		this.set('html', processed.join(''));
-		var model = this.mediator.model;
-		this.children = children;
+		this.html = processed.join('');
 
-		// recurse and handle comments representing child and binding placeholders
-		function sweep(node:Node) {
+		var model = this.get('mediator').model,
+			childPlaceholders = this.childPlaceholders;
+
+		// recurse and handle comments standing in for child and binding placeholders
+		function processComments(node:Node) {
 			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
-				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
+				bindingPattern:RegExp = /^\s*placeholder#(\d+)\s*$/,
 				parent:Node = node.parentNode,
 				next:Node,
 				i:number,
 				length:number,
-				match:string[];
-			// iterate all siblings
+				match:string[],
+				placeholder:Placeholder,
+				fragment:DocumentFragment,
+				binding:string;
+
+			// iterate siblings
 			while (node != null) {
-				// capture next sibling before we manipulate dom
+				// capture next sibling before manipulating dom
 				next = node.nextSibling;
-				// recursively sweep children
+				// recursively sweep and process children
 				for (i = 0, length = node.childNodes.length; i < length; ++i) {
-					sweep(node.childNodes[i]);
+					processComments(node.childNodes[i]);
 				}
 				// we only care about comment nodes
 				if (node.nodeType == Node.COMMENT_NODE) {
-					// test for child comment
+					// test for child comment marker
 					match = node.nodeValue.match(childPattern);
 					if (match) {
-						var widget = children[Number(match[1])];
-						parent.replaceChild(widget.firstNode, node);
+						// create placeholder and add to list
+						placeholder = new Placeholder({});
+						childPlaceholders[Number(match[1])] = placeholder;
+						// replace marker node with placeholder fragment
+						fragment = domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
+						parent.replaceChild(fragment, node);
 					}
-					// test for binding comment
+					// test for binding comment marker
 					match = node.nodeValue.match(bindingPattern);
 					if (match) {
-						var field:string = items[match[1]].binding;
+						placeholder = new Placeholder({});
+						binding = markup[match[1]].binding
+						//bindingPlaceholderMap[binding] = placeholder;
+						// TODO: finish, for now just leaving in the shite implementation
+
+
 						// TODO: can we use proper bindings here?
-						var textNode = document.createTextNode(model.get(field));
+						var textNode = document.createTextNode(model.get(binding));
 						parent.replaceChild(textNode, node);
 						// TODO: drip drip drip...
-						var handle = model[field].observe(function(newValue:any) {
+						var handle = model[binding].observe(function(newValue:any) {
 							textNode.nodeValue = newValue;
 						});
 					}
@@ -77,15 +102,38 @@ class Element extends MultiNodeWidget {
 				node = next;
 			}
 		}
-		sweep(this.firstNode.nextSibling);
+
+		// create fragment and process comments before inserting
+		var fragment:Node = domConstruct.toDom(this.html);
+		processComments(fragment);
+		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);
+		// refresh placeholders flashing the node structure
+		this._refreshChildPlaceholders();
+		//this._refreshBindings();
 	}
 
-	private _htmlSetter(html:string):void {
-		this.html = html;
-		// TODO: clean up children
-		this.empty();
-		this.lastNode.parentNode.insertBefore(domConstruct.toDom(html), this.lastNode);
+	private _childrenSetter(children:widgets.IDomWidget[]):void {
+		this.children = children;
+		this._refreshChildPlaceholders();
 	}
+
+	private _refreshChildPlaceholders():void {
+		// noop if both child placeholders and children aren't set on widget
+		if (!this.childPlaceholders || !this.children) return;
+		// loop over child placeholders and set to associated child widget
+		array.forEach(this.childPlaceholders, (placeholder, i) => {
+			placeholder.set('content', this.children[i]);
+		});
+	}
+
+	// private _refreshBindings():void {
+	// 	var model = this.get('mediator').model;
+
+	// 	array.forEach(util.getObjectKeys(this.bindingPlaceholderMap), (binding) => {
+	// 		var placeholder = this.bindingPlaceholderMap[binding];
+	// 		// TODO
+	// 	});
+	// }
 
 	destroy():void {
 		array.forEach(this.children, function(child) {

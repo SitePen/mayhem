@@ -28,6 +28,8 @@ export interface IContainerWidget extends IWidget, IContainer {}
 
 export interface IDomWidget extends IWidget {
 	firstNode:Node; // Comment|Element
+	// TODO: good reason not to force lastNode? SingleNodeWidget already implements it
+	lastNode:Node; // Comment|Element
 
 	detach():Node; // Element|DocumentFragment
 }

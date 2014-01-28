@@ -36,13 +36,13 @@ class FormError extends SingleNodeWidget {
 	private _updateBinding():void {
 		this._errorsHandle && this._errorsHandle.remove();
 		this._metadataProxty && this._metadataProxty.destroy();
-
-		if (!this.mediator || !this.binding) {
+		var mediator = this.get('mediator');
+		if (!mediator || !this.binding) {
 			return;
 		}
 
 		// TODO: Replace with some new getMetadata function from binder
-		var proxty = this._metadataProxty = <core.IProxty<core.IModelProxty<any>>> this.app.binder.getMetadata(this.mediator, this.binding);
+		var proxty = this._metadataProxty = <core.IProxty<core.IModelProxty<any>>> this.app.binder.getMetadata(mediator, this.binding);
 		proxty.observe((metadata:core.IModelProxty<any>) => {
 			this._errorsHandle && this._errorsHandle.remove();
 			this._errorsHandle = metadata.errors.observe((errors:ValidationError[]) => {

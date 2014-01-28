@@ -1,7 +1,7 @@
 import SingleNodeWidget = require('../SingleNodeWidget');
 import util = require('../../../util');
 
-class Input extends SingleNodeWidget {
+class FormInput extends SingleNodeWidget {
 	debounceRate:number;
 	firstNode:HTMLInputElement;
 	lastNode:HTMLInputElement;
@@ -46,4 +46,4 @@ class Input extends SingleNodeWidget {
 	}
 }
 
-export = Input;
+export = FormInput;

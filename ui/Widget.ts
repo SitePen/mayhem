@@ -4,12 +4,13 @@ import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import has = require('../has');
-import lang = require('dojo/_base/lang');
+import array = require('dojo/_base/array');
 import PlacePosition = require('./PlacePosition');
 import StatefulEvented = require('../StatefulEvented');
 import style = require('./style/interfaces');
 import util = require('../util');
 import widgets = require('./interfaces');
+import Deferred = require('dojo/Deferred');
 
 var uid = 0,
 	platform = has('host-browser') ? 'dom/' : '';
@@ -22,6 +23,24 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 
 	static normalize(resourceId:string, normalize:(id:string) => string):string {
 		return normalize('./' + platform + resourceId);
+	}
+
+	// TODO: this still doesn't seem much closer to the Right Thing
+	// fetch dep list, remapping !-prefixed deps to utilize Widget loader plugin
+	static fetch(dependencies:string[]):IPromise<{ [key:string]: Function }> {
+		var dfd:IDeferred<{ [key:string]: Function }> = new Deferred<{ [key:string]: Function }>();
+		var dependencyCache:{ [key:string]: Function } = [];
+		var transformed:string[] = array.map(dependencies, (dep) => {
+			return dep[0] !== '!' ? dep : 'framework/ui/Widget' + dep;
+		});
+		require(transformed, function() {
+			for (var i = 0, length = dependencies.length; i < length; ++i) {
+				dependencyCache[dependencies[i]] = arguments[i];
+			}
+			dfd.resolve(dependencyCache);
+		});
+		// TODO: how to catch amd require errors?
+		return dfd.promise;
 	}
 
 	app:core.IApplication;
@@ -51,7 +70,7 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	bind(propertyName:string, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
 		var bindings = this._bindings,
 			handle:binding.IBindingHandle = this.app.binder.bind({
-				source: this.mediator,
+				source: this.get('mediator'),
 				sourceBinding: binding,
 				target: this,
 				targetBinding: propertyName,
@@ -87,7 +106,8 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	}
 
 	detach():void {
-		this.parent && this.parent.remove(this);
+		// parent may not implement IContainer
+		this.parent && this.parent.remove && this.parent.remove(this);
 	}
 
 	private _mediatorGetter():core.IMediator {
