@@ -4,20 +4,27 @@ import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 // TODO: implements is commented out due to TS#1977
-class StatefulArray<T> /* implements Array<T> */ {
+class ObservableArray<T> /* implements Array<T> */ {
 	[n:number]:T;
-	private _observers:core.IStatefulArrayObserver<T>[] = [];
+	private _observers:core.IArrayObserver<T>[];
 	length:number;
 
 	constructor(array:T[] = []) {
+		if (has('es5')) {
+			Object.defineProperty(array, '_observers', { value: [] });
+		}
+		else {
+			array['_observers'] = [];
+		}
+
 		// TODO: Weird intermediate casting to <any> is required due to TS#1977
-		return <StatefulArray<T>> <any> lang.mixin(array, StatefulArray.prototype);
+		return <ObservableArray<T>> <any> lang.mixin(array, ObservableArray.prototype);
 	}
 
-	concat<U extends T[]>(...items:U[]):StatefulArray<T>;
-	concat(...items:T[]):StatefulArray<T>;
+	concat<U extends T[]>(...items:U[]):ObservableArray<T>;
+	concat(...items:T[]):ObservableArray<T>;
 	concat(...items:any[]):any {
-		return new StatefulArray<T>(Array.prototype.concat.apply(this, items));
+		return new ObservableArray<T>(Array.prototype.concat.apply(this, items));
 	}
 
 	every(callbackfn:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean {
@@ -35,7 +42,7 @@ class StatefulArray<T> /* implements Array<T> */ {
 		}
 	}
 
-	filter(callbackfn:(value:T, index:number, array:StatefulArray<T>) => boolean, thisArg?:any):StatefulArray<T> {
+	filter(callbackfn:(value:T, index:number, array:ObservableArray<T>) => boolean, thisArg?:any):ObservableArray<T> {
 		var results:T[];
 		if (has('es5')) {
 			results = Array.prototype.filter.apply(this, arguments);
@@ -52,10 +59,10 @@ class StatefulArray<T> /* implements Array<T> */ {
 			}
 		}
 
-		return new StatefulArray<T>(results);
+		return new ObservableArray<T>(results);
 	}
 
-	forEach(callbackfn:(value:T, index:number, array:StatefulArray<T>) => void, thisArg?:any):void {
+	forEach(callbackfn:(value:T, index:number, array:ObservableArray<T>) => void, thisArg?:any):void {
 		if (has('es5')) {
 			Array.prototype.forEach.apply(this, arguments);
 		}
@@ -112,7 +119,7 @@ class StatefulArray<T> /* implements Array<T> */ {
 		}
 	}
 
-	map<U>(callbackfn:(value:T, index:number, array:StatefulArray<T>) => U, thisArg?:any):StatefulArray<U> {
+	map<U>(callbackfn:(value:T, index:number, array:ObservableArray<T>) => U, thisArg?:any):ObservableArray<U> {
 		var results:T[];
 		if (has('es5')) {
 			results = Array.prototype.map.apply(this, arguments);
@@ -126,12 +133,12 @@ class StatefulArray<T> /* implements Array<T> */ {
 			}
 		}
 
-		return new StatefulArray<T>(results);
+		return new ObservableArray<T>(results);
 	}
 
 	private _notify(index:number, removals:T[], additions:T[]):void {
 		var observers = this._observers.slice(0);
-		for (var i = 0, callback:core.IStatefulArrayObserver<T>; (callback = observers[i]); ++i) {
+		for (var i = 0, callback:core.IArrayObserver<T>; (callback = observers[i]); ++i) {
 			callback.call(this, index, removals, additions);
 		}
 	}
@@ -181,7 +188,7 @@ class StatefulArray<T> /* implements Array<T> */ {
 		}
 	}
 
-	reverse():StatefulArray<T> {
+	reverse():ObservableArray<T> {
 		var removals = Array.prototype.slice.call(this, 0);
 		Array.prototype.reverse.call(this);
 		// TODO: Weird intermediate casting to <any> is required due to TS#1977
@@ -199,8 +206,8 @@ class StatefulArray<T> /* implements Array<T> */ {
 		return this.splice(0, 1)[0];
 	}
 
-	slice(start:number, end?:number):StatefulArray<T> {
-		return new StatefulArray<T>(Array.prototype.slice.apply(this, arguments));
+	slice(start:number, end?:number):ObservableArray<T> {
+		return new ObservableArray<T>(Array.prototype.slice.apply(this, arguments));
 	}
 
 	some(callbackfn:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean {
@@ -218,7 +225,7 @@ class StatefulArray<T> /* implements Array<T> */ {
 		}
 	}
 
-	sort(compareFn?:(a:T, b:T) => number):StatefulArray<T> {
+	sort(compareFn?:(a:T, b:T) => number):ObservableArray<T> {
 		var removals = Array.prototype.slice.call(this, 0);
 		Array.prototype.sort.apply(this, arguments);
 		// TODO: Weird intermediate casting to <any> is required due to TS#1977
@@ -226,16 +233,16 @@ class StatefulArray<T> /* implements Array<T> */ {
 		return this;
 	}
 
-	splice(start:number):StatefulArray<T>;
-	splice(start:number, deleteCount:number, ...items:T[]):StatefulArray<T>;
-	splice(start:number, deleteCount:number = 0, ...items:T[]):StatefulArray<T> {
+	splice(start:number):ObservableArray<T>;
+	splice(start:number, deleteCount:number, ...items:T[]):ObservableArray<T>;
+	splice(start:number, deleteCount:number = 0, ...items:T[]):ObservableArray<T> {
 		var additions = items,
 			removals = Array.prototype.slice.call(this, start, deleteCount);
 
 		Array.prototype.splice.apply(this, arguments);
 		this._notify(start, removals, additions);
 
-		return new StatefulArray<T>([]);
+		return new ObservableArray<T>([]);
 	}
 
 	toArray():T[] {
@@ -247,7 +254,7 @@ class StatefulArray<T> /* implements Array<T> */ {
 		return this.length;
 	}
 
-	observe(callback:core.IStatefulArrayObserver<T>):IHandle {
+	observe(callback:core.IArrayObserver<T>):IHandle {
 		var observers = this._observers;
 		observers.push(callback);
 		return {
@@ -260,5 +267,5 @@ class StatefulArray<T> /* implements Array<T> */ {
 	}
 }
 
-StatefulArray.prototype.observe['type'] = 'array';
-export = StatefulArray;
+ObservableArray.prototype.observe['type'] = 'array';
+export = ObservableArray;

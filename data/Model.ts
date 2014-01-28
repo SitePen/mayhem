@@ -3,7 +3,8 @@ import core = require('../interfaces');
 import data = require('./interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
-import ModelProxty = require('./Property');
+import Observable = require('../Observable');
+import Property = require('./Property');
 import util = require('../util');
 import ValidationError = require('../validation/ValidationError');
 import when = require('dojo/when');
@@ -15,19 +16,21 @@ import when = require('dojo/when');
 // The value itself is stored on the Model, at property.model[property.key]
 // Mediators are just observables, so creating mutable properties for them is very easy
 
-class Model implements data.IModel {
-	static property<T>(kwArgs:Object):ModelProxty<T> {
-		return new ModelProxty<T>(kwArgs);
+class Model extends Observable implements data.IModel {
+	static property<T>(kwArgs:data.IPropertyArguments<T>):Property<T> {
+		return new Property<T>(kwArgs);
 	}
 
 	app:core.IApplication;
 	collection:any /*dstore.Collection*/;
-	isExtensible:boolean = false;
-	scenario:string = 'insert';
-	/* protected */ _schema:{ [key:string]: any /* TODO: Compiler claims this is incompatible. core.IModelProxty<any> */ };
+	isExtensible:boolean;
+	scenario:string;
+	/* protected */ _schema:{ [key:string]: data.IProperty<any>; };
+	private _validatorInProgress:IPromise<void>;
 
-	constructor(kwArgs:Object = {}) {
-		this.app = null;
+	constructor(kwArgs?:Object) {
+		this.isExtensible = false;
+		this.scenario = 'insert';
 
 		for (var key in this._schema) {
 			var property:data.IProperty<any> = this._schema[key];
@@ -35,176 +38,178 @@ class Model implements data.IModel {
 				key: key,
 				model: this
 			});
-			this[key] = this[key].get('default');
 		}
 
-		this.set(kwArgs);
+		super(kwArgs);
 	}
 
 	addError(key:string, error:ValidationError):void {
-		this._schema[key].addError(error);
+		this._schema[key].get('errors').push(error);
 	}
 
 	clearErrors():void {
-		var proxtyMap = this._getProxtyMap();
-		// TODO should we have a clearErrors call on ModelProxties?
-		array.forEach(util.getObjectKeys(proxtyMap), function(key) {
-			proxtyMap[key].get('errors').splice(0, Infinity);
-		});
+		for (var key in this._schema) {
+			this._schema[key].get('errors').splice(0, Infinity);
+		}
 	}
+
+	// TODO: Destroy?
 
 	get(key:string):any {
-		return this[key] && this[key].get();
+		var property:data.IProperty<any> = this._schema[key];
+		return property ? property.get('value') : super.get(key);
 	}
 
+	// TODO: _errorsGetter?
+	// TODO: ObservableArray?
 	getErrors(key?:string):ValidationError[] {
 		if (key) {
-			return this[key].getErrors();
+			return this._schema[key].get('errors');
 		}
 
-		// grab errors from all proxties
-		var proxtyMap = this._getProxtyMap(),
-			keys:string[] = util.getObjectKeys(proxtyMap),
-			errors:ValidationError[] = [];
+		var errors:ValidationError[] = [];
 
-		array.forEach(util.getObjectKeys(proxtyMap), function (key:string) {
-			var value = proxtyMap[key];
-			// TODO: is typescript getting the spread op?
-			// errors.push(...value.getErrors());
-			Array.prototype.push.apply(errors, value.get('errors'));
-		});
+		for (var key in this._schema) {
+			Array.prototype.push.apply(errors, this._schema[key].get('errors'));
+		}
+
 		return errors;
 	}
 
+	// TODO: Something else?
 	getMetadata(key:string):data.IProperty<any> {
 		return this._schema[key];
 	}
 
-	private _getProxtyMap():{ [key:string]: data.IProperty<any>; } {
-		var key:string,
-			proxtyMap:{ [key:string]: data.IProperty<any>; } = {};
-		for (key in this) {
-			if (this[key] instanceof ModelProxty) {
-				proxtyMap[key] = this[key];
-			}
+	private _getProperty(key:string):data.IProperty<any> {
+		var property:data.IProperty<any> = this._schema[key];
+
+		if (!property && this.isExtensible) {
+			property = this._schema[key] = new Property<any>({
+				model: this,
+				key: key
+			});
 		}
-		return proxtyMap;
+
+		return property;
 	}
 
 	isValid():boolean {
-		return this.getErrors().length === 0;
+		for (var key in this._schema) {
+			if (this._schema[key].get('errors').length) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
-		if (!this[key]) {
-			// TODO: Not correct, putting it here for now for moving forward-sake; we should really figure out how
-			// to manage dynamic models.
-			throw new Error('Cannot observe undefined key on model');
-		}
-
-		return (<core.IProxty<any>> this[key]).observe(observer);
+		var property = this._getProperty(key);
+		return property ? property.observe('value', observer) : super.observe(key, observer);
 	}
 
-	remove():void {}
+	remove():IPromise<any> {
+		return when(this.collection.remove(this.collection.getIdentity(this))).then((returnValue) => {
+			this.set('scenario', 'insert');
+			return returnValue;
+		});
+	}
+
 	save(skipValidation?:boolean):IPromise<void> {
+		// TODO: Implementation
+
 		return;
 	}
 
 	set(kwArgs:Object):void;
 	set(key:string, value:any):void;
 	set(key:string, value?:any):void {
-		if (typeof key === 'object') {
-			var kwArgs:Object = key;
+		if (util.isObject(kwArgs)) {
+			var kwArgs:{ [key:string]: any; } = key;
 			for (key in kwArgs) {
 				this.set(key, kwArgs[key]);
 			}
+
+			return;
 		}
-		else {
-			if (!(key in this)) {
-				if (this.isExtensible) {
-					this[key] = new ModelProxty<typeof value>({});
-				}
-				else if (has('debug')) {
-					console.warn('Not setting undefined property "' + key + '" on model');
-					return;
-				}
-			}
 
-			var proxty:ModelProxty<any> = this[key];
-			proxty.set(value);
-
-			// TODO: Make this better, validation into the proxty
-			if (proxty.get('validateOnSet')) {
-				this.validate([ key ]);
-			}
+		var property:data.IProperty<any> = this._getProperty(key);
+		if (property) {
+			property.set('value', value);
+		}
+		else if (key in this) {
+			super.set(key, value);
 		}
 	}
 
-	validate(fields?:string[]):IPromise<boolean> {
-		function validateNextField():void {
-			function runNextValidator():void {
-				var validator = proxty.get('validators')[j++];
+	validate(keysToValidate?:string[]):IPromise<boolean> {
+		if (this._validatorInProgress) {
+			this._validatorInProgress.cancel('Validation restarted');
+			this._validatorInProgress = null;
+		}
 
-				// end of list of validators for this field reached
-				if (!validator) {
-					return validateNextField();
-				}
+		this.clearErrors();
 
-				var value = this.get(key);
+		var self = this,
+			dfd:IDeferred<boolean> = new Deferred<boolean>(),
+			schema = this._schema,
+			schemaKeys = util.getObjectKeys(schema),
+			i = 0;
 
-				if (validator.options) {
-					// Simply skip validators that are defined as allowing empty fields when the value is
-					// empty (null, undefined, or empty string)
-					if (validator.options.allowEmpty && (value == null || value.toString() === '')) {
-						return runNextValidator();
-					}
+		(function validateNextField() {
+			var key = schemaKeys[i++],
+				fieldValidators = key && schema[key].get('validators'),
+				j = 0;
 
-					// Skip validators that are limited to certain scenarios and do not match the currently
-					// defined model scenario
-					var scenarios:string[] = validator.options.scenarios;
-					if (scenarios && scenarios.length && array.indexOf(scenarios, model.scenario) === -1) {
-						return runNextValidator();
-					}
-				}
-
-				// if there is an error, validation processing halts
-				try {
-					when(validator.validate(model, key, value)).then(function () {
-						runNextValidator();
-					}, function (error) {
-						dfd.reject(error);
-					});
-				}
-				catch (error) {
-					dfd.reject(error);
-				}
+			if (!key) {
+				// all fields have been validated
+				dfd.resolve(self.isValid());
 			}
-
-			var key = keys[i++],
-                proxty = proxtyMap[key],
-                j = 0;
-
-			if (!proxty || !proxty.get('validators').length) {
-				dfd.resolve(model.isValid());
-			}
-			else if (fields && array.indexOf(fields, key) === -1) {
+			else if (keysToValidate && array.indexOf(keysToValidate, key) === -1) {
 				validateNextField();
 			}
 			else {
-				runNextValidator();
+				(function runNextValidator() {
+					var validator = fieldValidators[j++];
+
+					// end of list of validators for this field reached
+					if (!validator) {
+						validateNextField();
+						return;
+					}
+
+					var value = self.get(key);
+
+					if (validator.options) {
+						// Simply skip validators that are defined as allowing empty fields when the value is
+						// empty (null, undefined, or empty string)
+						if (validator.options.allowEmpty && (value == null || value === '')) {
+							runNextValidator();
+							return;
+						}
+
+						// Skip validators that are limited to certain scenarios and do not match the currently
+						// defined model scenario
+						if (validator.options.scenarios && validator.options.scenarios.length &&
+								array.indexOf(validator.options.scenarios, this.scenario) === -1) {
+							runNextValidator();
+							return;
+						}
+					}
+
+					// If a validator throws an error, validation processing halts
+					self._validatorInProgress = when(validator.validate(self, key, value)).then(function () {
+						self._validatorInProgress = null;
+						runNextValidator();
+					}, function (error) {
+						self._validatorInProgress = null;
+						dfd.reject(error);
+					});
+				})();
 			}
-		}
+		})();
 
-		// TODO: This ruins things when a validation is already in progress
-		this.clearErrors();
-
-		var model = this,
-			dfd:IDeferred<boolean> = new Deferred<boolean>(),
-			proxtyMap = this._getProxtyMap(),
-			keys = util.getObjectKeys(proxtyMap),
-			i = 0;
-
-		validateNextField();
 		return dfd.promise;
 	}
 }

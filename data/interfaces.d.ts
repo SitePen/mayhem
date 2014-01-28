@@ -6,17 +6,12 @@ import ValidationError = require('../validation/ValidationError');
  * framework.
  */
 export interface IModel extends core.IComponent, core.IObservable {
-	/**
-	 * The current validation scenario for the model. Defaults to 'insert' for new models, and 'update' for existing
-	 * models.
-	 */
-	scenario:string;
-
 	addError(key:string, error:ValidationError):void;
 
 	/**
 	 * Retrieves the value of a property on the model.
 	 */
+	get(key:'scenario'):string;
 	get(key:string):any;
 
 	/**
@@ -50,7 +45,8 @@ export interface IModel extends core.IComponent, core.IObservable {
 	/**
 	 * Sets the value of a property on the model.
 	 */
-	set(value:{ [key:string]:any }):void;
+	set(value:{ [key:string]: any; }):void;
+	set(key:'scenario', value:string):void;
 	set(key:string, value:any):void;
 
 	/**
@@ -75,21 +71,36 @@ export interface IModel extends core.IComponent, core.IObservable {
  */
 export interface IProperty<T> extends core.IObservable {
 	get(key:'default'):T;
+	get(key:'dependencies'):string[];
 	// TODO: Make into ObservableArray?
 	get(key:'errors'):ValidationError[];
 	get(key:'key'):string;
 	get(key:'model'):IModel;
 	get(key:'label'):string;
+	get(key:'validateOnSet'):boolean;
 	get(key:'validators'):core.IValidator[];
+	get(key:'value'):T;
 	get(key:string):void;
+	set(key:'default', value:T):void;
+	set(key:'dependencies', value:string[]):void;
+	set(key:'errors', value:ValidationError[]):void;
+	set(key:'key', value:string):void;
+	set(key:'model', value:IModel):void;
+	set(key:'label', value:string):void;
+	set(key:'validateOnSet', value:boolean):void;
+	set(key:'validators', value:core.IValidator[]):void;
+	set(key:'value', value:T):void;
+	set(kwArgs:{ [key:string]: any; }):void;
+	set(key:string, value:any):void;
 }
 
 export interface IPropertyArguments<T> {
-	default?:T;
-	errors?:core.IProxty<ValidationError[]>;
-	key?:string;
-	model?:IModel;
+	dependencies?:string[];
 	label?:string;
+	value?:T;
+	_valueGetter?:() => T;
+	_valueSetter?:(value:T) => void;
+	validateOnSet?:boolean;
 	validators?:core.IValidator[];
 }
 

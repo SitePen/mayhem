@@ -22,7 +22,7 @@ class Observable implements core.IObservable {
 		return value;
 	}
 
-	private _notify(newValue:any, oldValue:any, key:string):void {
+	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {
 		var observers:core.IObserver<any>[] = this._observers['*' + key];
 
 		if (observers) {

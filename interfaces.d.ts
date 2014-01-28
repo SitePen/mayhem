@@ -2,12 +2,16 @@
 
 import binding = require('./binding/interfaces');
 import data = require('./data/interfaces');
-import StatefulArray = require('./StatefulArray');
+import ObservableArray = require('./ObservableArray');
 import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication {
 	binder:binding.IBinder;
 	scheduler:IScheduler;
+}
+
+export interface IArrayObserver<T> {
+	(atIndex:number, insertedItems:ObservableArray<T>, removedItems:ObservableArray<T>):void;
 }
 
 export interface IComponent {
@@ -21,7 +25,7 @@ export interface IMediator extends IComponent, IObservable {
 
 export interface IObservable {
 	get(key:string):any;
-	observe<T>(key:string, observer:IObserver<T>, invokeImmediately:boolean):IHandle;
+	observe<T>(key:string, observer:IObserver<T>, invokeImmediately?:boolean):IHandle;
 	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
 }
@@ -93,10 +97,6 @@ export interface IScheduler {
 	afterNext(callback:Function):void;
 	dispatch():void;
 	schedule(id:string, callback:Function):void;
-}
-
-export interface IStatefulArrayObserver<T> {
-	(index:number, inserted:StatefulArray<T>, removed:StatefulArray<T>):void;
 }
 
 export interface IValidatorOptions {

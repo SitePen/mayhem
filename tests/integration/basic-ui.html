@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+		<script>
+var dojoConfig = {
+	async: true,
+	baseUrl: '../../../',
+	packages: [
+		'dojo',
+		'dijit',
+		'dstore',
+		'framework'
+	]
+};
+		</script>
+		<script src="../../../dojo/dojo.js"></script>
+		<script>
+require([
+	'framework/tests/integration/MyModel',
+	'framework/Application',
+	'framework/tests/integration/MyMediator',
+	'framework/ui/Widget!Master',
+	'framework/ui/Widget!form/Input',
+	'framework/ui/Widget!form/Error'
+], function (MyModel, Application, MyMediator, Master, Input, FormError) {
+	var app = new Application({
+		modules: { router: null }
+	});
+
+	app.startup().then(function () {
+		var model = window.model = new MyModel();
+		var mediator = window.mediator = new MyMediator({
+			app: app,
+			model: model
+		});
+
+		var input = window.input = new Input({ app: app, mediator: mediator });
+		input.bind('value', 'firstName', { direction: 2 });
+
+		var error = window.formError = new FormError({
+			app: app,
+			mediator: mediator,
+			binding: 'firstName'
+		});
+
+		var masterView = new Master({});
+		masterView.attachToWindow(document.body);
+		masterView.add(input);
+		masterView.add(error);
+	});
+});
+		</script>
+	</body>
+</html>

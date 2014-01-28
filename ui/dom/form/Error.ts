@@ -1,5 +1,6 @@
 import binding = require('../../../binding/interfaces');
 import core = require('../../../interfaces');
+import data = require('../../../data/interfaces');
 import domConstruct = require('dojo/dom-construct');
 import domUtil = require('../util');
 import lang = require('dojo/_base/lang');
@@ -11,7 +12,7 @@ class FormError extends SingleNodeWidget {
 	private _errorsHandle:IHandle;
 	firstNode:HTMLUListElement;
 	lastNode:HTMLUListElement;
-	private _metadataProxty:core.IProxty<core.IModelProxty<any>>;
+	private _metadataProxty:core.IProxty<data.IProperty<any>>;
 	private __updateBinding:() => void;
 
 	constructor(kwArgs:Object) {
@@ -42,10 +43,10 @@ class FormError extends SingleNodeWidget {
 		}
 
 		// TODO: Replace with some new getMetadata function from binder
-		var proxty = this._metadataProxty = <core.IProxty<core.IModelProxty<any>>> this.app.binder.getMetadata(mediator, this.binding);
-		proxty.observe((metadata:core.IModelProxty<any>) => {
+		var proxty = this._metadataProxty = <core.IProxty<data.IProperty<any>>> this.app.binder.getMetadata(mediator, this.binding);
+		proxty.observe((metadata:data.IProperty<any>) => {
 			this._errorsHandle && this._errorsHandle.remove();
-			this._errorsHandle = metadata.errors.observe((errors:ValidationError[]) => {
+			this._errorsHandle = metadata.observe('errors', (errors:ValidationError[]) => {
 				this._updateDisplay(errors);
 			});
 		});

@@ -2,21 +2,20 @@
 
 import arrayUtil = require('dojo/_base/array');
 import core = require('./interfaces');
+import data = require('./data/interfaces');
 import declare = require('dojo/_base/declare');
 import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
-import ModelProxty = require('./data/Property');
+import Property = require('./data/Property');
 import Observable = require('./Observable');
 import Stateful = require('dojo/Stateful');
 import util = require('./util');
 
-var uuid = 0;
-
 class Mediator extends Observable implements core.IMediator {
 	[key:string]:any;
 	app:core.IApplication;
-	model:core.IModel;
+	model:data.IModel;
 	routeState:Object;
 
 	constructor(kwArgs:Object = {}) {
@@ -34,48 +33,37 @@ class Mediator extends Observable implements core.IMediator {
 		}
 		else if (key in this) {
 			value = this[key];
+
+			// Might be for a computed property
+			// TODO: Does this make sense?
+			if (value instanceof Property) {
+				value = (<Property<any>> value).get('value');
+			}
 		}
 		else if (this.model) {
 			value = this.model.get(key);
 		}
 
-		if (value instanceof ModelProxty) {
-			return value.get();
-		}
-
 		return value;
 	}
 
-	// TODO: Fix implementation to not use getProxty
-	getMetadata(key:string):core.IModelProxty<any> {
-		try {
-			return this.getProxty(key);
-		}
-		catch (error) {
-			return null;
-		}
-	}
+	getMetadata(key:string):data.IProperty<any> {
+		var property:data.IProperty<any> = new Property();
 
-	// TODO: This should go away, public proxty objects are limited and should go through the data binding interface
-	getProxty(key:string):core.IModelProxty<any> {
-		var getter = '_' + key + 'Getter',
-			value:any;
+		// TODO: Leak?
+		this.observe('model', function (newModel:data.IModel):void {
+			var newProperty = newModel.getMetadata(key);
+			if (newProperty) {
+				property.set(newProperty);
+			}
+		});
 
-		if (getter in this) {
-			value = this[getter]();
-		}
-		else if (key in this) {
-			value = this[key];
-		}
-		else if (this.model) {
-			value = this.model.getProxty(key);
+		var modelProperty = this.model && this.model.getMetadata(key);
+		if (modelProperty) {
+			property.set(modelProperty);
 		}
 
-		if (!(value instanceof ModelProxty)) {
-			throw new Error('No proxty available for "' + key + '"');
-		}
-
-		return value;
+		return property;
 	}
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
@@ -92,7 +80,7 @@ class Mediator extends Observable implements core.IMediator {
 					this._notify(newValue, oldValue, key);
 				},
 				modelPropertyHandle:IHandle,
-				modelHandle:IHandle = this.observe('model', (newModel:core.IModel, oldModel:core.IModel) => {
+				modelHandle:IHandle = this.observe('model', (newModel:data.IModel, oldModel:data.IModel) => {
 					var oldValue:any = oldModel.get(key),
 						newValue:any = newModel.get(key);
 
@@ -137,7 +125,13 @@ class Mediator extends Observable implements core.IMediator {
 			}
 			else if (key in this) {
 				notify = true;
-				this[key] && this[key].isProxty ? this[key].set(value) : (this[key] = value);
+
+				if (this[key] instanceof Property) {
+					this[key].set(value);
+				}
+				else {
+					this[key] = value;
+				}
 			}
 			else if (this.model) {
 				this.model.set(key, value);
