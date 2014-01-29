@@ -2,11 +2,11 @@
 
 import core = require('./interfaces');
 import Evented = require('dojo/Evented');
-import Stateful = require('dojo/Stateful');
+import Observable = require('./Observable');
 
-class StatefulEvented extends Stateful implements IEvented {
-	constructor(kwArgs:Object) {
-		super(kwArgs);
+class ObservableEvented extends Observable implements Evented {
+	constructor(kwArgs?:Object) {
+		super(kwArgs)
 		Evented.apply(this, arguments);
 	}
 
@@ -21,4 +21,4 @@ class StatefulEvented extends Stateful implements IEvented {
 	}
 }
 
-export = StatefulEvented;
+export = ObservableEvented;

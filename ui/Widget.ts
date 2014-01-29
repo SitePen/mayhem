@@ -1,22 +1,22 @@
 /// <reference path="../dojo" />
 
+import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
+import Deferred = require('dojo/Deferred');
 import has = require('../has');
-import array = require('dojo/_base/array');
+import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
-import StatefulEvented = require('../StatefulEvented');
 import style = require('./style/interfaces');
 import util = require('../util');
 import widgets = require('./interfaces');
-import Deferred = require('dojo/Deferred');
 
 var uid = 0,
 	platform = has('host-browser') ? 'dom/' : '';
 
 // TODO: Create and use ObservableEvented
-class Widget extends StatefulEvented implements widgets.IWidget {
+class Widget extends ObservableEvented implements widgets.IWidget {
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		require([ resourceId ], load);
 	}
@@ -89,7 +89,7 @@ class Widget extends StatefulEvented implements widgets.IWidget {
 	}
 
 	empty():void {
-		
+
 	}
 
 	destroy():void {

@@ -1,8 +1,8 @@
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
+import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
-import StatefulEvented = require('../StatefulEvented');
 import style = require('./style/interfaces');
 
 export interface IClassList { // stateful array instead?
@@ -42,7 +42,7 @@ export interface IView extends IWidget {
 	mediator:core.IMediator;
 }
 
-export interface IWidget extends StatefulEvented {
+export interface IWidget extends ObservableEvented {
 	canHaveChildren?:boolean;
 	classList:IClassList;
 	id:string;

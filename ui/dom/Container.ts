@@ -1,7 +1,7 @@
 import DomPlaceholder = require('./Placeholder');
 import has = require('../../has');
+import ObservableEvented = require('../../ObservableEvented');
 import PlacePosition = require('../PlacePosition');
-import StatefulEvented = require('../../StatefulEvented');
 import util = require('../../util');
 import widgets = require('../interfaces');
 

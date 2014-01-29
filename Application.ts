@@ -3,12 +3,12 @@ import core = require('./interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
-import StatefulEvented = require('./StatefulEvented');
+import ObservableEvented = require('./ObservableEvented');
 import util = require('dojo/request/util');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
-class Application extends StatefulEvented implements core.IApplication {
+class Application extends ObservableEvented implements core.IApplication {
 // TODO: TS 0.9.1 does not like this
 //	[applicationComponent:string]:any;
 	binder:binding.IBinder;
