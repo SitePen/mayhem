@@ -28,7 +28,7 @@ class MyModel extends Model {
 				},
 				_valueSetter: function (value:string):void {
 					var names:string[] = value.split(' ');
-					this.set({
+					this.model.set({
 						firstName: names[0],
 						lastName: names.slice(1).join(' ')
 					});

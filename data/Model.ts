@@ -124,8 +124,8 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 
 	set(kwArgs:Object):void;
 	set(key:string, value:any):void;
-	set(key:string, value?:any):void {
-		if (util.isObject(kwArgs)) {
+	set(key:any, value?:any):void {
+		if (util.isObject(key)) {
 			var kwArgs:{ [key:string]: any; } = key;
 			for (key in kwArgs) {
 				this.set(key, kwArgs[key]);

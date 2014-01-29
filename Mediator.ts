@@ -108,44 +108,45 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 	set(kwArgs:Object):void;
 	set(key:string, value:any):void;
 	set(key:any, value?:any):void {
-		if (typeof key === 'object') {
-			var kwArgs:Object = key;
+		if (util.isObject(key)) {
+			var kwArgs:{ [key:string]: any; } = key;
 			for (key in kwArgs) {
 				this.set(key, kwArgs[key]);
 			}
+
+			return;
 		}
-		else {
-			var oldValue = this.get(key),
-				setter = '_' + key + 'Setter',
-				notify = false;
 
-			if (setter in this) {
-				notify = true;
-				this[setter](value);
-			}
-			else if (key in this) {
-				notify = true;
+		var oldValue = this.get(key),
+			setter = '_' + key + 'Setter',
+			notify = false;
 
-				if (this[key] instanceof Property) {
-					this[key].set(value);
-				}
-				else {
-					this[key] = value;
-				}
-			}
-			else if (this.model) {
-				this.model.set(key, value);
-			}
-			else if (has('debug')) {
-				console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
-			}
+		if (setter in this) {
+			notify = true;
+			this[setter](value);
+		}
+		else if (key in this) {
+			notify = true;
 
-			if (notify) {
-				var newValue = this.get(key);
+			if (this[key] instanceof Property) {
+				this[key].set(value);
+			}
+			else {
+				this[key] = value;
+			}
+		}
+		else if (this.model) {
+			this.model.set(key, value);
+		}
+		else if (has('debug')) {
+			console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+		}
 
-				if (!util.isEqual(oldValue, newValue)) {
-					this._notify(newValue, oldValue, key);
-				}
+		if (notify) {
+			var newValue = this.get(key);
+
+			if (!util.isEqual(oldValue, newValue)) {
+				this._notify(newValue, oldValue, key);
 			}
 		}
 	}
