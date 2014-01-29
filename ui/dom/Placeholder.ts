@@ -7,6 +7,9 @@ class DomPlaceholder extends MultiNodeWidget {
 	content:widgets.IWidget;
 
 	_contentSetter(widget:widgets.IDomWidget):void {
+		// if ('_evaluateConditions' in this) {
+		// 	debugger
+		// }
 		this.content && this.content.detach();
 		this.content = widget;
 

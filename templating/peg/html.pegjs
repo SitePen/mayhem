@@ -128,7 +128,7 @@ Template
 	)? {
 		if (!root) {
 			root = {
-				constructor: '!Element',
+				constructor: 'framework/ui/dom/Element',
 				html: '',
 				children: []
 			};
@@ -167,7 +167,7 @@ Element 'HTML'
 		}
 
 		return {
-			constructor: '!Element',
+			constructor: 'framework/ui/dom/Element',
 			html: parseBoundText(html),
 			children: children
 		};
@@ -225,7 +225,7 @@ If '<if>'
 		conditional.content = consequent;
 
 		return {
-			constructor: '!Conditional',
+			constructor: 'framework/templating/html/ui/Conditional',
 			conditions: [ conditional ].concat(alternates),
 			alternate: alternate
 		};
@@ -253,7 +253,7 @@ ElseTag '<else>'
 
 For '<for>'
 	= forWidget:ForTagOpen template:Any ForTagClose {
-		forWidget.constructor = '!Iterator';
+		forWidget.constructor = 'framework/templating/html/ui/Iterator';
 		forWidget.template = template;
 		return forWidget;
 	}
@@ -275,7 +275,7 @@ When '<when>'
 	error:(WhenErrorTag content:Any? { return content; })?
 	progress:(WhenProgressTag content:Any? { return content; })?
 	WhenTagClose {
-		when.constructor = '!When';
+		when.constructor = 'framework/templating/html/ui/When';
 		when.resolved = resolved;
 		when.error = error;
 		when.progress = progress;
@@ -322,7 +322,7 @@ WidgetTagClose '</widget>'
 Placeholder '<placeholder>'
 	= OpenToken 'placeholder'i placeholder:AttributeMap CloseToken {
 		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
-		placeholder.constructor = '!Placeholder';
+		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
 		return placeholder;
 	}
 
@@ -331,7 +331,7 @@ Data '<data>'
 		validate(attributes, { type: '<data>', required: [ 'var' ], optional: [ 'safe' ] });
 
 		var label = {
-			constructor: '!Label'
+			constructor: 'framework/ui/dom/Label'
 		};
 
 		label[attributes.safe ? 'formattedText' : 'text'] = attributes['var'];

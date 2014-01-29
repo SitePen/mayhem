@@ -26,20 +26,19 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	}
 
 	// TODO: this still doesn't seem much closer to the Right Thing
-	// fetch dep list, remapping !-prefixed deps to utilize Widget loader plugin
-	static fetch(dependencies:string[]):IPromise<{ [key:string]: Function }> {
-		var dfd:IDeferred<{ [key:string]: Function }> = new Deferred<{ [key:string]: Function }>();
-		var dependencyCache:{ [key:string]: Function } = [];
-		var transformed:string[] = array.map(dependencies, (dep) => {
-			return dep[0] !== '!' ? dep : 'framework/ui/Widget' + dep;
+	// Fetch dependency list and return promise (rejected with a timeout) adding timeout remapping !-prefixed deps to utilize Widget loader plugin
+	static fetch(dependencies:string[], timeout:number = 10000):IPromise<void> {
+
+		var dfd:IDeferred<void> = new Deferred<void>();
+		var handle:number = window.setTimeout(() => {
+			dfd.reject(new Error('Template module load timeout'));
+		}, timeout);
+
+		require(dependencies, () => {
+			window.clearTimeout(handle);
+			dfd.resolve(undefined);
 		});
-		require(transformed, () => {
-			for (var i = 0, length = dependencies.length; i < length; ++i) {
-				dependencyCache[dependencies[i]] = arguments[i];
-			}
-			dfd.resolve(dependencyCache);
-		});
-		// TODO: how to catch amd require errors?
+		
 		return dfd.promise;
 	}
 

@@ -40,7 +40,7 @@ define([], function () {
         peg$c5 = function(root) {
         		if (!root) {
         			root = {
-        				constructor: '!Element',
+        				constructor: 'framework/ui/dom/Element',
         				html: '',
         				children: []
         			};
@@ -74,7 +74,7 @@ define([], function () {
         		}
 
         		return {
-        			constructor: '!Element',
+        			constructor: 'framework/ui/dom/Element',
         			html: parseBoundText(html),
         			children: children
         		};
@@ -109,7 +109,7 @@ define([], function () {
         		conditional.content = consequent;
 
         		return {
-        			constructor: '!Conditional',
+        			constructor: 'framework/templating/html/ui/Conditional',
         			conditions: [ conditional ].concat(alternates),
         			alternate: alternate
         		};
@@ -135,7 +135,7 @@ define([], function () {
         peg$c43 = { type: "literal", value: "else", description: "\"else\"" },
         peg$c44 = { type: "other", description: "<for>" },
         peg$c45 = function(forWidget, template) {
-        		forWidget.constructor = '!Iterator';
+        		forWidget.constructor = 'framework/templating/html/ui/Iterator';
         		forWidget.template = template;
         		return forWidget;
         	},
@@ -150,7 +150,7 @@ define([], function () {
         peg$c51 = { type: "literal", value: "/for", description: "\"/for\"" },
         peg$c52 = { type: "other", description: "<when>" },
         peg$c53 = function(when, resolved, error, progress) {
-        		when.constructor = '!When';
+        		when.constructor = 'framework/templating/html/ui/When';
         		when.resolved = resolved;
         		when.error = error;
         		when.progress = progress;
@@ -193,7 +193,7 @@ define([], function () {
         peg$c76 = { type: "literal", value: "placeholder", description: "\"placeholder\"" },
         peg$c77 = function(placeholder) {
         		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
-        		placeholder.constructor = '!Placeholder';
+        		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
         		return placeholder;
         	},
         peg$c78 = { type: "other", description: "<data>" },
@@ -203,7 +203,7 @@ define([], function () {
         		validate(attributes, { type: '<data>', required: [ 'var' ], optional: [ 'safe' ] });
 
         		var label = {
-        			constructor: '!Label'
+        			constructor: 'framework/ui/dom/Label'
         		};
 
         		label[attributes.safe ? 'formattedText' : 'text'] = attributes['var'];

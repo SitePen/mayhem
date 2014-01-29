@@ -93,6 +93,7 @@ declare module 'dojo/_base/lang' {
 		replace(template:string, kwArgs:Object, pattern?:RegExp):string;
 		setObject(key:string, value:any, context?:Object):any;
 		trim(string:string):string;
+		isArray(it:any):boolean;
 	};
 	export = lang;
 }

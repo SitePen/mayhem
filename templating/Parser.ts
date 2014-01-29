@@ -1,18 +1,20 @@
 /// <reference path="./peg/html.d.ts" />
 
-import parser = require('framework/templating/peg/html'); // TODO: is this the Right Way?
+import pegParser = require('framework/templating/peg/html'); // TODO: is this the Right Way?
 import core = require('../interfaces');;
 import Proxty = require('../Proxty');
+import BindDirection = require('../binding/BindDirection');
 import widgets = require('../ui/interfaces');
 import Widget = require('../ui/Widget');
 import util = require('../util');
 import array = require('dojo/_base/array');
+import lang = require('dojo/_base/lang');
 
 
 class Parser {
 
 	static parse(input:string):any {
-		return parser.parse(input);
+		return pegParser.parse(input);
 	}
 
 	static scanForDependencies(node:any) {
@@ -21,13 +23,13 @@ class Parser {
 		function recurse(node:any) {
 			if (!util.isObject(node)) return;
 			if (node.constructor) {
-				// collect up our dependencies from ctor references
+				// Collect up our dependencies from ctor references
 				var ctor = node.constructor;
-				// flatten constructor if it's array like
-				if (ctor && typeof ctor.join === 'function') {
+				// Flatten constructor if it's an array
+				if (lang.isArray(ctor)) {
 					ctor = ctor.join('');
 				}
-				// add to list of dependencies if string module id
+				// Add to list of dependencies if string module id
 				typeof ctor === 'string' && dependencies.indexOf(ctor) < 0 && dependencies.push(ctor);
 			}
 
@@ -36,7 +38,7 @@ class Parser {
 				if (util.isObject(value)) {
 					recurse(value);
 				}
-				else if (Array.isArray(value)) { // FIXME es5
+				else if (lang.isArray(value)) {
 					array.forEach(value, recurse);
 				}
 			});
@@ -57,7 +59,6 @@ class Parser {
 	mediator:core.IMediator;
 	input:string;
 	ast:any;
-	dependencyCache:any = {};
 
 	constructor(kwArgs:any) {
 		this.app = kwArgs.app;
@@ -68,32 +69,15 @@ class Parser {
 		var ast = Parser.parse(input);
 		var dependencies = Parser.scanForDependencies(ast);
 
-		return Widget.fetch(dependencies).then((dependencyCache) => {
-			this.dependencyCache = dependencyCache; // TODO: meh
+		return Widget.fetch(dependencies).then(() => {
 			return this.constructWidget(ast);
 		});
 	}
 
-	private _getBindingString(parts:any[], bindingMap:any):string {
-		return array.map(parts, (part:any /*String | Object*/) => {
-			if (part.binding) {
-				return bindingMap[part.binding].get();
-			}
-			return part;
-		}).join('');
-	}
-
-	private _buildProxty(parts:any[], bindingMap:any):core.IProxty<string> {
-		var value = this._getBindingString(parts, bindingMap);
-		// TODO: should we enable coercion of some sort here?
-		var proxty = new Proxty<string>(value);
-		array.forEach(util.getObjectKeys(bindingMap), (key:string) => {
-			// TODO: drip drip
-			bindingMap[key].observe(() => {
-				proxty.set(this._getBindingString(parts, bindingMap));
-			}, false);
+	private _fillBindingTemplate(items:any[]):string[] {
+		return array.map(items, (item:any) => {
+			return item.binding ? this.mediator.get(item.binding) : item;
 		});
-		return proxty;
 	}
 
 	// TODO node:IAstNode?
@@ -111,46 +95,43 @@ class Parser {
 			var html = node.html;
 			node.html = undefined;
 		}
+
 		var ctor:any = node.constructor;
 		node.constructor = undefined;
-		if (Array.isArray(ctor)) ctor = ctor.join(''); // FIXME es5
-		// if ctor isn't already a constructor look up ctor from the dependency map
-		var WidgetCtor = typeof ctor === 'string' ? this.dependencyCache[ctor] : ctor;
+		// Flatten constructor if it's an array
+		if (lang.isArray(ctor)) {
+			ctor = ctor.join('');
+		}
+		// If ctor isn't already a constructor look up ctor from the dependency map
+		// TODO: normalize if ctor is a plugin-based module id
+		var WidgetCtor = typeof ctor === 'string' ? require(ctor) : ctor;
 		var widget:any /* widgets.IDomWidget */,
 			fieldBindings:{ [key:string]: string; } = {},
 			proxtyBindings:{ [key:string]: core.IProxty<string>; } = {};
 
 		array.forEach(util.getObjectKeys(node), (key:string) => {
 			if (node[key] === undefined) return;
-			var parts = node[key];
-			var values:string[] = [];
-			// TODO: way too many assumptions -- this needs to be a lot cleaner
-			if (parts.length === 1) {
-				if (parts[0] && parts[0].binding) {
-					fieldBindings[key] = parts[0].binding;
-				}
-				else {
-					options[key] = parts[0];
-				}
+			var items:any = node[key];
+			if (!lang.isArray(items)) {
+				// Pass non-array items through to options unmolested
+				options[key] = items;
+				return;
+			}
+			// Set up field binding when parts is a single element binding descriptor
+			if (items[0] && items[0].binding) {
+				fieldBindings[key] = items[0].binding;
 			}
 			else {
-				// if value array is more than 1 item it should have bindings and get a proxty
-				var bindingMap:any;
-				array.forEach(parts, (part:any) => {
-					if (part.binding) {
-						bindingMap || (bindingMap = {});
-						var binding:string = part.binding;
-						bindingMap[binding] = this.mediator.model[binding];
-					}
+				options[key] = this._fillBindingTemplate(items);
+				array.forEach(items, (item:any) => {
+					if (!item.binding) return;
+					// TODO: observe multiple keys at once?
+					// TODO: where to put these handles?
+					this.mediator.observe(item.binding, () => {
+						// TODO: delay this to be sure this is after widget construction
+						widget.set(this._fillBindingTemplate(items));
+					});
 				});
-				if (bindingMap) {
-					// if bindings create a proxty for all bindings
-					proxtyBindings[key] = this._buildProxty(parts, bindingMap);
-				}
-				else {
-					// no bindings, so just pass through
-					options[key] = parts;
-				}
 			}
 		});
 
@@ -171,18 +152,9 @@ class Parser {
 			widget.set('children', array.map(children, (child) => this.constructWidget(child, widget)));
 		}
 
-		// set up widget bindings after construction
+		// Set up widget bindings after construction
 		for (var key in fieldBindings) {
-			widget.bind(key, fieldBindings[key], { direction: 2 });
-		}
-		// set up unidirectional bindings
-		var proxty:core.IProxty<string>;
-		for (var key in proxtyBindings) {
-			proxty = proxtyBindings[key];
-			// TODO: how are we supposed to set up a bind for a proxty?
-			//widget.bind(proxty, key, { direction: 1 });
-			// TODO: in lieu of binding...drip drip...
-			proxty.observe((newValue:string) => widget.set(key, newValue));
+			widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
 		}
 		return widget;
 	}

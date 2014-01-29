@@ -93,7 +93,7 @@ class Element extends MultiNodeWidget {
 						var textNode = document.createTextNode(model.get(binding));
 						parent.replaceChild(textNode, node);
 						// TODO: drip drip drip...
-						var handle = model[binding].observe((newValue:any) => {
+						var handle = model.observe(binding, (newValue:any) => {
 							textNode.nodeValue = newValue;
 						});
 					}

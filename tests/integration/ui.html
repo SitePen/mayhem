@@ -14,57 +14,27 @@ var dojoConfig = {
 		'framework'
 	]
 };
-		</script>
-		<script src="../../../dojo/dojo.js"></script>
-		<script>
+	</script>
+	<script src="../../../dojo/dojo.js"></script>
+	<script>
 require([
-	'framework/Model',
+	'framework/tests/integration/MyModel',
 	'framework/Application',
-	'framework/Mediator',
-	'framework/ModelProxty',
-	'framework/ui/Widget',
-	'framework/ui/Widget!Master',
-	'framework/ui/Widget!form/Input',
-	'framework/ui/Widget!form/Error',
-	'framework/ui/dom/Element',
-	'framework/templating/html'
-], function (Model, Application, Mediator, ModelProxty, Widget, Master, Input, FormError, Element, Parser) {
+	'framework/tests/integration/MyMediator',
+	'framework/ui/dom/Master',
+	'framework/templating/Parser'
+], function (MyModel, Application, MyMediator, Master, Parser) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
 
-	var MyModel = function () {
-		this.firstName = new ModelProxty({
-			default: 'Joe',
-			validators: [ {
-				validate: function (model, key, value) {
-					value !== 'Joe' && model.addError(key, 'No, you must be Joe!');
-				}
-			} ]
-		});
-		this.lastName = new ModelProxty({
-			default: 'Bloggs'
-		});
-		this.favoriteColor = new ModelProxty({
-			default: 'red'
-		});
-		Model.apply(this, arguments);
-	};
-	MyModel.prototype = new Model();
-	MyModel.prototype.constructor = MyModel;
-
-	var MyMediator = function () {
-		// this.firstName = new ModelProxty({
-		// 	get: function () {
-		// 		return 'farts';
-		// 	}
-		// });
-		Mediator.apply(this, arguments);
-	};
-	MyMediator.prototype = new Mediator();
-	MyMediator.prototype.constructor = MyMediator;
-
 	app.startup().then(function () {
+		var model = window.model = new MyModel();
+		var mediator = window.mediator = new MyMediator({
+			app: app,
+			model: model
+		});
+
 		var firstNameRE = /^[a-zA-Z]+$/;
 		var model = window.model = new MyModel();
 		var mediator = window.mediator = new MyMediator({
@@ -76,9 +46,10 @@ require([
 		masterView.attachToWindow(document.body);
 
 		var template = [
-			'First Name: <widget is="!form/Input" value="{firstName}"></widget> ',
-			'Errors: <widget is="!form/Error" binding="firstName" style="display:inline-block"></widget><br>',
-			'Last Name: <widget is="!form/Input" value="{lastName}"></widget><br>',
+			'First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget> ',
+			'Errors: <widget is="framework/ui/dom/form/Error" binding="firstName" style="display:inline-block"></widget><br>',
+			'Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget><br>',
+			'Full Name composite field: {fullName}<br>',
 			'<p><em>conditional</em> ',
 				'<if condition="{firstName} == \'Joed\'">',
 					'if: {firstName} {lastName}.',
@@ -87,11 +58,12 @@ require([
 				'<elseif condition="{firstName} == \'Joe\'">',
 					'else if again: {firstName} {lastName}.',
 				'<else>',
-					'else: <widget is="!form/Input" value="{firstName} {lastName}"></widget>.',
+					'else: <widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget>.',
 				'</if>',
 			'</p>',
-			'<widget is="!form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>'
+			'<widget is="framework/ui/dom/form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>'
 		].join('');
+
 		var parser = new Parser({ app: app, mediator: mediator });
 		parser.process(template).then(function(el) {
 			masterView.add(el)
