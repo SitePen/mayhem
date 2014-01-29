@@ -51,7 +51,7 @@ class Element extends MultiNodeWidget {
 		// recurse and handle comments standing in for child and binding placeholders
 		function processComments(node:Node) {
 			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
-				bindingPattern:RegExp = /^\s*placeholder#(\d+)\s*$/,
+				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
 				parent:Node = node.parentNode,
 				next:Node,
 				i:number,
@@ -88,7 +88,6 @@ class Element extends MultiNodeWidget {
 						binding = markup[match[1]].binding
 						//bindingPlaceholderMap[binding] = placeholder;
 						// TODO: finish, for now just leaving in the shite implementation
-
 
 						// TODO: can we use proper bindings here?
 						var textNode = document.createTextNode(model.get(binding));

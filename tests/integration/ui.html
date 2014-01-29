@@ -78,14 +78,18 @@ require([
 		var template = [
 			'First Name: <widget is="!form/Input" value="{firstName}"></widget> ',
 			'Errors: <widget is="!form/Error" binding="firstName" style="display:inline-block"></widget><br>',
-			'Full Name: <widget is="!form/Input" value="{lastName}, {firstName}"></widget><br>',
-			'<if condition="true">',
-				'Name, full: <widget is="!form/Input" value="{firstName} {lastName}"></widget>',
-			'<elseif condition="1">',
-				'<widget is="!Placeholder"></widget>',
-			'<else>',
-				'NO',
-			'</if>',
+			'Last Name: <widget is="!form/Input" value="{lastName}"></widget><br>',
+			'<p><em>conditional</em> ',
+				'<if condition="{firstName} == \'Joed\'">',
+					'if: {firstName} {lastName}.',
+				'<elseif condition="{firstName} == \'Joey\'">',
+					'else if: {firstName} {lastName}.',
+				'<elseif condition="{firstName} == \'Joe\'">',
+					'else if again: {firstName} {lastName}.',
+				'<else>',
+					'else: <widget is="!form/Input" value="{firstName} {lastName}"></widget>.',
+				'</if>',
+			'</p>',
 			'<widget is="!form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>'
 		].join('');
 		var parser = new Parser({ app: app, mediator: mediator });
