@@ -132,10 +132,11 @@ class ProxtyBinder implements binding.IBinder {
 
 			if (field) {
 				metadataHandle && metadataHandle.remove();
-				// TODO: why doesn't newMetadata.observe take `field` as a first arg?
-				metadataHandle = newMetadata[field].observe(function (newValue:any):void {
+				metadataHandle = newMetadata.observe(field, function (newValue:any):void {
 					metadata.set(newValue);
 				});
+
+				metadata.set(newMetadata.get(field));
 			}
 			else {
 				metadata.set(newMetadata);
