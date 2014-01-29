@@ -121,7 +121,7 @@ class ProxtyBinder implements binding.IBinder {
 		);
 	}
 
-	getMetadata(object:Object, binding:string, metadata:string):core.IProxty<any>;
+	getMetadata(object:Object, binding:string, field:string):core.IProxty<any>;
 	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
 	getMetadata(object:Object, binding:string, field?:string):core.IProxty<any> {
 		var metadata:core.IProxty<any> = new Proxty(null);
@@ -132,11 +132,17 @@ class ProxtyBinder implements binding.IBinder {
 
 			if (field) {
 				metadataHandle && metadataHandle.remove();
-				metadataHandle = newMetadata.observe(field, function (newValue:any):void {
-					metadata.set(newValue);
-				});
 
-				metadata.set(newMetadata.get(field));
+				if (newMetadata) {
+					metadataHandle = newMetadata.observe(field, function (newValue:any):void {
+						metadata.set(newValue);
+					});
+
+					metadata.set(newMetadata.get(field));
+				}
+				else {
+					metadata.set(null);
+				}
 			}
 			else {
 				metadata.set(newMetadata);

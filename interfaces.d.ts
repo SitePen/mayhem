@@ -25,7 +25,8 @@ export interface IMediator extends IComponent, IObservable {
 
 export interface IObservable {
 	get(key:string):any;
-	observe<T>(key:string, observer:IObserver<T>, invokeImmediately?:boolean):IHandle;
+	// TODO: invokeImmediately?
+	observe<T>(key:string, observer:IObserver<T>):IHandle;
 	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
 }
