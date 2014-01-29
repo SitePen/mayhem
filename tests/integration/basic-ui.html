@@ -23,8 +23,9 @@ require([
 	'framework/tests/integration/MyMediator',
 	'framework/ui/Widget!Master',
 	'framework/ui/Widget!form/Input',
-	'framework/ui/Widget!form/Error'
-], function (MyModel, Application, MyMediator, Master, Input, FormError) {
+	'framework/ui/Widget!form/Error',
+	'framework/ui/Widget!form/Label'
+], function (MyModel, Application, MyMediator, Master, Input, FormError, Label) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -45,8 +46,15 @@ require([
 			binding: 'firstName'
 		});
 
+		var label = window.label = new Label({
+			app: app,
+			mediator: mediator,
+			binding: 'firstName'
+		});
+
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
+		masterView.add(label);
 		masterView.add(input);
 		masterView.add(error);
 	});

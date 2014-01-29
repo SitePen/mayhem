@@ -121,7 +121,28 @@ class ProxtyBinder implements binding.IBinder {
 		);
 	}
 
-	getMetadata(object:Object, binding:string):core.IProxty<{ [key:string]:any; } /* TODO: metadata type */> {
+	getMetadata(object:Object, binding:string, metadata:string):core.IProxty<any>;
+	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
+	getMetadata(object:Object, binding:string, field?:string):core.IProxty<any> {
+		var metadata:core.IProxty<any> = new Proxty(null);
+
+		var metadataHandle:IHandle;
+		function swapMetadataObject(newObject:core.IHasMetadata) {
+			var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(key) : null;
+
+			if (field) {
+				metadataHandle && metadataHandle.remove();
+				metadataHandle = newMetadata.observe(field, function (newValue:any):void {
+					metadata.set(newValue);
+				});
+
+				metadata.set(newMetadata.get(field));
+			}
+			else {
+				metadata.set(newMetadata);
+			}
+		}
+
 		var splitAt:number = binding.lastIndexOf('.'),
 			key:string;
 
@@ -136,25 +157,21 @@ class ProxtyBinder implements binding.IBinder {
 			binding = '';
 		}
 
-		var updateProxty = function (object:{ getMetadata:(key:string) => { [key:string]:any; } /* TODO: metadata type */ }):void {
-				proxty.set(object && object.getMetadata ? object.getMetadata(key) : null);
-			},
-			proxty:core.IProxty<{ [key:string]:any; } /* TODO: metadata type */> = new Proxty(null);
-
 		if (binding) {
 			var parentProxty = this.createProxty(object, binding);
-			parentProxty.observe(updateProxty);
+			parentProxty.observe(swapMetadataObject);
 		}
 		else {
-			updateProxty(<any> object);
+			swapMetadataObject(<core.IHasMetadata> object);
 		}
 
-		aspect.after(proxty, 'destroy', function () {
-			parentProxty.destroy();
-			parentProxty = null;
+		aspect.after(metadata, 'destroy', function () {
+			metadataHandle && metadataHandle.remove();
+			parentProxty && parentProxty.destroy();
+			metadataHandle = parentProxty = null;
 		}, true);
 
-		return proxty;
+		return metadata;
 	}
 
 	startup():IPromise<any[]> {

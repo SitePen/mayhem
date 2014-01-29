@@ -5,19 +5,18 @@ import domConstruct = require('dojo/dom-construct');
 import domUtil = require('../util');
 import lang = require('dojo/_base/lang');
 import SingleNodeWidget = require('../SingleNodeWidget');
+import util = require('../../../util');
 import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends SingleNodeWidget {
 	binding:string;
-	private _errorsHandle:IHandle;
+	private _errorsProxty:core.IProxty<ValidationError[]>;
 	firstNode:HTMLUListElement;
 	lastNode:HTMLUListElement;
-	private _metadataProxty:core.IProxty<data.IProperty<any>>;
-	private __updateBinding:() => void;
 
-	constructor(kwArgs:Object) {
+	constructor(kwArgs?:Object) {
+		util.deferMethods(this, [ '_updateDisplay' ], 'render');
 		super(kwArgs);
-		this.__updateBinding = <() => void> lang.hitch(this, '_updateBinding');
 	}
 
 	private _bindingSetter(value:string):void {
@@ -35,29 +34,20 @@ class FormError extends SingleNodeWidget {
 	}
 
 	private _updateBinding():void {
-		this._errorsHandle && this._errorsHandle.remove();
-		this._metadataProxty && this._metadataProxty.destroy();
+		this._errorsProxty && this._errorsProxty.destroy();
+
 		var mediator = this.get('mediator');
 		if (!mediator || !this.binding) {
 			return;
 		}
 
-		// TODO: Replace with some new getMetadata function from binder
-		var proxty = this._metadataProxty = <core.IProxty<data.IProperty<any>>> this.app.binder.getMetadata(mediator, this.binding);
-		proxty.observe((metadata:data.IProperty<any>) => {
-			this._errorsHandle && this._errorsHandle.remove();
-			this._errorsHandle = metadata.observe('errors', (errors:ValidationError[]) => {
-				this._updateDisplay(errors);
-			});
+		var proxty = this._errorsProxty = <core.IProxty<ValidationError[]>> this.app.binder.getMetadata(mediator, this.binding, 'errors');
+		proxty.observe((errors:ValidationError[]) => {
+			this._updateDisplay(errors);
 		});
 	}
 
 	private _updateDisplay(errors:ValidationError[]):void {
-		// TODO: Deal with this condition properly.
-		if (!this.firstNode) {
-			return;
-		}
-
 		this.firstNode.innerHTML = '';
 
 		if (!errors) {
@@ -71,9 +61,8 @@ class FormError extends SingleNodeWidget {
 	}
 
 	destroy():void {
-		this._errorsHandle && this._errorsHandle.remove();
-		this._metadataProxty && this._metadataProxty.destroy();
-		this._errorsHandle = this._metadataProxty = null;
+		this._errorsProxty && this._errorsProxty.destroy();
+		this._errorsProxty = null;
 
 		super.destroy();
 	}

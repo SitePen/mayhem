@@ -1,5 +1,7 @@
 /// <reference path="./dojo" />
 
+import array = require('dojo/_base/array');
+import aspect = require('dojo/aspect');
 import has = require('./has');
 
 export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
@@ -68,6 +70,38 @@ export function debounce<T extends (...args:any[]) => void>(callback:T, delay:nu
 			self = args = timer = null;
 		}, delay);
 	};
+}
+
+export function deferMethods(target:Object, methods:string[], untilMethod:string):void {
+	var waiting = {},
+		untilHandle = aspect.after(target, untilMethod, function () {
+			untilHandle.remove();
+			untilHandle = null;
+
+			for (var method in waiting) {
+				var info = waiting[method];
+
+				target[method] = info.original;
+				info.args && target[method].apply(target, info.args);
+			}
+
+			target = waiting = null;
+		}, true);
+
+	array.forEach(methods, function (method:string):void {
+		var info:{ original:Function; args:IArguments; } = waiting[method] = {
+			original: target[method],
+			args: null
+		};
+
+		target[method] = function () {
+			info.args = arguments;
+		};
+	});
+}
+
+export function deferSetters(target:Object, methods:string[], untilMethod:string):void {
+	deferMethods(target, array.map(methods, method => '_' + method + 'Setter'), untilMethod);
 }
 
 /**

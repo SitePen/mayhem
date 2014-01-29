@@ -16,7 +16,7 @@ import when = require('dojo/when');
 // The value itself is stored on the Model, at property.model[property.key]
 // Mediators are just observables, so creating mutable properties for them is very easy
 
-class Model extends Observable implements data.IModel {
+class Model extends Observable implements data.IModel, core.IHasMetadata {
 	static property<T>(kwArgs:data.IPropertyArguments<T>):Property<T> {
 		return new Property<T>(kwArgs);
 	}
