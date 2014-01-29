@@ -3,9 +3,10 @@ import MultiNodeWidget = require('./MultiNodeWidget');
 import widgets = require('../interfaces');
 
 class DomPlaceholder extends MultiNodeWidget {
+	// for now this has to be an IDomWidget because detach returns Node instead of void
 	content:widgets.IWidget;
 
-	_contentSetter(widget:widgets.IWidget):void {
+	_contentSetter(widget:widgets.IDomWidget):void {
 		this.content && this.content.detach();
 		this.content = widget;
 

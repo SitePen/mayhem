@@ -83,7 +83,7 @@ class Parser {
 		}).join('');
 	}
 
-	private _getProxty(parts:any[], bindingMap:any):core.IProxty<string> {
+	private _buildProxty(parts:any[], bindingMap:any):core.IProxty<string> {
 		var value = this._getBindingString(parts, bindingMap);
 		// TODO: should we enable coercion of some sort here?
 		var proxty = new Proxty<string>(value);
@@ -145,7 +145,7 @@ class Parser {
 				});
 				if (bindingMap) {
 					// if bindings create a proxty for all bindings
-					proxtyBindings[key] = this._getProxty(parts, bindingMap);
+					proxtyBindings[key] = this._buildProxty(parts, bindingMap);
 				}
 				else {
 					// no bindings, so just pass through
