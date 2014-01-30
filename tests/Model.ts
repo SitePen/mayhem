@@ -2,36 +2,55 @@
 
 import assert = require('intern/chai!assert');
 import core = require('../interfaces');
+import data = require('../data/interfaces');
 import array = require('dojo/_base/array');
 import Deferred = require('dojo/Deferred');
 import when = require('dojo/when');
 import util = require('../util');
-import Model = require('../Model');
+import Model = require('../data/Model');
 import Mediator = require('../Mediator');
-import ModelProxty = require('../ModelProxty');
 import registerSuite = require('intern!object');
 import RequiredValidator = require('../validation/RequiredValidator');
 import ValidationError = require('../validation/ValidationError');
 
 class PopulatedModel extends Model {
-	string:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'foo'
-	});
-	number:core.IModelProxty<number> = new ModelProxty<number>({
-		default: 1234
-	});
-	boolean:core.IModelProxty<boolean> = new ModelProxty<boolean>({
-		default: true
-	});
-	object:core.IModelProxty<{ [key:string]: any; }> = new ModelProxty<{ [key:string]: any; }>({
-		default: { foo: 'foo' }
-	});
-	array:core.IModelProxty<any[]> = new ModelProxty<any[]>({
-		default: [ 'foo', 'bar' ]
-	});
-	any:core.IModelProxty<any> = new ModelProxty<any>({
-		default: 'foo'
-	});
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._schema = {
+			string: Model.property<string>({
+				default: 'foo'
+			}),
+			number: Model.property<number>({
+				default: 1234
+			}),
+			boolean: Model.property<boolean>({
+				default: true
+			}),
+			object: Model.property<{ [key:string]: any; }>({
+				default: { foo: 'foo' }
+			}),
+			array: Model.property<any[]>({
+				default: [ 'foo', 'bar' ]
+			}),
+			any: Model.property<any>({
+				default: 'foo'
+			}),
+
+			// accessor: Model.property<string>({
+			// 	_valueGetter: function ():string {
+			// 		return this.model.get('firstName') + ' ' + this.model.get('lastName');
+			// 	},
+			// 	_valueSetter: function (value:string):void {
+			// 		var names:string[] = value.split(' ');
+			// 		this.model.set({
+			// 			firstName: names[0],
+			// 			lastName: names.slice(1).join(' ')
+			// 		});
+			// 	}
+			// })
+		};
+
+		super(kwArgs);
+	}
 }
 
 // class PopulatedMediator extends Mediator {
@@ -45,7 +64,7 @@ class PopulatedModel extends Model {
 
 
 var syncStringIsAValidator = {
-	validate: function (model:core.IModel, key:string, value:string):void {
+	validate: function (model:data.IModel, key:string, value:string):void {
 		if (value !== 'A') {
 			model.addError(key, new ValidationError(value + ' is not A'));
 		}
@@ -57,7 +76,7 @@ var syncStringIsAValidator = {
 };
 
 var asyncStringIsBValidator = {
-	validate: function (model:core.IModel, key:string, value:string):IPromise<void> {
+	validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
 		var dfd:IDeferred<void> = new Deferred<void>();
 		setTimeout(function () {
 			if (value !== 'B') {
@@ -70,69 +89,87 @@ var asyncStringIsBValidator = {
 };
 
 class TestValidationModel extends Model {
-	syncA:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'A',
-		validators: [ syncStringIsAValidator ]
-	});
-	syncB:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'B',
-		validators: [ syncStringIsAValidator ]
-	});
-	asyncA:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'A',
-		validators: [ asyncStringIsBValidator ]
-	});
-	asyncB:core.IModelProxty<string> = new ModelProxty<string>({
-		default: 'B',
-		validators: [ asyncStringIsBValidator ]
-	});
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._schema = {
+			syncA: Model.property<string>({
+				default: 'A',
+				validators: [ syncStringIsAValidator ]
+			}),
+			syncB: Model.property<string>({
+				default: 'B',
+				validators: [ syncStringIsAValidator ]
+			}),
+			asyncA: Model.property<string>({
+				default: 'A',
+				validators: [ asyncStringIsBValidator ]
+			}),
+			asyncB: Model.property<string>({
+				default: 'B',
+				validators: [ asyncStringIsBValidator ]
+			})
+		};
+
+		super(kwArgs);
+	}
 }
 
 
 class TestRequiredValidationModel extends TestValidationModel {
-	required:core.IModelProxty<string> = new ModelProxty<string>({
-		validators: [ new RequiredValidator() ]
-	})
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._schema = {
+			required: Model.property<string>({
+				validators: [ new RequiredValidator() ]
+			})
+		};
+
+		super(kwArgs);
+	}
 }
 
 
 class TestValidationExceptionsModel extends Model {
-	sync:core.IModelProxty<string> = new ModelProxty<string>({
-		validators: [ {
-			validate: function (model:core.IModel, key:string, value:string):IPromise<void> {
-				throw new Error('Boom');
-			}
-		} ]
-	})
-	async:core.IModelProxty<string> = new ModelProxty<string>({
-		validators: [ {
-			validate: function (model:core.IModel, key:string, value:string):IPromise<void> {
-				var dfd:IDeferred<void> = new Deferred<void>();
-				setTimeout(function () {
-					dfd.reject(new Error('BOOM'));
-				}, 0);
-				return dfd.promise;
-			}
-		} ]
-	})
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._schema = {
+			sync: Model.property<string>({
+				validators: [ {
+					validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
+						throw new Error('Boom');
+					}
+				} ]
+			}),
+			async: Model.property<string>({
+				validators: [ {
+					validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
+						var dfd:IDeferred<void> = new Deferred<void>();
+						setTimeout(function () {
+							dfd.reject(new Error('BOOM'));
+						}, 0);
+						return dfd.promise;
+					}
+				} ]
+			})
+		};
+
+		super(kwArgs);
+	}
 }
 
 
-var startsWithA = function (model:core.IModel, key:string, value:string):void {
+var startsWithA = function (model:data.IModel, key:string, value:string):void {
 	if (!value || value[0] !== 'A') {
 		model.addError(key, new ValidationError(value + ' does not start with A'));
 	}
 	return undefined;
 };
 
-var endsWithB = function (model:core.IModel, key:string, value:string):void {
+var endsWithB = function (model:data.IModel, key:string, value:string):void {
 	if (!value || value[value.length - 1] !== 'B') {
 		model.addError(key, new ValidationError(value + ' does not end with B'));
 	}
 	return undefined;
 };
 
-var lengthOf2 = function (model:core.IModel, key:string, value:string):void {
+var lengthOf2 = function (model:data.IModel, key:string, value:string):void {
 	if (!value || value.length !== 2) {
 		model.addError(key, new ValidationError(value + ' should have a length of 2'));
 	}
@@ -140,21 +177,27 @@ var lengthOf2 = function (model:core.IModel, key:string, value:string):void {
 };
 
 class TestValidationScenarioModel extends Model {
-	prop:core.IModelProxty<string> = new ModelProxty<string>({
-		validators: [ {
-			validate: lengthOf2
-		}, {
-			validate: startsWithA,
-			options: {
-				scenarios: [ 'insert' ]
-			}
-		}, {
-			validate: endsWithB,
-			options: {
-				scenarios: [ 'insert', 'remove' ]
-			}
-		} ]
-	})
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._schema = {
+			prop: Model.property<string>({
+				validators: [ {
+					validate: lengthOf2
+				}, {
+					validate: startsWithA,
+					options: {
+						scenarios: [ 'insert' ]
+					}
+				}, {
+					validate: endsWithB,
+					options: {
+						scenarios: [ 'insert', 'remove' ]
+					}
+				} ]
+			})
+		};
+
+		super(kwArgs);
+	}
 }
 
 
