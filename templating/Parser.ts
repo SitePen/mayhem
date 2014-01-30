@@ -14,38 +14,28 @@ class Parser {
 		return pegParser.parse(input);
 	}
 
-	static scanForDependencies(node:any) {
+	static scanForDependencies(node:any):string[] {
 		var dependencies:string[] = [];
 		// TODO: should we bother with cycle detection?
 		function recurse(node:any) {
-			if (!util.isObject(node)) return;
-			if (node.constructor) {
-				// Collect up our dependencies from ctor references
-				var ctor = node.constructor;
-				// Flatten constructor if it's an array
-				if (ctor instanceof Array) {
-					ctor = ctor.join('');
-				}
-				// Add to list of dependencies if string module id
-				typeof ctor === 'string' && dependencies.indexOf(ctor) < 0 && dependencies.push(ctor);
+			var ctor = node.constructor;
+			// Flatt since our parser sets some constructors as arrays
+			if (ctor instanceof Array) {
+				ctor = ctor.join('');
+			}
+			// Add to list of dependencies if it's a string module id not already in our dep list
+			if (typeof ctor === 'string' && dependencies.indexOf(ctor) === -1) {
+				 dependencies.push(ctor);
 			}
 
-			array.forEach(util.getObjectKeys(node), (key) => {
-				var value = node[key];
-				if (util.isObject(value)) {
-					recurse(value);
-				}
-				else if (value instanceof Array) {
+			for (var key in node) {
+				var value:any = node[key];
+				if (value instanceof Array) {
 					array.forEach(value, recurse);
 				}
-			});
-
-			var children = node.children;
-			if (!children || !children.length) {
-				return;
-			}
-			for (var i = 0, length = children.length; i < length; ++i) {
-				recurse(children[i]);
+				else if (typeof value === 'object') {
+					recurse(value);
+				}
 			}
 		}
 		recurse(node);
@@ -64,7 +54,7 @@ class Parser {
 
 	process(input:string):IPromise<widgets.IWidget> {
 		var ast = Parser.parse(input);
-		var dependencies = Parser.scanForDependencies(ast);
+		var dependencies:string[] = Parser.scanForDependencies(ast);
 
 		return Widget.fetch(dependencies).then(() => {
 			return this.constructWidget(ast);
