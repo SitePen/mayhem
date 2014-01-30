@@ -65,7 +65,8 @@ class Observable implements core.IObservable {
 		if (util.isObject(key)) {
 			var kwArgs:{ [key:string]: any; } = key;
 			for (key in kwArgs) {
-				this.set(key, kwArgs[key]);
+				// Ignore value if undefined
+				kwArgs[key] !== undefined && this.set(key, kwArgs[key]);
 			}
 
 			return;
