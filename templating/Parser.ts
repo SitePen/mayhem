@@ -1,6 +1,4 @@
-/// <reference path="./peg/html.d.ts" />
-
-import pegParser = require('framework/templating/peg/html'); // TODO: is this the Right Way?
+import pegParser = require('./peg/html');
 import core = require('../interfaces');;
 import Proxty = require('../Proxty');
 import BindDirection = require('../binding/BindDirection');
