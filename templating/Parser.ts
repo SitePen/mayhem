@@ -16,17 +16,15 @@ class Parser {
 	static scanForDependencies(node:Object):string[] {
 		var dependencies:string[] = [];
 		// TODO: why can't we use Object or { [key:string]: any; }
-		function recurse(node:any) {
+		function recurse(node:Object) {
 			var ctor = node.constructor;
-			// Flatten since our parser returns some constructors as arrays
-			if (ctor instanceof Array) {
-				ctor = ctor.join('');
+			if (typeof ctor !== 'function') {
+				// Flatten since our parser returns some constructors as arrays
+				// We toString the module mid for completeness and to make tsc happy
+				var mid:string = (ctor instanceof Array) ? ctor.join('') : ctor.toString();
+				// Add to list of dependencies if it's a string module id not already in our dep list
+				dependencies.indexOf(mid) === -1 && dependencies.push(mid);
 			}
-			// Add to list of dependencies if it's a string module id not already in our dep list
-			if (typeof ctor === 'string' && dependencies.indexOf(<string>ctor) === -1) {
-				 dependencies.push(ctor);
-			}
-
 			var key:string;
 			for (key in node) {
 				var value:any = node[key];
