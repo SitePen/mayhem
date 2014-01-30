@@ -15,13 +15,12 @@ class Parser {
 
 	static scanForDependencies(node:Object):string[] {
 		var dependencies:string[] = [];
-		// TODO: why can't we use Object or { [key:string]: any; }
 		function recurse(node:Object) {
 			var ctor = node.constructor;
 			if (typeof ctor !== 'function') {
-				// Flatten since our parser returns some constructors as arrays
-				// We toString the module mid for completeness and to make tsc happy
-				var mid:string = (ctor instanceof Array) ? ctor.join('') : ctor.toString();
+				// Parser returns constructors as either string or 1-element string[]
+				// Either way toString should do the trick
+				var mid:string = ctor.toString();
 				// Add to list of dependencies if it's a string module id not already in our dep list
 				dependencies.indexOf(mid) === -1 && dependencies.push(mid);
 			}
@@ -70,13 +69,12 @@ class Parser {
 		// Set constructor on node to undefined so we ignore it
 		// TODO: find a better way to do that avoids mutating the tree (helpful for debugging)
 		node.constructor = undefined;
-		// Flatten constructor if it's an array
-		if (ctor instanceof Array) {
-			ctor = ctor.join('');
+		var mid:string;
+		if (typeof ctor !== 'function') {
+			mid = ctor.toString()
 		}
-		// If ctor isn't already a constructor look up ctor from the dependency map
-		// TODO: normalize if ctor is a plugin-based module id
-		var WidgetCtor = typeof ctor === 'string' ? require(ctor) : ctor;
+		// TODO: normalize if mid is plugin-based?
+		var WidgetCtor = mid ? require(mid) : ctor;
 		var widget:any /* widgets.IDomWidget */,
 			fieldBindings:{ [key:string]: string; } = {},
 			proxtyBindings:{ [key:string]: core.IProxty<string>; } = {};
