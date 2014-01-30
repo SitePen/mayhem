@@ -4,7 +4,6 @@ import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
-import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
@@ -24,23 +23,6 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 	static normalize(resourceId:string, normalize:(id:string) => string):string {
 		return normalize('./' + platform + resourceId);
-	}
-
-	// TODO: this still doesn't seem much closer to the Right Thing
-	// Fetch dependency list and return promise (rejected with a timeout) adding timeout remapping !-prefixed deps to utilize Widget loader plugin
-	static fetch(dependencies:string[], timeout:number = 10000):IPromise<void> {
-
-		var dfd:IDeferred<void> = new Deferred<void>();
-		var handle:number = window.setTimeout(() => {
-			dfd.reject(new Error('Template module load timeout'));
-		}, timeout);
-
-		require(dependencies, () => {
-			window.clearTimeout(handle);
-			dfd.resolve(undefined);
-		});
-		
-		return dfd.promise;
 	}
 
 	app:core.IApplication;

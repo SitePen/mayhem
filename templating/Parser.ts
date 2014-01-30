@@ -1,13 +1,22 @@
 import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
-import core = require('../interfaces');;
+import core = require('../interfaces');
+import Deferred = require('dojo/Deferred');
 import pegParser = require('./peg/html');
-import Proxty = require('../Proxty');
 import Widget = require('../ui/Widget');
 import widgets = require('../ui/interfaces');
 import util = require('../util');
 
 class Parser {
+
+	// TODO: dependency loading failure will hang, but a timeout seems hacky
+	static fetch(dependencies:string[]):IPromise<void> {
+		var dfd:IDeferred<void> = new Deferred<void>();
+		require(dependencies, () => {
+			dfd.resolve(undefined);
+		});
+		return dfd.promise;
+	}
 
 	static parse(input:string):any {
 		return pegParser.parse(input);
@@ -49,7 +58,6 @@ class Parser {
 		this.mediator = kwArgs.mediator;
 	}
 
-	// TODO node:IAstNode?
 	constructWidget(node:any, parent?:widgets.IWidget):widgets.IWidget {
 		var options:any = {},
 			children:any,
@@ -74,10 +82,9 @@ class Parser {
 			mid = ctor.toString()
 		}
 		// TODO: normalize if mid is plugin-based?
-		var WidgetCtor = mid ? require(mid) : ctor;
-		var widget:any /* widgets.IDomWidget */,
-			fieldBindings:{ [key:string]: string; } = {},
-			proxtyBindings:{ [key:string]: core.IProxty<string>; } = {};
+		var WidgetCtor = mid ? require(mid) : ctor,
+			widget:widgets.IDomWidget,
+			fieldBindings:{ [key:string]: string; } = {};
 
 		var key:string,
 			items:any;
@@ -114,7 +121,8 @@ class Parser {
 		options.app = this.app;
 		if (parent) {
 			options.parent = parent;
-			// TODO: annoying -- this is still necessary for some reason
+			// TODO: annoying but this is still necessary for some reason
+			// (could be because we're not consistently passing in parent refs, breaking mediator lookup)
 			options.mediator = this.mediator;
 		}
 		else {
@@ -147,7 +155,7 @@ class Parser {
 		var ast = Parser.parse(input);
 		var dependencies:string[] = Parser.scanForDependencies(ast);
 
-		return Widget.fetch(dependencies).then(() => {
+		return Parser.fetch(dependencies).then(() => {
 			return this.constructWidget(ast);
 		});
 	}
