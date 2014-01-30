@@ -18,7 +18,7 @@ class Parser {
 		// TODO: why can't we use Object or { [key:string]: any; }
 		function recurse(node:any) {
 			var ctor = node.constructor;
-			// Flatt since our parser sets some constructors as arrays
+			// Flatten since our parser returns some constructors as arrays
 			if (ctor instanceof Array) {
 				ctor = ctor.join('');
 			}
