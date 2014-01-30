@@ -121,9 +121,6 @@ class Parser {
 		options.app = this.app;
 		if (parent) {
 			options.parent = parent;
-			// TODO: annoying but this is still necessary for some reason
-			// (could be because we're not consistently passing in parent refs, breaking mediator lookup)
-			options.mediator = this.mediator;
 		}
 		else {
 			options.mediator = this.mediator;

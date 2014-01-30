@@ -89,7 +89,8 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 	detach():void {
 		// parent may not implement IContainer
-		this.parent && this.parent.remove && this.parent.remove(this);
+		// TODO: this creates a cycle when we consistently set parent
+		//this.parent && this.parent.remove && this.parent.remove(this);
 	}
 
 	private _mediatorGetter():core.IMediator {
