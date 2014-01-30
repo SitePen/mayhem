@@ -8,8 +8,6 @@ class DomPlaceholder extends MultiNodeWidget {
 	_contentSetter(widget:widgets.IDomWidget):void {
 
 		this.content && this.content.detach();
-		//this.content && domUtil.getRange(this.content.firstNode, this.content.lastNode).extractContents();
-		if (this.content) this.content._fragment = null;
 		this.content = widget;
 
 		if (widget) {
