@@ -13,7 +13,6 @@ class Conditional extends Placeholder {
 	private _parser:any;
 
 	constructor(kwArgs:any) {
-		CC=this
 		this._parser = kwArgs.parser;
 		kwArgs.parser = undefined;
 		

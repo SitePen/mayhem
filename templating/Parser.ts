@@ -8,7 +8,6 @@ import widgets = require('../ui/interfaces');
 import Widget = require('../ui/Widget');
 import util = require('../util');
 import array = require('dojo/_base/array');
-import lang = require('dojo/_base/lang');
 
 
 class Parser {
@@ -26,7 +25,7 @@ class Parser {
 				// Collect up our dependencies from ctor references
 				var ctor = node.constructor;
 				// Flatten constructor if it's an array
-				if (lang.isArray(ctor)) {
+				if (ctor instanceof Array) {
 					ctor = ctor.join('');
 				}
 				// Add to list of dependencies if string module id
@@ -38,7 +37,7 @@ class Parser {
 				if (util.isObject(value)) {
 					recurse(value);
 				}
-				else if (lang.isArray(value)) {
+				else if (value instanceof Array) {
 					array.forEach(value, recurse);
 				}
 			});
@@ -99,7 +98,7 @@ class Parser {
 		var ctor:any = node.constructor;
 		node.constructor = undefined;
 		// Flatten constructor if it's an array
-		if (lang.isArray(ctor)) {
+		if (ctor instanceof Array) {
 			ctor = ctor.join('');
 		}
 		// If ctor isn't already a constructor look up ctor from the dependency map
@@ -112,7 +111,7 @@ class Parser {
 		array.forEach(util.getObjectKeys(node), (key:string) => {
 			if (node[key] === undefined) return;
 			var items:any = node[key];
-			if (!lang.isArray(items)) {
+			if (!(items instanceof Array)) {
 				// Pass non-array items through to options unmolested
 				options[key] = items;
 				return;
