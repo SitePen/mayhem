@@ -9,16 +9,17 @@ class Conditional extends Placeholder {
 
 	private _predicateTerms:Array<string[]>;
 	private _clauseWidgets:widgets.IDomWidget[];
-	private _observers:IHandle[]; // TODO: clean up
+	private _observerMap:IHandle[]; // TODO: clean up
 	private _parser:any;
 
 	constructor(kwArgs:any) {
+		CC=this
 		this._parser = kwArgs.parser;
 		kwArgs.parser = undefined;
 		
 		this._predicateTerms = [];
 		this._clauseWidgets = [];
-		this._observers = [];
+		this._observerMap = [];
 
 		var conditions = kwArgs.conditions;
 		kwArgs.conditions = null;
@@ -53,7 +54,7 @@ class Conditional extends Placeholder {
 				terms[i] = term.toString();
 				return;
 			}
-			this._observers[field] = mediator.observe(field, (newValue:any) => {
+			this._observerMap[field] = mediator.observe(field, (newValue:any) => {
 				terms[i] = JSON.stringify(newValue);
 				this._evaluateConditions();
 			});
