@@ -45,68 +45,72 @@ class Element extends MultiNodeWidget {
 		});
 		this.html = processed.join('');
 
-		var model = this.get('mediator').model,
+		var mediator = this.get('mediator'),
 			childPlaceholders = this.childPlaceholders;
 
-		// recurse and handle comments standing in for child and binding placeholders
-		function processComments(node:Node) {
+		function processComment(node:Node) {
 			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
 				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
 				parent:Node = node.parentNode,
-				next:Node,
-				i:number,
-				length:number,
 				match:string[],
 				placeholder:Placeholder,
 				fragment:DocumentFragment,
 				binding:string;
+			// We only care about comment nodes
+			if (node.nodeType !== Node.COMMENT_NODE) return;
+			// Test for child comment marker
+			match = node.nodeValue.match(childPattern);
+			if (match) {
+				// Create placeholder and add to list
+				placeholder = new Placeholder({});
+				childPlaceholders[Number(match[1])] = placeholder;
+				// Replace marker node with placeholder fragment
+				fragment = domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
+				parent.replaceChild(fragment, node);
+				return;
+			}
+			// Test for binding comment marker
+			match = node.nodeValue.match(bindingPattern);
+			if (match) {
+				placeholder = new Placeholder({});
+				binding = markup[match[1]].binding
+				//bindingPlaceholderMap[binding] = placeholder;
+				// TODO: finish, for now just leaving in the shite implementation
 
-			// iterate siblings
+				// TODO: can we use proper bindings here?
+				var textNode = document.createTextNode(mediator.get(binding));
+				parent.replaceChild(textNode, node);
+				// TODO: drip drip drip...
+				var handle = mediator.observe(binding, (newValue:any) => {
+					textNode.nodeValue = newValue;
+				});
+				return;
+			}
+		}
+
+		// recurse and handle comments standing in for child and binding placeholders
+		function processChildren(node:Node) {
+			var next:Node,
+				i:number,
+				length:number;
+			// Iterate siblings
 			while (node != null) {
-				// capture next sibling before manipulating dom
+				// Capture next sibling before manipulating dom
 				next = node.nextSibling;
-				// recursively sweep and process children
+				// Sweep and process children recursively
 				for (i = 0, length = node.childNodes.length; i < length; ++i) {
-					processComments(node.childNodes[i]);
+					processChildren(node.childNodes[i]);
 				}
-				// we only care about comment nodes
-				if (node.nodeType == Node.COMMENT_NODE) {
-					// test for child comment marker
-					match = node.nodeValue.match(childPattern);
-					if (match) {
-						// create placeholder and add to list
-						placeholder = new Placeholder({});
-						childPlaceholders[Number(match[1])] = placeholder;
-						// replace marker node with placeholder fragment
-						fragment = domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
-						parent.replaceChild(fragment, node);
-					}
-					// test for binding comment marker
-					match = node.nodeValue.match(bindingPattern);
-					if (match) {
-						placeholder = new Placeholder({});
-						binding = markup[match[1]].binding
-						//bindingPlaceholderMap[binding] = placeholder;
-						// TODO: finish, for now just leaving in the shite implementation
-
-						// TODO: can we use proper bindings here?
-						var textNode = document.createTextNode(model.get(binding));
-						parent.replaceChild(textNode, node);
-						// TODO: drip drip drip...
-						var handle = model.observe(binding, (newValue:any) => {
-							textNode.nodeValue = newValue;
-						});
-					}
-				}
+				processComment(node);
 				node = next;
 			}
 		}
 
-		// create fragment and process comments before inserting
+		// Create fragment and process comments before inserting
 		var fragment:Node = domConstruct.toDom(this.html);
-		processComments(fragment);
+		processChildren(fragment);
 		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);
-		// refresh placeholders flashing the node structure
+		// Refresh placeholders flashing the node structure
 		this._refreshChildPlaceholders();
 		//this._refreshBindings();
 	}
@@ -124,15 +128,6 @@ class Element extends MultiNodeWidget {
 			placeholder.set('content', this.children[i]);
 		});
 	}
-
-	// private _refreshBindings():void {
-	// 	var model = this.get('mediator').model;
-
-	// 	array.forEach(util.getObjectKeys(this.bindingPlaceholderMap), (binding) => {
-	// 		var placeholder = this.bindingPlaceholderMap[binding];
-	// 		// TODO
-	// 	});
-	// }
 
 	destroy():void {
 		array.forEach(this.children, (child) => child.destroy());
