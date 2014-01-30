@@ -17,6 +17,7 @@ var uid = 0,
 
 // TODO: Create and use ObservableEvented
 class Widget extends ObservableEvented implements widgets.IWidget {
+	
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		require([ resourceId ], load);
 	}

@@ -3,14 +3,13 @@ import MultiNodeWidget = require('./MultiNodeWidget');
 import widgets = require('../interfaces');
 
 class DomPlaceholder extends MultiNodeWidget {
-	// for now this has to be an IDomWidget because detach returns Node instead of void
-	content:widgets.IWidget;
+	content:widgets.IDomWidget;
 
 	_contentSetter(widget:widgets.IDomWidget):void {
-		// if ('_evaluateConditions' in this) {
-		// 	debugger
-		// }
+
 		this.content && this.content.detach();
+		//this.content && domUtil.getRange(this.content.firstNode, this.content.lastNode).extractContents();
+		if (this.content) this.content._fragment = null;
 		this.content = widget;
 
 		if (widget) {

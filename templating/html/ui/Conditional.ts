@@ -1,6 +1,6 @@
+import Placeholder = require('./Placeholder');
 import widgets = require('../../../ui/interfaces');
 import core = require('../../../interfaces');
-import Placeholder = require('../../../ui/dom/Placeholder');
 import domUtil = require('../../../ui/dom/util');
 import array = require('dojo/_base/array');
 
@@ -10,34 +10,32 @@ class Conditional extends Placeholder {
 	private _predicateTerms:Array<string[]>;
 	private _clauseWidgets:widgets.IDomWidget[];
 	private _observerMap:IHandle[]; // TODO: clean up
-	private _parser:any;
 
 	constructor(kwArgs:any) {
-		this._parser = kwArgs.parser;
-		kwArgs.parser = undefined;
+		var parser = kwArgs.parser;
+		// TODO: we may want a way to tell Observable to a key instead of using `delete`
+		delete kwArgs.parser;
 		
 		this._predicateTerms = [];
 		this._clauseWidgets = [];
 		this._observerMap = [];
 
 		var conditions = kwArgs.conditions;
-		kwArgs.conditions = null;
+		delete kwArgs.conditions;
 		var alternate = kwArgs.alternate;
-		kwArgs.alternate = null;
+		delete kwArgs.alternate;
 
 		super(kwArgs);
 
 		// Instantiate all conditional widgets, and alternate, regardless of predicate status
 		if (conditions) {
 			array.forEach(conditions, (condition:any, i:number) => {
-				this._clauseWidgets.push(this._parser.constructWidget(condition.content));
+				this._clauseWidgets.push(parser.constructWidget(condition.content));
 				this._interpretCondition(condition.condition, i);
 			});
-			kwArgs.conditions = undefined;
 		}
 		if (alternate) {
-			this._clauseWidgets.push(this._parser.constructWidget(alternate));
-			kwArgs.alternate = undefined;
+			this._clauseWidgets.push(parser.constructWidget(alternate));
 		}
 
 		this._evaluateConditions();

@@ -94,6 +94,8 @@ class Parser {
 		}
 
 		var ctor:any = node.constructor;
+		// Set constructor on node to undefined so we ignore it
+		// TODO: find a better way to do that avoids mutating the tree (helpful for debugging)
 		node.constructor = undefined;
 		// Flatten constructor if it's an array
 		if (ctor instanceof Array) {
