@@ -1,13 +1,16 @@
-import util = require('../../util');
+
+import array = require('dojo/_base/array');
+import core = require('../../interfaces');
+import domConstruct = require('dojo/dom-construct');
 import DomContainer = require('./Container');
 import domUtil = require('./util');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Placeholder = require('./Placeholder');
 import PlacePosition = require('../PlacePosition');
-import core = require('../../interfaces');
+import util = require('../../util');
+import Widget = require('../Widget');
 import widgets = require('../interfaces');
-import array = require('dojo/_base/array');
-import domConstruct = require('dojo/dom-construct');
+
 
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
@@ -16,8 +19,7 @@ class Element extends MultiNodeWidget {
 
 	html:string;
 	private _markup:any; // string | binding descriptor
-	//bindingPlaceholderMap:{ [key:string]: Placeholder};
-	childPlaceholders:Placeholder[] = [];
+	childPlaceholders:Placeholder[];
 	children:widgets.IDomWidget[];
 
 	private _htmlSetter(markup:any):void {
@@ -26,7 +28,6 @@ class Element extends MultiNodeWidget {
 		this._markup = markup;
 		 // TODO: Clean up old bindings and children and such
 		this.childPlaceholders = [];
-		//this.bindingPlaceholderMap = {};
 
 		if (typeof markup === 'string') {
 			// if markup is a string no need to do any fancy processing
@@ -73,9 +74,7 @@ class Element extends MultiNodeWidget {
 			match = node.nodeValue.match(bindingPattern);
 			if (match) {
 				placeholder = new Placeholder({});
-				binding = markup[match[1]].binding
-				//bindingPlaceholderMap[binding] = placeholder;
-				// TODO: finish, for now just leaving in the shite implementation
+				binding = markup[match[1]].binding;
 
 				// TODO: can we use proper bindings here?
 				var textNode = document.createTextNode(mediator.get(binding));
@@ -88,7 +87,7 @@ class Element extends MultiNodeWidget {
 			}
 		}
 
-		// recurse and handle comments standing in for child and binding placeholders
+		// Recurse and handle comments standing in for child and binding placeholders
 		function processChildren(node:Node) {
 			var next:Node,
 				i:number,
@@ -121,9 +120,11 @@ class Element extends MultiNodeWidget {
 	}
 
 	private _refreshChildPlaceholders():void {
-		// noop if both child placeholders and children aren't set on widget
-		if (!this.childPlaceholders || !this.children) return;
-		// loop over child placeholders and set to associated child widget
+		// Noop if both child placeholders and children aren't set on widget
+		if (!this.childPlaceholders || !this.children) {
+			return;
+		}
+		// Loop over child placeholders and set to associated child widget
 		array.forEach(this.childPlaceholders, (placeholder, i) => {
 			placeholder.set('content', this.children[i]);
 		});

@@ -11,15 +11,15 @@ class FormButton extends SingleNodeWidget {
 	type:string;
 	value:string;
 
-	constructor(kwArgs:any) {
-		super(kwArgs);
-	}
-
 	// TODO: list (or map) of attributes to pass through to node?
 	render():void {
 		this.firstNode = this.lastNode = document.createElement('button');
-		if (this.type) this.firstNode.setAttribute('type', this.type);
-		if (this.value) this.firstNode.setAttribute('value', this.value);
+		if (this.type) {
+			this.firstNode.setAttribute('type', this.type);
+		}
+		if (this.value) {
+			this.firstNode.setAttribute('value', this.value);
+		}
 		// TODO: figure out how we should do actions
 		this.firstNode.onclick = (event:Event):void => {
 			console.log('CLICKY', this);

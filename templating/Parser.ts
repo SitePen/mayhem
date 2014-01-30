@@ -14,9 +14,9 @@ class Parser {
 		return pegParser.parse(input);
 	}
 
-	static scanForDependencies(node:any):string[] {
+	static scanForDependencies(node:Object):string[] {
 		var dependencies:string[] = [];
-		// TODO: should we bother with cycle detection?
+		// TODO: Y U NO LET ME use Object or { [key:string]: any; } typescript?!
 		function recurse(node:any) {
 			var ctor = node.constructor;
 			// Flatt since our parser sets some constructors as arrays
@@ -24,11 +24,12 @@ class Parser {
 				ctor = ctor.join('');
 			}
 			// Add to list of dependencies if it's a string module id not already in our dep list
-			if (typeof ctor === 'string' && dependencies.indexOf(ctor) === -1) {
+			if (typeof ctor === 'string' && dependencies.indexOf(<string>ctor) === -1) {
 				 dependencies.push(ctor);
 			}
 
-			for (var key in node) {
+			var key:string;
+			for (key in node) {
 				var value:any = node[key];
 				if (value instanceof Array) {
 					array.forEach(value, recurse);
@@ -98,16 +99,19 @@ class Parser {
 			fieldBindings:{ [key:string]: string; } = {},
 			proxtyBindings:{ [key:string]: core.IProxty<string>; } = {};
 
-		array.forEach(util.getObjectKeys(node), (key:string) => {
-			if (node[key] === undefined) return;
-			var items:any = node[key];
-			if (!(items instanceof Array)) {
+		var key:string,
+			items:any;
+		for (key in node) {
+			items = node[key];
+			if (items === undefined) {
+				// Ignore undefined keys
+			}
+			else if (!(items instanceof Array)) {
 				// Pass non-array items through to options unmolested
 				options[key] = items;
-				return;
 			}
-			// Set up field binding when parts is a single element binding descriptor
-			if (items[0] && items[0].binding) {
+			else if (items[0] && items[0].binding) {
+				// Set up field binding when parts is a single element binding descriptor
 				fieldBindings[key] = items[0].binding;
 			}
 			else {
@@ -122,7 +126,7 @@ class Parser {
 					});
 				});
 			}
-		});
+		}
 
 		options.parser = this;
 		options.app = this.app;
@@ -136,8 +140,11 @@ class Parser {
 		}
 		widget = new WidgetCtor(options);
 
-		if (html) widget.set('html', html);
+		if (html) {
+			widget.set('html', html);
+		}
 		if (children) {
+			// TODO move this to Element
 			widget.set('children', array.map(children, (child) => this.constructWidget(child, widget)));
 		}
 

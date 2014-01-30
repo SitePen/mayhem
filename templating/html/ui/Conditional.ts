@@ -30,12 +30,12 @@ class Conditional extends Placeholder {
 		// Instantiate all conditional widgets, and alternate, regardless of predicate status
 		if (conditions) {
 			array.forEach(conditions, (condition:any, i:number) => {
-				this._clauseWidgets.push(parser.constructWidget(condition.content));
+				this._clauseWidgets.push(parser.constructWidget(condition.content)); // TODO: parent?
 				this._interpretCondition(condition.condition, i);
 			});
 		}
 		if (alternate) {
-			this._clauseWidgets.push(parser.constructWidget(alternate));
+			this._clauseWidgets.push(parser.constructWidget(alternate)); // TODO: parent?
 		}
 
 		this._evaluateConditions();
