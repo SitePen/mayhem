@@ -5,7 +5,7 @@ import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
 import style = require('./style/interfaces');
 
-export interface IClassList { // stateful array instead?
+export interface IClassList extends core.IProxty<string> {
 	add(className:string):void;
 	has(className:string):boolean;
 	remove(className:string):void;
