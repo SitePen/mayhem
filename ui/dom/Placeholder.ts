@@ -5,7 +5,7 @@ import widgets = require('../interfaces');
 class DomPlaceholder extends MultiNodeWidget {
 	content:widgets.IDomWidget;
 
-	_contentSetter(widget:widgets.IDomWidget):void {
+	private _contentSetter(widget:widgets.IDomWidget):void {
 
 		this.content && this.content.detach();
 		this.content = widget;

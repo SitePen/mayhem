@@ -1,15 +1,13 @@
-import Placeholder = require('./Placeholder');
-import widgets = require('../../../ui/interfaces');
+import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
 import domUtil = require('../../../ui/dom/util');
-import array = require('dojo/_base/array');
-
+import Placeholder = require('./Placeholder');
+import widgets = require('../../../ui/interfaces');
 
 class Conditional extends Placeholder {
-
-	private _predicateTerms:Array<string[]>;
 	private _clauseWidgets:widgets.IDomWidget[];
 	private _observerMap:IHandle[]; // TODO: clean up
+	private _predicateTerms:Array<string[]>;
 
 	constructor(kwArgs:any) {
 		var parser = kwArgs.parser;
@@ -41,26 +39,6 @@ class Conditional extends Placeholder {
 		this._evaluateConditions();
 	}
 
-	// Interprets binding in conditional heads and set up watchers
-	private _interpretCondition(condition:any[], predicateIndex:number):void {
-		var mediator:core.IMediator = this.get('mediator');
-		var terms:string[] = [];
-		array.forEach(condition, (term:any, i:number) => {
-			var field:string = term.binding;
-			if (!field) {
-				terms[i] = term.toString();
-				return;
-			}
-			this._observerMap[field] = mediator.observe(field, (newValue:any) => {
-				terms[i] = JSON.stringify(newValue);
-				this._evaluateConditions();
-			});
-			// TODO: prob not necessary w/ debounce
-			terms[i] = JSON.stringify(mediator.get(field));
-		});
-		this._predicateTerms[predicateIndex] = terms;
-	}
-
 	// Evaluate predicate condition and switch currently attached widget if necessary
 	private _evaluateConditions():void {
 		// TODO use debounce in util
@@ -80,6 +58,26 @@ class Conditional extends Placeholder {
 				return;
 			}
 		}
+	}
+
+	// Interprets binding in conditional heads and set up watchers
+	private _interpretCondition(condition:any[], predicateIndex:number):void {
+		var mediator:core.IMediator = this.get('mediator');
+		var terms:string[] = [];
+		array.forEach(condition, (term:any, i:number) => {
+			var field:string = term.binding;
+			if (!field) {
+				terms[i] = term.toString();
+				return;
+			}
+			this._observerMap[field] = mediator.observe(field, (newValue:any) => {
+				terms[i] = JSON.stringify(newValue);
+				this._evaluateConditions();
+			});
+			// TODO: prob not necessary w/ debounce
+			terms[i] = JSON.stringify(mediator.get(field));
+		});
+		this._predicateTerms[predicateIndex] = terms;
 	}
 
 }

@@ -1,12 +1,11 @@
-import pegParser = require('./peg/html');
-import core = require('../interfaces');;
-import Proxty = require('../Proxty');
-import BindDirection = require('../binding/BindDirection');
-import widgets = require('../ui/interfaces');
-import Widget = require('../ui/Widget');
-import util = require('../util');
 import array = require('dojo/_base/array');
-
+import BindDirection = require('../binding/BindDirection');
+import core = require('../interfaces');;
+import pegParser = require('./peg/html');
+import Proxty = require('../Proxty');
+import Widget = require('../ui/Widget');
+import widgets = require('../ui/interfaces');
+import util = require('../util');
 
 class Parser {
 
@@ -16,7 +15,7 @@ class Parser {
 
 	static scanForDependencies(node:Object):string[] {
 		var dependencies:string[] = [];
-		// TODO: Y U NO LET ME use Object or { [key:string]: any; } typescript?!
+		// TODO: why can't we use Object or { [key:string]: any; }
 		function recurse(node:any) {
 			var ctor = node.constructor;
 			// Flatt since our parser sets some constructors as arrays
@@ -51,21 +50,6 @@ class Parser {
 	constructor(kwArgs:any) {
 		this.app = kwArgs.app;
 		this.mediator = kwArgs.mediator;
-	}
-
-	process(input:string):IPromise<widgets.IWidget> {
-		var ast = Parser.parse(input);
-		var dependencies:string[] = Parser.scanForDependencies(ast);
-
-		return Widget.fetch(dependencies).then(() => {
-			return this.constructWidget(ast);
-		});
-	}
-
-	private _fillBindingTemplate(items:any[]):string[] {
-		return array.map(items, (item:any) => {
-			return item.binding ? this.mediator.get(item.binding) : item;
-		});
 	}
 
 	// TODO node:IAstNode?
@@ -117,7 +101,9 @@ class Parser {
 			else {
 				options[key] = this._fillBindingTemplate(items);
 				array.forEach(items, (item:any) => {
-					if (!item.binding) return;
+					if (!item.binding) {
+						return;
+					}
 					// TODO: observe multiple keys at once?
 					// TODO: where to put these handles?
 					this.mediator.observe(item.binding, () => {
@@ -153,6 +139,21 @@ class Parser {
 			widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
 		}
 		return widget;
+	}
+
+	private _fillBindingTemplate(items:any[]):string[] {
+		return array.map(items, (item:any) => {
+			return item.binding ? this.mediator.get(item.binding) : item;
+		});
+	}
+
+	process(input:string):IPromise<widgets.IWidget> {
+		var ast = Parser.parse(input);
+		var dependencies:string[] = Parser.scanForDependencies(ast);
+
+		return Widget.fetch(dependencies).then(() => {
+			return this.constructWidget(ast);
+		});
 	}
 }
 

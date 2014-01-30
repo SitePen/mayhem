@@ -1,4 +1,3 @@
-
 import array = require('dojo/_base/array');
 import core = require('../../interfaces');
 import domConstruct = require('dojo/dom-construct');
@@ -11,16 +10,25 @@ import util = require('../../util');
 import Widget = require('../Widget');
 import widgets = require('../interfaces');
 
-
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
 class Element extends MultiNodeWidget {
-
-	html:string;
-	private _markup:any; // string | binding descriptor
 	childPlaceholders:Placeholder[];
 	children:widgets.IDomWidget[];
+	html:string;
+	private _markup:any; // string | binding descriptor
+
+	private _childrenSetter(children:widgets.IDomWidget[]):void {
+		this.children = children;
+		this._refreshChildPlaceholders();
+	}
+
+	destroy():void {
+		array.forEach(this.children, (child) => child.destroy());
+		this.children = null;
+		super.destroy();
+	}
 
 	private _htmlSetter(markup:any):void {
 		// Clear out element and some widget properties
@@ -30,17 +38,19 @@ class Element extends MultiNodeWidget {
 		this.childPlaceholders = [];
 
 		if (typeof markup === 'string') {
-			// if markup is a string no need to do any fancy processing
+			// If markup is a string no need to do any fancy processing
 			this.html = markup;
 			this.lastNode.parentNode.insertBefore(domConstruct.toDom(markup), this.lastNode);
 			return;
 		}
 
-		// process and create placeholders for all bindings
-		// this should typically be followed by a call to set children
+		// Process and create placeholders for all bindings
+		// This should typically be followed by a call to set children
 		// TODO: make it so that ordering of set('html') / set('children') is unimportant
 		var processed:string[] = array.map(markup, (item:any, i:number) => {
-			if (!item.binding) return item;
+			if (!item.binding) {
+				return item;
+			}
 			// insert comment to mark binding location
 			return '<!-- binding#' + i + ' -->';
 		});
@@ -58,7 +68,9 @@ class Element extends MultiNodeWidget {
 				fragment:DocumentFragment,
 				binding:string;
 			// We only care about comment nodes
-			if (node.nodeType !== Node.COMMENT_NODE) return;
+			if (node.nodeType !== Node.COMMENT_NODE) {
+				return;
+			}
 			// Test for child comment marker
 			match = node.nodeValue.match(childPattern);
 			if (match) {
@@ -111,12 +123,6 @@ class Element extends MultiNodeWidget {
 		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);
 		// Refresh placeholders flashing the node structure
 		this._refreshChildPlaceholders();
-		//this._refreshBindings();
-	}
-
-	private _childrenSetter(children:widgets.IDomWidget[]):void {
-		this.children = children;
-		this._refreshChildPlaceholders();
 	}
 
 	private _refreshChildPlaceholders():void {
@@ -128,12 +134,6 @@ class Element extends MultiNodeWidget {
 		array.forEach(this.childPlaceholders, (placeholder, i) => {
 			placeholder.set('content', this.children[i]);
 		});
-	}
-
-	destroy():void {
-		array.forEach(this.children, (child) => child.destroy());
-		this.children = null;
-		super.destroy();
 	}
 }
 

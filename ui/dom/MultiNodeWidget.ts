@@ -21,6 +21,10 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 		return this._fragment;
 	}
 
+	empty():void {
+		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
+	}
+
 	render():void {
 		var commentId:string = this.id.replace(/--/g, '\u2010\u2010');
 		this.firstNode = document.createComment(commentId);
@@ -34,10 +38,6 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 		this.on('attach', () => {
 			this._fragment = null;
 		});
-	}
-
-	empty():void {
-		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
 	}
 }
 

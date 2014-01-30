@@ -1,40 +1,13 @@
-import widgets = require('../../interfaces');
-import SingleNodeWidget = require('../SingleNodeWidget');
 import domUtil = require('../util');
+import SingleNodeWidget = require('../SingleNodeWidget');
+import widgets = require('../../interfaces');
 
 class FormButton extends SingleNodeWidget {
+	content:widgets.IDomWidget;
 	firstNode:HTMLButtonElement;
 	lastNode:HTMLButtonElement;
-
-	content:widgets.IDomWidget;
-
 	type:string;
 	value:string;
-
-	// TODO: list (or map) of attributes to pass through to node?
-	render():void {
-		this.firstNode = this.lastNode = document.createElement('button');
-		if (this.type) {
-			this.firstNode.setAttribute('type', this.type);
-		}
-		if (this.value) {
-			this.firstNode.setAttribute('value', this.value);
-		}
-		// TODO: figure out how we should do actions
-		this.firstNode.onclick = (event:Event):void => {
-			console.log('CLICKY', this);
-		};
-	}
-
-	private _valueSetter(value:string):void {
-		this.value = value;
-		if (this.firstNode) this.firstNode.setAttribute('value', value);
-	}
-
-	private _typeSetter(value:string):void {
-		this.type = value;
-		if (this.firstNode) this.firstNode.setAttribute('type', value);
-	}
 
 	private _childrenSetter(children:widgets.IDomWidget[]) {
 		this.set('content', children && children[0]);
@@ -53,6 +26,31 @@ class FormButton extends SingleNodeWidget {
 	destroy():void {
 		this.firstNode.onclick = null;
 		super.destroy();
+	}
+
+	// TODO: list (or map) of attributes to pass through to node?
+	render():void {
+		this.firstNode = this.lastNode = document.createElement('button');
+		if (this.type) {
+			this.firstNode.setAttribute('type', this.type);
+		}
+		if (this.value) {
+			this.firstNode.setAttribute('value', this.value);
+		}
+		// TODO: figure out how we should do actions
+		this.firstNode.onclick = (event:Event):void => {
+			console.log('CLICKY', this);
+		};
+	}
+
+	private _typeSetter(value:string):void {
+		this.type = value;
+		if (this.firstNode) this.firstNode.setAttribute('type', value);
+	}
+
+	private _valueSetter(value:string):void {
+		this.value = value;
+		if (this.firstNode) this.firstNode.setAttribute('value', value);
 	}
 }
 

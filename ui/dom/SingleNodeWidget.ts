@@ -10,13 +10,13 @@ class SingleNodeWidget extends Widget implements widgets.IDomWidget {
 		this.render();
 	}
 
-	render():void {
-		this.firstNode = this.lastNode = document.createElement('div');
-	}
-
 	detach():Element {
 		super.detach();
 		return this.firstNode;
+	}
+
+	render():void {
+		this.firstNode = this.lastNode = document.createElement('div');
 	}
 }
 

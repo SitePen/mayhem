@@ -3,12 +3,12 @@ import core = require('../../../interfaces');
 import data = require('../../../data/interfaces');
 import domConstruct = require('dojo/dom-construct');
 import domUtil = require('../util');
-import lang = require('dojo/_base/lang');
 import SingleNodeWidget = require('../SingleNodeWidget');
 import util = require('../../../util');
 import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends SingleNodeWidget {
+
 	binding:string;
 	private _errorsProxty:core.IProxty<ValidationError[]>;
 	firstNode:HTMLUListElement;
@@ -22,6 +22,13 @@ class FormError extends SingleNodeWidget {
 	private _bindingSetter(value:string):void {
 		this.binding = value;
 		this._updateBinding();
+	}
+
+	destroy():void {
+		this._errorsProxty && this._errorsProxty.destroy();
+		this._errorsProxty = null;
+
+		super.destroy();
 	}
 
 	/* protected */ _mediatorSetter(value:core.IMediator):void {
@@ -58,13 +65,6 @@ class FormError extends SingleNodeWidget {
 			var element = domConstruct.create('li', {}, this.firstNode);
 			element.appendChild(document.createTextNode(error.toString()));
 		}
-	}
-
-	destroy():void {
-		this._errorsProxty && this._errorsProxty.destroy();
-		this._errorsProxty = null;
-
-		super.destroy();
 	}
 }
 
