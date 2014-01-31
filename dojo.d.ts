@@ -188,6 +188,15 @@ declare module 'dojo/Stateful' {
 	export = Stateful;
 }
 
+declare module 'dojo/text' {
+	var text:{
+		dynamic:boolean;
+		normalize(id:string, toAbsMid:(url:string) => string):string;
+		load(id:string, require:Function, load:(text:string) => void):void;
+	};
+	export = text;
+}
+
 declare module 'dojo/when' {
 	var when:{
 		<T>(value:T):IPromise<T>;

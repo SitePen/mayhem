@@ -7,13 +7,13 @@ import MultiNodeWidget = require('./MultiNodeWidget');
 import Placeholder = require('./Placeholder');
 import PlacePosition = require('../PlacePosition');
 import util = require('../../util');
-import Widget = require('../Widget');
 import widgets = require('../interfaces');
 
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
 class Element extends MultiNodeWidget {
+
 	childPlaceholders:Placeholder[];
 	children:widgets.IDomWidget[];
 	html:string;
@@ -22,6 +22,11 @@ class Element extends MultiNodeWidget {
 	private _childrenSetter(children:widgets.IDomWidget[]):void {
 		this.children = children;
 		this._refreshChildPlaceholders();
+	}
+
+	constructor(kwArgs:any) {
+		util.deferSetters(this, [ 'html' ], 'render');
+		super(kwArgs);
 	}
 
 	destroy():void {
@@ -117,7 +122,7 @@ class Element extends MultiNodeWidget {
 			}
 		}
 
-		// Create fragment and process comments before inserting
+		// We need to get a fragment and process the comments in it before inserting
 		var fragment:Node = domConstruct.toDom(this.html);
 		processChildren(fragment);
 		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);

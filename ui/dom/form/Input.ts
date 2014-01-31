@@ -9,6 +9,7 @@ class FormInput extends SingleNodeWidget {
 
 	constructor(kwArgs:Object = {}) {
 		this.debounceRate = 100;
+		util.deferSetters(this, [ 'value' ], 'render');
 		super(kwArgs);
 	}
 

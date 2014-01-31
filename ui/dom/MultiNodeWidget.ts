@@ -17,7 +17,6 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 			this._fragment = domUtil.getRange(this.firstNode, this.lastNode, true).extractContents();
 		}
 
-		super.detach();
 		return this._fragment;
 	}
 

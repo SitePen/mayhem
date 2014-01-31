@@ -18,13 +18,12 @@ var dojoConfig = {
 	<script src="../../../dojo/dojo.js"></script>
 	<script>
 require([
-	'framework/tests/integration/MyModel',
 	'framework/Application',
-	'framework/tests/integration/MyMediator',
 	'framework/ui/dom/Master',
-	'framework/templating/Parser',
-	'dojo/Deferred'
-], function (MyModel, Application, MyMediator, Master, Parser, Deferred) {
+	'framework/tests/integration/MyMediator',
+	'framework/tests/integration/MyModel',
+	'framework/templating/html!./template.html',
+], function (Application, Master, MyMediator, MyModel, processTemplate) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -45,37 +44,7 @@ require([
 
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
-
-		var template = [
-			'First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget> ',
-			'<widget is="framework/ui/dom/form/Error" binding="firstName"></widget>',
-			'Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget><br>',
-			'<widget is="framework/ui/dom/form/Error" binding="lastName"></widget>',
-			'Full Name composite field: {fullName}<br>',
-			'Read Only: {firstName} {lastName}<br>',
-			'<em>conditionals</em><br>',
-			'<p style="margin-left:20px">',
-				'<if condition="{firstName} == \'Joed\'">',
-					'(if) {firstName} matches Joed.<br>',
-				'<elseif condition="{firstName} == \'Joey\'">',
-					'(elseif) {firstName} matches Joey.<br>',
-				'<elseif condition="{firstName} == \'Joe\'">',
-					'(elseif 2) {firstName} matches Joe.<br>',
-				'<else>',
-					'(else) no match... <widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget>.<br>',
-				'</if>',
-			'</p>',
-			'<for each="a" value="b">',
-				'<li>foo</li>',
-			'</for>',
-			'<widget is="framework/ui/dom/form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>'
-		].join('');
-
-		console.log(Parser.parse(template));
-		var parser = new Parser({ app: app, mediator: mediator });
-		parser.process(template).then(function(el) {
-			masterView.add(el)
-		});
+		masterView.add(processTemplate(app, mediator));
 	});
 });
 		</script>

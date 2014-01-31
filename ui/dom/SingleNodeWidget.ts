@@ -11,7 +11,6 @@ class SingleNodeWidget extends Widget implements widgets.IDomWidget {
 	}
 
 	detach():Element {
-		super.detach();
 		return this.firstNode;
 	}
 

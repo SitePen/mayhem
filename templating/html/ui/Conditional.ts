@@ -1,6 +1,7 @@
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
 import domUtil = require('../../../ui/dom/util');
+import Processor = require('../../html');
 import Placeholder = require('./Placeholder');
 import widgets = require('../../../ui/interfaces');
 
@@ -10,10 +11,6 @@ class Conditional extends Placeholder {
 	private _predicateTerms:Array<string[]>;
 
 	constructor(kwArgs:any) {
-		var parser = kwArgs.parser;
-		// TODO: we may want a way to tell Observable to a key instead of using `delete`
-		delete kwArgs.parser;
-		
 		this._predicateTerms = [];
 		this._clauseWidgets = [];
 		this._observerMap = [];
@@ -25,15 +22,17 @@ class Conditional extends Placeholder {
 
 		super(kwArgs);
 
+		var mediator = this.get('mediator');
+
 		// Instantiate all conditional widgets, and alternate, regardless of predicate status
 		if (conditions) {
 			array.forEach(conditions, (condition:any, i:number) => {
-				this._clauseWidgets.push(parser.constructWidget(condition.content, this));
+				this._clauseWidgets.push(Processor.widgetFromAst(condition.content, this.app, mediator, this));
 				this._interpretCondition(condition.condition, i);
 			});
 		}
 		if (alternate) {
-			this._clauseWidgets.push(parser.constructWidget(alternate, this));
+			this._clauseWidgets.push(Processor.widgetFromAst(alternate, this.app, mediator, this));
 		}
 
 		this._evaluateConditions();
