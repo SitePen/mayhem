@@ -14,19 +14,21 @@ import widgets = require('../interfaces');
  */
 class Element extends MultiNodeWidget {
 
-	childPlaceholders:Placeholder[];
 	children:widgets.IDomWidget[];
 	html:string;
-	private _markup:any; // string | binding descriptor
-
-	private _childrenSetter(children:widgets.IDomWidget[]):void {
-		this.children = children;
-		this._refreshChildPlaceholders();
-	}
+	private _placeholders:Placeholder[];
 
 	constructor(kwArgs:any) {
-		util.deferSetters(this, [ 'html' ], 'render');
+		util.deferSetters(this, [ 'html' ], '_render');
 		super(kwArgs);
+		// TODO: find a better event name
+		this.on('childrenChanged', util.debounce(this._refreshPlaceholders));
+	}
+
+	private _childrenSetter(children:widgets.IDomWidget[]):void {
+		// TODO: destroy all old children that aren't in new children array?
+		this.children = children;
+		this.emit('childrenChanged');
 	}
 
 	destroy():void {
@@ -36,11 +38,9 @@ class Element extends MultiNodeWidget {
 	}
 
 	private _htmlSetter(markup:any):void {
-		// Clear out element and some widget properties
+		// TODO: clean up old bindings and children and such
+		this._placeholders = null;
 		this.empty();
-		this._markup = markup;
-		 // TODO: Clean up old bindings and children and such
-		this.childPlaceholders = [];
 
 		if (typeof markup === 'string') {
 			// If markup is a string no need to do any fancy processing
@@ -62,8 +62,9 @@ class Element extends MultiNodeWidget {
 		this.html = processed.join('');
 
 		var mediator = this.get('mediator'),
-			childPlaceholders = this.childPlaceholders;
+			placeholders = this._placeholders = [];
 
+		// We inline this function to take advantage of all the variables already closure captured
 		function processComment(node:Node) {
 			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
 				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
@@ -81,7 +82,7 @@ class Element extends MultiNodeWidget {
 			if (match) {
 				// Create placeholder and add to list
 				placeholder = new Placeholder({});
-				childPlaceholders[Number(match[1])] = placeholder;
+				placeholders[Number(match[1])] = placeholder;
 				// Replace marker node with placeholder fragment
 				fragment = domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
 				parent.replaceChild(fragment, node);
@@ -92,8 +93,6 @@ class Element extends MultiNodeWidget {
 			if (match) {
 				placeholder = new Placeholder({});
 				binding = markup[match[1]].binding;
-
-				// TODO: can we use proper bindings here?
 				var textNode = document.createTextNode(mediator.get(binding));
 				parent.replaceChild(textNode, node);
 				// TODO: drip drip drip...
@@ -106,15 +105,13 @@ class Element extends MultiNodeWidget {
 
 		// Recurse and handle comments standing in for child and binding placeholders
 		function processChildren(node:Node) {
-			var next:Node,
-				i:number,
-				length:number;
+			var next:Node;
 			// Iterate siblings
 			while (node != null) {
 				// Capture next sibling before manipulating dom
 				next = node.nextSibling;
 				// Sweep and process children recursively
-				for (i = 0, length = node.childNodes.length; i < length; ++i) {
+				for (var i = 0, length = node.childNodes.length; i < length; ++i) {
 					processChildren(node.childNodes[i]);
 				}
 				processComment(node);
@@ -122,23 +119,26 @@ class Element extends MultiNodeWidget {
 			}
 		}
 
-		// We need to get a fragment and process the comments in it before inserting
+		// We need to get a fragment from our markup and process its comments before inserting
 		var fragment:Node = domConstruct.toDom(this.html);
 		processChildren(fragment);
 		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);
-		// Refresh placeholders flashing the node structure
-		this._refreshChildPlaceholders();
+		this.emit('childrenChanged');
 	}
 
-	private _refreshChildPlaceholders():void {
-		// Noop if both child placeholders and children aren't set on widget
-		if (!this.childPlaceholders || !this.children) {
+	private _refreshPlaceholders():void {
+		// Noop if there are no placeholders or children
+		if (!this._placeholders || !this.children) {
 			return;
 		}
 		// Loop over child placeholders and set to associated child widget
-		array.forEach(this.childPlaceholders, (placeholder, i) => {
-			placeholder.set('content', this.children[i]);
-		});
+		var placeholder:Placeholder,
+			child:widgets.IDomWidget;
+		for (var i = 0, length = this._placeholders.length; i < length; ++i) {
+			placeholder = this._placeholders[i];
+			child = this.children[i];
+			placeholder.get('content') !== child && placeholder.set('content', child);
+		}
 	}
 }
 

@@ -14,9 +14,9 @@ class FormInput extends SingleNodeWidget {
 	value:string;
 
 	constructor(kwArgs:Object = {}) {
-		util.deferMethods(this, [ '_listen', '_parentSetter', '_valueSetter' ], '_render');
+		util.deferMethods(this, [ '_listen' ], '_render');
+		util.deferSetters(this, [ 'parent', 'value' ], '_render');
 		this.debounceRate = 100;
-		util.deferSetters(this, [ 'value' ], 'render');
 		super(kwArgs);
 	}
 

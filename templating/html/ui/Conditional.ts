@@ -16,9 +16,9 @@ class Conditional extends Placeholder {
 	constructor(kwArgs:any) {
 		this._predicateTerms = [];
 		this._conditionWidgets = [];
-		util.deferSetters(this, [ 'conditions', 'alternate' ], 'render');
+		util.deferSetters(this, [ 'conditions', 'alternate' ], '_render');
 		super(kwArgs);
-
+		// TODO: find a better event name
 		this.on('conditionChanged', util.debounce(this._evaluateConditions));
 		this._evaluateConditions();
 	}
@@ -34,12 +34,10 @@ class Conditional extends Placeholder {
 		this._conditionWidgets = [];
 		this._predicateTerms = [];
 
-		var i:number = 0,
-			length:number = conditions.length,
-			condition:any,
+		var condition:any,
 			mediator:core.IMediator = this.get('mediator');
 
-		for (; i < length; ++i) {
+		for (var i = 0, length = conditions.length; i < length; ++i) {
 			condition = conditions[i];
 			this._conditionWidgets[i] = this._constructWidget(condition.content);
 			this._predicateTerms[i] = this._interpretCondition(condition.condition);
@@ -52,12 +50,10 @@ class Conditional extends Placeholder {
 
 	// Evaluate predicate condition and switch currently attached widget if necessary
 	private _evaluateConditions():void {
-		var i:number = 0,
-			length:number = this._conditionWidgets.length,
-			widget:widgets.IDomWidget,
+		var widget:widgets.IDomWidget,
 			terms:string[],
 			current:widgets.IDomWidget = this.get('content');
-		for (; i < length; ++i) {
+		for (var i = 0, length = this._conditionWidgets.length; i < length; ++i) {
 			widget = this._conditionWidgets[i];
 			terms = this._predicateTerms[i];
 			// Evaluate predicate terms if they exist and have a widget available

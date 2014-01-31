@@ -6,15 +6,15 @@ import util = require('../../util');
 import widgets = require('../interfaces');
 
 /* abstract */ class DomContainer implements widgets.IContainer {
+	
 	children:widgets.IDomWidget[] = [];
-	placeholders:{ [id:string]: DomPlaceholder; } = {};
-
 	// widgets.IWidget
 	firstNode:Node;
 	get:(key:string) => any;
 	id:string;
 	lastNode:Node;
 	parent:widgets.IContainerWidget;
+	placeholders:{ [id:string]: DomPlaceholder; } = {};
 
 	add(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
 	add(widget:widgets.IDomWidget, position:number):IHandle;
