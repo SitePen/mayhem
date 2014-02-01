@@ -29,7 +29,7 @@ class FormButton extends SingleNodeWidget {
 	}
 
 	// TODO: list (or map) of attributes to pass through to node?
-	render():void {
+	/* protected */ _render():void {
 		this.firstNode = this.lastNode = document.createElement('button');
 		if (this.type) {
 			this.firstNode.setAttribute('type', this.type);

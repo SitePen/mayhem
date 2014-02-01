@@ -13,7 +13,7 @@ class Label extends SingleNodeWidget {
 	text:string;
 
 	constructor(kwArgs?:Object) {
-		util.deferSetters(this, [ 'binding', 'formattedText', 'for', 'text' ], 'render');
+		util.deferSetters(this, [ 'binding', 'formattedText', 'for', 'text' ], '_render');
 		super(kwArgs);
 	}
 
@@ -43,7 +43,7 @@ class Label extends SingleNodeWidget {
 		this.firstNode.htmlFor = id;
 	}
 
-	render() {
+	/* protected */ _render():void {
 		this.firstNode = this.lastNode = document.createElement('label');
 	}
 

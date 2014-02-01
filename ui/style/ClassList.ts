@@ -2,12 +2,9 @@ import lang = require('dojo/_base/lang');
 import Proxty = require('../../Proxty');
 import widgets = require('../interfaces');
 
-class DomClassList extends Proxty<string> implements widgets.IClassList {
-	private _widget:widgets.IDomWidget;
-
-	constructor(widget:widgets.IDomWidget) {
-		this._widget = widget;
-		super('');
+class ClassList extends Proxty<string> implements widgets.IClassList {
+	constructor(initialValue:string = '') {
+		super(initialValue);
 	}
 
 	add(className:string):void {
@@ -47,24 +44,6 @@ class DomClassList extends Proxty<string> implements widgets.IClassList {
 		this.set(lang.trim(classList));
 	}
 
-	set(className:string):void {
-		if (this._widget.firstNode === this._widget.lastNode) {
-			(<HTMLElement> this._widget.firstNode).className = className;
-		}
-		else {
-			var node:HTMLElement = <HTMLElement> <any> this._widget.firstNode;
-
-			do {
-				if (node.className) {
-					node.className = className;
-				}
-			}
-			while ((node = <HTMLElement> <any> node.nextSibling) && node !== this._widget.lastNode);
-		}
-
-		super.set(className);
-	}
-
 	toggle(className:string, forceState?:boolean):void {
 		if (forceState != null) {
 			this[forceState ? 'add' : 'remove'](className);
@@ -79,4 +58,4 @@ class DomClassList extends Proxty<string> implements widgets.IClassList {
 	}
 }
 
-export = DomClassList;
+export = ClassList;

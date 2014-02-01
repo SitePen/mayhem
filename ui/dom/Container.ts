@@ -116,11 +116,11 @@ import widgets = require('../interfaces');
 		if (typeof index !== 'number') {
 			widget = index;
 
-			if (has('debug') && widget !== this.children[widget.index]) {
-				throw new Error('Attempt to remove widget ' + widget.id + ' from non-parent ' + this.id);
+			if (has('debug') && widget !== this.children[widget.get('index')]) {
+				throw new Error('Attempt to remove widget ' + widget.get('id') + ' from non-parent ' + this.get('id'));
 			}
 
-			index = widget.index;
+			index = widget.get('index');
 		}
 		else {
 			widget = this.children[index];

@@ -3,6 +3,7 @@ import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
+import Style = require('./style/Style');
 import style = require('./style/interfaces');
 
 export interface IClassList extends core.IProxty<string> {
@@ -43,23 +44,27 @@ export interface IView extends IWidget {
 }
 
 export interface IWidget extends ObservableEvented {
-	canHaveChildren?:boolean;
-	classList:IClassList;
-	id:string;
-	index:number;
-	// TODO: Not sure there should be a hard dependency on mediator for widgets
-	mediator:core.IMediator;
-	next:IWidget;
-	parent:IContainer;
-	previous:IWidget;
-	style:style.IStyle;
-
 	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
 	destroy():void;
 	detach():void;
 	empty():void;
+	get(key:'app'):core.IApplication;
+	get(key:'classList'):IClassList;
+	get(key:'id'):string;
+	get(key:'index'):number;
+	get(key:'mediator'):core.IMediator;
+	get(key:'next'):IWidget;
+	get(key:'parent'):IContainerWidget;
+	get(key:'previous'):IWidget;
+	get(key:'style'):Style;
+	get(key:string):any;
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IContainer, position:number):IHandle;
 	placeAt(destination:IContainer, placeholder:string):IHandle;
 	resize?(bounds?:{ width:number; height:number; }):void;
+	set(kwArgs:{ [key:string]: any; }):any;
+	set(key:'app', value:core.IApplication):void;
+	set(key:'id', value:string):void;
+	set(key:'mediator', value:core.IMediator):void;
+	set(key:string, value:any):any;
 }

@@ -9,7 +9,7 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 
 	constructor(kwArgs:Object) {
 		super(kwArgs);
-		this.render();
+		this._render();
 	}
 
 	detach():DocumentFragment {
@@ -24,7 +24,7 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
 	}
 
-	render():void {
+	/* protected */ _render():void {
 		var commentId:string = this.id.replace(/--/g, '\u2010\u2010');
 		this.firstNode = document.createComment(commentId);
 		this.lastNode = document.createComment('/' + commentId);

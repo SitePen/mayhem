@@ -1,13 +1,20 @@
+/// <reference path="../../../dijit" />
+
 import SingleNodeWidget = require('../SingleNodeWidget');
+import TextBox = require('dijit/form/TextBox');
 import util = require('../../../util');
+import widget = require('../../interfaces');
 
 class FormInput extends SingleNodeWidget {
+	private _dijit:TextBox;
 	debounceRate:number;
-	firstNode:HTMLInputElement;
-	lastNode:HTMLInputElement;
+	firstNode:HTMLElement;
+	lastNode:HTMLElement;
+	private _listenHandle:IHandle;
 	value:string;
 
 	constructor(kwArgs:Object = {}) {
+		util.deferMethods(this, [ '_listen', '_parentSetter', '_valueSetter' ], '_render');
 		this.debounceRate = 100;
 		util.deferSetters(this, [ 'value' ], 'render');
 		super(kwArgs);
@@ -19,31 +26,38 @@ class FormInput extends SingleNodeWidget {
 	}
 
 	destroy():void {
-		this.firstNode.oninput = null;
+		this._listenHandle && this._listenHandle.remove();
+		this._dijit && this._dijit.destroyRecursive();
+		this._dijit = this._listenHandle = null;
 		super.destroy();
 	}
 
 	_listen():void {
-		if (this.firstNode) {
-			this.firstNode.oninput = util.debounce((event:Event):void => {
-				this.set('value', this.firstNode.value);
-			}, this.debounceRate);
-		}
+		this._listenHandle && this._listenHandle.remove();
+		this._listenHandle = this._dijit.watch('value', util.debounce((key:string, oldValue:string, newValue:string):void => {
+			this.set('value', newValue);
+		}, this.debounceRate));
 	}
 
-	render():void {
-		this.firstNode = this.lastNode = document.createElement('input');
+	_parentSetter(value:widget.IContainerWidget):void {
+		this.parent = value;
+
+		if (document.documentElement.contains(this.firstNode)) {
+			this._dijit.startup();
+		}
+		// TODO: otherwise, we need to start when the parent starts, whenever that is, whatever that means
+	}
+
+	/* protected */ _render():void {
+		this._dijit = new TextBox({ intermediateChanges: true });
+		this.classList.set(this._dijit.domNode.className);
+		this.firstNode = this.lastNode = this._dijit.domNode;
 		this._listen();
 	}
 
 	_valueSetter(value:string):void {
 		this.value = value;
-
-		// Setting the value of the input field causes the cursor to move to the end of the field in at least
-		// Chrome 32, even if the values are identical
-		if (this.firstNode.value !== '' + value) {
-			this.firstNode.value = value;
-		}
+		this._dijit.set('value', value);
 	}
 }
 

@@ -18,3 +18,14 @@ export function getRange(start:Node, end:Node, exclusive:boolean = false):Range 
 
 	return range;
 }
+
+export function setStyle(node:HTMLElement, key:string, value:any):void {
+	if (value == null) {
+		value = '';
+	}
+	else if (typeof value === 'number' && value !== 0) {
+		value += 'px';
+	}
+
+	node.style[<any> key] = value;
+}

@@ -3,10 +3,12 @@
 import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
+import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
+import Style = require('./style/Style');
 import style = require('./style/interfaces');
 import util = require('../util');
 import widgets = require('./interfaces');
@@ -16,7 +18,7 @@ var uid = 0,
 
 // TODO: Create and use ObservableEvented
 class Widget extends ObservableEvented implements widgets.IWidget {
-	
+
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		require([ resourceId ], load);
 	}
@@ -25,17 +27,15 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		return normalize('./' + platform + resourceId);
 	}
 
-	app:core.IApplication;
+	/* protected */ app:core.IApplication;
 	private _bindings:binding.IBindingHandle[];
-	classList:widgets.IClassList;
-	id:string;
-	index:number;
+	/* protected */ classList:widgets.IClassList;
+	/* protected */ id:string;
+	/* protected */ index:number;
 	// TODO: Not sure if mediator belongs here. Should go to IView?
-	mediator:core.IMediator;
-	/* readonly */ next:widgets.IWidget;
-	parent:widgets.IContainerWidget;
-	/* readonly */ previous:widgets.IWidget;
-	style:style.IStyle;
+	/* protected */ mediator:core.IMediator;
+	/* protected */ parent:widgets.IContainerWidget;
+	/* protected */ style:Style;
 
 	constructor(kwArgs:Object = {}) {
 		this._bindings = [];
@@ -44,6 +44,9 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		if (!('id' in kwArgs)) {
 			this.id = 'Widget' + (++uid);
 		}
+
+		this.classList = new ClassList();
+		this.style = new Style();
 
 		super(kwArgs);
 	}
@@ -72,6 +75,20 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 	empty():void {
 
+	}
+
+	get(key:'app'):core.IApplication;
+	get(key:'classList'):widgets.IClassList;
+	get(key:'id'):string;
+	get(key:'index'):number;
+	get(key:'mediator'):core.IMediator;
+	get(key:'next'):widgets.IWidget;
+	get(key:'parent'):widgets.IContainerWidget;
+	get(key:'previous'):widgets.IWidget;
+	get(key:'style'):Style;
+	get(key:string):any;
+	get(key:string):any {
+		return super.get(key);
 	}
 
 	destroy():void {
@@ -119,27 +136,29 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 			throw new Error('Cannot place widget at undefined destination');
 		}
 
+		var destinationParent:widgets.IContainerWidget = destination.get('parent');
+
 		if (position === PlacePosition.BEFORE) {
-			if (has('debug') && !destination.parent) {
-				throw new Error('Destination widget ' + destination.id + ' must have a parent in order to place before it');
+			if (has('debug') && !destinationParent) {
+				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to place before it');
 			}
 
-			handle = destination.parent.add(this, destination.index);
+			handle = destinationParent.add(this, destination.get('index'));
 		}
 		else if (position === PlacePosition.AFTER) {
-			if (has('debug') && !destination.parent) {
-				throw new Error('Destination widget ' + destination.id + ' must have a parent in order to place after it');
+			if (has('debug') && !destinationParent) {
+				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to place after it');
 			}
 
-			handle = destination.parent.add(this, destination.index + 1);
+			handle = destinationParent.add(this, destination.get('index') + 1);
 		}
 		else if (position === PlacePosition.REPLACE) {
-			if (has('debug') && !destination.parent) {
-				throw new Error('Destination widget ' + destination.id + ' must have a parent in order to replace it');
+			if (has('debug') && !destinationParent) {
+				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to replace it');
 			}
 
 			var index:number = destination.get('index'),
-				parent:widgets.IContainer = destination.get('parent');
+				parent:widgets.IContainer = destinationParent;
 			destination.detach();
 			handle = parent.add(this, index);
 		}

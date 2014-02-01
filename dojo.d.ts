@@ -12,12 +12,12 @@ interface IDeferred<T> extends IPromise<T> {
 
 interface IEvented {
 	emit(type:string, event?:Event):void;
-	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
-	on(type:string, listener:(event:Event) => void):IHandle;
+	on(type:IExtensionEvent, listener:EventListener):IHandle;
+	on(type:string, listener:EventListener):IHandle;
 }
 
 interface IExtensionEvent {
-	(target:Object, callback:(event:Event) => void):IHandle;
+	(target:Object, callback:EventListener):IHandle;
 }
 
 interface IHandle {
@@ -181,8 +181,14 @@ declare module 'dojo/Stateful' {
 		get(key:string):any;
 		set(kwArgs:Object):void;
 		set(key:string, value:any):void;
-		watch(callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
-		watch(key:string, callback:(key:string, oldValue:any, newValue:any) => void):IHandle;
+		watch(callback:Stateful.ICallback<any>):IHandle;
+		watch(key:string, callback:Stateful.ICallback<any>):IHandle;
+	}
+
+	module Stateful {
+		export interface ICallback<T> {
+			(key:string, oldValue:T, newValue:T):void;
+		}
 	}
 
 	export = Stateful;

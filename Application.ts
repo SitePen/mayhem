@@ -9,8 +9,7 @@ import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends ObservableEvented implements core.IApplication {
-// TODO: TS 0.9.1 does not like this
-//	[applicationComponent:string]:any;
+	[applicationComponent:string]:any;
 	binder:binding.IBinder;
 	modules:{ [ propertyName:string ]:{ constructor: any; } };
 	scheduler:core.IScheduler;

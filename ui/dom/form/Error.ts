@@ -15,7 +15,7 @@ class FormError extends SingleNodeWidget {
 	lastNode:HTMLUListElement;
 
 	constructor(kwArgs?:Object) {
-		util.deferMethods(this, [ '_updateDisplay' ], 'render');
+		util.deferMethods(this, [ '_updateDisplay' ], '_render');
 		super(kwArgs);
 	}
 
@@ -36,7 +36,7 @@ class FormError extends SingleNodeWidget {
 		this._updateBinding();
 	}
 
-	render():void {
+	/* protected */ _render():void {
 		this.firstNode = this.lastNode = document.createElement('ul');
 	}
 
