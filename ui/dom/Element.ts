@@ -3,6 +3,7 @@ import core = require('../../interfaces');
 import domConstruct = require('dojo/dom-construct');
 import DomContainer = require('./Container');
 import domUtil = require('./util');
+import lang = require('dojo/_base/lang');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Placeholder = require('./Placeholder');
 import PlacePosition = require('../PlacePosition');
@@ -14,6 +15,7 @@ import widgets = require('../interfaces');
  */
 class Element extends MultiNodeWidget {
 
+	private _boundTextNodes:Text[];
 	children:widgets.IDomWidget[];
 	html:string;
 	private _placeholders:Placeholder[];
@@ -26,85 +28,97 @@ class Element extends MultiNodeWidget {
 	}
 
 	private _childrenSetter(children:widgets.IDomWidget[]):void {
-		// TODO: destroy all old children that aren't in new children array?
 		this.children = children;
 		this.emit('childrenChanged');
 	}
 
+	private _createChildPlaceholder(index:number):DocumentFragment {
+		var placeholder:Placeholder = this._placeholders[index] = new Placeholder({});
+		return domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
+	}
+
+	private _createTextBinding(index:number, binding:string):Text {
+		var textNode:Text = this._boundTextNodes[index] = document.createTextNode('');
+		// TODO: might be best to do something like this: this.bind('_boundText.' + index, binding)
+		// and then set our text nodes on changes, but NestedProxty isn't cooperating
+		// If we can figure this ou twe can remove the half-baked NodeProxty too
+		this.addBinding(this.app.binder.bind({
+			source: this.get('mediator'), // TODO: we may want to cache for long scope lookup chains
+			sourceBinding: binding,
+			target: textNode,
+			targetBinding: 'nodeValue'
+		}));
+		return textNode;
+	}
+
 	destroy():void {
+		array.forEach(this._placeholders || [], (item) => item.destroy());
 		array.forEach(this.children, (child) => child.destroy());
-		this.children = null;
+		this._boundTextNodes = this.children = this._placeholders = null;
 		super.destroy();
 	}
 
-	private _htmlSetter(markup:any):void {
-		// TODO: clean up old bindings and children and such
-		this._placeholders = null;
+	empty():void {
+		super.empty();
+		this._placeholders = [];
+		this._boundTextNodes = [];
+	}
+
+	private _htmlSetter(html:any):void {
 		this.empty();
 
-		if (typeof markup === 'string') {
-			// If markup is a string no need to do any fancy processing
-			this.html = markup;
-			this.lastNode.parentNode.insertBefore(domConstruct.toDom(markup), this.lastNode);
+		// If html is a string no need to do any fancy processing
+		if (typeof html === 'string') {
+			this.html = html;
+			this.lastNode.parentNode.insertBefore(domConstruct.toDom(html), this.lastNode);
 			return;
 		}
 
-		// Process and create placeholders for all bindings
-		// This should typically be followed by a call to set children
-		// TODO: make it so that ordering of set('html') / set('children') is unimportant
-		var processed:string[] = array.map(markup, (item:any, i:number) => {
+		var createChildPlaceholder = lang.hitch(this, this._createChildPlaceholder),
+			createTextBinding = lang.hitch(this, this._createTextBinding),
+			CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
+			BINDING_PATTERN:RegExp = /^\s*binding#(\d+)\s*$/;
+
+		// Process and create placeholders for children and text node bindings
+		// (this should typically be followed by a call to set children)
+		var processed:string[] = array.map(html, (item:any, i:number) => {
 			if (!item.binding) {
 				return item;
 			}
-			// insert comment to mark binding location
+			// Insert comment to mark binding location so we easily replace in generated dom
 			return '<!-- binding#' + i + ' -->';
 		});
 		this.html = processed.join('');
 
-		var mediator = this.get('mediator'),
-			placeholders = this._placeholders = [];
-
-		// We inline this function to take advantage of all the variables already closure captured
-		function processComment(node:Node) {
-			var childPattern:RegExp = /^\s*child#(\d+)\s*$/,
-				bindingPattern:RegExp = /^\s*binding#(\d+)\s*$/,
-				parent:Node = node.parentNode,
+		function processComment(node:Node):void {
+			var parent:Node = node.parentNode,
 				match:string[],
-				placeholder:Placeholder,
-				fragment:DocumentFragment,
-				binding:string;
+				newNode:Node,
+				index:number;
 			// We only care about comment nodes
 			if (node.nodeType !== Node.COMMENT_NODE) {
 				return;
 			}
 			// Test for child comment marker
-			match = node.nodeValue.match(childPattern);
+			match = node.nodeValue.match(CHILD_PATTERN);
 			if (match) {
-				// Create placeholder and add to list
-				placeholder = new Placeholder({});
-				placeholders[Number(match[1])] = placeholder;
-				// Replace marker node with placeholder fragment
-				fragment = domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
-				parent.replaceChild(fragment, node);
+				index = Number(match[1]);
+				newNode = createChildPlaceholder(index);
+				parent.replaceChild(newNode, node);
 				return;
 			}
-			// Test for binding comment marker
-			match = node.nodeValue.match(bindingPattern);
+			// Test for bound text comment marker
+			match = node.nodeValue.match(BINDING_PATTERN);
 			if (match) {
-				placeholder = new Placeholder({});
-				binding = markup[match[1]].binding;
-				var textNode = document.createTextNode(mediator.get(binding));
-				parent.replaceChild(textNode, node);
-				// TODO: drip drip drip...
-				var handle = mediator.observe(binding, (newValue:any) => {
-					textNode.nodeValue = newValue;
-				});
+				index = Number(match[1]);
+				newNode = createTextBinding(index, html[index].binding);
+				parent.replaceChild(newNode, node);
 				return;
 			}
 		}
 
 		// Recurse and handle comments standing in for child and binding placeholders
-		function processChildren(node:Node) {
+		function processChildren(node:Node):void {
 			var next:Node;
 			// Iterate siblings
 			while (node != null) {
@@ -127,7 +141,7 @@ class Element extends MultiNodeWidget {
 	}
 
 	private _refreshPlaceholders():void {
-		// Noop if there are no placeholders or children
+		// Nothing to do if there are no placeholders or children
 		if (!this._placeholders || !this.children) {
 			return;
 		}

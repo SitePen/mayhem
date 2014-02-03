@@ -37,7 +37,8 @@ class Application extends ObservableEvented implements core.IApplication {
 					proxties: [
 						'framework/binding/proxties/NestedProxty',
 						'framework/binding/proxties/ObservableProxty',
-						'framework/binding/proxties/StatefulProxty'
+						'framework/binding/proxties/StatefulProxty',
+						'framework/binding/proxties/NodeProxty',
 					]
 				},
 // TODO: Fix-up and re-enable

@@ -67,19 +67,19 @@ class Processor {
 			}).join('');
 		}
 
-		function observeBindingTemplate(field:string, items:any[]):string {
+		function observeBindingTemplate(field:string, items:any[]):IHandle[] {
+			var handles:IHandle[] = [];
 			for (var i = 0, length = items.length; i < length; ++i) {
 				var binding:string = items[i] && items[i].binding;
 				if (!binding) {
 					continue;
 				}
-				// TODO: observe multiple keys at once?
-				// TODO: where to put these handles?
-				mediator.observe(binding, () => {
+				handles.push(mediator.observe(binding, () => {
+					// TODO: something lke widget.bind(productProxy(items), field);
 					widget.set(field, fillBindingTemplate(items));
-				});
+				}));
 			}
-			return fillBindingTemplate(items);
+			return handles;
 		}
 
 		var options:any = {},
@@ -87,7 +87,8 @@ class Processor {
 			items:any,
 			WidgetCtor = Processor.getWidgetCtor(node),
 			widget:widgets.IDomWidget,
-			fieldBindings:{ [key:string]: string; } = {};
+			fieldBindings:{ [key:string]: string; } = {},
+			bindingTemplates:{ [key:string]: any; } = {};
 
 		// We have to clean up keys on our node before using them to construct a widget
 		for (key in node) {
@@ -116,9 +117,7 @@ class Processor {
 				fieldBindings[key] = items[0].binding;
 			}
 			else {
-				options[key] = observeBindingTemplate(key, items);
-
-				
+				bindingTemplates[key] = items;
 			}
 		}
 
@@ -135,9 +134,13 @@ class Processor {
 		if (node.children) {
 			widget.set('children', array.map(node.children, (child) => Processor.widgetFromAst(child, app, mediator, widget)));
 		}
-		// Set up widget bindings after construction
-		for (var key in fieldBindings) {
+		// We need to defer binding setup until after widget construction
+		for (key in fieldBindings) {
 			widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
+		}
+		for (key in bindingTemplates) {
+			// TODO: stash returned handles on widget for cleanup
+			observeBindingTemplate(key, bindingTemplates[key]);
 		}
 		return widget;
 	}

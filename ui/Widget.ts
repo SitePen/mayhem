@@ -51,6 +51,12 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		super(kwArgs);
 	}
 
+	// TODO: it's not always possible to do a strait widget.bind (e.g. array targets)
+	// but we still want binds cleaned up consistently so we can just expose the capability to add
+	/* protected */ addBinding(binding:binding.IBindingHandle) {
+		this._bindings.push(binding);
+	}
+
 	// TODO: Change bind options to be an interface
 	bind(propertyName:string, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
 		var bindings = this._bindings,
