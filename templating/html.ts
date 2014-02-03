@@ -23,7 +23,7 @@ class Processor {
 			var dependencies = Processor.scanForDependencies(ast);
 			require(dependencies, () => {
 				load(function(app:core.IApplication, mediator:core.IMediator) {
-					return Processor.widgetFromAst(ast, app, mediator);
+					return Processor.widgetFromAst(ast, app, { mediator: mediator });
 				});
 			});
 		});
@@ -59,30 +59,9 @@ class Processor {
 		return dependencies;
 	}
 
-	static widgetFromAst(node:any, app:any, mediator:any, parent?:widgets.IDomWidget):widgets.IDomWidget {
-		// Flattens out an array containing strings and binding objects
-		function fillBindingTemplate(items:any[]):string {
-			return array.map(items, (item:any) => {
-				return item.binding ? mediator.get(item.binding) : item;
-			}).join('');
-		}
-
-		function observeBindingTemplate(field:string, items:any[]):IHandle[] {
-			var handles:IHandle[] = [];
-			for (var i = 0, length = items.length; i < length; ++i) {
-				var binding:string = items[i] && items[i].binding;
-				if (!binding) {
-					continue;
-				}
-				handles.push(mediator.observe(binding, () => {
-					// TODO: something lke widget.bind(productProxy(items), field);
-					widget.set(field, fillBindingTemplate(items));
-				}));
-			}
-			return handles;
-		}
-
+	static widgetFromAst(node:any, app:any, kwArgs:{ mediator?:core.IMediator; parent?:widgets.IDomWidget }):widgets.IDomWidget {
 		var options:any = {},
+			mediator:core.IMediator = kwArgs.mediator || kwArgs.parent.get('mediator'),
 			key:string,
 			items:any,
 			WidgetCtor = Processor.getWidgetCtor(node),
@@ -90,7 +69,7 @@ class Processor {
 			fieldBindings:{ [key:string]: string; } = {},
 			bindingTemplates:{ [key:string]: any; } = {};
 
-		// We have to clean up keys on our node before using them to construct a widget
+		// A little clean up for the keys from our node before we can use them to construct a widget
 		for (key in node) {
 			items = node[key];
 			if (items === undefined) {
@@ -122,26 +101,45 @@ class Processor {
 		}
 
 		options.app = app;
-		if (parent) {
-			options.parent = parent;
+		if (kwArgs.parent) {
+			options.parent = kwArgs.parent;
 		}
-		else {
-			options.mediator = mediator;
+		if (kwArgs.mediator) {
+			options.mediator = kwArgs.mediator;
 		}
 		widget = new WidgetCtor(options);
 
+		function observeBindingTemplate(field:string, items:any[]):IHandle[] {
+			var handles:IHandle[] = [];
+			for (var i = 0, length = items.length; i < length; ++i) {
+				var binding:string = items[i] && items[i].binding;
+				if (!binding) {
+					continue;
+				}
+				handles.push(mediator.observe(binding, () => {
+					// TODO: something lke widget.bind(productProxy(items), field);
+					// Flatten out array String|Binding array, filling in the bindings
+					widget.set(field, array.map(items, (item:any) => {
+						return item.binding ? mediator.get(item.binding) : item;
+					}).join(''));
+				}));
+			}
+			return handles;
+		}
+		var observerHandles:IHandle[] = [];
+
 		// TODO: find a way to avoid these post-construction tasks
 		if (node.children) {
-			widget.set('children', array.map(node.children, (child) => Processor.widgetFromAst(child, app, mediator, widget)));
+			widget.set('children', array.map(node.children, (child) => Processor.widgetFromAst(child, app, { parent: widget })));
 		}
 		// We need to defer binding setup until after widget construction
 		for (key in fieldBindings) {
 			widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
 		}
 		for (key in bindingTemplates) {
-			// TODO: stash returned handles on widget for cleanup
-			observeBindingTemplate(key, bindingTemplates[key]);
+			observerHandles.concat(observeBindingTemplate(key, bindingTemplates[key]));
 		}
+		// TODO: stash observerHandles on widget and make sure they're cleaned up
 		return widget;
 	}
 }

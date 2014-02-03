@@ -6,14 +6,14 @@ Full Name composite field: {fullName}<br>
 Read Only: {firstName} {lastName}<br>
 <em>conditionals</em><br>
 <p style="margin-left:20px">
-	<if condition="{firstName} == 'Joed'">
-		(if) {firstName} matches Joed.<br>
-	<elseif condition="{firstName} == 'Joey'">
-		(elseif) {firstName} matches Joey.<br>
-	<elseif condition="{firstName} == 'Joe'">
-		(elseif 2) {firstName} matches Joe.<br>
+	<if condition="firstNameIsJoey">
+		(1) first name is Joey.<br>
+	<elseif condition="lastNameIsBloggs">
+		(2) last name is Bloggs.<br>
+	<elseif condition="fullNameIsJoeBob">
+		(3) full name is Joe Bob.<br>
 	<else>
-		(else) no match... <widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>
+		(X) No match... <widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>
 	</if>
 </p>
 <for each="a" value="b">

@@ -7,86 +7,93 @@ import util = require('../../../util');
 import widgets = require('../../../ui/interfaces');
 
 class Conditional extends Placeholder {
-	alternate:any;
 	private _alternateWidget:widgets.IDomWidget;
-	conditions:any;
+	private _conditionHandles:IHandle[];
+	private _conditions:any;
 	private _conditionWidgets:widgets.IDomWidget[];
-	private _predicateTerms:Array<string[]>;
+	private _evaluateConditions:Function;
 
 	constructor(kwArgs:any) {
-		this._predicateTerms = [];
-		this._conditionWidgets = [];
 		util.deferSetters(this, [ 'conditions', 'alternate' ], '_render');
+		this._evaluateConditions = util.debounce(this.__evaluateConditions);
 		super(kwArgs);
-		// TODO: find a better event name
-		this.on('conditionChanged', util.debounce(this._evaluateConditions));
-		this._evaluateConditions();
 	}
 
 	private _alternateSetter(alternate:any):void {
-		this.alternate = alternate;
 		this._alternateWidget = this._constructWidget(alternate);
 	}
 
-	private _conditionsSetter(conditions:any):void {
-		this.conditions = conditions;
-		// TODO clean up old condition widgets if present
-		this._conditionWidgets = [];
-		this._predicateTerms = [];
-
-		var condition:any,
-			mediator:core.IMediator = this.get('mediator');
-
-		for (var i = 0, length = conditions.length; i < length; ++i) {
-			condition = conditions[i];
-			this._conditionWidgets[i] = this._constructWidget(condition.content);
-			this._predicateTerms[i] = this._interpretCondition(condition.condition);
+	private _clearConditionHandles():void {
+		var handles = this._conditionHandles || [];
+		for (var i = 0, length = handles.length; i < length; ++i) {
+			handles[i].remove();
 		}
+		this._conditionHandles = null;
+	}
+
+	private _conditionsSetter(conditions:any):void { // TODO: IConditionsNode?
+		this._conditionWidgets = [];
+		this._conditions = conditions;
+		for (var i = 0, length = conditions.length; i < length; ++i) {
+			this._conditionWidgets[i] = this._constructWidget(conditions[i].content);
+		}
+		this._updateBinding();
 	}
 
 	private _constructWidget(node:any):widgets.IDomWidget {
-		return Processor.widgetFromAst(node, this.app, this.get('mediator'), this);
+		return Processor.widgetFromAst(node, this.app, { parent: this });
+	}
+
+	destroy():void {
+		this._clearConditionHandles();
+		array.forEach(this._conditionWidgets || [], (widget) => widget.destroy());
+		this._alternateWidget && this._alternateWidget.destroy();
+
+		this._conditions = null;
+		this._alternateWidget = this._conditionWidgets = null;
+
+		super.destroy();
 	}
 
 	// Evaluate predicate condition and switch currently attached widget if necessary
-	private _evaluateConditions():void {
-		var widget:widgets.IDomWidget,
-			terms:string[],
-			current:widgets.IDomWidget = this.get('content');
-		for (var i = 0, length = this._conditionWidgets.length; i < length; ++i) {
-			widget = this._conditionWidgets[i];
-			terms = this._predicateTerms[i];
-			// Evaluate predicate terms if they exist and have a widget available
-			if (widget && terms && eval(terms.join(''))) {
-				current !== widget && this.set('content', widget);
+	private __evaluateConditions():void {
+		var mediator:core.IMediator = this.get('mediator'),
+			bindingFields:string[] = this._getBindingFields();
+		for (var i = 0, length = bindingFields.length; i < length; ++i) {
+			if (mediator.get(bindingFields[i])) {
+				console.log('MATCH!!! condition: ', i, mediator.get(bindingFields[i]))
+				this.set('content', this._conditionWidgets[i]);
 				return;
 			}
 		}
-		// Set content to alterante widget (or nothing at all if no else clause)
-		widget = this._alternateWidget;
-		current !== widget && this.set('content', widget);
+		// Set content to alternate widget (or nothing at all)
+		this.set('content', this._alternateWidget);
 	}
 
-	// Interpret binding in conditional heads and create relevant observers
-	private _interpretCondition(condition:any[]):string[] {
-		var mediator:core.IMediator = this.get('mediator'),
-			terms:string[] = [];
-		array.forEach(condition, (item:any, i:number) => {
-			// If not a binding object toString and set in term array
-			if (!item || !item.binding) {
-				terms[i] = item.toString();
-				return;
-			}
-			// TODO: drip drip
-			mediator.observe(item.binding, (newValue:any) => {
-				terms[i] = JSON.stringify(newValue);
-				this.emit('conditionChanged');
-			});
-			terms[i] = JSON.stringify(mediator.get(item.binding));
+	private _getBindingFields():string[] {
+		var fields:string[] = [];
+		for (var i = 0, length = this._conditions.length; i < length; ++i) {
+			// Coerce to string since condition might be a 1-element array
+			fields.push('' + this._conditions[i].condition);
+		};
+		return fields;
+	}
+
+	/* protected */ _mediatorSetter(value:core.IMediator):void {
+		super._mediatorSetter(value);
+		this._updateBinding();
+	}
+
+	private _updateBinding():void {
+		this._clearConditionHandles();
+		this._conditionHandles = [];
+
+		var mediator:core.IMediator = this.get('mediator');
+		array.forEach(this._getBindingFields(), (field, i) => {
+			this._conditionHandles[i] = mediator.observe(field, this._evaluateConditions(this));
 		});
-		return terms;
+		this._evaluateConditions();
 	}
-
 }
 
 export = Conditional;

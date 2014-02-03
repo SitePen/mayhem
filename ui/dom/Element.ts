@@ -52,8 +52,8 @@ class Element extends MultiNodeWidget {
 	}
 
 	destroy():void {
-		array.forEach(this._placeholders || [], (item) => item.destroy());
-		array.forEach(this.children, (child) => child.destroy());
+		array.forEach(this._placeholders || [], (item:Placeholder) => item.destroy());
+		array.forEach(this.children, (child:widgets.IDomWidget) => child.destroy());
 		this._boundTextNodes = this.children = this._placeholders = null;
 		super.destroy();
 	}

@@ -53,7 +53,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 	// TODO: it's not always possible to do a strait widget.bind (e.g. array targets)
 	// but we still want binds cleaned up consistently so we can just expose the capability to add
-	/* protected */ addBinding(binding:binding.IBindingHandle) {
+	/* protected */ addBinding(binding:binding.IBindingHandle):void {
 		this._bindings.push(binding);
 	}
 
@@ -70,8 +70,8 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 		bindings.push(handle);
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				handle.remove();
 				util.spliceMatch(bindings, handle);
 				bindings = handle = null;
@@ -98,7 +98,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	}
 
 	destroy():void {
-		this.destroy = function () {};
+		this.destroy = function ():void {};
 
 		this.detach();
 

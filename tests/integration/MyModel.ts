@@ -33,6 +33,12 @@ class MyModel extends Model {
 						lastName: names.slice(1).join(' ')
 					});
 				}
+			}),
+
+			firstNameIsJoey: Model.property<boolean>({
+				_valueGetter: function ():boolean {
+					return this.model.get('firstName') === 'Joey';
+				}
 			})
 		};
 
