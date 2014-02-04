@@ -27,15 +27,15 @@ class MyMediator extends Mediator {
 		var dfd:IDeferred<string> = new Deferred<string>();
 		setTimeout(():void => {
 			dfd.resolve('remote string');
-		}, 5000);
+		}, 3000);
 		return dfd.promise;
 	}
 
-	_remoteFailureGetter():IPromise<void> {
+	_remoteErrorGetter():IPromise<void> {
 		var dfd:IDeferred<void> = new Deferred<void>();
 		setTimeout(():void => {
 			dfd.reject(new Error('failed to get remote string'));
-		}, 5000);
+		}, 6000);
 		return dfd.promise;
 	}
 }

@@ -20,9 +20,23 @@ firstName lastName: {firstName} {lastName}<br>
 <for each="a" value="b">
 	<li>foo</li>
 </for>
-<when promise="remoteString" value="remoteStringValue">
-	Resolved... remoteString is: <strong>{remoteStringValue}</strong><br>
+<when promise="remoteString" value="stringValue">
+	Resolved... remoteString is: <strong>{stringValue}</strong><br>
 	firstName binding inside when: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 	<!-- TODO: progress and error tags aren't being parsed and it's not apparent from the grammer how to fix -->
+<error>
+	I SHOULD NOT BE VISIBLE
+<progress>
+	I SHOULD NOT BE VISIBLE
 </when>
+<br>
+<when promise="remoteError" value="errorValue">
+	I SHOULD NOT BE VISIBLE
+<error>
+	<!-- TODO: bind to an Error path -->
+	Error!!! remoteError.message is {errorValue.message}
+<progress>
+	I SHOULD NOT BE VISIBLE
+</when>
+<br>
 <widget is="framework/ui/dom/form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>
