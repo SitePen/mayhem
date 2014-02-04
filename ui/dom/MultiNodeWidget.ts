@@ -13,6 +13,7 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 	}
 
 	detach():DocumentFragment {
+		// TODO: attach event isn't being propagated properly, so fragment isn't always nulled out
 		if (!this._fragment || !this._fragment.firstChild) {
 			this._fragment = domUtil.getRange(this.firstNode, this.lastNode, true).extractContents();
 		}
