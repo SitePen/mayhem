@@ -7,22 +7,26 @@ fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
 <em>conditionals</em><br>
 <p style="margin-left:20px">
+	<!-- conditionals are pretty much useless until observables respect dependencies -->
 	<if condition="firstNameIsJoey">
 		(1) firstName is Joey.<br>
 	<elseif condition="lastNameIsBloggs">
 		(2) lastName is Bloggs.<br>
-	<elseif condition="fullNameIsBoeBlogget">
-		(3) fullName is Joe Bob.<br>
+	<elseif condition="fullNameIsBoeBlogger">
+		(3) fullName is Boe Blogger.<br>
 	<else>
-		(X) No match... <widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>
+		(X) No match... here's a read-only widget binding for fun:
+		<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>
 	</if>
 </p>
+<placeholder name="interstitial"> text? </placeholder>
 <for each="a" value="b">
 	<li>foo</li>
 </for>
 <when promise="remoteString" value="stringValue">
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
-	firstName binding inside when: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
+	firstName bidi binding inside when for good measure:
+	<widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 	<!-- TODO: progress and error tags aren't being parsed and it's not apparent from the grammer how to fix -->
 <error>
 	I SHOULD NOT BE VISIBLE
@@ -39,4 +43,5 @@ firstName lastName: {firstName} {lastName}<br>
 	I SHOULD NOT BE VISIBLE
 </when>
 <br>
+<placeholder name="bottom"> text? </placeholder>
 <widget is="framework/ui/dom/form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>

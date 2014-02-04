@@ -6,6 +6,7 @@ import domUtil = require('./util');
 import lang = require('dojo/_base/lang');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Placeholder = require('./Placeholder');
+import TemplatingPlaceholder = require('../../templating/html/ui/Placeholder');
 import PlacePosition = require('../PlacePosition');
 import util = require('../../util');
 import widgets = require('../interfaces');
@@ -16,35 +17,49 @@ var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
-class Element extends MultiNodeWidget {
-
+class DomElement extends MultiNodeWidget implements widgets.IContainer {
 	private _boundTextNodes:Text[];
+	private _childSlots:Placeholder[];
 	children:widgets.IDomWidget[];
 	html:string;
-	private _placeholders:Placeholder[];
+	placeholders:{ [id:string]:widgets.IPlaceholder };
+	private _updatePlaceholders:Function;
 
 	constructor(kwArgs:any) {
 		util.deferSetters(this, [ 'html' ], '_render');
+		this.children = [];
+		this.placeholders = {};
+		this._updatePlaceholders = util.debounce(this.__updatePlaceholders);
 		super(kwArgs);
 		// TODO: find a better event name
-		this.on('childrenChanged', util.debounce(this._refreshPlaceholders));
 	}
 
 	private _childrenSetter(children:widgets.IDomWidget[]):void {
 		this.children = children;
-		this.emit('childrenChanged');
+		// Loop over children and keep track of all named placeholders
+		// TODO: remove placeholders from our list of children
+		var child:widgets.IDomWidget,
+			name:string;
+		for (var i = 0, length = children.length; i < length; ++i) {
+			child = children[i];
+			name = child.get('name');
+			if (name && child instanceof TemplatingPlaceholder) {
+				this.placeholders[name] = <TemplatingPlaceholder> child;
+			}
+		}
+		this._updatePlaceholders();
 	}
 
-	private _createChildPlaceholder(index:number):DocumentFragment {
-		var placeholder:Placeholder = this._placeholders[index] = new Placeholder({});
-		return domUtil.getRange(placeholder.firstNode, placeholder.lastNode).extractContents();
+	private _createChildSlot(index:number):DocumentFragment {
+		var slot:Placeholder = this._childSlots[index] = new Placeholder({});
+		return domUtil.getRange(slot.firstNode, slot.lastNode).extractContents();
 	}
 
 	private _createTextBinding(index:number, binding:string):Text {
 		var textNode:Text = this._boundTextNodes[index] = document.createTextNode('');
 		// TODO: might be best to do something like this: this.bind('_boundText.' + index, binding)
 		// and then set our text nodes on changes, but NestedProxty isn't cooperating
-		// If we can figure this ou twe can remove the half-baked NodeProxty too
+		// If we can figure this out we can remove the half-baked NodeProxty too
 		this.addBinding(this.app.binder.bind({
 			source: this.get('mediator'), // TODO: we may want to cache for long scope lookup chains
 			sourceBinding: binding,
@@ -55,19 +70,18 @@ class Element extends MultiNodeWidget {
 	}
 
 	destroy():void {
-		array.forEach(this._placeholders || [], (item:Placeholder):void => item.destroy());
+		array.forEach(this._childSlots || [], (slot:Placeholder):void => slot.destroy());
 		array.forEach(this.children, (child:widgets.IDomWidget):void => child.destroy());
-		this._boundTextNodes = this.children = this._placeholders = null;
+		for (var key in this.placeholders) {
+			this.placeholders[key].destroy();
+		}
+		this._boundTextNodes = this.children = this._childSlots = null;
 		super.destroy();
 	}
 
-	empty():void {
-		super.empty();
-		this._placeholders = [];
-		this._boundTextNodes = [];
-	}
-
 	private _htmlSetter(html:any):void {
+		this._childSlots = [];
+		this._boundTextNodes = [];
 		this.empty();
 
 		// If html is a string no need to do any fancy processing
@@ -77,7 +91,7 @@ class Element extends MultiNodeWidget {
 			return;
 		}
 
-		var createChildPlaceholder = lang.hitch(this, this._createChildPlaceholder),
+		var createChildSlot = lang.hitch(this, this._createChildSlot),
 			createTextBinding = lang.hitch(this, this._createTextBinding);
 
 		// Process and create placeholders for children and text node bindings
@@ -103,7 +117,7 @@ class Element extends MultiNodeWidget {
 			// Test for child comment marker
 			if (match = node.nodeValue.match(CHILD_PATTERN)) {
 				index = Number(match[1]);
-				newNode = createChildPlaceholder(index);
+				newNode = createChildSlot(index);
 			}
 			// Test for bound text comment marker
 			else if (match = node.nodeValue.match(BINDING_PATTERN)) {
@@ -114,7 +128,7 @@ class Element extends MultiNodeWidget {
 		}
 
 		// Recurse and handle comments standing in for child and binding placeholders
-		function processChildren(node:Node):void {
+		function processChildComments(node:Node):void {
 			var next:Node;
 			// Iterate siblings
 			while (node != null) {
@@ -122,7 +136,7 @@ class Element extends MultiNodeWidget {
 				next = node.nextSibling;
 				// Sweep and process children recursively
 				for (var i = 0, length = node.childNodes.length; i < length; ++i) {
-					processChildren(node.childNodes[i]);
+					processChildComments(node.childNodes[i]);
 				}
 				processComment(node);
 				node = next;
@@ -131,25 +145,38 @@ class Element extends MultiNodeWidget {
 
 		// We need to get a fragment from our markup and process its comments before inserting
 		var fragment:Node = domConstruct.toDom(this.html);
-		processChildren(fragment);
+		processChildComments(fragment);
 		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);
-		this.emit('childrenChanged');
+		this._updatePlaceholders();
 	}
 
-	private _refreshPlaceholders():void {
-		// Nothing to do if there are no placeholders or children
-		if (!this._placeholders || !this.children) {
+	private __updatePlaceholders():void {
+		// Nothing to do if there are no child placeholders or children
+		if (!this._childSlots || !this.children) {
 			return;
 		}
-		// Loop over child placeholders and set to associated child widget
-		var placeholder:Placeholder,
+		// Loop over child placeholder slots and set to associated child widget
+		var slot:Placeholder,
 			child:widgets.IDomWidget;
-		for (var i = 0, length = this._placeholders.length; i < length; ++i) {
-			placeholder = this._placeholders[i];
+		for (var i = 0, length = this._childSlots.length; i < length; ++i) {
+			slot = this._childSlots[i];
 			child = this.children[i];
-			placeholder.get('content') !== child && placeholder.set('content', child);
+			slot.get('content') !== child && slot.set('content', child);
 		}
 	}
+
+	// widgets.IContainer
+	add:{
+		(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
+		(widget:widgets.IDomWidget, position:number):IHandle;
+		(widget:widgets.IDomWidget, placeholder:string):IHandle;
+	};
+
+	// empty:() => void;
+
+	remove:{ (index:number):void; (widget:widgets.IWidget):void; };
 }
 
-export = Element;
+util.applyMixins(DomElement, [ DomContainer ]);
+
+export = DomElement;

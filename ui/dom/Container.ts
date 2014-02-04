@@ -14,7 +14,7 @@ import widgets = require('../interfaces');
 	id:string;
 	lastNode:Node;
 	parent:widgets.IContainerWidget;
-	placeholders:{ [id:string]: DomPlaceholder; } = {};
+	placeholders:{ [id:string]: widgets.IPlaceholder; } = {};
 
 	add(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
 	add(widget:widgets.IDomWidget, position:number):IHandle;

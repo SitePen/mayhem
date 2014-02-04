@@ -117,6 +117,12 @@ class Processor {
 		}
 		widget = new WidgetCtor(options);
 
+		function fillBindingTemplate(mediator:core.IMediator, items:any[]):string {
+			return array.map(items, (item:any):any => {
+				return item.binding ? mediator.get(item.binding) : item;
+			}).join('')
+		}
+
 		function observeBindingTemplate(field:string, items:any[]):IHandle[] {
 			var handles:IHandle[] = [];
 			for (var i = 0, length = items.length; i < length; ++i) {
@@ -125,12 +131,9 @@ class Processor {
 					continue;
 				}
 				handles.push(mediator.observe(binding, ():void => {
-					// TODO: something lke widget.bind(productProxy(items), field);
-					// Flatten out array String|Binding array, filling in the bindings
-					widget.set(field, array.map(items, (item:any):any => {
-						return item.binding ? mediator.get(item.binding) : item;
-					}).join(''));
+					widget.set(field, fillBindingTemplate(widget.get('mediator'), items));
 				}));
+				widget.set(field, fillBindingTemplate(mediator, items));
 			}
 			return handles;
 		}
