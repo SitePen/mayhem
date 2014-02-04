@@ -46,7 +46,7 @@ class Conditional extends Placeholder {
 
 	destroy():void {
 		this._clearConditionHandles();
-		array.forEach(this._conditionWidgets || [], (widget) => widget.destroy());
+		array.forEach(this._conditionWidgets || [], (widget:widgets.IDomWidget):void => widget.destroy());
 		this._alternateWidget && this._alternateWidget.destroy();
 
 		this._conditions = null;
@@ -88,7 +88,7 @@ class Conditional extends Placeholder {
 		this._conditionHandles = [];
 
 		var mediator:core.IMediator = this.get('mediator');
-		array.forEach(this._getBindingFields(), (field, i) => {
+		array.forEach(this._getBindingFields(), (field:string, i:number):void => {
 			this._conditionHandles[i] = mediator.observe(field, this._evaluateConditions(this));
 		});
 		this._evaluateConditions();

@@ -8,7 +8,7 @@ import util = require('../util');
 
 class Processor {
 
-	static getWidgetCtor(node:any) { // TODO how to denote a Ctor return type?
+	static getWidgetCtor(node:any):any { // TODO: how to denote a Ctor return type?
 		var ctor:any = node.constructor,
 			moduleId:string;
 		if (typeof ctor !== 'function') {
@@ -18,11 +18,11 @@ class Processor {
 	}
 
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
-		dojotext.load(resourceId, contextRequire, function(template) {
+		dojotext.load(resourceId, contextRequire, function(template:string):void {
 			var ast = Processor.parse(template);
 			var dependencies = Processor.scanForDependencies(ast);
-			require(dependencies, () => {
-				load(function(app:core.IApplication, mediator:core.IMediator) {
+			require(dependencies, ():void => {
+				load(function(app:core.IApplication, mediator:core.IMediator):widgets.IDomWidget {
 					return Processor.widgetFromAst(ast, app, { mediator: mediator });
 				});
 			});
@@ -35,7 +35,7 @@ class Processor {
 
 	static scanForDependencies(node:Object):string[] {
 		var dependencies:string[] = [];
-		function recurse(node:Object) {
+		function recurse(node:Object):void {
 			var ctor = node.constructor;
 			if (typeof ctor !== 'function') {
 				// Parser returns constructors as either string or 1-element string[]
@@ -59,7 +59,10 @@ class Processor {
 		return dependencies;
 	}
 
-	static widgetFromAst(node:any, app:any, kwArgs:{ mediator?:core.IMediator; parent?:widgets.IDomWidget }):widgets.IDomWidget {
+	static widgetFromAst(node:any, app:any, kwArgs:{
+		mediator?:core.IMediator;
+		parent?:widgets.IDomWidget
+	}):widgets.IDomWidget {
 		var options:any = {},
 			mediator:core.IMediator = kwArgs.mediator || kwArgs.parent.get('mediator'),
 			key:string,
@@ -86,7 +89,7 @@ class Processor {
 				// Pass non-array items through to options unmolested
 				options[key] = items;
 			}
-			else if (array.some(items, (item:any) => util.isObject(item) && !item.binding)) {
+			else if (array.some(items, (item:any):boolean => util.isObject(item) && !item.binding)) {
 				// If there are any complex objects that aren't binding also pass through
 				// TODO: this is another place we have to dance around complex keys (e.g. Conditional's conditions key)
 				options[key] = items;
@@ -116,10 +119,10 @@ class Processor {
 				if (!binding) {
 					continue;
 				}
-				handles.push(mediator.observe(binding, () => {
+				handles.push(mediator.observe(binding, ():void => {
 					// TODO: something lke widget.bind(productProxy(items), field);
 					// Flatten out array String|Binding array, filling in the bindings
-					widget.set(field, array.map(items, (item:any) => {
+					widget.set(field, array.map(items, (item:any):any => {
 						return item.binding ? mediator.get(item.binding) : item;
 					}).join(''));
 				}));
@@ -130,7 +133,9 @@ class Processor {
 
 		// TODO: find a way to avoid these post-construction tasks
 		if (node.children) {
-			widget.set('children', array.map(node.children, (child) => Processor.widgetFromAst(child, app, { parent: widget })));
+			widget.set('children', array.map(node.children, (child:any):widgets.IDomWidget => {
+				return Processor.widgetFromAst(child, app, { parent: widget });
+			}));
 		}
 		// We need to defer binding setup until after widget construction
 		for (key in fieldBindings) {

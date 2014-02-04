@@ -14,8 +14,8 @@ class DomMaster extends MultiNodeWidget implements widgets.IContainer {
 
 		var self = this;
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				self.detach();
 				self = null;
 			}
@@ -28,7 +28,9 @@ class DomMaster extends MultiNodeWidget implements widgets.IContainer {
 		(widget:widgets.IDomWidget, position:number):IHandle;
 		(widget:widgets.IDomWidget, placeholder:string):IHandle;
 	};
-	//empty:() => void;
+
+	// empty:() => void;
+
 	remove:{ (index:number):void; (widget:widgets.IWidget):void; };
 }
 

@@ -9,7 +9,7 @@ class FormButton extends SingleNodeWidget {
 	type:string;
 	value:string;
 
-	private _childrenSetter(children:widgets.IDomWidget[]) {
+	private _childrenSetter(children:widgets.IDomWidget[]):void {
 		this.set('content', children && children[0]);
 	}
 
@@ -45,12 +45,12 @@ class FormButton extends SingleNodeWidget {
 
 	private _typeSetter(value:string):void {
 		this.type = value;
-		if (this.firstNode) this.firstNode.setAttribute('type', value);
+		this.firstNode && this.firstNode.setAttribute('type', value);
 	}
 
 	private _valueSetter(value:string):void {
 		this.value = value;
-		if (this.firstNode) this.firstNode.setAttribute('value', value);
+		this.firstNode && this.firstNode.setAttribute('value', value);
 	}
 }
 

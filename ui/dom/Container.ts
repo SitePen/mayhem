@@ -32,8 +32,8 @@ import widgets = require('../interfaces');
 			this[position] = widget;
 			placeholder.set('content', widget);
 			handle = {
-				remove: function () {
-					this.remove = function () {};
+				remove: function ():void {
+					this.remove = function ():void {};
 					placeholder.set('content', null);
 					placeholder = null;
 				}
@@ -70,8 +70,8 @@ import widgets = require('../interfaces');
 
 			var self = this;
 			handle = {
-				remove: function () {
-					this.remove = function () {};
+				remove: function ():void {
+					this.remove = function ():void {};
 					util.spliceMatch(self.children, widget);
 					widget.detach();
 					widget = self = null;
@@ -82,7 +82,7 @@ import widgets = require('../interfaces');
 		return handle;
 	}
 
-	/* protected */ _addToContainer(widget:widgets.IDomWidget, referenceWidget:widgets.IWidget) {
+	/* protected */ _addToContainer(widget:widgets.IDomWidget, referenceWidget:widgets.IWidget):void {
 		var widgetNode:Node = widget.detach(),
 			referenceNode:Node = referenceWidget ? referenceWidget.get('firstNode') : null;
 

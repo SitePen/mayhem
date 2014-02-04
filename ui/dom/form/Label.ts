@@ -22,7 +22,7 @@ class Label extends SingleNodeWidget {
 
 		// TODO: Leaks, only works once.
 		var proxty = <core.IProxty<string>> this.app.binder.getMetadata(this.get('mediator'), value, 'label');
-		proxty.observe((label:string) => {
+		proxty.observe((label:string):void => {
 			this.set('text', label);
 		});
 	}

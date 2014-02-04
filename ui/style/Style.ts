@@ -11,7 +11,7 @@ class Style extends Observable /* TODO: implements style.IStyle */ {
 		super(kwArgs);
 	}
 
-	_notify(newValue:any, oldValue:any, key:string) {
+	_notify(newValue:any, oldValue:any, key:string):void {
 		super._notify(newValue, oldValue, key);
 
 		var observers = this._globalObservers.slice(0);
@@ -34,8 +34,8 @@ class Style extends Observable /* TODO: implements style.IStyle */ {
 			observers.push(observer);
 
 			return {
-				remove: function () {
-					this.remove = function () {};
+				remove: function ():void {
+					this.remove = function ():void {};
 					util.spliceMatch(observers, observer);
 					observers = observer = null;
 				}

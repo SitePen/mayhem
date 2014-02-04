@@ -34,7 +34,7 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 		fragment.appendChild(this.lastNode);
 
 		// TODO: Figure out a better way to declaratively apply event handlers to self.
-		this.on('attach', () => {
+		this.on('attach', ():void => {
 			this._fragment = null;
 		});
 	}

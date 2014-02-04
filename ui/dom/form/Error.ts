@@ -48,8 +48,9 @@ class FormError extends SingleNodeWidget {
 			return;
 		}
 
-		var proxty = this._errorsProxty = <core.IProxty<ValidationError[]>> this.app.binder.getMetadata(mediator, this.binding, 'errors');
-		proxty.observe((errors:ValidationError[]) => {
+		var proxty = <core.IProxty<ValidationError[]>> this.app.binder.getMetadata(mediator, this.binding, 'errors');
+		this._errorsProxty = proxty;
+		proxty.observe((errors:ValidationError[]):void => {
 			this._updateDisplay(errors);
 		});
 	}

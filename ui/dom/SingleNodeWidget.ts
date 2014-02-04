@@ -15,11 +15,11 @@ class SingleNodeWidget extends Widget implements widgets.IDomWidget {
 
 	_attachStyles():void {
 		// TODO: Leak
-		this.classList.observe((className:string) => {
+		this.classList.observe((className:string):void => {
 			this.firstNode.className = className;
 		});
 
-		this.style.observe((newValue:any, oldValue:any, key:string) => {
+		this.style.observe((newValue:any, oldValue:any, key:string):void => {
 			if (has('debug') && key.indexOf('-') !== -1) {
 				throw new Error('CSS properties in JavaScript are camelCase, not hyphenated');
 			}

@@ -55,8 +55,8 @@ class Element extends MultiNodeWidget {
 	}
 
 	destroy():void {
-		array.forEach(this._placeholders || [], (item:Placeholder) => item.destroy());
-		array.forEach(this.children, (child:widgets.IDomWidget) => child.destroy());
+		array.forEach(this._placeholders || [], (item:Placeholder):void => item.destroy());
+		array.forEach(this.children, (child:widgets.IDomWidget):void => child.destroy());
 		this._boundTextNodes = this.children = this._placeholders = null;
 		super.destroy();
 	}
@@ -82,7 +82,7 @@ class Element extends MultiNodeWidget {
 
 		// Process and create placeholders for children and text node bindings
 		// (this should typically be followed by a call to set children)
-		var processed:string[] = array.map(html, (item:any, i:number) => {
+		var processed:string[] = array.map(html, (item:any, i:number):string => {
 			if (!item.binding) {
 				return item;
 			}
