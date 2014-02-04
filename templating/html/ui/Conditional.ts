@@ -61,7 +61,6 @@ class Conditional extends Placeholder {
 			bindingFields:string[] = this._getBindingFields();
 		for (var i = 0, length = bindingFields.length; i < length; ++i) {
 			if (mediator.get(bindingFields[i])) {
-				console.log('MATCH!!! condition: ', i, mediator.get(bindingFields[i]))
 				this.set('content', this._conditionWidgets[i]);
 				return;
 			}

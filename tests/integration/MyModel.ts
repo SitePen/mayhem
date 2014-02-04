@@ -32,13 +32,15 @@ class MyModel extends Model {
 						firstName: names[0],
 						lastName: names.slice(1).join(' ')
 					});
-				}
+				},
+				dependencies: [ 'firstName', 'lastName' ]
 			}),
 
 			firstNameIsJoey: Model.property<boolean>({
 				_valueGetter: function ():boolean {
 					return this.model.get('firstName') === 'Joey';
-				}
+				},
+				dependencies: [ 'firstName' ]
 			})
 		};
 

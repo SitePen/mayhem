@@ -2,7 +2,8 @@ First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widge
 <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
 Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget><br>
 <widget is="framework/ui/dom/form/Error" binding="lastName"><widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
-Full Name composite field: {fullName}<br>
+Full Name: <widget is="framework/ui/dom/form/Input" value="{fullName}"></widget><br>
+Full Name computed field: {fullName}<br>
 Read Only: {firstName} {lastName}<br>
 <em>conditionals</em><br>
 <p style="margin-left:20px">
@@ -10,7 +11,7 @@ Read Only: {firstName} {lastName}<br>
 		(1) first name is Joey.<br>
 	<elseif condition="lastNameIsBloggs">
 		(2) last name is Bloggs.<br>
-	<elseif condition="fullNameIsJoeBob">
+	<elseif condition="fullNameIsBoeBlogget">
 		(3) full name is Joe Bob.<br>
 	<else>
 		(X) No match... <widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>

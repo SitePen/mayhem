@@ -51,8 +51,8 @@ class Observable implements core.IObservable {
 		observers.push(observer);
 
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				util.spliceMatch(observers, observer);
 				observers = observer = null;
 			}

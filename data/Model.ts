@@ -199,7 +199,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 					}
 
 					// If a validator throws an error, validation processing halts
-					self._validatorInProgress = when(validator.validate(self, key, value)).then(function () {
+					self._validatorInProgress = when(validator.validate(self, key, value)).then(function ():void {
 						self._validatorInProgress = null;
 						runNextValidator();
 					}, function (error) {

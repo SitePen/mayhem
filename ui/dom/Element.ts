@@ -10,6 +10,9 @@ import PlacePosition = require('../PlacePosition');
 import util = require('../../util');
 import widgets = require('../interfaces');
 
+var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
+	BINDING_PATTERN:RegExp = /^\s*binding#(\d+)\s*$/;
+
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
@@ -75,9 +78,7 @@ class Element extends MultiNodeWidget {
 		}
 
 		var createChildPlaceholder = lang.hitch(this, this._createChildPlaceholder),
-			createTextBinding = lang.hitch(this, this._createTextBinding),
-			CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
-			BINDING_PATTERN:RegExp = /^\s*binding#(\d+)\s*$/;
+			createTextBinding = lang.hitch(this, this._createTextBinding);
 
 		// Process and create placeholders for children and text node bindings
 		// (this should typically be followed by a call to set children)
@@ -100,21 +101,16 @@ class Element extends MultiNodeWidget {
 				return;
 			}
 			// Test for child comment marker
-			match = node.nodeValue.match(CHILD_PATTERN);
-			if (match) {
+			if (match = node.nodeValue.match(CHILD_PATTERN)) {
 				index = Number(match[1]);
 				newNode = createChildPlaceholder(index);
-				parent.replaceChild(newNode, node);
-				return;
 			}
 			// Test for bound text comment marker
-			match = node.nodeValue.match(BINDING_PATTERN);
-			if (match) {
+			else if (match = node.nodeValue.match(BINDING_PATTERN)) {
 				index = Number(match[1]);
 				newNode = createTextBinding(index, html[index].binding);
-				parent.replaceChild(newNode, node);
-				return;
 			}
+			newNode && parent.replaceChild(newNode, node);
 		}
 
 		// Recurse and handle comments standing in for child and binding placeholders

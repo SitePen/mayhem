@@ -48,7 +48,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	}
 
 	_valueSetterSetter(setter:(value:T) => void):void {
-		this._valueSetter = function () {
+		this._valueSetter = function ():void {
 			setter.apply(this, arguments);
 			this.validateOnSet && this.validate();
 		};

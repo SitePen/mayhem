@@ -72,8 +72,8 @@ class ProxtyBinder implements binding.IBinder {
 			setDirection: (newDirection:BindDirection):void => {
 				target.bindTo(kwArgs.direction === BindDirection.TWO_WAY ? source : null);
 			},
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				source.destroy();
 				target.destroy();
 				source = target = null;

@@ -2,12 +2,15 @@ import Mediator = require('../../Mediator');
 
 class MyMediator extends Mediator {
 	_fullNameGetter():string {
-		var fullName:string = this.model.get('fullName');
-		return fullName.replace(/J/g, 'B');
+		return this.model.get('fullName').replace(/J/g, 'B');
 	}
 
 	_lastNameIsBloggsGetter():boolean {
 		return this.model.get('lastName') === 'Bloggs';
+	}
+
+	_fullNameIsBoeBloggerGetter():boolean {
+		return this.get('fullName') === 'Boe Blogger';
 	}
 
 	save():void {
