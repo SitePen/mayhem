@@ -1,12 +1,11 @@
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
 import domUtil = require('../../../ui/dom/util');
-import Processor = require('../../html');
-import Placeholder = require('../../../ui/dom/Placeholder');
+import TemplatingWidget = require('./Widget');
 import util = require('../../../util');
 import widgets = require('../../../ui/interfaces');
 
-class Conditional extends Placeholder {
+class Conditional extends TemplatingWidget {
 	private _alternateWidget:widgets.IDomWidget;
 	private _conditionHandles:IHandle[];
 	private _conditions:any;
@@ -38,10 +37,6 @@ class Conditional extends Placeholder {
 			this._conditionWidgets[i] = this._constructWidget(conditions[i].content);
 		}
 		this._updateBinding();
-	}
-
-	private _constructWidget(node:any):widgets.IDomWidget {
-		return Processor.widgetFromAst(node, this.app, { parent: this });
 	}
 
 	destroy():void {

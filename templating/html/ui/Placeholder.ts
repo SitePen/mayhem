@@ -1,6 +1,6 @@
-import DomPlaceholder = require('../../../ui/dom/Placeholder');
+import TemplatingWidget = require('./Widget');
 
-class Placeholder extends DomPlaceholder {
+class Placeholder extends TemplatingWidget {
 }
 
 export = Placeholder;

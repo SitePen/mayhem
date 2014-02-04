@@ -1,3 +1,4 @@
+import Deferred = require('dojo/Deferred');
 import Mediator = require('../../Mediator');
 
 class MyMediator extends Mediator {
@@ -20,6 +21,22 @@ class MyMediator extends Mediator {
 		else {
 			console.log('There is no data to save!');
 		}
+	}
+
+	_remoteStringGetter():IPromise<string> {
+		var dfd:IDeferred<string> = new Deferred<string>();
+		setTimeout(():void => {
+			dfd.resolve('remote string');
+		}, 5000);
+		return dfd.promise;
+	}
+
+	_remoteFailureGetter():IPromise<void> {
+		var dfd:IDeferred<void> = new Deferred<void>();
+		setTimeout(():void => {
+			dfd.reject(new Error('failed to get remote string'));
+		}, 5000);
+		return dfd.promise;
 	}
 }
 

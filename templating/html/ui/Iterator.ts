@@ -1,6 +1,6 @@
-import Placeholder = require('./Placeholder');
+import TemplatingWidget = require('./Widget');
 
-class Iterator extends Placeholder {
+class Iterator extends TemplatingWidget {
 }
 
 export = Iterator;

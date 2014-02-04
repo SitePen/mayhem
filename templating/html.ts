@@ -50,7 +50,7 @@ class Processor {
 				if (value instanceof Array) {
 					array.forEach(value, recurse);
 				}
-				else if (typeof value === 'object') {
+				else if (value && typeof value === 'object') {
 					recurse(value);
 				}
 			}
@@ -98,8 +98,13 @@ class Processor {
 				// Set up field binding when parts is a single element binding descriptor
 				fieldBindings[key] = items[0].binding;
 			}
-			else {
+			else if (array.some(items, (item:any):boolean => item && item.binding)) {
+				// If array contains any bindings at all add it as a binding template
 				bindingTemplates[key] = items;
+			}
+			else {
+				// Otherwise stringify all keys as they can be string | string[]
+				options[key] = items.join('');
 			}
 		}
 
