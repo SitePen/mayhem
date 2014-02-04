@@ -13,7 +13,7 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 	}
 
 	detach():DocumentFragment {
-		if (!this._fragment) {
+		if (!this._fragment || !this._fragment.firstChild) {
 			this._fragment = domUtil.getRange(this.firstNode, this.lastNode, true).extractContents();
 		}
 

@@ -19,7 +19,7 @@ class DomPlaceholder extends MultiNodeWidget {
 	}
 
 	remove():void {
-		this.content.detach();
+		this.content && this.content.detach();
 		this.content = null;
 	}
 }

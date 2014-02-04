@@ -2,7 +2,7 @@ import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
 import domUtil = require('../../../ui/dom/util');
 import Processor = require('../../html');
-import Placeholder = require('./Placeholder');
+import Placeholder = require('../../../ui/dom/Placeholder');
 import util = require('../../../util');
 import widgets = require('../../../ui/interfaces');
 
