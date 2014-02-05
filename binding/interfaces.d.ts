@@ -39,7 +39,7 @@ export interface IBindArguments {
  * IReactor provides the high-level data binding API for creating reactive objects and binding together two object
  * properties.
  */
-export interface IBinder extends core.IComponent {
+export interface IBinder {
 	/**
 	 * Tests whether or not the given data binding arguments can be used to successfully bind two objects together.
 	 */
@@ -58,7 +58,8 @@ export interface IBinder extends core.IComponent {
 	 */
 	createProxty<SourceT, TargetT>(object:Object, binding:string, options?:{ scheduled?:boolean; }):IProxty<SourceT, TargetT>;
 
-	getMetadata<T>(object:Object, binding:string, field?:string):core.IProxty<any>;
+	getMetadata<T>(object:Object, binding:string, field:string):core.IProxty<T>;
+	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
 }
 
 /**

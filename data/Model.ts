@@ -21,16 +21,15 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		return new Property<T>(kwArgs);
 	}
 
-	app:core.IApplication;
-	collection:any /*dstore.Collection*/;
-	isExtensible:boolean;
-	scenario:string;
+	private _app:core.IApplication;
+	private _collection:any /*dstore.Collection*/;
+	private _isExtensible:boolean = false;
+	private _scenario:string = 'insert';
 	/* protected */ _schema:{ [key:string]: data.IProperty<any>; };
 	private _validatorInProgress:IPromise<void>;
 
 	constructor(kwArgs?:Object) {
-		this.isExtensible = false;
-		this.scenario = 'insert';
+		super(kwArgs);
 
 		for (var key in this._schema) {
 			var property:data.IProperty<any> = this._schema[key];
@@ -39,8 +38,6 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 				model: this
 			});
 		}
-
-		super(kwArgs);
 	}
 
 	addError(key:string, error:ValidationError):void {
@@ -55,6 +52,10 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 
 	// TODO: Destroy?
 
+	get(key:'collection'):any /*dstore.Collection*/;
+	get(key:'isExtensible'):boolean;
+	get(key:'scenario'):string;
+	get(key:string):void;
 	get(key:string):any {
 		var property:data.IProperty<any> = this._schema[key];
 		return property ? property.get('value') : super.get(key);
@@ -84,7 +85,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	private _getProperty(key:string):data.IProperty<any> {
 		var property:data.IProperty<any> = this._schema[key];
 
-		if (!property && this.isExtensible) {
+		if (!property && this._isExtensible) {
 			property = this._schema[key] = new Property<any>({
 				model: this,
 				key: key
@@ -110,7 +111,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	remove():IPromise<any> {
-		return when(this.collection.remove(this.collection.getIdentity(this))).then((returnValue) => {
+		return when(this._collection.remove(this._collection.getIdentity(this))).then(<T>(returnValue:T):T => {
 			this.set('scenario', 'insert');
 			return returnValue;
 		});
@@ -122,7 +123,9 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		return;
 	}
 
-	set(kwArgs:Object):void;
+	set(key:'isExtensible', value:boolean):void;
+	set(key:'scenario', value:string):void;
+	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
 	set(key:any, value?:any):void {
 		if (util.isObject(key)) {
@@ -157,56 +160,21 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 			schemaKeys = util.getObjectKeys(schema),
 			i = 0;
 
-		(function validateNextField() {
-			var key = schemaKeys[i++],
-				fieldValidators = key && schema[key].get('validators'),
-				j = 0;
+		(function validateNextField():void {
+			var key = schemaKeys[i++];
 
 			if (!key) {
 				// all fields have been validated
+				self._validatorInProgress = null;
 				dfd.resolve(self.isValid());
 			}
 			else if (keysToValidate && array.indexOf(keysToValidate, key) === -1) {
 				validateNextField();
 			}
 			else {
-				(function runNextValidator() {
-					var validator = fieldValidators[j++];
-
-					// end of list of validators for this field reached
-					if (!validator) {
-						validateNextField();
-						return;
-					}
-
-					var value = self.get(key);
-
-					if (validator.options) {
-						// Simply skip validators that are defined as allowing empty fields when the value is
-						// empty (null, undefined, or empty string)
-						if (validator.options.allowEmpty && (value == null || value === '')) {
-							runNextValidator();
-							return;
-						}
-
-						// Skip validators that are limited to certain scenarios and do not match the currently
-						// defined model scenario
-						if (validator.options.scenarios && validator.options.scenarios.length &&
-								array.indexOf(validator.options.scenarios, this.scenario) === -1) {
-							runNextValidator();
-							return;
-						}
-					}
-
-					// If a validator throws an error, validation processing halts
-					self._validatorInProgress = when(validator.validate(self, key, value)).then(function ():void {
-						self._validatorInProgress = null;
-						runNextValidator();
-					}, function (error) {
-						self._validatorInProgress = null;
-						dfd.reject(error);
-					});
-				})();
+				self._validatorInProgress = schema[key].validate().then(validateNextField, function (error:Error):void {
+					dfd.reject(error);
+				});
 			}
 		})();
 

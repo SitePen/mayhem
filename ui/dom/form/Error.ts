@@ -8,11 +8,14 @@ import util = require('../../../util');
 import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends SingleNodeWidget {
-
-	binding:string;
+	private _binding:string;
 	private _errorsProxty:core.IProxty<ValidationError[]>;
-	firstNode:HTMLUListElement;
-	lastNode:HTMLUListElement;
+	/* protected */ _firstNode:HTMLUListElement;
+	/* protected */ _lastNode:HTMLUListElement;
+
+	// TODO: TS#2153
+	// get(key:'binding'):string;
+	// set(key:'binding', value:string):void;
 
 	constructor(kwArgs?:Object) {
 		util.deferMethods(this, [ '_updateDisplay' ], '_render');
@@ -20,7 +23,7 @@ class FormError extends SingleNodeWidget {
 	}
 
 	private _bindingSetter(value:string):void {
-		this.binding = value;
+		this._binding = value;
 		this._updateBinding();
 	}
 
@@ -37,18 +40,18 @@ class FormError extends SingleNodeWidget {
 	}
 
 	/* protected */ _render():void {
-		this.firstNode = this.lastNode = document.createElement('ul');
+		this._firstNode = this._lastNode = document.createElement('ul');
 	}
 
 	private _updateBinding():void {
 		this._errorsProxty && this._errorsProxty.destroy();
 
 		var mediator = this.get('mediator');
-		if (!mediator || !this.binding) {
+		if (!mediator || !this._binding) {
 			return;
 		}
 
-		var proxty = <core.IProxty<ValidationError[]>> this.app.binder.getMetadata(mediator, this.binding, 'errors');
+		var proxty = this.get('app').get('binder').getMetadata<ValidationError[]>(mediator, this._binding, 'errors');
 		this._errorsProxty = proxty;
 		proxty.observe((errors:ValidationError[]):void => {
 			this._updateDisplay(errors);
@@ -56,14 +59,14 @@ class FormError extends SingleNodeWidget {
 	}
 
 	private _updateDisplay(errors:ValidationError[]):void {
-		this.firstNode.innerHTML = '';
+		this._firstNode.innerHTML = '';
 
 		if (!errors) {
 			return;
 		}
 
 		for (var i = 0, error:ValidationError; (error = errors[i]); i++) {
-			var element = domConstruct.create('li', {}, this.firstNode);
+			var element = domConstruct.create('li', {}, this._firstNode);
 			element.appendChild(document.createTextNode(error.toString()));
 		}
 	}

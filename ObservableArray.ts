@@ -1,3 +1,5 @@
+/* tslint:disable:max-line-length */
+
 import core = require('./interfaces');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
@@ -258,8 +260,8 @@ class ObservableArray<T> /* implements Array<T> */ {
 		var observers = this._observers;
 		observers.push(callback);
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				util.spliceMatch(observers, callback);
 				observers = callback = null;
 			}

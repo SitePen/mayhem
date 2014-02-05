@@ -3,6 +3,7 @@
 import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import has = require('./has');
+import lang = require('dojo/_base/lang');
 
 export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
 	for (var i = 0, baseCtor:Function; (baseCtor = baseCtors[i]); ++i) {
@@ -31,24 +32,25 @@ export function createSetter(propertyName:string, childName:string, childPropert
 		this[childName] && this[childName].set(childPropertyName || propertyName, value);
 		this._set(propertyName, value);
 	};
-};
+}
 
 export function createTimer(callback:(...args:any[]) => void, delay:number = 0):IHandle {
+	var timerId:number;
 	if (has('raf') && delay === 0) {
-		var timerId = requestAnimationFrame(callback);
+		timerId = requestAnimationFrame(callback);
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				cancelAnimationFrame(timerId);
 				timerId = null;
 			}
 		};
 	}
 	else {
-		var timerId = setTimeout(callback, delay);
+		timerId = setTimeout(callback, delay);
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				clearTimeout(timerId);
 				timerId = null;
 			}
@@ -59,13 +61,13 @@ export function createTimer(callback:(...args:any[]) => void, delay:number = 0):
 export function debounce<T extends (...args:any[]) => void>(callback:T, delay:number = 0):T {
 	var timer:IHandle;
 
-	return function () {
+	return function ():void {
 		timer && timer.remove();
 
 		var self:any = this,
 			args:IArguments = arguments;
 
-		timer = createTimer(function () {
+		timer = createTimer(function ():void {
 			callback.apply(self, args);
 			self = args = timer = null;
 		}, delay);
@@ -74,7 +76,7 @@ export function debounce<T extends (...args:any[]) => void>(callback:T, delay:nu
 
 export function deferMethods(target:Object, methods:string[], untilMethod:string):void {
 	var waiting = {},
-		untilHandle = aspect.after(target, untilMethod, function () {
+		untilHandle = aspect.after(target, untilMethod, function ():void {
 			untilHandle.remove();
 			untilHandle = null;
 
@@ -94,7 +96,7 @@ export function deferMethods(target:Object, methods:string[], untilMethod:string
 			args: null
 		};
 
-		target[method] = function () {
+		target[method] = function ():void {
 			info.args = arguments;
 		};
 	});
@@ -108,7 +110,7 @@ export function deferSetters(target:Object, methods:string[], untilMethod:string
  * Escapes a string of text for injection into a serialization of HTML or XML.
  */
 export function escapeXml(text:string, forAttribute:boolean = false):string {
-	text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+	text = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 	if (forAttribute) {
 		text = text.replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');

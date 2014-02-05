@@ -8,15 +8,21 @@ class Observable implements core.IObservable {
 		kwArgs && this.set(kwArgs);
 	}
 
+	destroy():void {
+		this.destroy = function ():void {};
+		this._observers = null;
+	}
+
 	get(key:string):any {
-		var getter = '_' + key + 'Getter',
+		var privateKey = '_' + key,
+			getter = privateKey + 'Getter',
 			value:any;
 
 		if (getter in this) {
 			value = this[getter]();
 		}
 		else {
-			value = this[key];
+			value = this[privateKey];
 		}
 
 		return value;
@@ -72,13 +78,14 @@ class Observable implements core.IObservable {
 		}
 
 		var oldValue = this.get(key),
-			setter = '_' + key + 'Setter';
+			privateKey = '_' + key,
+			setter = privateKey + 'Setter';
 
 		if (setter in this) {
 			this[setter](value);
 		}
 		else {
-			this[key] = value;
+			this[privateKey] = value;
 		}
 
 		var newValue = this.get(key);

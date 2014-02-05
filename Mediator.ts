@@ -13,26 +13,21 @@ import Stateful = require('dojo/Stateful');
 import util = require('./util');
 
 class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
-	[key:string]:any;
-	app:core.IApplication;
-	model:data.IModel;
-	routeState:Object;
+	private _app:core.IApplication;
+	private _model:data.IModel;
 
-	constructor(kwArgs:Object = {}) {
-		this.app = null;
-		this.model = null;
-		super(kwArgs);
-	}
-
+	get(key:'model'):data.IModel;
+	get(key:string):any;
 	get(key:string):any {
-		var getter = '_' + key + 'Getter',
+		var privateKey = '_' + key,
+			getter = privateKey + 'Getter',
 			value:any;
 
 		if (getter in this) {
 			value = this[getter]();
 		}
-		else if (key in this) {
-			value = this[key];
+		else if (privateKey in this) {
+			value = this[privateKey];
 
 			// Might be for a computed property
 			// TODO: Does this make sense?
@@ -40,8 +35,11 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 				value = (<Property<any>> value).get('value');
 			}
 		}
-		else if (this.model) {
-			value = this.model.get(key);
+		else {
+			var model = this.get('model');
+			if (model) {
+				value = model.get(key);
+			}
 		}
 
 		return value;
@@ -54,13 +52,14 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		this.observe('model', function (newModel:data.IModel):void {
 			var newProperty = newModel.getMetadata(key);
 			if (newProperty) {
-				property.set(newProperty);
+				property.set(newProperty.get());
 			}
 		});
 
-		var modelProperty = this.model && this.model.getMetadata(key);
+		var model = this.get('model'),
+			modelProperty = model && model.getMetadata(key);
 		if (modelProperty) {
-			property.set(modelProperty);
+			property.set(modelProperty.get());
 		}
 
 		return property;
@@ -71,16 +70,16 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		// `Object.prototype`
 		// TODO: In ES5 we can just use `Object.create(null)` instead
 
-		var handle:IHandle = super.observe(key, observer);
+		var handle:IHandle = super.observe(key, observer),
+			privateKey = '_' + key;
 
 		// Keys not pre-defined on the mediator should be delegated to the model, and may change when the model
 		// changes
-		if (!(key in this) && !(('_' + key + 'Setter') in this)) {
+		if (!(privateKey in this) && !((privateKey + 'Setter') in this)) {
 			var notifier = (newValue:any, oldValue:any):void => {
 					this._notify(newValue, oldValue, key);
 				},
-				modelPropertyHandle:IHandle,
-				modelHandle:IHandle = this.observe('model', (newModel:data.IModel, oldModel:data.IModel) => {
+				modelHandle:IHandle = this.observe('model', (newModel:data.IModel, oldModel:data.IModel):void => {
 					var oldValue:any = oldModel.get(key),
 						newValue:any = newModel.get(key);
 
@@ -90,12 +89,12 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 					if (!util.isEqual(oldValue[key], newValue[key])) {
 						this._notify(newValue[key], oldValue[key], key);
 					}
-				});
-
-			modelPropertyHandle = this.model && this.model.observe(key, notifier);
+				}),
+				model:data.IModel = this.get('model'),
+				modelPropertyHandle:IHandle = model && model.observe(key, notifier);
 
 			var oldRemove = handle.remove;
-			handle.remove = function () {
+			handle.remove = function ():void {
 				oldRemove.apply(this, arguments);
 				modelHandle.remove();
 				modelPropertyHandle.remove();
@@ -105,7 +104,8 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		return handle;
 	}
 
-	set(kwArgs:Object):void;
+	set(key:'model', value:data.IModel):void;
+	set(kwArgs:{ [key:string]: Object; }):void;
 	set(key:string, value:any):void;
 	set(key:any, value?:any):void {
 		if (util.isObject(key)) {
@@ -118,28 +118,32 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		}
 
 		var oldValue = this.get(key),
-			setter = '_' + key + 'Setter',
+			privateKey = '_' + key,
+			setter = privateKey + 'Setter',
 			notify = false;
 
 		if (setter in this) {
 			notify = true;
 			this[setter](value);
 		}
-		else if (key in this) {
+		else if (privateKey in this) {
 			notify = true;
 
-			if (this[key] instanceof Property) {
-				this[key].set(value);
+			if (this[privateKey] instanceof Property) {
+				this[privateKey].set(value);
 			}
 			else {
-				this[key] = value;
+				this[privateKey] = value;
 			}
 		}
-		else if (this.model) {
-			this.model.set(key, value);
-		}
-		else if (has('debug')) {
-			console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+		else {
+			var model = this.get('model');
+			if (model) {
+				model.set(key, value);
+			}
+			else if (has('debug')) {
+				console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+			}
 		}
 
 		if (notify) {
@@ -151,5 +155,13 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		}
 	}
 }
+
+// TypeScript does not create default properties on the prototype, but they are necessary to allow these fields to be
+// set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
+// to allow accessor overrides)
+lang.mixin(Mediator.prototype, {
+	_app: null,
+	_model: null
+});
 
 export = Mediator;

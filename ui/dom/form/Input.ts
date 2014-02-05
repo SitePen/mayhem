@@ -4,19 +4,25 @@ import util = require('../../../util');
 
 class FormInput extends DijitWidget {
 	/* protected */ _dijit:TextBox;
-	debounceRate:number;
+	private _debounceRate:number;
 	private _listenHandle:IHandle;
-	value:string;
+	private _value:string;
 
-	constructor(kwArgs:Object = {}) {
+	// TODO: TS#2153
+	// get(key:'debounceRate'):number;
+	// get(key:'value'):string;
+	// set(key:'debounceRate', value:number):void;
+	// set(key:'value', value:string):void;
+
+	constructor(kwArgs?:Object) {
 		util.deferMethods(this, [ '_listen' ], '_render');
 		util.deferSetters(this, [ 'value' ], '_render');
-		this.debounceRate = 100;
+		this._debounceRate = 100;
 		super(kwArgs);
 	}
 
 	_debounceRateSetter(value:number):void {
-		this.debounceRate = value;
+		this._debounceRate = value;
 		this._listen();
 	}
 
@@ -30,7 +36,7 @@ class FormInput extends DijitWidget {
 		this._listenHandle && this._listenHandle.remove();
 		this._listenHandle = this._dijit.watch('value', util.debounce((key:string, oldValue:string, newValue:string):void => {
 			this.set('value', newValue);
-		}, this.debounceRate));
+		}, this._debounceRate));
 	}
 
 	/* protected */ _render():void {
@@ -40,7 +46,7 @@ class FormInput extends DijitWidget {
 	}
 
 	_valueSetter(value:string):void {
-		this.value = value;
+		this._value = value;
 		this._dijit.set('value', value);
 	}
 }

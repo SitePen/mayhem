@@ -3,24 +3,23 @@ import Mediator = require('../../Mediator');
 
 class MyMediator extends Mediator {
 	_fullNameGetter():string {
-		return this.model.get('fullName').replace(/J/g, 'B');
-	}
-
-	_lastNameIsBloggsGetter():boolean {
-		return this.model.get('lastName') === 'Bloggs';
+		return this.get('model').get('fullName').replace(/J/g, 'B');
 	}
 
 	_fullNameIsBoeBloggerGetter():boolean {
 		return this.get('fullName') === 'Boe Blogger';
+ 	}
+
+	_lastNameIsBloggsGetter():boolean {
+		return this.get('model').get('lastName') === 'Bloggs';
 	}
 
-	save():void {
-		if (this.model) {
-			console.log('Allow us to save some data!');
-		}
-		else {
-			console.log('There is no data to save!');
-		}
+	_remoteErrorGetter():IPromise<void> {
+		var dfd:IDeferred<void> = new Deferred<void>();
+		setTimeout(():void => {
+			dfd.reject(new Error('failed to get remote string'));
+		}, 6000);
+		return dfd.promise;
 	}
 
 	_remoteStringGetter():IPromise<string> {
@@ -31,12 +30,13 @@ class MyMediator extends Mediator {
 		return dfd.promise;
 	}
 
-	_remoteErrorGetter():IPromise<void> {
-		var dfd:IDeferred<void> = new Deferred<void>();
-		setTimeout(():void => {
-			dfd.reject(new Error('failed to get remote string'));
-		}, 6000);
-		return dfd.promise;
+	save():void {
+		if (this.get('model')) {
+			console.log('Allow us to save some data!');
+		}
+		else {
+			console.log('There is no data to save!');
+		}
 	}
 }
 

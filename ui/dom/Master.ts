@@ -5,8 +5,8 @@ import util = require('../../util');
 import widgets = require('../interfaces');
 
 class DomMaster extends MultiNodeWidget implements widgets.IContainer {
-	children:widgets.IWidget[] = [];
-	placeholders:{ [id:string]:widgets.IPlaceholder } = {};
+	private _children:widgets.IWidget[] = [];
+	private _placeholders:{ [id:string]:widgets.IPlaceholder } = {};
 
 	attachToWindow(node:Node):IHandle {
 		node.appendChild(this.detach());

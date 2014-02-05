@@ -1,6 +1,6 @@
 // TODO: Not part of dojo, convenience type since the indexer was removed from Object
 interface Object {
-	[key:string]:any;
+	[key:string]: any;
 }
 
 interface IDeferred<T> extends IPromise<T> {
@@ -112,8 +112,8 @@ declare module 'dojo/Deferred' {
 		new (canceler:(reason:any) => any):IDeferred<any>;
 		when<T>(value:T):IPromise<T>;
 		when<T>(value:IPromise<T>):IPromise<T>;
-		when<T,U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
-		when<T,U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
+		when<T, U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
+		when<T, U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
 	};
 	export = Deferred;
 }
@@ -207,8 +207,8 @@ declare module 'dojo/when' {
 	var when:{
 		<T>(value:T):IPromise<T>;
 		<T>(value:IPromise<T>):IPromise<T>;
-		<T,U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
-		<T,U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
+		<T, U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
+		<T, U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
 	};
 	export = when;
 }

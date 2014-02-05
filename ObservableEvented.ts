@@ -6,7 +6,7 @@ import Observable = require('./Observable');
 
 class ObservableEvented extends Observable implements Evented {
 	constructor(kwArgs?:Object) {
-		super(kwArgs)
+		super(kwArgs);
 		Evented.apply(this, arguments);
 	}
 

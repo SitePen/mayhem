@@ -11,14 +11,14 @@ import whenAll = require('dojo/promise/all');
  * A data binder that uses Proxty objects to enable binding between arbitrary properties of two different objects.
  */
 class ProxtyBinder implements binding.IBinder {
-	app:core.IApplication;
+	private _app:core.IApplication;
 	private _proxties:binding.IProxtyConstructor[];
-	useScheduler:boolean;
+	private _useScheduler:boolean;
 
 	constructor(kwArgs:{ app:core.IApplication; proxties?:binding.IProxtyConstructor[]; useScheduler?:boolean; }) {
-		this.app = kwArgs.app;
+		this._app = kwArgs.app;
 		this._proxties = kwArgs.proxties || [];
-		this.useScheduler = kwArgs.useScheduler != null ? kwArgs.useScheduler : true;
+		this._useScheduler = kwArgs.useScheduler != null ? kwArgs.useScheduler : true;
 	}
 
 	add(Ctor:binding.IProxtyConstructor, index:number = Infinity):IHandle {
@@ -27,8 +27,8 @@ class ProxtyBinder implements binding.IBinder {
 		proxties.splice(index, 0, Ctor);
 
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 
 				for (var i = 0, OtherCtor:binding.IProxtyConstructor; (OtherCtor = proxties[i]); ++i) {
 					if (Ctor === OtherCtor) {
@@ -43,8 +43,8 @@ class ProxtyBinder implements binding.IBinder {
 	}
 
 	bind<SourceT, TargetT>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
-		var source = this.createProxty<SourceT, TargetT>(kwArgs.source, kwArgs.sourceBinding, { scheduled: this.useScheduler }),
-			target = this.createProxty<TargetT, SourceT>(kwArgs.target, kwArgs.targetBinding, { scheduled: this.useScheduler });
+		var source = this.createProxty<SourceT, TargetT>(kwArgs.source, kwArgs.sourceBinding, { scheduled: this._useScheduler }),
+			target = this.createProxty<TargetT, SourceT>(kwArgs.target, kwArgs.targetBinding, { scheduled: this._useScheduler });
 
 		source.bindTo(target);
 
@@ -55,7 +55,7 @@ class ProxtyBinder implements binding.IBinder {
 		return {
 			setSource: (newSource:Object, newSourceBinding:string = kwArgs.sourceBinding):void => {
 				source.destroy();
-				source = this.createProxty<SourceT, TargetT>(newSource, newSourceBinding, { scheduled: this.useScheduler });
+				source = this.createProxty<SourceT, TargetT>(newSource, newSourceBinding, { scheduled: this._useScheduler });
 				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
 					target.bindTo(source);
@@ -63,7 +63,7 @@ class ProxtyBinder implements binding.IBinder {
 			},
 			setTarget: (newTarget:Object, newTargetBinding:string = kwArgs.targetBinding):void => {
 				target.destroy();
-				target = this.createProxty<TargetT, SourceT>(newTarget, newTargetBinding, { scheduled: this.useScheduler });
+				target = this.createProxty<TargetT, SourceT>(newTarget, newTargetBinding, { scheduled: this._useScheduler });
 				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
 					target.bindTo(source);
@@ -83,7 +83,7 @@ class ProxtyBinder implements binding.IBinder {
 
 	createProxty<SourceT, TargetT>(object:Object, binding:string, options:{ scheduled?:boolean; } = {}):binding.IProxty<SourceT, TargetT> {
 		var proxties = this._proxties,
-			app = this.app,
+			app = this._app,
 			binder = this;
 
 		function scheduled(proxty:binding.IProxty<SourceT, TargetT>):binding.IProxty<SourceT, TargetT> {
@@ -92,7 +92,7 @@ class ProxtyBinder implements binding.IBinder {
 				var self = this,
 					args = arguments;
 
-				app.scheduler.schedule(proxty.id, value === proxty.get() ? null : function () {
+				app.get('scheduler').schedule(proxty.id, value === proxty.get() ? null : function ():void {
 					oldSet.apply(self, args);
 				});
 			};
@@ -121,13 +121,13 @@ class ProxtyBinder implements binding.IBinder {
 		);
 	}
 
-	getMetadata(object:Object, binding:string, field:string):core.IProxty<any>;
+	getMetadata<T>(object:Object, binding:string, field:string):core.IProxty<T>;
 	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
 	getMetadata(object:Object, binding:string, field?:string):core.IProxty<any> {
 		var metadata:core.IProxty<any> = new Proxty(null);
 
 		var metadataHandle:IHandle;
-		function swapMetadataObject(newObject:core.IHasMetadata) {
+		function swapMetadataObject(newObject:core.IHasMetadata):void {
 			var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(key) : null;
 
 			if (field) {
@@ -171,7 +171,7 @@ class ProxtyBinder implements binding.IBinder {
 			swapMetadataObject(<core.IHasMetadata> object);
 		}
 
-		aspect.after(metadata, 'destroy', function () {
+		aspect.after(metadata, 'destroy', function ():void {
 			metadataHandle && metadataHandle.remove();
 			parentProxty && parentProxty.destroy();
 			metadataHandle = parentProxty = null;

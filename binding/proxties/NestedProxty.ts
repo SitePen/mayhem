@@ -65,8 +65,8 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 
 		var self = this;
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				self = self._target = null;
 			}
 		};
@@ -76,7 +76,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 	 * Destroys the property binding.
 	 */
 	destroy():void {
-		this.destroy = function () {};
+		this.destroy = function ():void {};
 
 		var proxties = this._proxties;
 		for (var i = 0, proxty:core.IProxty<any>; (proxty = proxties[i]); ++i) {
@@ -109,7 +109,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 
 		// Stop watching objects that are no longer part of this binding's object chain because a parent object
 		// was replaced
-		array.forEach(proxties.splice(fromIndex), function (proxty:core.IProxty<any>) {
+		array.forEach(proxties.splice(fromIndex), function (proxty:core.IProxty<any>):void {
 			proxty.destroy();
 		});
 

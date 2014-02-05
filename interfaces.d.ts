@@ -5,9 +5,11 @@ import data = require('./data/interfaces');
 import ObservableArray = require('./ObservableArray');
 import ValidationError = require('./validation/ValidationError');
 
-export interface IApplication {
-	binder:binding.IBinder;
-	scheduler:IScheduler;
+export interface IApplication extends IObservable {
+	get(key:'binder'):binding.IBinder;
+	get(key:'scheduler'):IScheduler;
+
+	get(key:any):void;
 }
 
 export interface IArrayObserver<T> {
@@ -15,12 +17,25 @@ export interface IArrayObserver<T> {
 }
 
 export interface IComponent {
-	app:IApplication;
+	get(key:'app'):IApplication;
+	set(key:'app', value:IApplication):void;
+
+	get(key:string):any;
+
+	set(kwArgs:Object):void;
+	set(key:string, value:any):void;
 }
 
 export interface IMediator extends IComponent, IObservable {
-	model:data.IModel;
-	routeState:Object;
+	get(key:'model'):data.IModel;
+	set(key:'model', value:data.IModel):void;
+	get(key:'routeState'):Object;
+	set(key:'routeState', value:Object):void;
+
+	get(key:string):any;
+
+	set(kwArgs:Object):void;
+	set(key:string, value:any):void;
 }
 
 export interface IObservable {

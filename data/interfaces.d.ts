@@ -81,6 +81,7 @@ export interface IProperty<T> extends core.IObservable {
 	get(key:'validators'):core.IValidator[];
 	get(key:'value'):T;
 	get(key:string):void;
+	get():Object;
 	set(key:'default', value:T):void;
 	set(key:'dependencies', value:string[]):void;
 	set(key:'errors', value:ValidationError[]):void;
@@ -92,6 +93,7 @@ export interface IProperty<T> extends core.IObservable {
 	set(key:'value', value:T):void;
 	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
+	validate():IPromise<boolean>;
 }
 
 export interface IPropertyArguments<T> {

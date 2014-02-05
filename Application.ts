@@ -9,17 +9,21 @@ import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends ObservableEvented implements core.IApplication {
-	[applicationComponent:string]:any;
-	binder:binding.IBinder;
-	modules:{ [ propertyName:string ]:{ constructor: any; } };
-	scheduler:core.IScheduler;
+	private _modules:Object;
+
+	get(key:'binder'):binding.IBinder;
+	get(key:'router'):core.IRouter;
+	get(key:'scheduler'):core.IScheduler;
+	get(key:string):void;
+	get(key:string):void {
+		return super.get(key);
+	}
 
 	/**
 	 * Replaces the configuration kwArgs object that gets passed to the constructor with one that
 	 * includes defaults and reapplies properties to the application instance.
 	 */
 	constructor(kwArgs:Object) {
-		this.modules = {};
 		super(util.deepCopy(this._getDefaultConfig(), kwArgs));
 	}
 
@@ -42,9 +46,9 @@ class Application extends ObservableEvented implements core.IApplication {
 					]
 				},
 // TODO: Fix-up and re-enable
-//				router: {
-//					constructor: 'framework/routing/NullRouter'
-//				},
+// 				router: {
+// 					constructor: 'framework/routing/NullRouter'
+// 				},
 				scheduler: {
 					constructor: 'framework/Scheduler'
 				}
@@ -58,24 +62,25 @@ class Application extends ObservableEvented implements core.IApplication {
 	private _loadModules():IPromise<void> {
 		var dfd:IDeferred<void> = new Deferred<void>(),
 			lazyConstructors:{ [key:string]: number; } = {},
-			moduleIdsToLoad:string[] = [];
+			moduleIdsToLoad:string[] = [],
+			modules:Object = this._modules;
 
-		for (var key in this.modules) {
-			if (this.modules[key] && typeof this.modules[key].constructor === 'string') {
-				lazyConstructors[key] = moduleIdsToLoad.push(this.modules[key].constructor) - 1;
+		for (var key in modules) {
+			if (modules[key] && typeof modules[key].constructor === 'string') {
+				lazyConstructors[key] = moduleIdsToLoad.push(modules[key].constructor) - 1;
 			}
 		}
 
-		require(moduleIdsToLoad, (...loadedModules:Function[]) => {
+		require(moduleIdsToLoad, (...loadedModules:Function[]):void => {
 			try {
-				for (var key in this.modules) {
-					if (this.modules[key] == null) {
+				for (var key in modules) {
+					if (modules[key] == null) {
 						continue;
 					}
 
 					// want to keep original config intact to avoid any confusing changes in original configuration;
 					// also want to add a reference to the app first (so it is set before others)
-					var config:any = lang.mixin({ app: this }, this.modules[key]);
+					var config:any = lang.mixin({ app: this }, modules[key]);
 
 					if (key in lazyConstructors) {
 						config.constructor = loadedModules[lazyConstructors[key]];
@@ -103,28 +108,31 @@ class Application extends ObservableEvented implements core.IApplication {
 	 */
 	startup():IPromise<Application> {
 		if (has('debug')) {
-			this.on('error', function (event:ErrorEvent) {
+			this.on('error', function (event:ErrorEvent):void {
 				console.error(event.message);
 			});
 		}
 
 		var dfd:IDeferred<Application> = new Deferred<Application>();
 
-		this._loadModules().then(() => {
+		this._loadModules().then(():void => {
 			var promises:IPromise<any>[] = [],
-				promise:IPromise<Application>;
+				promise:IPromise<Application>,
+				modules:Object = this._modules,
+				module:{ startup?:Function; };
 
-			for (var key in this.modules) {
-				promise = this[key] && this[key].startup && this[key].startup();
+			for (var key in modules) {
+				module = this.get(key);
+				promise = module && module.startup && module.startup();
 				if (promise && promise.then) {
 					promises.push(promise);
 				}
 			}
 
-			whenAll(promises).then(() => {
+			whenAll(promises).then(():void => {
 				dfd.resolve(this);
 			});
-		}, <(reason:Error) => void> lang.hitch(dfd, 'reject'));
+		}, lang.hitch(dfd, 'reject'));
 
 		this.startup = function ():IPromise<Application> {
 			return dfd.promise;

@@ -3,24 +3,26 @@ import MultiNodeWidget = require('./MultiNodeWidget');
 import widgets = require('../interfaces');
 
 class DomPlaceholder extends MultiNodeWidget {
-	content:widgets.IDomWidget;
+	private _content:widgets.IDomWidget;
 
 	private _contentSetter(widget:widgets.IDomWidget):void {
-		if (this.content === widget) {
+		if (this._content === widget) {
 			return;
 		}
-		this.content && this.content.detach();
-		this.content = widget;
+		this._content && this._content.detach();
+		this._content = widget;
 
 		if (widget) {
 			var node:Node = widget.detach();
-			this.lastNode.parentNode.insertBefore(node, this.lastNode);
+			this._lastNode.parentNode.insertBefore(node, this._lastNode);
 		}
 	}
 
 	remove():void {
-		this.content && this.content.detach();
-		this.content = null;
+		if (this._content) {
+			this._content.detach();
+			this._content = null;
+		}
 	}
 }
 

@@ -16,9 +16,7 @@ import widgets = require('./interfaces');
 var uid = 0,
 	platform = has('host-browser') ? 'dom/' : '';
 
-// TODO: Create and use ObservableEvented
 class Widget extends ObservableEvented implements widgets.IWidget {
-
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		require([ resourceId ], load);
 	}
@@ -27,28 +25,46 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		return normalize('./' + platform + resourceId);
 	}
 
-	/* protected */ app:core.IApplication;
+	private _app:core.IApplication;
 	private _bindings:binding.IBindingHandle[];
-	/* protected */ classList:widgets.IClassList;
-	/* protected */ id:string;
-	/* protected */ index:number;
+	private _classList:widgets.IClassList;
+	private _id:string;
+	private _mediator:core.IMediator;
+	private _style:Style;
+
+	get(key:'app'):core.IApplication;
+	get(key:'classList'):widgets.IClassList;
+	get(key:'id'):string;
+	get(key:'index'):number;
 	// TODO: Not sure if mediator belongs here. Should go to IView?
-	/* protected */ mediator:core.IMediator;
-	/* protected */ parent:widgets.IContainerWidget;
-	/* protected */ style:Style;
+	get(key:'mediator'):core.IMediator;
+	get(key:'parent'):widgets.IContainerWidget;
+	get(key:'style'):Style;
+	get(key:string):void;
+	get(key:string):any {
+		return super.get(key);
+	}
 
-	constructor(kwArgs:Object = {}) {
-		this._bindings = [];
+	set(key:'mediator', value:core.IMediator):void;
+	set(kwArgs:{ [key:string]: any; }):void;
+	set(key:string, value:any):void;
+	set(key:string, value?:any):void {
+		return super.set(key, value);
+	}
 
+	constructor(kwArgs?:Object) {
 		// Set ID as early as possible so that any setters that might require it can use it
-		if (!('id' in kwArgs)) {
-			this.id = 'Widget' + (++uid);
+		if (!kwArgs || !kwArgs['id']) {
+			this._id = 'Widget' + (++uid);
 		}
 
-		this.classList = new ClassList();
-		this.style = new Style();
+		this._bindings = [];
+		this._classList = new ClassList();
+		this._style = new Style();
 
 		super(kwArgs);
+
+		this._render();
 	}
 
 	// TODO: it's not always possible to do a strait widget.bind (e.g. array targets)
@@ -60,7 +76,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	// TODO: Change bind options to be an interface
 	bind(propertyName:string, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
 		var bindings = this._bindings,
-			handle:binding.IBindingHandle = this.app.binder.bind({
+			handle:binding.IBindingHandle = this.get('app').get('binder').bind({
 				source: this.get('mediator'),
 				sourceBinding: binding,
 				target: this,
@@ -79,27 +95,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		};
 	}
 
-	empty():void {
-
-	}
-
-	get(key:'app'):core.IApplication;
-	get(key:'classList'):widgets.IClassList;
-	get(key:'id'):string;
-	get(key:'index'):number;
-	get(key:'mediator'):core.IMediator;
-	get(key:'next'):widgets.IWidget;
-	get(key:'parent'):widgets.IContainerWidget;
-	get(key:'previous'):widgets.IWidget;
-	get(key:'style'):Style;
-	get(key:string):any;
-	get(key:string):any {
-		return super.get(key);
-	}
-
 	destroy():void {
-		this.destroy = function ():void {};
-
 		this.detach();
 
 		var binding:binding.IBindingHandle;
@@ -107,19 +103,31 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 			binding.remove();
 		}
 
-		this._bindings = this.mediator = this.app = null;
+		this._bindings = null;
+		super.destroy();
 	}
 
 	detach():void {
-		this.parent.remove && this.parent.remove(this);
+		var parent = this.get('parent');
+		parent.remove && parent.remove(this);
 	}
 
+	empty():void {}
+
 	private _mediatorGetter():core.IMediator {
-		return this.mediator || (this.parent ? this.parent.get('mediator') : null);
+		var mediator:core.IMediator = this._mediator;
+		if (!mediator) {
+			var parent = this.get('parent');
+			if (parent) {
+				mediator = parent.get('mediator');
+			}
+		}
+
+		return mediator;
 	}
 
 	/* protected */ _mediatorSetter(value:core.IMediator):void {
-		this.mediator = value;
+		this._mediator = value;
 		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
 			binding.setSource(value);
 		}
@@ -128,8 +136,14 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	}
 
 	private _nextGetter():widgets.IWidget {
-		var index:number = this.parent.children.indexOf(this);
-		return this.parent.children[index + 1];
+		var parent = this.get('parent');
+
+		if (!parent) {
+			return null;
+		}
+
+		var index:number = parent.get('children').indexOf(this);
+		return parent.get('children')[index + 1];
 	}
 
 	placeAt(destination:widgets.IWidget, position:PlacePosition):IHandle;
@@ -176,8 +190,20 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	}
 
 	private _previousGetter():widgets.IWidget {
-		var index:number = this.parent.children.indexOf(this);
-		return this.parent.children[index - 1];
+		var parent = this.get('parent');
+
+		if (!parent) {
+			return null;
+		}
+
+		var index:number = parent.get('children').indexOf(this);
+		return parent.get('children')[index - 1];
+	}
+
+	/* abstract protected */ _render():void {
+		if (has('debug')) {
+			throw new Error('_render is not implemented');
+		}
 	}
 }
 
