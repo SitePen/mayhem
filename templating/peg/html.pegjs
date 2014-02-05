@@ -54,8 +54,8 @@
 			var aliases = this._aliases;
 
 			// Ensure that aliases are limited to complete module ID fragments
-			newAlias.from = newAlias.from.replace(/\/*$/, '/');
-			newAlias.to = newAlias.to.replace(/\/*$/, '/');
+			newAlias.from = newAlias.from.toString().replace(/\/*$/, '/');
+			newAlias.to = newAlias.to.toString().replace(/\/*$/, '/');
 
 			for (var i = 0, oldAlias; (oldAlias = aliases[i]); ++i) {
 				// The same alias has already been parsed once before, probably by some look-ahead; do not add it

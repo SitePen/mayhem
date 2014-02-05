@@ -64,3 +64,26 @@ declare module 'dijit/form/TextBox' {
 
 	export = TextBox;
 }
+
+declare module 'dijit/form/Button' {
+	import _WidgetBase = require('dijit/_WidgetBase');
+
+	interface Button extends _WidgetBase {
+		get(key:'label'):string;
+		get(key:'type'):string;
+		get(key:string):any;
+
+		onClick:(event:Event) => void;
+
+		set(key:'label', value:boolean):void;
+		set(key:'type', value:string):void;
+		set(kwArgs:{ [key:string]: any; }):void;
+		set(key:string, value:any):void;
+	}
+
+	var Button:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):Button;
+	};
+
+	export = Button;
+}

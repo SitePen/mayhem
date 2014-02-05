@@ -2,6 +2,7 @@ import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import core = require('../interfaces');
 import dojotext = require('dojo/text');
+import lang = require('dojo/_base/lang');
 import pegParser = require('./peg/html');
 import widgets = require('../ui/interfaces');
 import util = require('../util');
@@ -95,7 +96,7 @@ class Processor {
 				options[key] = items;
 			}
 			else if (items.length === 1 && items[0] && items[0].binding) {
-				// Set up field binding when parts is a single element binding descriptor
+				// Set up field binding when items is a single element binding descriptor
 				fieldBindings[key] = items[0].binding;
 			}
 			else if (array.some(items, (item:any):boolean => item && item.binding)) {
@@ -137,19 +138,32 @@ class Processor {
 			}
 			return handles;
 		}
-		var observerHandles:IHandle[] = [];
 
-		// TODO: find a way to avoid these post-construction tasks
-		if (node.children) {
-			widget.set('children', array.map(node.children, (child:any):widgets.IDomWidget => {
+		// TODO: find a way to avoid having these tasks be post-construction
+		var children:widgets.IDomWidget[],
+			observerHandles:IHandle[] = [];
+		if (node.children && node.children.length) {
+			children = array.map(node.children, (child:any):widgets.IDomWidget => {
 				return Processor.widgetFromAst(child, app, { parent: widget });
-			}));
+			});
+			// TODO: what's the best way to ducktest IContainer?
+			// If not an IContainer just set content attr as the first child (typically a ui/dom/Element)
+			'children' in widget ? widget.set('children', children) : widget.set('content', children[0]);
 		}
 		// We need to defer binding setup until after widget construction
 		for (key in fieldBindings) {
-			widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
+			// TODO: figure out how to make widget.bind to do the heavy lifting here
+			// For now we're just cheating and catching all on* methods and binding directly w/o observing
+			if (/^on[A-Z][a-zA-Z]*$/.test(key)) {
+				widget.set(key, lang.hitch(mediator, mediator.get(fieldBindings[key])));
+			}
+			else {
+				widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
+			}
 		}
 		for (key in bindingTemplates) {
+			// TODO: if we can't make widget.bind work for this we've got more work to do
+			// We'll at least need to hook _mediatorSetter on the widget and update our observers
 			observerHandles.concat(observeBindingTemplate(key, bindingTemplates[key]));
 		}
 		// TODO: stash observerHandles on widget and make sure they're cleaned up

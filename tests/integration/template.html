@@ -1,10 +1,10 @@
+<widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
 Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget><br>
-<widget is="framework/ui/dom/form/Error" binding="lastName"><widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
+<widget is="framework/ui/dom/form/Error" binding="lastName"> <widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
 fullName bound input: <widget is="framework/ui/dom/form/Input" value="{fullName}"></widget><br>
 fullName computed field: {fullName}<br>
-firstName lastName: {firstName} {lastName}<br>
 <em>conditionals</em><br>
 <p style="margin-left:20px">
 	<!-- conditionals are pretty much useless until observables respect dependencies -->
@@ -19,7 +19,7 @@ firstName lastName: {firstName} {lastName}<br>
 		<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>
 	</if>
 </p>
-<placeholder name="interstitial"> text? </placeholder>
+<placeholder name="interstitial">
 <for each="a" value="b">
 	<li>foo</li>
 </for>
@@ -27,11 +27,10 @@ firstName lastName: {firstName} {lastName}<br>
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
 	firstName bidi binding inside when for good measure:
 	<widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
-	<!-- TODO: progress and error tags aren't being parsed and it's not apparent from the grammer how to fix -->
 <error>
 	I SHOULD NOT BE VISIBLE
 <progress>
-	I SHOULD NOT BE VISIBLE
+	remoteString: waiting...
 </when>
 <br>
 <when promise="remoteError" value="errorValue">
@@ -40,8 +39,8 @@ firstName lastName: {firstName} {lastName}<br>
 	<!-- TODO: bind to an Error path -->
 	Error!!! remoteError.message is {errorValue.message}
 <progress>
-	I SHOULD NOT BE VISIBLE
+	remoteError: waiting...
 </when>
 <br>
-<placeholder name="bottom"> text? </placeholder>
-<widget is="framework/ui/dom/form/Button" value="hello"><b><i>Submit</b> for {lastName}</i></widget>
+<placeholder name="bottom">
+<widget is="framework/ui/dom/form/Button" label="My Save Button" on-click="{save}"></widget>

@@ -31,7 +31,6 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 		this.placeholders = {};
 		this._updatePlaceholders = util.debounce(this.__updatePlaceholders);
 		super(kwArgs);
-		// TODO: find a better event name
 	}
 
 	private _childrenSetter(children:widgets.IDomWidget[]):void {

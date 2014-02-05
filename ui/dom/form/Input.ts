@@ -1,21 +1,16 @@
-/// <reference path="../../../dijit" />
-
-import SingleNodeWidget = require('../SingleNodeWidget');
+import DijitWidget = require('../DijitWidget');
 import TextBox = require('dijit/form/TextBox');
 import util = require('../../../util');
-import widget = require('../../interfaces');
 
-class FormInput extends SingleNodeWidget {
-	private _dijit:TextBox;
+class FormInput extends DijitWidget {
+	/* protected */ _dijit:TextBox;
 	debounceRate:number;
-	firstNode:HTMLElement;
-	lastNode:HTMLElement;
 	private _listenHandle:IHandle;
 	value:string;
 
 	constructor(kwArgs:Object = {}) {
 		util.deferMethods(this, [ '_listen' ], '_render');
-		util.deferSetters(this, [ 'parent', 'value' ], '_render');
+		util.deferSetters(this, [ 'value' ], '_render');
 		this.debounceRate = 100;
 		super(kwArgs);
 	}
@@ -27,8 +22,7 @@ class FormInput extends SingleNodeWidget {
 
 	destroy():void {
 		this._listenHandle && this._listenHandle.remove();
-		this._dijit && this._dijit.destroyRecursive();
-		this._dijit = this._listenHandle = null;
+		this._listenHandle = null;
 		super.destroy();
 	}
 
@@ -39,19 +33,9 @@ class FormInput extends SingleNodeWidget {
 		}, this.debounceRate));
 	}
 
-	_parentSetter(value:widget.IContainerWidget):void {
-		this.parent = value;
-
-		if (document.documentElement.contains(this.firstNode)) {
-			this._dijit.startup();
-		}
-		// TODO: otherwise, we need to start when the parent starts, whenever that is, whatever that means
-	}
-
 	/* protected */ _render():void {
 		this._dijit = new TextBox({ intermediateChanges: true });
-		this.classList.set(this._dijit.domNode.className);
-		this.firstNode = this.lastNode = this._dijit.domNode;
+		super._render();
 		this._listen();
 	}
 

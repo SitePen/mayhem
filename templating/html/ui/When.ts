@@ -6,6 +6,7 @@ import widgets = require('../../../ui/interfaces');
 
 class When extends TemplatingWidget {
 
+	defaultProgressWidget:widgets.IDomWidget;
 	private _errorWidget:widgets.IDomWidget;
 	private _finalValue:any;
 	private _promiseField:string;
@@ -17,6 +18,7 @@ class When extends TemplatingWidget {
 	constructor(kwArgs:Object) {
 		util.deferSetters(this, [ 'error', 'progress', 'promise', 'resolved', 'value' ], '_render');
 		super(kwArgs);
+		// TODO: this.defaultProgressWidget
 	}
 
 	private _getSourceMediator():core.IMediator {
@@ -69,6 +71,8 @@ class When extends TemplatingWidget {
 		}
 
 		this._finalValue = undefined;
+		this.set('content', this._progressWidget || this.defaultProgressWidget);
+
 		promise.then((value:any):void => {
 			this._handleResolvedPromise(value);
 		}, (error:any):void => {

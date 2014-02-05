@@ -1,56 +1,43 @@
-import domUtil = require('../util');
-import SingleNodeWidget = require('../SingleNodeWidget');
+/// <reference path="../../../dojo" />
+
+import Button = require('dijit/form/Button');
+import DijitWidget = require('../DijitWidget');
+import util = require('../../../util');
 import widgets = require('../../interfaces');
 
-class FormButton extends SingleNodeWidget {
+class FormButton extends DijitWidget {
+	/* protected */ _dijit:Button;
 	content:widgets.IDomWidget;
-	firstNode:HTMLButtonElement;
-	lastNode:HTMLButtonElement;
+	label:string;
+	onClick:(event:Event) => void;
 	type:string;
-	value:string;
 
-	private _childrenSetter(children:widgets.IDomWidget[]):void {
-		this.set('content', children && children[0]);
+	constructor(kwArgs:Object = {}) {
+		util.deferSetters(this, [ 'content', 'label', 'onClick', 'type' ], '_render');
+		super(kwArgs);
 	}
 
-	private _contentSetter(content:widgets.IDomWidget):void {
-		if (content) {
-			var range = domUtil.getRange(content.firstNode, content.lastNode);
-			range.surroundContents(this.firstNode);
-		}
-		else {
-			this.firstNode.innerHTML = '';
-		}
+	_contentSetter(widget:widgets.IDomWidget):void {
+		// TODO: add to containerNode?
 	}
 
-	destroy():void {
-		this.firstNode.onclick = null;
-		super.destroy();
-	}
-
-	// TODO: list (or map) of attributes to pass through to node?
 	/* protected */ _render():void {
-		this.firstNode = this.lastNode = document.createElement('button');
-		if (this.type) {
-			this.firstNode.setAttribute('type', this.type);
-		}
-		if (this.value) {
-			this.firstNode.setAttribute('value', this.value);
-		}
-		// TODO: figure out how we should do actions
-		this.firstNode.onclick = (event:Event):void => {
-			console.log('CLICKY', this);
-		};
+		this._dijit = new Button();
+		super._render();
 	}
 
-	private _typeSetter(value:string):void {
-		this.type = value;
-		this.firstNode && this.firstNode.setAttribute('type', value);
+	_labelSetter(label:string):void {
+		this.label = label;
+		this._dijit.set('label', label);
 	}
 
-	private _valueSetter(value:string):void {
-		this.value = value;
-		this.firstNode && this.firstNode.setAttribute('value', value);
+	_onClickSetter(handler:(event:Event) => void):void {
+		this.onClick = this._dijit.onClick = handler;
+	}
+
+	_typeSetter(type:string):void {
+		this.type = type;
+		this._dijit.set('type', type);
 	}
 }
 
