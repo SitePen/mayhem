@@ -29,12 +29,6 @@ require([
 	});
 
 	app.startup().then(function () {
-		var model = window.model = new MyModel();
-		var mediator = window.mediator = new MyMediator({
-			app: app,
-			model: model
-		});
-
 		var firstNameRE = /^[a-zA-Z]+$/;
 		var model = window.model = new MyModel();
 		var mediator = window.mediator = new MyMediator({
