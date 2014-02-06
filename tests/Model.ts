@@ -469,8 +469,10 @@ registerSuite({
 		var model = new TestValidationScenarioModel();
 
 		function revalidate(scenario:string, value:string, count:number):IPromise<void> {
-			model.scenario = scenario;
-			model.set('prop', value);
+			model.set({
+				scenario: scenario,
+				prop: value
+			});
 			return model.validate().then(function ():IPromise<void> {
 				var message = 'Model with ' + scenario + ' scenario should have ' + count + ' errors for ' + value;
 				assert.strictEqual(model.getErrors().length, count, message);

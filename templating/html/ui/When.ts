@@ -25,13 +25,13 @@ class When extends TemplatingWidget {
 		if (this._sourceMediator) {
 			return this._sourceMediator;
 		}
-		return this.parent.get('mediator');
+		return this.get('parent').get('mediator');
 	}
 
 	private _createScopedMediator():core.IMediator {
 		// Create a new mediator that delegates to the old one
 		var options:any = {};
-		options['_' + this._valueField + 'Getter'] = () => {
+		options['_' + this._valueField + 'Getter'] = ():any => {
 			// TODO: should we do something when value is not yet resolved?
 			return this._finalValue;
 		};
@@ -46,7 +46,7 @@ class When extends TemplatingWidget {
 		this._finalValue = value;
 		this.set('content', this._resolvedWidget);
 		// TODO: remove this hack once super._mediatorSetter fires properly on children
-		this._resolvedWidget && this._resolvedWidget.set('mediator', this.mediator);
+		this._resolvedWidget && this._resolvedWidget.set('mediator', this.get('mediator'));
 	}
 
 	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
@@ -80,7 +80,7 @@ class When extends TemplatingWidget {
 			this._errorWidget && this.set('content', this._errorWidget);
 		}, (progress:any):void => {
 			// TODO
-			console.log('PROGRESS::', arguments)
+			console.log('PROGRESS::', arguments);
 			this._progressWidget && this.set('content', this._progressWidget);
 		});
 	}

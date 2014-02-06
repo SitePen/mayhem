@@ -17,8 +17,8 @@ class Element extends DomContainer {
 
 	_htmlSetter(html:string):void {
 		this.empty();
-		domUtil.getRange(this.firstNode, this.lastNode, true).deleteContents();
-		this.lastNode.parentNode.insertBefore(domConstruct.toDom(html), this.lastNode);
+		domUtil.getRange(this._firstNode, this._lastNode, true).deleteContents();
+		this._lastNode.parentNode.insertBefore(domConstruct.toDom(html), this._lastNode);
 	}
 }
 

@@ -20,21 +20,28 @@ var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
 class DomElement extends MultiNodeWidget implements widgets.IContainer {
 	private _boundTextNodes:Text[];
 	private _childSlots:Placeholder[];
-	children:widgets.IDomWidget[];
-	html:string;
-	placeholders:{ [id:string]:widgets.IPlaceholder };
+	/* protected */ _children:widgets.IDomWidget[];
+	/* protected */ _html:string;
+	/* protected */ _placeholders:{ [id:string]:widgets.IPlaceholder; };
 	private _updatePlaceholders:Function;
+
+	// TODO: TS#2153
+	// get(key:'children'):widgets.IDomWidget[];
+	// get(key:'html'):string;
+	// get(key:'placeholders'):{ [id:string]:widgets.IPlaceholder; };
+	// set(key:'children', value:widgets.IDomWidget[]):void;
+	// set(key:'html', value:string):void;
 
 	constructor(kwArgs:any) {
 		util.deferSetters(this, [ 'html' ], '_render');
-		this.children = [];
-		this.placeholders = {};
+		this._children = [];
+		this._placeholders = {};
 		this._updatePlaceholders = util.debounce(this.__updatePlaceholders);
 		super(kwArgs);
 	}
 
 	private _childrenSetter(children:widgets.IDomWidget[]):void {
-		this.children = children;
+		this._children = children;
 		// Loop over children and keep track of all named placeholders
 		// TODO: remove placeholders from our list of children
 		var child:widgets.IDomWidget,
@@ -43,7 +50,7 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 			child = children[i];
 			name = child.get('name');
 			if (name && child instanceof TemplatingPlaceholder) {
-				this.placeholders[name] = <TemplatingPlaceholder> child;
+				this._placeholders[name] = <TemplatingPlaceholder> child;
 			}
 		}
 		this._updatePlaceholders();
@@ -51,7 +58,8 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 
 	private _createChildSlot(index:number):DocumentFragment {
 		var slot:Placeholder = this._childSlots[index] = new Placeholder({});
-		return domUtil.getRange(slot.firstNode, slot.lastNode).extractContents();
+		// TODO: Do not touch privates
+		return domUtil.getRange(slot._firstNode, slot._lastNode).extractContents();
 	}
 
 	private _createTextBinding(index:number, binding:string):Text {
@@ -59,7 +67,7 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 		// TODO: might be best to do something like this: this.bind('_boundText.' + index, binding)
 		// and then set our text nodes on changes, but NestedProxty isn't cooperating
 		// If we can figure this out we can remove the half-baked NodeProxty too
-		this.addBinding(this.app.binder.bind({
+		this.addBinding(this.get('app').get('binder').bind({
 			source: this.get('mediator'), // TODO: we may want to cache for long scope lookup chains
 			sourceBinding: binding,
 			target: textNode,
@@ -69,12 +77,12 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 	}
 
 	destroy():void {
-		array.forEach(this._childSlots || [], (slot:Placeholder):void => slot.destroy());
-		array.forEach(this.children, (child:widgets.IDomWidget):void => child.destroy());
-		for (var key in this.placeholders) {
-			this.placeholders[key].destroy();
+		this._childSlots && array.forEach(this._childSlots, (slot:Placeholder):void => slot.destroy());
+		array.forEach(this._children, (child:widgets.IDomWidget):void => child.destroy());
+		for (var key in this._placeholders) {
+			this._placeholders[key].destroy();
 		}
-		this._boundTextNodes = this.children = this._childSlots = null;
+		this._boundTextNodes = this._placeholders = this._children = this._childSlots = null;
 		super.destroy();
 	}
 
@@ -85,8 +93,8 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 
 		// If html is a string no need to do any fancy processing
 		if (typeof html === 'string') {
-			this.html = html;
-			this.lastNode.parentNode.insertBefore(domConstruct.toDom(html), this.lastNode);
+			this._html = html;
+			this._lastNode.parentNode.insertBefore(domConstruct.toDom(html), this._lastNode);
 			return;
 		}
 
@@ -102,7 +110,7 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 			// Insert comment to mark binding location so we easily replace in generated dom
 			return '<!-- binding#' + i + ' -->';
 		});
-		this.html = processed.join('');
+		this._html = processed.join('');
 
 		function processComment(node:Node):void {
 			var parent:Node = node.parentNode,
@@ -143,15 +151,15 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 		}
 
 		// We need to get a fragment from our markup and process its comments before inserting
-		var fragment:Node = domConstruct.toDom(this.html);
+		var fragment:Node = domConstruct.toDom(this._html);
 		processChildComments(fragment);
-		this.lastNode.parentNode.insertBefore(fragment, this.lastNode);
+		this._lastNode.parentNode.insertBefore(fragment, this._lastNode);
 		this._updatePlaceholders();
 	}
 
 	private __updatePlaceholders():void {
 		// Nothing to do if there are no child placeholders or children
-		if (!this._childSlots || !this.children) {
+		if (!this._childSlots || !this._children) {
 			return;
 		}
 		// Loop over child placeholder slots and set to associated child widget
@@ -159,8 +167,11 @@ class DomElement extends MultiNodeWidget implements widgets.IContainer {
 			child:widgets.IDomWidget;
 		for (var i = 0, length = this._childSlots.length; i < length; ++i) {
 			slot = this._childSlots[i];
-			child = this.children[i];
-			slot.get('content') !== child && slot.set('content', child);
+			child = this._children[i];
+			// TODO: any coercion is necessary due to TS#2153 not allowing individual specialized overrides
+			if (<any> slot.get('content') !== child) {
+				slot.set('content', child);
+			}
 		}
 	}
 

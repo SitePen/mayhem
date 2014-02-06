@@ -148,7 +148,7 @@ class Processor {
 			});
 			// TODO: what's the best way to ducktest IContainer?
 			// If not an IContainer just set content attr as the first child (typically a ui/dom/Element)
-			'children' in widget ? widget.set('children', children) : widget.set('content', children[0]);
+			'_children' in widget ? widget.set('children', children) : widget.set('content', children[0]);
 		}
 		// We need to defer binding setup until after widget construction
 		for (key in fieldBindings) {
