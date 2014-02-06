@@ -1,10 +1,12 @@
 <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
-Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget><br>
-<widget is="framework/ui/dom/form/Error" binding="lastName"> <widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
-fullName bound input: <widget is="framework/ui/dom/form/Input" value="{fullName}"></widget><br>
+Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget>
+<widget is="framework/ui/dom/form/Error" binding="lastName"><widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
+fullName bound input: <widget is="framework/ui/dom/form/Input" value="{fullName}"></widget>
+<br>
 fullName computed field: {fullName}<br>
+firstName lastName: {firstName} {lastName}<br>
 <em>conditionals</em><br>
 <p style="margin-left:20px">
 	<!-- conditionals are pretty much useless until observables respect dependencies -->
@@ -16,7 +18,7 @@ fullName computed field: {fullName}<br>
 		(3) fullName is Boe Blogger.<br>
 	<else>
 		(X) No match... here's a read-only widget binding for fun:
-		<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget><br>
+		<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget>
 	</if>
 </p>
 <placeholder name="interstitial">
