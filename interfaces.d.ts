@@ -117,23 +117,6 @@ export interface IProxty<T> {
 	valueOf():any;
 }
 
-export interface IRoute {
-	router:IRouter;
-}
-
-export interface IRouter {
-	createPath:(routeId:string, kwArgs:Object) => string;
-	defaultRoute:string;
-	destroy:() => void;
-	go:(routeId:string, kwArgs:Object) => void;
-	normalizeId:(routeId:string) => string;
-	notFoundRoute:string;
-	pause:() => void;
-	resetPath:(path:string, replace:boolean) => void;
-	resume:() => void;
-	startup:() => IPromise<void>;
-}
-
 export interface IScheduler {
 	afterNext(callback:Function):void;
 	dispatch():void;

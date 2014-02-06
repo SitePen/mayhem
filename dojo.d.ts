@@ -161,6 +161,14 @@ declare module 'dojo/has' {
 	export = has;
 }
 
+declare module 'dojo/io-query' {
+	var ioQuery:{
+		objectToQuery(map:any):string;
+		queryToObject(str:string):any;
+	};
+	export = ioQuery;
+}
+
 declare module 'dojo/promise/all' {
 	var all:{
 		<T>(array:T[]):IPromise<T[]>;
@@ -232,6 +240,14 @@ declare module 'dojo/text' {
 		load(id:string, require:Function, load:(text:string) => void):void;
 	};
 	export = text;
+}
+
+declare module 'dojo/topic' {
+	var topic:{
+		publish(topic:string, event:Object):void;
+		subscribe(topic:string, listener:() => void):{ remove: () => void };
+	};
+	export = topic;
 }
 
 declare module 'dojo/when' {
