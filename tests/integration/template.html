@@ -22,8 +22,9 @@ firstName lastName: {firstName} {lastName}<br>
 	</if>
 </p>
 <placeholder name="interstitial">
+List of hobbies: {hobbies}<br>
 <for each="hobby" in="hobbies">
-	<em>{firstName} likes</em> <span style="background-color:yellow">{hobby}</span>
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value="{hobby}"></widget></span>
 </for>
 <when promise="remoteString" value="stringValue">
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>

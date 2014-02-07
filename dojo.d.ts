@@ -197,8 +197,9 @@ declare module 'dojo/Stateful' {
 declare module 'dojo/store/Memory' {
 	// TODO: paramaterize?
 	class Memory {
-		constructor(kwArgs:Object);
 		data:any[];
+		index:Object;
+		constructor(kwArgs:Object);
 		get(id:any):any;
 		put(object:Object, options?:Object):any;
 		setData(data:any[]):void;

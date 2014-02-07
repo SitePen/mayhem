@@ -1,4 +1,5 @@
 import Model = require('../../data/Model');
+import ObservableArray = require('../../ObservableArray');
 import Property = require('../../data/Property');
 import ValidationError = require('../../validation/ValidationError');
 
@@ -30,9 +31,9 @@ class MyModel extends Model {
 				value: 'Bloggs'
 			}),
 
-			hobbies: Model.property<string[]>({
+			hobbies: Model.property<ObservableArray<string>>({
 				label: 'Hobbies',
-				value: [ 'drinking', 'sportsball', 'drinking' ]
+				value: new ObservableArray<string>([ 'drinking', 'sportsball', 'drinking' ])
 			}),
 
 			fullName: Model.property<string>({

@@ -39,6 +39,11 @@ require([
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
 		masterView.add(processTemplate(app, mediator));
+
+		// Push to observable hobbies array
+		setTimeout(function() {
+			mediator.get('hobbies').push('foo', 'bar');
+		}, 2000);
 	});
 });
 		</script>

@@ -2,6 +2,7 @@
 
 import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
+import core = require('./interfaces');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
 
@@ -14,6 +15,24 @@ export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
 			}
 		}
 	}
+}
+
+export function createScopedMediator(mediator:core.IMediator, value:any, getter:() => any, setter?:(valid:any) => void):core.IMediator {
+	var options:any = {};
+	options['_' + value + 'Getter'] = ():any => {
+		return getter();
+	};
+	if (setter) {
+		options['_' + value + 'Setter'] = (value:any):void => {
+			setter(value);
+		};
+	}
+	var scoped = lang.delegate(mediator, options);
+	var scopedOptions:any = {};
+	scopedOptions['*' + value] = [];
+	// Intercept listeners for our scoped field
+	scoped._observers = lang.delegate(scoped._observers, scopedOptions);
+	return scoped;
 }
 
 /**

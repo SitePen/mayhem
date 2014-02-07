@@ -31,13 +31,11 @@ class When extends DomPlaceholder {
 	}
 
 	private _createScopedMediator():core.IMediator {
-		// Create a new mediator that delegates to the old one
-		var options:any = {};
-		options['_' + this._valueField + 'Getter'] = ():any => {
+		// Create a new mediator that overrides one field and delegates for the rest
+		return util.createScopedMediator(this._getSourceMediator(), this._valueField, ():any => {
 			// TODO: should we do something when value is not yet resolved?
 			return this._finalValue;
-		};
-		return lang.delegate(this._getSourceMediator(), options);
+		});
 	}
 
 	destroy():void {

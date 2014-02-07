@@ -27,6 +27,8 @@ export interface IComponent {
 }
 
 export interface IMediator extends IComponent, IObservable {
+	/* protected */ _observers:{ [key:string]: IObserver<any>[]; };
+
 	get(key:'model'):data.IModel;
 	set(key:'model', value:data.IModel):void;
 	get(key:'routeState'):Object;

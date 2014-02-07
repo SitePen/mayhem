@@ -2,7 +2,7 @@ import core = require('./interfaces');
 import util = require('./util');
 
 class Observable implements core.IObservable {
-	private _observers:{ [key:string]: core.IObserver<any>[]; } = {};
+	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; } = {};
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
 		kwArgs && this.set(kwArgs);
