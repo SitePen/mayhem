@@ -1,6 +1,7 @@
+import SyntheticEvent = require('../SyntheticEvent');
 import routing = require('./interfaces');
 
-class RouteEvent {
+class RouteEvent extends SyntheticEvent {
 	oldPath:string;
 	newPath:string;
 	canceled:boolean;
@@ -8,6 +9,7 @@ class RouteEvent {
 	router:routing.IRouter;
 
 	constructor(kwArgs:Object) {
+		super();
 		for (var k in kwArgs) {
 			this[k] = kwArgs[k];
 		}

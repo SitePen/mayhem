@@ -1,5 +1,6 @@
 /// <reference path="../dojo" />
 
+import Observable = require('../Observable');
 import ioQuery = require('dojo/io-query');
 import lang = require('dojo/_base/lang');
 import core = require('../interfaces');
@@ -29,7 +30,7 @@ import core = require('../interfaces');
  *  |	route.serialize({ view: [ 'foo', 'bar' ] }); // -> 'foo/bar'
  *  |	route.serialize({ view: [ 'foo' ] }); // -> throws error due to insufficient number of arguments
  */
-class Route implements core.IComponent {
+class Route extends Observable implements core.IComponent {
 	/**
 	 * The path that matches this Route. The path is a string that can contain named capturing groups using the syntax
 	 * `<identifier:pattern>`, where the regular expression given in `pattern` will be captured and placed on the
@@ -46,29 +47,9 @@ class Route implements core.IComponent {
 	 * standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 	 */
 	private _path:string;
-
 	/** Whether or not the path should be case-sensitive. */
 	private _isCaseSensitive:boolean = true;
-
-	private _app:core.IApplication;
-
-	get(key:'path'):string;
-	get(key:'isCaseSensitive'):boolean;
-	get(key:'app'):core.IApplication;
-	get(key:string):any;
-	get(key:string):any {
-		return this['_' + key];
-	}
-
-	set(key:'path', value:string):void;
-	set(key:'isCaseSensitive', value:boolean):boolean;
-	set(key:'app', value:core.IApplication):void;
-	set(key:string, value:any):void;
-	set(kwArgs:Object):void;
-	set(key:string, value?:any):void {
-		// TODO: handle object key
-		this['_' + key] = value;
-	}
+	/* protected */ _app:core.IApplication;
 
 	_pathPattern:RegExp;
 	_pathParts:Array<any>;

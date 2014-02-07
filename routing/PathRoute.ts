@@ -47,31 +47,6 @@ class PathRoute extends Route {
 	/** The router to which this route belongs. */
 	private _router:routing.IRouter;
 
-	get(key:'id'):string;
-	get(key:'parent'):any;
-	get(key:'controller'):string;
-	get(key:'view'):string;
-	get(key:'template'):string;
-	get(key:'placeholder'):string;
-	get(key:'router'):routing.IRouter;
-	get(key:string):any;
-	get(key:string):any {
-		return this['_' + key];
-	}
-
-	set(key:'id', value:string):void;
-	set(key:'parent', value:string):void;
-	set(key:'controller', value:string):void;
-	set(key:'view', value:string):void;
-	set(key:'template', value:string):void;
-	set(key:'placeholder', value:string):void;
-	set(key:'router', value:routing.IRouter):void;
-	set(key:string, value:any):void;
-	set(key:Object):void;
-	set(key:string, value?:any):void {
-		this['_' + key] = value;
-	}
-
 	private _subViewHandles:Array<{ remove:() => void}>;
 	private _controllerInstance;
 	private _viewInstance;
@@ -171,11 +146,11 @@ class PathRoute extends Route {
 
 	/* protected */ _instantiateComponents(View, Controller, TemplateConstructor):void {
 		var controller = this._controllerInstance = new Controller({
-			app: this.get('app')
+			app: this._app
 		});
 
 		this._viewInstance = new View({
-			app: this.get('app'),
+			app: this._app,
 			TemplateConstructor: TemplateConstructor,
 			viewModel: controller
 		});

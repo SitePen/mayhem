@@ -1,6 +1,6 @@
 import Deferred = require('dojo/Deferred');
 import ObservableEvented = require('../ObservableEvented');
-import Route = require('./Route');
+import PathRoute = require('./PathRoute');
 import RouteEvent = require('./RouteEvent');
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
@@ -55,10 +55,10 @@ class Router extends ObservableEvented implements routing.IRouter {
 	private _notFoundRoute:string = 'error';
 
 	/* protected */ _oldPath:string;
-	/* protected */ _activeRoutes:Array<Route>;
+	/* protected */ _activeRoutes:Array<PathRoute>;
 	// TODO: If routes never needs to be used as an array, remove _routeIds and restore _routes to being a hash map.
   	/* protected */ _routeIds:{ [key:string]: number };
-	/* protected */ _routes:Array<Route>;
+	/* protected */ _routes:Array<PathRoute>;
 
 	_routesSetter(routeMap:{ [id:string]: { view:string; code:number }}):{ [key:string]: { view:string; code:number } } {
 		var routes = this._routes = [],
@@ -73,7 +73,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		for (var routeId in routeMap) {
 			kwArgs = routeMap[routeId];
 
-			if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(Route) : kwArgs instanceof Route) {
+			if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(PathRoute) : kwArgs instanceof PathRoute) {
 				route = kwArgs;
 				route.set({
 					id: routeId,
@@ -95,7 +95,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 				kwArgs.path == null && (kwArgs.path = routeId.replace(/^.*\//, ''));
 
 				this._fixUpRouteArguments(kwArgs);
-				route = new Route(kwArgs);
+				route = new PathRoute(kwArgs);
 			}
 
 			routeIds[routeId] = routes.push(route) - 1;
@@ -304,30 +304,27 @@ class Router extends ObservableEvented implements routing.IRouter {
 			}),
 			self = this;
 
-		// TODO: emit doesn't generally return a promise, and RouteEvent isn't really an Event
-		this.emit('change', event).then(function () {
-			if (!event.canceled) {
-				whenAll([
-					self._exitRoutes(event),
-					self._enterRoutes(event)
-				]).then(function () {
-					function emitIdle() {
-						self.emit('idle', new RouteEvent({
-							oldPath: event.oldPath,
-							newPath: event.newPath,
-							router: self
-						}));
-					}
+		if (this.emit('change', event)) {
+			whenAll([
+				self._exitRoutes(event),
+				self._enterRoutes(event)
+			]).then(function () {
+				function emitIdle() {
+					self.emit('idle', new RouteEvent({
+						oldPath: event.oldPath,
+						newPath: event.newPath,
+						router: self
+					}));
+				}
 
-					if (!self._activeRoutes.length) {
-						return self._handleNotFoundRoute(event).then(emitIdle);
-					}
-					else {
-						emitIdle();
-					}
-				});
-			}
-		});
+				if (!self._activeRoutes.length) {
+					return self._handleNotFoundRoute(event).then(emitIdle);
+				}
+				else {
+					emitIdle();
+				}
+			});
+		}
 	}
 
 	/**
@@ -375,7 +372,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Handles not found routes by activating the not-found route.
 	 */
 	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
-		var notFoundRoute = this._routes[this._routeIds[this.get('notFoundRoute')]];
+		var notFoundRoute = this._routes[this._routeIds[this._notFoundRoute]];
 		this._activeRoutes.push(notFoundRoute);
 		return when(notFoundRoute.enter(event));
 	}
