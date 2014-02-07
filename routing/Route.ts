@@ -1,9 +1,7 @@
-/// <reference path="../dojo" />
-
 import Observable = require('../Observable');
+import core = require('../interfaces');
 import ioQuery = require('dojo/io-query');
 import lang = require('dojo/_base/lang');
-import core = require('../interfaces');
 
 /**
  * A Route is an object that provides round-trip serialising and parsing of routes based on URL-like path fragments. The
@@ -57,8 +55,9 @@ class Route extends Observable implements core.IComponent {
 
 	/**
 	 * Sets the case-sensitivity flag on path processing regular expression patterns.
+	 * @protected
 	 */
-	/* protected */ _isCaseSensitiveSetter(isCaseSensitive:boolean):boolean {
+	_isCaseSensitiveSetter(isCaseSensitive:boolean):boolean {
 		// TODO: It sure seems like Stateful should do this optimisation instead.
 		if (this._isCaseSensitive === isCaseSensitive) {
 			return isCaseSensitive;
@@ -85,8 +84,9 @@ class Route extends Observable implements core.IComponent {
 
 	/**
 	 * Disassembles a path specification into its consitutuent parts for use when parsing and serialising route paths.
+	 * @protected
 	 */
-	/* protected */ _pathSetter(path:string):string {
+	_pathSetter(path:string):string {
 		/**
 		 * Gets a part of the path string corresponding to the given start and end indexes and escapes it for use within
 		 * a regular expression.
@@ -138,11 +138,8 @@ class Route extends Observable implements core.IComponent {
 	/**
 	 * Given a path, parse the arguments from the path and return them according to the route's path specification.
 	 *
-	 * @param path
-	 * The path to parse into a hash map.
-	 *
-	 * @param options 
-	 * Options for generating the returned hash map. The available options are:
+	 * @param path - The path to parse into a hash map.
+	 * @param options - Options for generating the returned hash map. The available options are:
 	 *   * coerce (boolean, default: true) - Whether or not to coerce numeric arguments to a native Number type.
 	 */
 	parse(path:string, options?:{ coerce?:boolean }):Object {
@@ -195,8 +192,7 @@ class Route extends Observable implements core.IComponent {
 	/**
 	 * Return a path for the given hash map that corresponds to this route's path specification.
 	 *
-	 * @param kwArgs
-	 * A hash map of arguments to serialize into a path.
+	 * @param kwArgs - A hash map of arguments to serialize into a path.
 	 */
 	serialize(kwArgs:{}):string {
 		// if someone passes an object they probably do not expect it to lose several of its properties, but we

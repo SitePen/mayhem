@@ -1,14 +1,15 @@
-import routing = require('./interfaces');
-import widgets = require('../ui/interfaces');
+import Deferred = require('dojo/Deferred');
 import Route = require('./Route');
 import RouteEvent = require('./RouteEvent');
-import Deferred = require('dojo/Deferred');
-import lang = require('dojo/_base/lang');
 import has = require('../has');
+import lang = require('dojo/_base/lang');
+import routing = require('./interfaces');
 import when = require('dojo/when');
+import widgets = require('../ui/interfaces');
 
-// TODO: Rename BaseRoute to Route and rename this guy to PathRoute or something?
-
+/**
+ * A PathRoute is a Route that binds a Controller and View to a particular route.
+ */
 class PathRoute extends Route {
 	/** The unique identifier for this route. */
 	private _id:string;
@@ -29,7 +30,7 @@ class PathRoute extends Route {
 	/**
 	 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
 	 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
-	 * `framework/View`. If the string starts with a `/`, it will be treated as an absolute module ID and not
+	 * `ui.IView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
 	 * transformed. If null, a generic View object will be used for this route instead.
 	 */
 	private _view:string;
@@ -47,14 +48,9 @@ class PathRoute extends Route {
 	/** The router to which this route belongs. */
 	private _router:routing.IRouter;
 
-	private _subViewHandles:Array<{ remove:() => void}>;
-	private _controllerInstance;
-	private _viewInstance;
-
-	constructor(kwArgs?:{ [key:string]: any }) {
-		super();
-		this._subViewHandles = [];
-	}
+	private _subViewHandles:Array<{ remove:() => void}> = [];
+	private _controllerInstance /* framework/Controller */;
+	private _viewInstance /* ui.IView */;
 
 	/**
 	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
@@ -120,10 +116,10 @@ class PathRoute extends Route {
 		}
 	}
 
+	/**
+	 * Destroy the view and controller associated with this route.
+	 */
 	destroy():void {
-		// TODO: is this necessary?
-		//super.destroy();
-
 		if (this._viewInstance) {
 			this._viewInstance.destroyRecursive();
 			this._controllerInstance.destroy && this._controllerInstance.destroy();
@@ -133,18 +129,19 @@ class PathRoute extends Route {
 	/**
 	 * Places a sub-view into the view for this route at the placeholder given in `placeholderId`.
 	 *
-	 * @param view
-	 * The sub-view to place.
-	 *
-	 * @param placeholderId
-	 * The placeholder in which it should be placed. If not provided, defaults to `default`.
+	 * @param view - The sub-view to place.
+	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
 	 */
-	// TODO: view should be an IView
-	place(view, placeholderId?:string) {
+	place(view:any /* ui.IView */, placeholderId?:string) {
 		return this._viewInstance.addSubView(view, placeholderId);
 	}
 
-	/* protected */ _instantiateComponents(View, Controller, TemplateConstructor):void {
+	/**
+	 * Instantiate the view and controller components and the template this route manages from the given constructors.
+     *
+	 * @protected
+	 */
+	_instantiateComponents(View, Controller, TemplateConstructor):void {
 		var controller = this._controllerInstance = new Controller({
 			app: this._app
 		});

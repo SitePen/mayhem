@@ -55,7 +55,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	private _notFoundRoute:string = 'error';
 
 	/* protected */ _oldPath:string;
-	/* protected */ _activeRoutes:Array<PathRoute>;
+	/* protected */ _activeRoutes:Array<PathRoute> = [];
 	// TODO: If routes never needs to be used as an array, remove _routeIds and restore _routes to being a hash map.
   	/* protected */ _routeIds:{ [key:string]: number };
 	/* protected */ _routes:Array<PathRoute>;
@@ -130,8 +130,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Transforms route view/template/controller arguments to complete module IDs. Directly modifies
-	 * the passed object.
+	 * Transforms route view/template/controller arguments to complete module IDs. Directly modifies the passed object.
 	 */
 	_fixUpRouteArguments(kwArgs:{ id: string; [key:string]: any }):void {
 		/**
@@ -175,15 +174,11 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 	}
 
-	constructor() {
-		super();
-		this._activeRoutes = [];
-	}
-
 	/**
 	 * Starts listening for new path changes.
 	 */
 	startup():IPromise<void> {
+		// prevent routes from being modified once the router is started
 		this._routesSetter = function () { return null; }
 		this.startup = function () { return null; };
 		this.resume();
