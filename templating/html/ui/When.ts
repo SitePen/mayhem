@@ -1,11 +1,12 @@
 import core = require('../../../interfaces');
+import DomPlaceholder = require('../../../ui/dom/Placeholder');
 import lang = require('dojo/_base/lang');
-import TemplatingWidget = require('./Widget');
+import processor = require('../../html');
 import util = require('../../../util');
 import widgets = require('../../../ui/interfaces');
 
-class When extends TemplatingWidget {
-
+class When extends DomPlaceholder {
+	defaultErrorWidget:widgets.IDomWidget;
 	defaultProgressWidget:widgets.IDomWidget;
 	private _errorWidget:widgets.IDomWidget;
 	private _finalValue:any;
@@ -18,6 +19,7 @@ class When extends TemplatingWidget {
 	constructor(kwArgs:Object) {
 		util.deferSetters(this, [ 'error', 'progress', 'promise', 'resolved', 'value' ], '_render');
 		super(kwArgs);
+		// TODO: this.defaultErrorWidget
 		// TODO: this.defaultProgressWidget
 	}
 
@@ -38,8 +40,13 @@ class When extends TemplatingWidget {
 		return lang.delegate(this._getSourceMediator(), options);
 	}
 
+	destroy():void {
+		// TODO
+		super.destroy();
+	}
+
 	private _errorSetter(node:any):void {
-		this._errorWidget = this._constructWidget(node);
+		this._errorWidget = processor.constructWidget(node, { parent: this });
 	}
 
 	private _handleResolvedPromise(value:any):void {
@@ -58,7 +65,7 @@ class When extends TemplatingWidget {
 	}
 
 	private _progressSetter(node:any):void {
-		this._progressWidget = this._constructWidget(node);
+		this._progressWidget = processor.constructWidget(node, { parent: this });
 	}
 
 	private _promiseSetter(field:string):void {
@@ -86,7 +93,7 @@ class When extends TemplatingWidget {
 	}
 
 	private _resolvedSetter(node:any):void {
-		this._resolvedWidget = this._constructWidget(node);
+		this._resolvedWidget = processor.constructWidget(node, { parent: this });
 	}
 
 	private _valueSetter(field:string):void {

@@ -22,8 +22,8 @@ firstName lastName: {firstName} {lastName}<br>
 	</if>
 </p>
 <placeholder name="interstitial">
-<for each="a" value="b">
-	<li>foo</li>
+<for each="hobby" in="hobbies">
+	<em>{firstName} likes</em> <span style="background-color:yellow">{hobby}</span>
 </for>
 <when promise="remoteString" value="stringValue">
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
@@ -38,7 +38,7 @@ firstName lastName: {firstName} {lastName}<br>
 <when promise="remoteError" value="errorValue">
 	I SHOULD NOT BE VISIBLE
 <error>
-	<!-- TODO: bind to an Error path -->
+	<!-- TODO: get binding to work on an Error path -->
 	Error!!! remoteError.message is {errorValue.message}
 <progress>
 	remoteError: waiting...

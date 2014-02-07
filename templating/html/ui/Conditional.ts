@@ -1,11 +1,12 @@
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
+import DomPlaceholder = require('../../../ui/dom/Placeholder');
 import domUtil = require('../../../ui/dom/util');
-import TemplatingWidget = require('./Widget');
+import processor = require('../../html');
 import util = require('../../../util');
 import widgets = require('../../../ui/interfaces');
 
-class Conditional extends TemplatingWidget {
+class Conditional extends DomPlaceholder {
 	private _alternateWidget:widgets.IDomWidget;
 	private _conditionHandles:IHandle[];
 	private _conditions:any;
@@ -19,11 +20,11 @@ class Conditional extends TemplatingWidget {
 	}
 
 	private _alternateSetter(alternate:any):void {
-		this._alternateWidget = this._constructWidget(alternate);
+		this._alternateWidget = processor.constructWidget(alternate, { parent: this });
 	}
 
 	private _clearConditionHandles():void {
-		var handles = this._conditionHandles || [];
+		var handles:IHandle[] = this._conditionHandles || [];
 		for (var i = 0, length = handles.length; i < length; ++i) {
 			handles[i].remove();
 		}
@@ -34,7 +35,7 @@ class Conditional extends TemplatingWidget {
 		this._conditionWidgets = [];
 		this._conditions = conditions;
 		for (var i = 0, length = conditions.length; i < length; ++i) {
-			this._conditionWidgets[i] = this._constructWidget(conditions[i].content);
+			this._conditionWidgets[i] = processor.constructWidget(conditions[i].content, { parent: this });
 		}
 		this._updateBinding();
 	}

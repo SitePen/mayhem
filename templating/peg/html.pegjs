@@ -260,7 +260,7 @@ For '<for>'
 
 ForTagOpen '<for>'
 	= OpenToken 'for'i attributes:AttributeMap CloseToken {
-		validate(attributes, { type: '<for>', required: [ 'each', 'value' ] });
+		validate(attributes, { type: '<for>', required: [ 'each', 'in' ] });
 		return attributes;
 	}
 

@@ -142,7 +142,7 @@ define([], function () {
         peg$c46 = "for",
         peg$c47 = { type: "literal", value: "for", description: "\"for\"" },
         peg$c48 = function(attributes) {
-        		validate(attributes, { type: '<for>', required: [ 'each', 'value' ] });
+        		validate(attributes, { type: '<for>', required: [ 'each', 'in' ] });
         		return attributes;
         	},
         peg$c49 = { type: "other", description: "</for>" },

@@ -28,7 +28,7 @@ export function load(resourceId:string, contextRequire:Function, load:(...module
 		var dependencies = scanForDependencies(ast);
 		require(dependencies, ():void => {
 			load(function(app:core.IApplication, mediator:core.IMediator):widgets.IDomWidget {
-				return widgetFromAst(ast, { app: app, mediator: mediator });
+				return constructWidget(ast, { app: app, mediator: mediator });
 			});
 		});
 	});
@@ -64,8 +64,8 @@ function scanForDependencies(node:Object):string[] {
 	return dependencies;
 }
 
-export function widgetFromAst(node:any, options:{
-	app:core.IApplication;
+export function constructWidget(node:any, options:{
+	app?:core.IApplication;
 	mediator?:core.IMediator;
 	parent?:widgets.IDomWidget
 }):widgets.IDomWidget {
@@ -76,6 +76,8 @@ export function widgetFromAst(node:any, options:{
 		widget:widgets.IDomWidget,
 		fieldBindings:{ [key:string]: string; } = {},
 		bindingTemplates:{ [key:string]: any; } = {};
+
+	options.app || (options.app = options.parent.get('app'));
 
 	// A little clean up for the keys from our node before we can use them to construct a widget
 	for (key in node) {
@@ -135,7 +137,7 @@ export function widgetFromAst(node:any, options:{
 		observerHandles:IHandle[] = [];
 	if (node.children && node.children.length) {
 		children = array.map(node.children, (child:any):widgets.IDomWidget => {
-			return widgetFromAst(child, { app: options.app, parent: widget });
+			return constructWidget(child, { app: options.app, parent: widget });
 		});
 		// TODO: find a better way to test for IContainer
 		// Set all children on IContainer, just set first child as content on other widgets

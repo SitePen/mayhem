@@ -194,6 +194,19 @@ declare module 'dojo/Stateful' {
 	export = Stateful;
 }
 
+declare module 'dojo/store/Memory' {
+	// TODO: paramaterize?
+	class Memory {
+		constructor(kwArgs:Object);
+		data:any[];
+		get(id:any):any;
+		put(object:Object, options?:Object):any;
+		setData(data:any[]):void;
+	}
+
+	export = Memory;
+}
+
 declare module 'dojo/text' {
 	var text:{
 		dynamic:boolean;

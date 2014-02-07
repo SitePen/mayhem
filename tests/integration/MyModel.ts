@@ -30,6 +30,11 @@ class MyModel extends Model {
 				value: 'Bloggs'
 			}),
 
+			hobbies: Model.property<string[]>({
+				label: 'Hobbies',
+				value: [ 'drinking', 'sportsball', 'drinking' ]
+			}),
+
 			fullName: Model.property<string>({
 				valueGetter: function ():string {
 					return this.get('model').get('firstName') + ' ' + this.get('model').get('lastName');
@@ -46,7 +51,7 @@ class MyModel extends Model {
 
 			firstNameIsJoey: Model.property<boolean>({
 				_valueGetter: function ():boolean {
-					return this.model.get('firstName') === 'Joey';
+					return this.get('firstName') === 'Joey';
 				},
 				dependencies: [ 'firstName' ]
 			})
