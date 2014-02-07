@@ -45,12 +45,30 @@ class BaseRoute implements core.IComponent {
 	 * Any extra arbitrary arguments that are not explicitly defined as being part of a Route path are provided using a
 	 * standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 	 */
-	path:string;
+	private _path:string;
 
 	/** Whether or not the path should be case-sensitive. */
-	isCaseSensitive:boolean = true;
+	private _isCaseSensitive:boolean = true;
 
-	app:core.IApplication;
+	private _app:core.IApplication;
+
+	get(key:'path'):string;
+	get(key:'isCaseSensitive'):boolean;
+	get(key:'app'):core.IApplication;
+	get(key:string):any;
+	get(key:string):any {
+		return this['_' + key];
+	}
+
+	set(key:'path', value:string):void;
+	set(key:'isCaseSensitive', value:boolean):boolean;
+	set(key:'app', value:core.IApplication):void;
+	set(key:string, value:any):void;
+	set(kwArgs:Object):void;
+	set(key:string, value?:any):void {
+		// TODO: handle object key
+		this['_' + key] = value;
+	}
 
 	_pathPattern:RegExp;
 	_pathParts:Array<any>;
@@ -61,7 +79,7 @@ class BaseRoute implements core.IComponent {
 	 */
 	/* protected */ _isCaseSensitiveSetter(isCaseSensitive:boolean):boolean {
 		// TODO: It sure seems like Stateful should do this optimisation instead.
-		if (this.isCaseSensitive === isCaseSensitive) {
+		if (this._isCaseSensitive === isCaseSensitive) {
 			return isCaseSensitive;
 		}
 
@@ -81,7 +99,7 @@ class BaseRoute implements core.IComponent {
 			}
 		}
 
-		return this.isCaseSensitive = isCaseSensitive;
+		return this._isCaseSensitive = isCaseSensitive;
 	}
 
 	/**
@@ -103,7 +121,7 @@ class BaseRoute implements core.IComponent {
 			lastIndex = 0,
 			match,
 			staticPart,
-			regExpFlags = this.isCaseSensitive ? '' : 'i';
+			regExpFlags = this._isCaseSensitive ? '' : 'i';
 
 		while ((match = parameterPattern.exec(path))) {
 			pathKeys.push(match[1]);
@@ -126,7 +144,7 @@ class BaseRoute implements core.IComponent {
 		this._pathParts = pathParts;
 		this._pathPattern = new RegExp(realPathPattern, regExpFlags);
 
-		return this.path = path;
+		return this._path = path;
 	}
 
 	/**

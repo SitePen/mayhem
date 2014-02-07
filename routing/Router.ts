@@ -1,21 +1,19 @@
-import has = require('../has');
+import Deferred = require('dojo/Deferred');
 import Route = require('./Route');
+import RouteEvent = require('./RouteEvent');
+import array = require('dojo/_base/array');
+import core = require('../interfaces');
+import has = require('../has');
+import lang = require('dojo/_base/lang');
 import routing = require('./interfaces');
-
-/**
- * An entry in a route map
- */
-interface RouteEntry {
-	//controller:Controller;
-   	view:string;
-	code:number;
-}
+import when = require('dojo/when');
+import whenAll = require('dojo/promise/all');
 
 /**
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
  * URL.
  */
-class Router extends PausableEvented implements IComponent, routing.IRouter {
+class Router implements routing.IRouter {
 	/**
 	 * Hash map of routes, where the key is the unique ID of the route and the value is a Route object (or subclass of
 	 * Route), a hash map that is passed to the Route constructor, or a string that is used as the `path` property for a
@@ -37,33 +35,60 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 	 */
 	//routes:{ [key:string]: Route };
 
+	/** The app for this router */
+	private _app:core.IApplication;
+
 	/** The default location for controllers. */
-	controllerPath:string = 'app/controllers';
+	private _controllerPath:string = 'app/controllers';
 
 	/** The default location for views. */
-	viewPath:string = 'app/views';
+	private _viewPath:string = 'app/views';
 
 	/** The default location for templates. */
-	templatePath:string = '../template!app/views';
+	private _templatePath:string = '../template!app/views';
 
 	/** The default route when the application is loaded without an existing route. */
-	defaultRoute:string = 'index';
+	private _defaultRoute:string = 'index';
 
 	/** The route to load when an unmatched route is loaded. */
-	notFoundRoute:string = 'error';
+	private _notFoundRoute:string = 'error';
 
-	_oldPath:string;
-	_activeRoutes:Array<Route>;
+	/* protected */ _oldPath:string;
+	/* protected */ _activeRoutes:Array<Route>;
 	// TODO: If routes never needs to be used as an array, remove _routeIds and restore _routes to being a hash map.
-  	_routeIds:{ [key:string]: number };
-	_routes:Array<Route>;
+  	/* protected */ _routeIds:{ [key:string]: number };
+	/* protected */ _routes:Array<Route>;
+
+	// TODO: is this how getters should be setup?
+	get(key:'app'):core.IApplication;
+	get(key:'controllerPath'):string;
+	get(key:'viewPath'):string;
+	get(key:'templatePath'):string;
+	get(key:'defaultRoute'):string;
+	get(key:'notFoundRoute'):string;
+	get(key:string):any;
+	get(key:string):any {
+		return this['_' + key];
+	}
+
+	// TODO: is this how setters should be setup?
+	set(key:'app', value:core.IApplication):void;
+	set(key:'controllerPath', value:string):void;
+	set(key:'viewPath', value:string):void;
+	set(key:'templatePath', value:string):void;
+	set(key:'defaultRoute', value:string):void;
+	set(key:'notFoundRoute', value:string):void;
+	set(key:string, value:any):void;
+	set(key:string, value:any):void {
+		this['_' + key] = value;
+	}
 
 	_routesSetter(routeMap:{ [id:string]: { view:string; code:number }}):{ [key:string]: { view:string; code:number } } {
 		var routes = this._routes = [],
 			routeIds = this._routeIds = {};
 
-		if (!routeMap[this.notFoundRoute]) {
-			routeMap[this.notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
+		if (!routeMap[this._notFoundRoute]) {
+			routeMap[this._notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
 		}
 
 		var kwArgs,
@@ -75,7 +100,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 				route = kwArgs;
 				route.set({
 					id: routeId,
-					app: this.app
+					app: this._app
 				});
 			}
 			else {
@@ -85,7 +110,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 
 				kwArgs.id = routeId;
 				kwArgs.router = this;
-				kwArgs.app = this.app;
+				kwArgs.app = this._app;
 
 				// Path might be the empty string, and this is OK, but it cannot be null or undefined. Then,
 				// because of the way path nesting works, only the last part of the route identifier is used as
@@ -106,7 +131,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 			if (parentDelimiterIndex === -1) {
 				// TODO: It feels weird to say the parent of a root route is the app, but it is the easiest way
 				// to place views into the main application view
-				route.set('parent', this.app);
+				route.set('parent', this.get('app'));
 				continue;
 			}
 
@@ -127,7 +152,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 		return routeMap;
 	}
 
-	_fixUpRouteArguments(kwArgs:{ [key:string]: any }):void {
+	_fixUpRouteArguments(kwArgs:{ id: string; [key:string]: any }):void {
 		//	summary:
 		//		Transforms route view/template/controller arguments to complete module IDs. Directly modifies
 		//		the passed object.
@@ -182,10 +207,12 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 	 * Starts listening for new path changes.
 	 */
 	startup():IPromise<void> {
-		//	summary:
-
-		this.startup = this._routesSetter = function () {};
+		var dfd = new Deferred();
+		dfd.resolve();
+		this._routesSetter = function () { return null; }
+		this.startup = function () { return dfd; };
 		this.resume();
+		return dfd;
 	}
 
 	destroy():void {
@@ -270,6 +297,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 		if (has('debug')) {
 			throw new Error('Abstract method "createPath" not implemented');
 		}
+		return null;
 	}
 
 	normalizeId(id:string):string {
@@ -279,7 +307,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 
 		// Normalize relative IDs
 		var activeRoutes = this._activeRoutes,
-			idPrefix = activeRoutes.length > 0 ? (activeRoutes[activeRoutes.length - 1].path + '/') : '';
+			idPrefix = activeRoutes.length > 0 ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
 		id = id.replace(/^\.\//, idPrefix);
 
 		if (id === '') {
@@ -340,7 +368,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 		});
 	}
 
-	_exitRoutes(event:RouteEvent):IPromise<void> {
+	_exitRoutes(event:RouteEvent):IPromise<any> {
 		//	summary:
 		//		Exits active routes that do not match the new path given in `event`.
 		//	returns: dojo/promise/Promise
@@ -359,7 +387,7 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 		return whenAll(exits);
 	}
 
-	_enterRoutes(event:RouteEvent):IPromise<void> {
+	_enterRoutes(event:RouteEvent):IPromise<any> {
 		//	summary:
 		//		Enters routes that match the new path given in `event`.
 		//	returns: dojo/promise/Promise
@@ -380,12 +408,12 @@ class Router extends PausableEvented implements IComponent, routing.IRouter {
 		return whenAll(entrances);
 	}
 
-	_handleNotFoundRoute(event:RouteEvent):IPromise<void> {
+	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
 		//	summary:
 		//		Handles not found routes by activating the not-found route.
 		//	returns: dojo/promise/Promise
 
-		var notFoundRoute = this._routes[this._routeIds[this.notFoundRoute]];
+		var notFoundRoute = this._routes[this._routeIds[this.get('notFoundRoute')]];
 		this._activeRoutes.push(notFoundRoute);
 		return when(notFoundRoute.enter(event));
 	}

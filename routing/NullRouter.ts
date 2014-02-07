@@ -12,7 +12,7 @@ class NullRouter extends Router {
 	 */
 	startup():void {
 		super.startup();
-		this._handlePathChange(this.createPath(this.defaultRoute));
+		this._handlePathChange(this.createPath(this.get('defaultRoute')));
 	}
 
 	resume():void {

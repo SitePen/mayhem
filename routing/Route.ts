@@ -11,12 +11,12 @@ import when = require('dojo/when');
 
 class Route extends BaseRoute {
 	/** The unique identifier for this route. */
-	id:string;
+	private _id:string;
 
 	/**
 	 * The parent route of this route. If no parent route exists, parent will be set to the main Application instance.
 	 */
-	parent:any /*routing.IRoute, core.IApplication*/;
+	private _parent:any /*routing.IRoute, core.IApplication*/;
 
 	/**
 	 * The name of a controller which, when transformed using the expression `router.controllerPath + '/' +
@@ -24,7 +24,7 @@ class Route extends BaseRoute {
 	 * `framework/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
 	 * transformed. If null, a generic Controller object will be used for this route instead.
 	 */
-	controller:string;
+	private _controller:string;
 
 	/**
 	 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
@@ -32,30 +32,51 @@ class Route extends BaseRoute {
 	 * `framework/View`. If the string starts with a `/`, it will be treated as an absolute module ID and not
 	 * transformed. If null, a generic View object will be used for this route instead.
 	 */
-	view:string;
+	private _view:string;
 
 	/**
 	 * The name of a template which, when transformed using the expression `router.viewPath + '/' +
 	 * toUpperCamelCase(route.template) + 'View.html'`, provides a path to a Mayhem template. If the string starts with
 	 * a '/', it will be treated as an absolute path and not transformed.
 	 */
-	template:string;
+	private _template:string;
 
-	/**
-	 * The ID of the placeholder in the parent route's view that this route's view should be injected into.
-	 */
-	placeholder:string = 'default';
+	/** The ID of the placeholder in the parent route's view that this route's view should be injected into. */
+	private _placeholder:string = 'default';
 
 	/** The router to which this route belongs. */
-	router:routing.IRouter;
+	private _router:routing.IRouter;
 
-	/* protected */ _subViewHandles:Array<{ remove:() => void}>;
+	get(key:'id'):string;
+	get(key:'parent'):any;
+	get(key:'controller'):string;
+	get(key:'view'):string;
+	get(key:'template'):string;
+	get(key:'placeholder'):string;
+	get(key:'router'):routing.IRouter;
+	get(key:string):any;
+	get(key:string):any {
+		return this['_' + key];
+	}
 
-	/* protected */ _controllerInstance;
+	set(key:'id', value:string):void;
+	set(key:'parent', value:string):void;
+	set(key:'controller', value:string):void;
+	set(key:'view', value:string):void;
+	set(key:'template', value:string):void;
+	set(key:'placeholder', value:string):void;
+	set(key:'router', value:routing.IRouter):void;
+	set(key:string, value:any):void;
+	set(key:Object):void;
+	set(key:string, value?:any):void {
+		this['_' + key] = value;
+	}
 
-	/* protected */ _viewInstance;
+	private _subViewHandles:Array<{ remove:() => void}>;
+	private _controllerInstance;
+	private _viewInstance;
 
-	constructor() {
+	constructor(kwArgs?:{ [key:string]: any }) {
 		super();
 		this._subViewHandles = [];
 	}
@@ -67,9 +88,9 @@ class Route extends BaseRoute {
 	 */
 	enter(event:RouteEvent):IPromise<void> {
 		function setRouteState(event) {
-			has('debug') && console.log('entering', self.id);
+			has('debug') && console.log('entering', self._id);
 
-			var kwArgs = { id: self.id };
+			var kwArgs = { id: self._id };
 
 			for (var k in self) {
 				// Custom properties on the route should be provided to the controller, but not private or default
@@ -84,20 +105,20 @@ class Route extends BaseRoute {
 
 			lang.mixin(kwArgs, self.parse(event.newPath));
 
-			has('debug') && console.log('new route state for', self.id, kwArgs);
+			has('debug') && console.log('new route state for', self._id, kwArgs);
 			self._controllerInstance.set('routeState', kwArgs);
 			return dfd.promise;
 		}
 
-		has('debug') && console.log('preparing', this.id);
+		has('debug') && console.log('preparing', this._id);
 
 		var self = this,
 			dfd = new Deferred<void>();
 
 		require([
-			this.view,
-			this.controller,
-			this.template
+			this._view,
+			this._controller,
+			this._template
 		], function (View, Controller, TemplateConstructor) {
 			return when(self._instantiateComponents(View, Controller, TemplateConstructor)).then(function () {
 				setRouteState(event);
@@ -116,7 +137,7 @@ class Route extends BaseRoute {
 	 * Deactivates the route, disconnecting any subviews within the route's view and removing the view from its parent.
 	 */
 	exit():void {
-		has('debug') && console.log('exiting', this.id);
+		has('debug') && console.log('exiting', this._id);
 
 		var handle;
 		while ((handle = this._subViewHandles.pop())) {
@@ -143,22 +164,23 @@ class Route extends BaseRoute {
 	 * @param placeholderId
 	 * The placeholder in which it should be placed. If not provided, defaults to `default`.
 	 */
-	place(view:widgets.IView, placeholderId?:string) {
+	// TODO: view should be an IView
+	place(view, placeholderId?:string) {
 		return this._viewInstance.addSubView(view, placeholderId);
 	}
 
 	/* protected */ _instantiateComponents(View, Controller, TemplateConstructor):void {
 		var controller = this._controllerInstance = new Controller({
-			app: this.app
+			app: this.get('app')
 		});
 
 		this._viewInstance = new View({
-			app: this.app,
+			app: this.get('app'),
 			TemplateConstructor: TemplateConstructor,
 			viewModel: controller
 		});
 
-		this._subViewHandles.push(this.parent.place(this._viewInstance, this.placeholder));
+		this._subViewHandles.push(this._parent.place(this._viewInstance, this._placeholder));
 
 		return this._viewInstance.startup();
 	}

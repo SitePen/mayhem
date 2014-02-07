@@ -161,6 +161,13 @@ declare module 'dojo/has' {
 	export = has;
 }
 
+declare module 'dojo/hash' {
+	var hash:{
+		(value?:string, replace?:boolean):string;
+	};
+	export = hash;
+}
+
 declare module 'dojo/io-query' {
 	var ioQuery:{
 		objectToQuery(map:any):string;
