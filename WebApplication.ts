@@ -21,7 +21,7 @@ class WebApplication extends Application {
 		});
 	}
 
-	place(view:ui.IView, placeholder?:string) {
+	place(view:any/* ui.IView */, placeholder?:string) {
 		return this.ui.add(view, placeholder);
 	}
 
