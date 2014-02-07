@@ -103,30 +103,30 @@ registerSuite({
 
 		sourceObject.mockProxty.emulateUpdate(1);
 		targetObject.mockProxty.emulateUpdate(2);
-		// binder.app.scheduler.afterNext(dfd.rejectOnError(function () {
-		// 	assert.strictEqual(targetObject.mockProxty.get(), 1, 'Binder should actually bind the two properties together');
-		// 	assert.strictEqual(sourceObject.mockProxty.get(), 1, 'Binder should use one-way binding by default');
+		binder._app.get('scheduler').afterNext(dfd.rejectOnError(function () {
+			assert.strictEqual(targetObject.mockProxty.get(), 1, 'Binder should actually bind the two properties together');
+			assert.strictEqual(sourceObject.mockProxty.get(), 1, 'Binder should use one-way binding by default');
 
-		// 	handle.remove();
+			handle.remove();
 
-		// 	assert.doesNotThrow(function () {
-		// 		handle.remove();
-		// 	}, 'Removing handle a second time should be a no-op');
+			assert.doesNotThrow(function () {
+				handle.remove();
+			}, 'Removing handle a second time should be a no-op');
 
-		// 	handle = binder.bind({
-		// 		source: sourceObject,
-		// 		sourceBinding: '',
-		// 		target: targetObject,
-		// 		targetBinding: '',
-		// 		direction: BindDirection.TWO_WAY
-		// 	});
+			handle = binder.bind({
+				source: sourceObject,
+				sourceBinding: '',
+				target: targetObject,
+				targetBinding: '',
+				direction: BindDirection.TWO_WAY
+			});
 
-		// 	targetObject.mockProxty.emulateUpdate(3);
-		// 	binder.app.scheduler.afterNext(dfd.callback(function () {
-		// 		assert.strictEqual(sourceObject.mockProxty.get(), 3, 'Binder should bind from target to source with two-way binding');
-		// 		handle.remove();
-		// 	}));
-		// }));
+			targetObject.mockProxty.emulateUpdate(3);
+			binder._app.get('scheduler').afterNext(dfd.callback(function () {
+				assert.strictEqual(sourceObject.mockProxty.get(), 3, 'Binder should bind from target to source with two-way binding');
+				handle.remove();
+			}));
+		}));
 	},
 
 	'#createProxty': function () {

@@ -11,7 +11,8 @@ import whenAll = require('dojo/promise/all');
  * A data binder that uses Proxty objects to enable binding between arbitrary properties of two different objects.
  */
 class ProxtyBinder implements binding.IBinder {
-	private _app:core.IApplication;
+	// For now _app has to be exposed for testing purposes
+	/* private */ _app:core.IApplication;
 	private _proxties:binding.IProxtyConstructor[];
 	private _useScheduler:boolean;
 
