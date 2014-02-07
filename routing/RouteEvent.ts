@@ -3,11 +3,9 @@ import routing = require('./interfaces');
 class RouteEvent {
 	oldPath:string;
 	newPath:string;
+	canceled:boolean;
+	paused:boolean;
 	router:routing.IRouter;
-
-	// TODO: Should these come from a higher level interface? Right now they appear to be managed by PausableEvented.
-	paused:boolean = false;
-	canceled:boolean = false;
 
 	constructor(kwArgs:Object) {
 		for (var k in kwArgs) {

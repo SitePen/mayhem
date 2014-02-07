@@ -21,7 +21,7 @@ export interface IRouter {
 	set(key:'notFoundRoute', value:string):void;
 	set(key:string, value:any):void;
 
-	createPath:(routeId:string, kwArgs?:{ [key:string]: any }) => string;
+	createPath:(routeId:string, kwArgs?:Object) => string;
 	destroy:() => void;
 	go:(routeId:string, kwArgs:Object) => void;
 	normalizeId:(routeId:string) => string;

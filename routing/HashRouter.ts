@@ -51,7 +51,7 @@ class HashRouter extends Router {
 		hash(this.createPath.apply(this, arguments));
 	}
 
-	resetPath(path:string, replace:boolean):void {
+	resetPath(path:string, replace?:boolean):void {
 		this.pause();
 		hash(path, replace);
 		this.resume();
@@ -60,7 +60,7 @@ class HashRouter extends Router {
 	/**
 	 * Creates a URL fragment that can be used to link to the given route.
 	 */
-	createPath(id:string, kwArgs:Object):string {
+	createPath(id:string, kwArgs?:Object):string {
 		id = this.normalizeId(id);
 
 		var route = this._routes[this._routeIds[id]];

@@ -1,4 +1,5 @@
 import Deferred = require('dojo/Deferred');
+import ObservableEvented = require('../ObservableEvented');
 import Route = require('./Route');
 import RouteEvent = require('./RouteEvent');
 import array = require('dojo/_base/array');
@@ -13,7 +14,7 @@ import whenAll = require('dojo/promise/all');
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
  * URL.
  */
-class Router implements routing.IRouter {
+class Router extends ObservableEvented implements routing.IRouter {
 	/**
 	 * Hash map of routes, where the key is the unique ID of the route and the value is a Route object (or subclass of
 	 * Route), a hash map that is passed to the Route constructor, or a string that is used as the `path` property for a
@@ -58,30 +59,6 @@ class Router implements routing.IRouter {
 	// TODO: If routes never needs to be used as an array, remove _routeIds and restore _routes to being a hash map.
   	/* protected */ _routeIds:{ [key:string]: number };
 	/* protected */ _routes:Array<Route>;
-
-	// TODO: is this how getters should be setup?
-	get(key:'app'):core.IApplication;
-	get(key:'controllerPath'):string;
-	get(key:'viewPath'):string;
-	get(key:'templatePath'):string;
-	get(key:'defaultRoute'):string;
-	get(key:'notFoundRoute'):string;
-	get(key:string):any;
-	get(key:string):any {
-		return this['_' + key];
-	}
-
-	// TODO: is this how setters should be setup?
-	set(key:'app', value:core.IApplication):void;
-	set(key:'controllerPath', value:string):void;
-	set(key:'viewPath', value:string):void;
-	set(key:'templatePath', value:string):void;
-	set(key:'defaultRoute', value:string):void;
-	set(key:'notFoundRoute', value:string):void;
-	set(key:string, value:any):void;
-	set(key:string, value:any):void {
-		this['_' + key] = value;
-	}
 
 	_routesSetter(routeMap:{ [id:string]: { view:string; code:number }}):{ [key:string]: { view:string; code:number } } {
 		var routes = this._routes = [],
@@ -152,17 +129,16 @@ class Router implements routing.IRouter {
 		return routeMap;
 	}
 
+	/**
+	 * Transforms route view/template/controller arguments to complete module IDs. Directly modifies
+	 * the passed object.
+	 */
 	_fixUpRouteArguments(kwArgs:{ id: string; [key:string]: any }):void {
-		//	summary:
-		//		Transforms route view/template/controller arguments to complete module IDs. Directly modifies
-		//		the passed object.
-
-		function resolve(/**string*/ value) {
-			//	summary:
-			//		Converts a shorthand reference to a valid constructor-style module ID.
-			//		e.g. `foo -> Foo`, `foo/bar -> foo/Bar`
-			//	returns: string
-
+		/**
+		 * Converts a shorthand reference to a valid constructor-style module ID. e.g. `foo -> Foo`, `foo/bar ->
+		 * foo/Bar`
+		 */
+		function resolve(value:string):string {
 			return value.replace(/(^|\/)([a-z])([^\/]*)$/, function () {
 				return arguments[1] + arguments[2].toUpperCase() + arguments[3];
 			});
@@ -200,6 +176,7 @@ class Router implements routing.IRouter {
 	}
 
 	constructor() {
+		super();
 		this._activeRoutes = [];
 	}
 
@@ -207,19 +184,16 @@ class Router implements routing.IRouter {
 	 * Starts listening for new path changes.
 	 */
 	startup():IPromise<void> {
-		var dfd = new Deferred();
-		dfd.resolve();
 		this._routesSetter = function () { return null; }
-		this.startup = function () { return dfd; };
+		this.startup = function () { return null; };
 		this.resume();
-		return dfd;
+		return null;
 	}
 
+	/**
+	 * Stops listening for any new path changes, exits all active routes, and destroys all registered routes.
+	 */
 	destroy():void {
-		//	summary:
-		//		Stops listening for any new path changes, exits all active routes, and destroys all registered
-		//		routes.
-
 		this.destroy = function () {};
 		this.pause();
 
@@ -241,70 +215,59 @@ class Router implements routing.IRouter {
 		this._activeRoutes = this._routes = null;
 	}
 
+	/**
+	 * Starts the router responding to hash changes.
+	 */
 	resume():void {
-		//	summary:
-		//		Starts the router responding to hash changes.
-
 		if (has('debug')) {
 			throw new Error('Abstract method "resume" not implemented');
 		}
 	}
 
+	/**
+	 * Stops the router from responding to any hash changes.
+	 */
 	pause():void {
-		//	summary:
-		//		Stops the router from responding to any hash changes.
-
 		if (has('debug')) {
 			throw new Error('Abstract method "pause" not implemented');
 		}
 	}
 
-	go():void {
-		//	summary:
-		//		Transitions to a new route.
-		//	id: string
-		//		The route ID.
-		//	kwArgs: Object
-		//		Arguments to the route.
-
+	/**
+	 * Transitions to a new route.
+	 */
+	go(routeId:string, kwArgs:Object):void {
 		if (has('debug')) {
 			throw new Error('Abstract method "go" not implemented');
 		}
 	}
 
-	resetPath(path:string):void {
-		//	summary:
-		//		Resets the path of the underlying state mechanism without triggering a routing update.
-		//	path: string
-		//		The path to set.
-		//	replace: boolean
-		//		Whether or not to replace the previous path in history with the provided path.
-
+	/**
+	 * Resets the path of the underlying state mechanism without triggering a routing update.
+	 *
+	 * @param path The path to set.
+	 * @param replace Whether or not to replace the previous path in history with the provided path.
+	 */
+	resetPath(path:string, replace?:boolean):void {
 		if (has('debug')) {
 			throw new Error('Abstract method "resetPath" not implemented');
 		}
 	}
 
-	createPath(path:string, kwArgs?:{ [key:string]: any }):string {
-		//	summary:
-		//		Creates a unique identifier for the given route.
-		//	id: string
-		//		The route ID.
-		//	kwArgs: Object
-		//		Arguments for the route.
-		//	returns: string
-
+	/**
+	 * Creates a unique identifier for the given route.
+	 */
+	createPath(path:string, kwArgs?:Object):string {
 		if (has('debug')) {
 			throw new Error('Abstract method "createPath" not implemented');
 		}
 		return null;
 	}
 
+	/**
+	 * Normalizes a string to a real ID value.
+	 */
 	normalizeId(id:string):string {
-		//	summary:
-		//		Normalizes a string to a real ID value.
-		//	returns: string
-
 		// Normalize relative IDs
 		var activeRoutes = this._activeRoutes,
 			idPrefix = activeRoutes.length > 0 ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
@@ -321,12 +284,10 @@ class Router implements routing.IRouter {
 		return id;
 	}
 
+	/**
+	 * Activates and deactivates routes in response to a path change.
+	 */
 	_handlePathChange(newPath:string):void {
-		//	summary:
-		//		Activates and deactivates routes in response to a path change.
-		//	newPath:
-		//		The new path.
-
 		// TODO: Maybe this is the wrong name for this function
 		newPath = this.normalizeId(newPath);
 
@@ -343,6 +304,7 @@ class Router implements routing.IRouter {
 			}),
 			self = this;
 
+		// TODO: emit doesn't generally return a promise, and RouteEvent isn't really an Event
 		this.emit('change', event).then(function () {
 			if (!event.canceled) {
 				whenAll([
@@ -368,11 +330,12 @@ class Router implements routing.IRouter {
 		});
 	}
 
+	/**
+	 * Exits active routes that do not match the new path given in `event`.
+	 *
+	 * @returns A promise that is resolved once all matching routes have finished deactivating.
+	 */
 	_exitRoutes(event:RouteEvent):IPromise<any> {
-		//	summary:
-		//		Exits active routes that do not match the new path given in `event`.
-		//	returns: dojo/promise/Promise
-		//		A promise that is resolved once all matching routes have finished deactivating.
 
 		var activeRoutes = this._activeRoutes,
 			exits = [];
@@ -387,12 +350,12 @@ class Router implements routing.IRouter {
 		return whenAll(exits);
 	}
 
+	/**
+	 * Enters routes that match the new path given in `event`.
+	 *
+	 * @returns A promise that is resolved once all matching routes have finished activating.
+	 */
 	_enterRoutes(event:RouteEvent):IPromise<any> {
-		//	summary:
-		//		Enters routes that match the new path given in `event`.
-		//	returns: dojo/promise/Promise
-		//		A promise that is resolved once all matching routes have finished activating.
-
 		var entrances = [];
 
 		for (var i = 0, route; (route = this._routes[i]); ++i) {
@@ -408,11 +371,10 @@ class Router implements routing.IRouter {
 		return whenAll(entrances);
 	}
 
+	/**
+	 * Handles not found routes by activating the not-found route.
+	 */
 	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
-		//	summary:
-		//		Handles not found routes by activating the not-found route.
-		//	returns: dojo/promise/Promise
-
 		var notFoundRoute = this._routes[this._routeIds[this.get('notFoundRoute')]];
 		this._activeRoutes.push(notFoundRoute);
 		return when(notFoundRoute.enter(event));

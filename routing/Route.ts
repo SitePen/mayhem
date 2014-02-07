@@ -1,188 +1,269 @@
-import routing = require('./interfaces');
-import widgets = require('../ui/interfaces');
-import BaseRoute = require('./BaseRoute');
-import RouteEvent = require('./RouteEvent');
-import Deferred = require('dojo/Deferred');
+/// <reference path="../dojo" />
+
+import ioQuery = require('dojo/io-query');
 import lang = require('dojo/_base/lang');
-import has = require('../has');
-import when = require('dojo/when');
+import core = require('../interfaces');
 
-// TODO: Rename BaseRoute to Route and rename this guy to PathRoute or something?
-
-class Route extends BaseRoute {
-	/** The unique identifier for this route. */
-	private _id:string;
-
+/**
+ * A Route is an object that provides round-trip serialising and parsing of routes based on URL-like path fragments. The
+ * Route class is a base class for different Routes that provides functionality for matching, parsing, and
+ * serializing paths on a route using a URL-like syntax.
+ *
+ * example:
+ * 	Basic usage:
+ *
+ *  |	var route = new Route({ path: '<view:foo|bar|baz>/<id:\\d+>' });
+ *  |	route.test('foo/1234'); // -> true
+ *  |	route.test('foo/'); // -> false (path must match fully)
+ *  |	route.test('bar/foo/1234'); // -> false (path must match from the start of the string)
+ *  |	route.parse('foo/1234'); // -> { view: 'foo', id: 1234 }
+ *  |	route.serialize({ view: 'foo', id: 1234 }); // -> 'foo/1234'
+ *  |	route.serialize({ view: 'foo' }); // -> throws error due to insufficient number of arguments
+ *  |	route.serialize({ view: 'foo', id: 1234, bar: true }); // -> 'foo/1234?bar=true'
+ *
+ * example:
+ * 	Multiple named capturing groups with the same identifier:
+ *
+ *  |	var route = new Route({ path: '<view:\\w+>/<view:\\w+>' });
+ *  |	route.parse('foo/bar'); // -> { view: [ 'foo', 'bar' ] }
+ *  |	route.serialize({ view: [ 'foo', 'bar' ] }); // -> 'foo/bar'
+ *  |	route.serialize({ view: [ 'foo' ] }); // -> throws error due to insufficient number of arguments
+ */
+class Route implements core.IComponent {
 	/**
-	 * The parent route of this route. If no parent route exists, parent will be set to the main Application instance.
+	 * The path that matches this Route. The path is a string that can contain named capturing groups using the syntax
+	 * `<identifier:pattern>`, where the regular expression given in `pattern` will be captured and placed on the
+	 * property labelled with `identifier`. Multiple named capturing groups with the same identifier may be used (e.g.
+	 * `<view:\\w+>/<view:\\w+>`), in which case the associated value will be an array.
+	 * 
+	 * Do not use capturing groups (`()`) within regular expression patterns. This will break the Route. Non-capturing
+	 * groups (`(?:)`) may be used if necessary.
+	 *
+	 * Routes are always matched from the start of the string, so cannot be used to find matches within the middle of a
+	 * path.
+	 *
+	 * Any extra arbitrary arguments that are not explicitly defined as being part of a Route path are provided using a
+	 * standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 	 */
-	private _parent:any /*routing.IRoute, core.IApplication*/;
+	private _path:string;
 
-	/**
-	 * The name of a controller which, when transformed using the expression `router.controllerPath + '/' +
-	 * toUpperCamelCase(route.controller) + 'Controller'`, provides a module ID that points to a module whose value is a
-	 * `framework/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-	 * transformed. If null, a generic Controller object will be used for this route instead.
-	 */
-	private _controller:string;
+	/** Whether or not the path should be case-sensitive. */
+	private _isCaseSensitive:boolean = true;
 
-	/**
-	 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
-	 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
-	 * `framework/View`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-	 * transformed. If null, a generic View object will be used for this route instead.
-	 */
-	private _view:string;
+	private _app:core.IApplication;
 
-	/**
-	 * The name of a template which, when transformed using the expression `router.viewPath + '/' +
-	 * toUpperCamelCase(route.template) + 'View.html'`, provides a path to a Mayhem template. If the string starts with
-	 * a '/', it will be treated as an absolute path and not transformed.
-	 */
-	private _template:string;
-
-	/** The ID of the placeholder in the parent route's view that this route's view should be injected into. */
-	private _placeholder:string = 'default';
-
-	/** The router to which this route belongs. */
-	private _router:routing.IRouter;
-
-	get(key:'id'):string;
-	get(key:'parent'):any;
-	get(key:'controller'):string;
-	get(key:'view'):string;
-	get(key:'template'):string;
-	get(key:'placeholder'):string;
-	get(key:'router'):routing.IRouter;
+	get(key:'path'):string;
+	get(key:'isCaseSensitive'):boolean;
+	get(key:'app'):core.IApplication;
 	get(key:string):any;
 	get(key:string):any {
 		return this['_' + key];
 	}
 
-	set(key:'id', value:string):void;
-	set(key:'parent', value:string):void;
-	set(key:'controller', value:string):void;
-	set(key:'view', value:string):void;
-	set(key:'template', value:string):void;
-	set(key:'placeholder', value:string):void;
-	set(key:'router', value:routing.IRouter):void;
+	set(key:'path', value:string):void;
+	set(key:'isCaseSensitive', value:boolean):boolean;
+	set(key:'app', value:core.IApplication):void;
 	set(key:string, value:any):void;
-	set(key:Object):void;
+	set(kwArgs:Object):void;
 	set(key:string, value?:any):void {
+		// TODO: handle object key
 		this['_' + key] = value;
 	}
 
-	private _subViewHandles:Array<{ remove:() => void}>;
-	private _controllerInstance;
-	private _viewInstance;
+	_pathPattern:RegExp;
+	_pathParts:Array<any>;
+	_pathKeys:Array<string>;
 
-	constructor(kwArgs?:{ [key:string]: any }) {
-		super();
-		this._subViewHandles = [];
+	/**
+	 * Sets the case-sensitivity flag on path processing regular expression patterns.
+	 */
+	/* protected */ _isCaseSensitiveSetter(isCaseSensitive:boolean):boolean {
+		// TODO: It sure seems like Stateful should do this optimisation instead.
+		if (this._isCaseSensitive === isCaseSensitive) {
+			return isCaseSensitive;
+		}
+
+		var regExpFlags = isCaseSensitive ? '' : 'i';
+
+		if (this._pathPattern) {
+			this._pathPattern = new RegExp(this._pathPattern.source, regExpFlags);
+
+			for (var i = 0, j = this._pathParts.length, part; i < j; ++i) {
+				part = this._pathParts[i];
+
+				// These patterns are updated here instead of being generated every time someone calls serialize
+				// because calls to serialize are more common
+				if (part.pattern) {
+					part.pattern = new RegExp(part.pattern.source, regExpFlags);
+				}
+			}
+		}
+
+		return this._isCaseSensitive = isCaseSensitive;
 	}
 
 	/**
-	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
-	 * Whenever a route is activated, state information from the route is provided to the controller by setting its
-	 * `routeState` property.
+	 * Disassembles a path specification into its consitutuent parts for use when parsing and serialising route paths.
 	 */
-	enter(event:RouteEvent):IPromise<void> {
-		function setRouteState(event) {
-			has('debug') && console.log('entering', self._id);
+	/* protected */ _pathSetter(path:string):string {
+		/**
+		 * Gets a part of the path string corresponding to the given start and end indexes and escapes it for use within
+		 * a regular expression.
+		 */
+		function getStaticPart(start:number, end?:number):string {
+			return path.slice(start, end).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+		}
 
-			var kwArgs = { id: self._id };
+		var parameterPattern = /<([^:]+):([^>]+)>/g,
+			realPathPattern = '^',
+			pathKeys = [],
+			pathParts = [],
+			lastIndex = 0,
+			match,
+			staticPart,
+			regExpFlags = this._isCaseSensitive ? '' : 'i';
 
-			for (var k in self) {
-				// Custom properties on the route should be provided to the controller, but not private or default
-				// properties since those are only relevant to the route itself
-				// TODO: is !self.hasOwnProperty(k) equivalent to (k in self.constructor.prototype)?
-				if (k.charAt(0) === '_' || (!self.hasOwnProperty(k))) {
-					continue;
+		while ((match = parameterPattern.exec(path))) {
+			pathKeys.push(match[1]);
+
+			// static parts must always be string literals, not regular expressions, since it is not possible to
+			// generate a reverse path otherwise
+			staticPart = getStaticPart(lastIndex, match.index);
+			pathParts.push(staticPart, { key: match[1], pattern: new RegExp(match[2], regExpFlags) });
+
+			realPathPattern += staticPart + '(' + match[2] + ')';
+
+			lastIndex = match.index + match[0].length;
+		}
+
+		staticPart = getStaticPart(lastIndex);
+		realPathPattern += staticPart + '(?:\\?(.*))?';
+		pathParts.push(staticPart);
+
+		this._pathKeys = pathKeys;
+		this._pathParts = pathParts;
+		this._pathPattern = new RegExp(realPathPattern, regExpFlags);
+
+		return this._path = path;
+	}
+
+	/**
+	 * Tests whether or not the given path matches this route.
+	 */
+	test(path:string):boolean {
+		return this._pathPattern.test(path);
+	}
+
+	/**
+	 * Given a path, parse the arguments from the path and return them according to the route's path specification.
+	 *
+	 * @param path
+	 * The path to parse into a hash map.
+	 *
+	 * @param options 
+	 * Options for generating the returned hash map. The available options are:
+	 *   * coerce (boolean, default: true) - Whether or not to coerce numeric arguments to a native Number type.
+	 */
+	parse(path:string, options?:{ coerce?:boolean }):Object {
+		options = options || {};
+
+		var key,
+			match;
+
+		if ((match = this._pathPattern.exec(path))) {
+			var kwArgs = {};
+
+			for (var i = 0, j = this._pathKeys.length; i < j; ++i) {
+				key = this._pathKeys[i];
+
+				var value = match[i + 1];
+				value = isNaN(value) || options.coerce === false ? value : +value;
+
+				if (key in kwArgs) {
+					if (!(kwArgs[key] instanceof Array)) {
+						kwArgs[key] = [ kwArgs[key] ];
+					}
+
+					kwArgs[key].push(value);
 				}
-
-				kwArgs[k] = self[k];
+				else {
+					kwArgs[key] = value;
+				}
 			}
 
-			lang.mixin(kwArgs, self.parse(event.newPath));
+			if (match[match.length - 1]) {
+				var extraArguments = ioQuery.queryToObject(match[match.length - 1]);
+				// a simple mixin won't work here because we need to combine extra arguments if they exist on the
+				// parsed kwArgs object instead of clobbering them
+				for (key in extraArguments) {
+					if (key in kwArgs) {
+						kwArgs[key] = [].concat(kwArgs[key], extraArguments[key]);
+					}
+					else {
+						kwArgs[key] = extraArguments[key];
+					}
+				}
+			}
 
-			has('debug') && console.log('new route state for', self._id, kwArgs);
-			self._controllerInstance.set('routeState', kwArgs);
-			return dfd.promise;
+			return kwArgs;
 		}
 
-		has('debug') && console.log('preparing', this._id);
-
-		var self = this,
-			dfd = new Deferred<void>();
-
-		require([
-			this._view,
-			this._controller,
-			this._template
-		], function (View, Controller, TemplateConstructor) {
-			return when(self._instantiateComponents(View, Controller, TemplateConstructor)).then(function () {
-				setRouteState(event);
-				dfd.resolve();
-			}, function () {
-				dfd.reject();
-			});
-		});
-
-		this.enter = setRouteState;
-
-		return dfd.promise;
+		return null;
 	}
 
 	/**
-	 * Deactivates the route, disconnecting any subviews within the route's view and removing the view from its parent.
-	 */
-	exit():void {
-		has('debug') && console.log('exiting', this._id);
-
-		var handle;
-		while ((handle = this._subViewHandles.pop())) {
-			handle.remove();
-		}
-	}
-
-	destroy():void {
-		// TODO: is this necessary?
-		//super.destroy();
-
-		if (this._viewInstance) {
-			this._viewInstance.destroyRecursive();
-			this._controllerInstance.destroy && this._controllerInstance.destroy();
-		}
-	}
-
-	/**
-	 * Places a sub-view into the view for this route at the placeholder given in `placeholderId`.
+	 * Return a path for the given hash map that corresponds to this route's path specification.
 	 *
-	 * @param view
-	 * The sub-view to place.
-	 *
-	 * @param placeholderId
-	 * The placeholder in which it should be placed. If not provided, defaults to `default`.
+	 * @param kwArgs
+	 * A hash map of arguments to serialize into a path.
 	 */
-	// TODO: view should be an IView
-	place(view, placeholderId?:string) {
-		return this._viewInstance.addSubView(view, placeholderId);
-	}
+	serialize(kwArgs:{}):string {
+		// if someone passes an object they probably do not expect it to lose several of its properties, but we
+		// delete properties from this object as they are processed
+		kwArgs = lang.mixin({}, kwArgs);
 
-	/* protected */ _instantiateComponents(View, Controller, TemplateConstructor):void {
-		var controller = this._controllerInstance = new Controller({
-			app: this.get('app')
-		});
+		var path = '',
+			key;
 
-		this._viewInstance = new View({
-			app: this.get('app'),
-			TemplateConstructor: TemplateConstructor,
-			viewModel: controller
-		});
+		for (var i = 0, j = this._pathParts.length; i < j; ++i) {
+			var part = this._pathParts[i];
 
-		this._subViewHandles.push(this._parent.place(this._viewInstance, this._placeholder));
+			if (typeof part === 'string') {
+				path += part;
+			}
+			else {
+				key = part.key;
 
-		return this._viewInstance.startup();
+				if (!(key in kwArgs)) {
+					throw new Error('Missing required key "' + key + '"');
+				}
+
+				var value = kwArgs[key],
+					pattern = part.pattern;
+
+				if (value instanceof Array) {
+					value = value.shift();
+				}
+
+				if (!pattern.test(value)) {
+					throw new Error('Key "' + key + '" does not match pattern ' + pattern);
+				}
+
+				path += value;
+
+				if (!(kwArgs[key] instanceof Array) || kwArgs[key].length === 0) {
+					delete kwArgs[key];
+				}
+			}
+		}
+
+		// "if kwArgs has any properties"
+		for (key in kwArgs) {
+			path += '?' + ioQuery.objectToQuery(kwArgs);
+			break;
+		}
+
+		return path;
 	}
 }
 
