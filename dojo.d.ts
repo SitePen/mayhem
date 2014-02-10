@@ -48,6 +48,12 @@ interface IPromise<T> {
 	then<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
 }
 
+interface IStore<T> {
+		idProperty:string;
+		get(id:any):T;
+		put(object:T, options?:Object):any; // string | number
+}
+
 declare var define:{
 	(dependencies:string[], callback?:Function):void;
 };
@@ -195,17 +201,27 @@ declare module 'dojo/Stateful' {
 }
 
 declare module 'dojo/store/Memory' {
-	// TODO: paramaterize?
-	class Memory {
-		data:any[];
-		index:Object;
+	class MemoryStore<T> implements IStore<T> {
+		idProperty:string;
 		constructor(kwArgs:Object);
-		get(id:any):any;
-		put(object:Object, options?:Object):any;
-		setData(data:any[]):void;
+		get(id:any):T;
+		put(object:T, options?:Object):any; // string | number
+		setData(data:T[]):void;
 	}
 
-	export = Memory;
+	export = MemoryStore;
+}
+
+declare module 'dojo/store/Observable' {
+	class ObservableStore<T> implements IStore<T> {
+		idProperty:string;
+		constructor(kwArgs:Object);
+		get(id:any):T;
+		put(object:T, options?:Object):any; // string | number
+		setData(data:T[]):void;
+	}
+
+	export = ObservableStore;
 }
 
 declare module 'dojo/text' {

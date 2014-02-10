@@ -42,7 +42,8 @@ class Application extends ObservableEvented implements core.IApplication {
 						'framework/binding/proxties/NestedProxty',
 						'framework/binding/proxties/ObservableProxty',
 						'framework/binding/proxties/StatefulProxty',
-						'framework/binding/proxties/NodeProxty',
+						'framework/binding/proxties/NodeTargetProxty',
+						'framework/binding/proxties/ObjectTargetProxty'
 					]
 				},
 // TODO: Fix-up and re-enable

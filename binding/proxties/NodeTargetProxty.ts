@@ -4,17 +4,12 @@ import core = require('../../interfaces');
 import util = require('../../util');
 
 /**
- * This property binder enables the ability to bind to DOM Nodes.
+ * This property binder enables the ability to bind to DOM Nodes (as a binding target only).
  */
-class NodeProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
+class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
 		return kwArgs.object instanceof Node;
 	}
-
-	/**
-	 * The watch handle for the bound object.
-	 */
-	private _handle:IHandle;
 
 	/**
 	 * The object containing the final property to be bound.
@@ -34,13 +29,8 @@ class NodeProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T>
 	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
 
-		var object = this._object = <Node> kwArgs.object;
+		this._object = <Node> kwArgs.object;
 		this._property = kwArgs.binding;
-
-		// TODO observation
-		// this._handle = object.watch(kwArgs.binding, (key:string, oldValue:any, newValue:any) => {
-		// 	this._update(newValue);
-		// });
 	}
 
 	/**
@@ -72,8 +62,7 @@ class NodeProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T>
 	destroy():void {
 		this.destroy = function () {};
 
-		this._handle && this._handle.remove();
-		this._handle = this._object = this._target = null;
+		this._object = this._target = null;
 	}
 
 	/**
@@ -105,4 +94,4 @@ class NodeProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T>
 	}
 }
 
-export = NodeProxty;
+export = NodeTargetProxty;

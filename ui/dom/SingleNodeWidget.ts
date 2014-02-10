@@ -6,6 +6,12 @@ import widgets = require('../interfaces');
 class SingleNodeWidget extends Widget implements widgets.IDomWidget {
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;
+	/* protected */ _rootElementType:string;
+
+	constructor(kwArgs:Object) {
+		this._rootElementType = 'div';
+		super(kwArgs);
+	}
 
 	_attachStyles():void {
 		// TODO: Leak
@@ -30,7 +36,7 @@ class SingleNodeWidget extends Widget implements widgets.IDomWidget {
 	}
 
 	/* protected */ _render():void {
-		this._firstNode = this._lastNode = document.createElement('div');
+		this._firstNode = this._lastNode = document.createElement(this._rootElementType);
 		this._attachStyles();
 	}
 }

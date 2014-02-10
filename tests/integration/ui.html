@@ -43,6 +43,7 @@ require([
 		// Push to observable hobbies array
 		setTimeout(function() {
 			mediator.get('hobbies').push('foo', 'bar');
+			mediator.get('phone_numbers').put({ id: 'tertiary', type: 'bar', value: '800-123-4567' } );
 		}, 2000);
 	});
 });

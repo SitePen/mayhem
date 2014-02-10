@@ -1,5 +1,7 @@
+import MemoryStore = require('dojo/store/Memory');
 import Model = require('../../data/Model');
 import ObservableArray = require('../../ObservableArray');
+import ObservableStore = require('dojo/store/Observable');
 import Property = require('../../data/Property');
 import ValidationError = require('../../validation/ValidationError');
 
@@ -34,6 +36,23 @@ class MyModel extends Model {
 			hobbies: Model.property<ObservableArray<string>>({
 				label: 'Hobbies',
 				value: new ObservableArray<string>([ 'drinking', 'sportsball', 'drinking' ])
+			}),
+
+			//phone: Model.property<IStore<IPhoneRecord>>({
+			phone_numbers: Model.property<ObservableStore<any>>({
+				label: 'Phone Numbers',
+				value: new ObservableStore(new MemoryStore({ data: [
+					{
+						id: 'primary',
+						type: 'mobile',
+						value: '555-555-5555'
+					},
+					{
+						id: 'secondary',
+						type: 'mobile',
+						value: '555-555-1234'
+					}
+				]}))
 			}),
 
 			fullName: Model.property<string>({
