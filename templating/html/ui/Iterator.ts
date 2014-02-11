@@ -75,6 +75,16 @@ class Iterator extends SingleNodeWidget {
 		super.destroy();
 	}
 
+	private _eachSetter(field:string):void {
+		this._scopedField = field;
+		// Recreate our scoped mediators since the name of our value field changed
+		var mediator:core.IMediator = this.get('mediator');
+		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string) => {
+			var scopedMediator:core.IMediator = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
+			this._widgetIndex[key].set('mediator', scopedMediator);
+		});
+	}
+
 	private _getElementByKey(key:string):HTMLElement {
 		if (this._elementIndex[key]) {
 			return this._elementIndex[key];
@@ -103,6 +113,22 @@ class Iterator extends SingleNodeWidget {
 			mediator: mediator,
 			parent: this
 		});
+	}
+
+	private _inSetter(sourceField:string):void {
+		// Tells us which field to use to get our source
+		this._sourceFieldObserver && this._sourceFieldObserver.remove();
+		this._sourceField = sourceField;
+		var mediator = this.get('mediator');
+		this.set('source', mediator.get(sourceField));
+		this._sourceFieldObserver = mediator.observe(sourceField, (newValue:any):void => {
+			this.set('source', newValue);
+		});
+	}
+
+	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
+		super._mediatorSetter(mediator);
+		// TODO: update bindings
 	}
 
 	private _sourceSetter(source:any):void {
@@ -163,32 +189,6 @@ class Iterator extends SingleNodeWidget {
 		}
 
 		this._list.set('store', this._store);
-	}
-
-	private _eachSetter(field:string):void {
-		this._scopedField = field;
-		// Recreate our scoped mediators since the name of our value field changed
-		var mediator:core.IMediator = this.get('mediator');
-		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string) => {
-			var scopedMediator:core.IMediator = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
-			this._widgetIndex[key].set('mediator', scopedMediator);
-		});
-	}
-
-	private _inSetter(sourceField:string):void {
-		// Tells us which field to use to get our source
-		this._sourceFieldObserver && this._sourceFieldObserver.remove();
-		this._sourceField = sourceField;
-		var mediator = this.get('mediator');
-		this.set('source', mediator.get(sourceField));
-		this._sourceFieldObserver = mediator.observe(sourceField, (newValue:any):void => {
-			this.set('source', newValue);
-		});
-	}
-
-	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
-		super._mediatorSetter(mediator);
-		// TODO: update bindings
 	}
 
 	/* protected */ _render():void {
