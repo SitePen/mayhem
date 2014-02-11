@@ -202,6 +202,7 @@ declare module 'dojo/Stateful' {
 
 declare module 'dojo/store/Memory' {
 	class MemoryStore<T> implements IStore<T> {
+		data:T[];
 		idProperty:string;
 		constructor(kwArgs:Object);
 		get(id:any):T;

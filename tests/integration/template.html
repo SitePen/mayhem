@@ -23,6 +23,7 @@ firstName lastName: {firstName} {lastName}<br>
 </p>
 <for each="phone" in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
+	<widget is="framework/ui/dom/form/Input" value="{phone.value}"></widget>
 </for>
 <br>
 <placeholder name="interstitial">
