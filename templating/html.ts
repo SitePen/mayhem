@@ -155,9 +155,17 @@ export function constructWidget(node:any, options:{
 		}
 	}
 	for (key in bindingTemplates) {
-		// TODO: if we can't make widget.bind work for this we've got more work to do
-		// We'll at least need to hook _mediatorSetter on the widget and update our observers
-		observerHandles.concat(observeBindingTemplate(key, bindingTemplates[key]));
+		observerHandles = observerHandles.concat(observeBindingTemplate(key, bindingTemplates[key]));
+	}
+	// If we have observers we need to hook widget's destroy method to tear down our observer handles
+	// TODO: once mediator change propagation is worked out bind to it and update our observers
+	if (observerHandles.length) {
+		var _destroy:() => void = widget.destroy;
+		widget.destroy = function():void {
+			array.forEach(observerHandles, (handle:IHandle):void => handle.remove());
+			observerHandles = null;
+			_destroy.call(widget);
+		};
 	}
 	// TODO: stash observerHandles on widget and make sure they're cleaned up
 	return widget;
