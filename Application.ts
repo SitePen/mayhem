@@ -43,6 +43,8 @@ class Application extends ObservableEvented implements core.IApplication {
 						'framework/binding/proxties/ObservableProxty',
 						'framework/binding/proxties/StatefulProxty',
 						'framework/binding/proxties/NodeTargetProxty',
+						// TODO: Es5Proxty is necessary to support bidi nested binding...what should we do?
+						//'framework/binding/proxties/Es5Proxty',
 						'framework/binding/proxties/ObjectTargetProxty'
 					]
 				},
