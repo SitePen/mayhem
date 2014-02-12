@@ -145,14 +145,7 @@ export function constructWidget(node:any, options:{
 	}
 	// We need to defer binding setup until after widget construction
 	for (key in fieldBindings) {
-		// TODO: figure out how to make widget.bind to do the heavy lifting here
-		// For now we're just cheating and catching all on* methods and binding directly w/o observing
-		if (/^on[A-Z][a-zA-Z]*$/.test(key)) {
-			widget.set(key, lang.hitch(mediator, mediator[fieldBindings[key]]));
-		}
-		else {
-			widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
-		}
+		widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
 	}
 	for (key in bindingTemplates) {
 		observerHandles = observerHandles.concat(observeBindingTemplate(key, bindingTemplates[key]));

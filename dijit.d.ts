@@ -69,6 +69,8 @@ declare module 'dijit/form/Button' {
 	import _WidgetBase = require('dijit/_WidgetBase');
 
 	interface Button extends _WidgetBase {
+		constructor(kwArgs?:Object):Button;
+
 		get(key:'label'):string;
 		get(key:'type'):string;
 		get(key:string):any;

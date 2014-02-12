@@ -9,7 +9,7 @@ class FormButton extends DijitWidget {
 	/* protected */ _dijit:Button;
 	content:widgets.IDomWidget;
 	label:string;
-	onClick:(event:Event) => void;
+	_onClick:string;
 	type:string;
 
 	constructor(kwArgs:Object = {}) {
@@ -22,7 +22,9 @@ class FormButton extends DijitWidget {
 	}
 
 	/* protected */ _render():void {
-		this._dijit = new Button();
+		this._dijit = new Button({
+			onClick: (event:Event):void => { this.__onClick(event); }
+		});
 		super._render();
 	}
 
@@ -31,8 +33,12 @@ class FormButton extends DijitWidget {
 		this._dijit.set('label', label);
 	}
 
-	_onClickSetter(handler:(event:Event) => void):void {
-		this.onClick = this._dijit.onClick = handler;
+	__onClick(event:Event):void {
+		this.get('mediator')[this._onClick](event);
+	}
+
+	_onClickSetter(value:string):void {
+		this._onClick = value;
 	}
 
 	_typeSetter(type:string):void {
