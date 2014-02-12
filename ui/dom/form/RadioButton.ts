@@ -1,26 +1,24 @@
 /// <reference path="../../../dojo" />
 
-import Button = require('dijit/form/Button');
+import RadioButton = require('dijit/form/RadioButton');
 import DijitWidget = require('../DijitWidget');
 import util = require('../../../util');
-import widgets = require('../../interfaces');
 
-class FormButton extends DijitWidget {
-	/* protected */ _dijit:Button;
-	_content:widgets.IDomWidget;
-	_iconClass:string;
+class FormRadioButton extends DijitWidget {
+	_checked:boolean; // TODO: coerce
+	/* protected */ _dijit:RadioButton;
 	_label:string;
 	_onClick:string;
-	_type:string;
+	_value:any;
 
 	constructor(kwArgs:Object = {}) {
-		util.deferSetters(this, [ 'content', 'label', 'onClick', 'type' ], '_render');
+		util.deferSetters(this, [ 'checked', 'label', 'onClick', 'value' ], '_render');
 		super(kwArgs);
 	}
 
-	_contentSetter(widget:widgets.IDomWidget):void {
-		this._content = widget;
-		this._dijit.containerNode.appendChild(widget.detach());
+	_checkedSetter(checked:boolean):void {
+		this._checked = checked;
+		this._dijit.set('checked', checked);
 	}
 
 	_labelSetter(label:string):void {
@@ -38,18 +36,17 @@ class FormButton extends DijitWidget {
 	}
 
 	/* protected */ _render():void {
-		this._dijit = new Button({
-			iconClass: this._iconClass,
+		this._dijit = new RadioButton({
 			id: this._dijitId,
 			onClick: (event:Event):void => { this.__onClick(event); }
 		});
 		super._render();
 	}
 
-	_typeSetter(type:string):void {
-		this._type = type;
-		this._dijit.set('type', type);
+	_valueSetter(value:any):void {
+		this._value = value;
+		this._dijit.set('value', value);
 	}
 }
 
-export = FormButton;
+export = FormRadioButton;

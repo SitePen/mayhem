@@ -15,6 +15,7 @@ declare module 'dijit/_WidgetBase' {
 
 	interface _WidgetBase extends Stateful, Evented, Destroyable {
 		/* readonly */ domNode:HTMLElement;
+		/* readonly */ containerNode:HTMLElement;
 
 		get(key:'className'):string;
 		get(key:'domNode'):HTMLElement;
@@ -88,4 +89,41 @@ declare module 'dijit/form/Button' {
 	};
 
 	export = Button;
+}
+
+declare module 'dijit/form/CheckBox' {
+	import _WidgetBase = require('dijit/_WidgetBase');
+
+	interface CheckBox extends _WidgetBase {
+		constructor(kwArgs?:Object):CheckBox;
+
+		get(key:'label'):string;
+		get(key:string):any;
+
+		onClick:(event:Event) => void;
+
+		set(key:'label', value:boolean):void;
+		set(kwArgs:{ [key:string]: any; }):void;
+		set(key:string, value:any):void;
+	}
+
+	var CheckBox:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):CheckBox;
+	};
+
+	export = CheckBox;
+}
+
+declare module 'dijit/form/RadioButton' {
+	import CheckBox = require('dijit/form/CheckBox');
+
+	interface RadioButton extends CheckBox {
+		constructor(kwArgs?:Object):RadioButton;
+	}
+
+	var RadioButton:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):RadioButton;
+	};
+
+	export = RadioButton;
 }

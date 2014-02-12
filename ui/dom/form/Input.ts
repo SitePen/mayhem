@@ -40,7 +40,10 @@ class FormInput extends DijitWidget {
 	}
 
 	/* protected */ _render():void {
-		this._dijit = new TextBox({ intermediateChanges: true });
+		this._dijit = new TextBox({
+			id: this._dijitId,
+			intermediateChanges: true
+		});
 		super._render();
 		this._listen();
 	}

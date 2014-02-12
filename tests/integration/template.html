@@ -1,3 +1,35 @@
+<h3>Buttons</h3>
+<p>Buttons can do an action, display a menu, or both:</p>
+<div>
+	Enabled:
+	<widget is="framework/ui/dom/form/Button" icon-class="dijitIconTask" label="Simple"></widget>
+</div>
+<div>
+	Disabled:
+	<widget is="framework/ui/dom/form/Button" icon-class="dijitIconTask" label="Simple" disabled="disabled"></widget>
+</div>
+<h3>Check Boxes</h3>
+<fieldset>
+	<widget is="framework/ui/dom/form/CheckBox" id="check1"></widget>
+	<label for="check1">unchecked</label>
+	<widget is="framework/ui/dom/form/CheckBox" id="check2" checked="checked"></widget>
+	<label for="check2">checked</label>
+	<widget is="framework/ui/dom/form/CheckBox" id="check3" checked="" disabled="disabled"></widget>
+	<label for="check3">disabled</label>
+	<widget is="framework/ui/dom/form/CheckBox" id="check4" checked="checked" disabled="disabled"></widget>
+	<label for="check4">disabled and checked</label>
+</fieldset>
+<h3>Radio Buttons</h3>
+<fieldset>
+	<widget is="framework/ui/dom/form/RadioButton" id="g1rb1"></widget>
+	<label for="g1rb1">news</label>
+	<widget is="framework/ui/dom/form/RadioButton" id="g1rb2" checked="checked"></widget>
+	<label for="g1rb2">talk</label>
+	<widget is="framework/ui/dom/form/RadioButton" id="g1rb3" disabled="disabled"></widget>
+	<label for="g1rb3">weather (disabled)</label>
+</fieldset>
+<br>
+<br>
 <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
@@ -51,4 +83,6 @@ List of hobbies: {hobbies}<br>
 </when>
 <br>
 <placeholder name="bottom">
-<widget is="framework/ui/dom/form/Button" label="My Save Button" on-click="save"></widget>
+<widget is="framework/ui/dom/form/CheckBox" label="My checkbox" value="cb"></widget>
+<widget is="framework/ui/dom/form/Button" on-click="save" label="My Save Button" ></widget>
+<widget is="framework/ui/dom/form/Button" on-click="save">Another <strong>Save</strong> Button</widget>

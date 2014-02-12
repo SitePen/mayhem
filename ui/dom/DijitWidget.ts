@@ -7,13 +7,22 @@ import widgets = require('../interfaces');
 
 /* abstract */ class DijitWidget extends SingleNodeWidget {
 	/* protected */ _dijit:_WidgetBase;
+	/* protected */ _dijitId:string;
+	/* protected */ _disabled:boolean; // TODO: coerce string values coming from templates
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;
 	/* protected */ _parent:widgets.IContainerWidget;
 
 	constructor(kwArgs?:Object) {
-		util.deferSetters(this, [ 'parent' ], '_render');
+		this._dijitId = kwArgs.id;
+		delete kwArgs.id;
+		util.deferSetters(this, [ 'disabled', 'parent' ], '_render');
 		super(kwArgs);
+	}
+
+	_disabledSetter(disabled:boolean):void {
+		this._disabled = disabled;
+		this._dijit.set('disabled', disabled);
 	}
 
 	destroy():void {
