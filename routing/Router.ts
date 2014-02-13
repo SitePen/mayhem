@@ -1,6 +1,6 @@
 import Deferred = require('dojo/Deferred');
 import ObservableEvented = require('../ObservableEvented');
-import PathRoute = require('./PathRoute');
+import Route = require('./Route');
 import RouteEvent = require('./RouteEvent');
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
@@ -34,35 +34,37 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 *
 	 * Once the router has been started, routes can no longer be changed.
 	 */
-	//routes:{ [key:string]: Route };
 
-	/** The app for this router */
+	/** The routes managed by this router */
+	_routes:{ [key:string]: routing.IRoute };
+
+	/** The app for this router @protected */
 	private _app:core.IApplication;
 
-	/** The default location for controllers. */
+	/** The default location for controllers. @protected */
 	private _controllerPath:string = 'app/controllers';
 
-	/** The default location for views. */
+	/** The default location for views. @protected */
 	private _viewPath:string = 'app/views';
 
-	/** The default location for templates. */
+	/** The default location for templates. @protected */
 	private _templatePath:string = '../template!app/views';
 
-	/** The default route when the application is loaded without an existing route. */
+	/** The default route when the application is loaded without an existing route. @protected */
 	private _defaultRoute:string = 'index';
 
-	/** The route to load when an unmatched route is loaded. */
+	/** The route to load when an unmatched route is loaded. @protected */
 	private _notFoundRoute:string = 'error';
 
-	/* protected */ _oldPath:string;
-	/* protected */ _activeRoutes:Array<PathRoute> = [];
-	// TODO: If routes never needs to be used as an array, remove _routeIds and restore _routes to being a hash map.
-  	/* protected */ _routeIds:{ [key:string]: number };
-	/* protected */ _routes:Array<PathRoute>;
+	/** @protected */
+	_oldPath:string;
+
+	/** @protected */
+	_activeRoutes:Array<routing.IRoute> = [];
 
 	_routesSetter(routeMap:{ [id:string]: { view:string; code:number }}):{ [key:string]: { view:string; code:number } } {
-		var routes = this._routes = [],
-			routeIds = this._routeIds = {};
+		var routes = this._routes = {},
+			routeArray = [];
 
 		if (!routeMap[this._notFoundRoute]) {
 			routeMap[this._notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
@@ -73,7 +75,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		for (var routeId in routeMap) {
 			kwArgs = routeMap[routeId];
 
-			if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(PathRoute) : kwArgs instanceof PathRoute) {
+			if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(Route) : kwArgs instanceof Route) {
 				route = kwArgs;
 				route.set({
 					id: routeId,
@@ -95,25 +97,26 @@ class Router extends ObservableEvented implements routing.IRouter {
 				kwArgs.path == null && (kwArgs.path = routeId.replace(/^.*\//, ''));
 
 				this._fixUpRouteArguments(kwArgs);
-				route = new PathRoute(kwArgs);
+				route = new Route(kwArgs);
 			}
 
-			routeIds[routeId] = routes.push(route) - 1;
+			routes[routeId] = route;
+			routeArray.push(route);
 		}
 
 		// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
 		// spend a little time on it
-		linkParentRoutes: for (var i = 0; (route = routes[i]); ++i) {
+		linkParentRoutes: for (var i = 0; (route = routeArray[i]); ++i) {
 			var parentDelimiterIndex = route.id.lastIndexOf('/');
 			if (parentDelimiterIndex === -1) {
 				// TODO: It feels weird to say the parent of a root route is the app, but it is the easiest way
 				// to place views into the main application view
-				route.set('parent', this.get('app'));
+				route.set('parent', this._app);
 				continue;
 			}
 
 			var parentRouteId = route.id.slice(0, parentDelimiterIndex);
-			for (var j = 0, parentRoute; (parentRoute = routes[j]); ++j) {
+			for (var j = 0, parentRoute; (parentRoute = routeArray[j]); ++j) {
 				if (parentRoute.id === parentRouteId) {
 					route.set({
 						parent: parentRoute,
@@ -211,7 +214,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Starts the router responding to hash changes.
+	 * Starts the router responding to route changes.
 	 */
 	resume():void {
 		if (has('debug')) {
@@ -220,7 +223,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Stops the router from responding to any hash changes.
+	 * Stops the router from responding to any route changes.
 	 */
 	pause():void {
 		if (has('debug')) {
@@ -265,15 +268,16 @@ class Router extends ObservableEvented implements routing.IRouter {
 	normalizeId(id:string):string {
 		// Normalize relative IDs
 		var activeRoutes = this._activeRoutes,
-			idPrefix = activeRoutes.length > 0 ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
+			idPrefix = activeRoutes.length ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
+
 		id = id.replace(/^\.\//, idPrefix);
 
 		if (id === '') {
-			id = 'index';
+			id = this._defaultRoute;
 		}
 
 		if (id.charAt(id.length - 1) === '/') {
-			id += 'index';
+			id += this._defaultRoute;
 		}
 
 		return id;
@@ -301,8 +305,8 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 		if (this.emit('change', event)) {
 			whenAll([
-				self._exitRoutes(event),
-				self._enterRoutes(event)
+				this._exitRoutes(event),
+				this._enterRoutes(event)
 			]).then(function () {
 				function emitIdle() {
 					self.emit('idle', new RouteEvent({
@@ -328,7 +332,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * @returns A promise that is resolved once all matching routes have finished deactivating.
 	 */
 	_exitRoutes(event:RouteEvent):IPromise<any> {
-
 		var activeRoutes = this._activeRoutes,
 			exits = [];
 
@@ -367,7 +370,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Handles not found routes by activating the not-found route.
 	 */
 	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
-		var notFoundRoute = this._routes[this._routeIds[this._notFoundRoute]];
+		var notFoundRoute = this._routes[this._notFoundRoute];
 		this._activeRoutes.push(notFoundRoute);
 		return when(notFoundRoute.enter(event));
 	}

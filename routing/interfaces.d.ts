@@ -4,7 +4,10 @@ import core = require('../interfaces');
  * The IRoute interface
  */
 export interface IRoute {
-	router:IRouter;
+	get(key:'router'):IRouter;
+	get(key:string):any;
+	set(key:'router', value:IRouter):void;
+	set(key:string, value:any):void;
 }
 
 /**

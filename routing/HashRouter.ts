@@ -30,12 +30,18 @@ class HashRouter extends Router {
 		});
 	}
 
+	/**
+	 * Starts the router responding to hash changes.
+	 */
 	resume():void {
 		if (!this._changeHandle) {
 			this._changeHandle = topic.subscribe('/dojo/hashchange', lang.hitch(this, '_handlePathChange'));
 		}
 	}
 
+	/**
+	 * Stops the router from responding to any hash changes.
+	 */
 	pause():void {
 		if (this._changeHandle) {
 			this._changeHandle.remove();
@@ -43,6 +49,9 @@ class HashRouter extends Router {
 		}
 	}
 
+	/**
+	 * Transitions to a new route.
+	 */
 	go():void {
 		if (!this._changeHandle) {
 			throw new Error('Router is paused');
@@ -51,6 +60,12 @@ class HashRouter extends Router {
 		hash(this.createPath.apply(this, arguments));
 	}
 
+	/**
+	 * Sets the hash without triggering a routing update.
+	 *
+	 * @param path The path to set.
+	 * @param replace Whether or not to replace the previous path in history with the provided path.
+	 */
 	resetPath(path:string, replace?:boolean):void {
 		this.pause();
 		hash(path, replace);

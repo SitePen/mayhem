@@ -2,10 +2,19 @@ import SyntheticEvent = require('../SyntheticEvent');
 import routing = require('./interfaces');
 
 class RouteEvent extends SyntheticEvent {
+	/** @readonly */
 	oldPath:string;
+
+	/** @readonly */
 	newPath:string;
+
+	/** @readonly */
 	canceled:boolean;
+
+	/** @readonly */
 	paused:boolean;
+
+	/** @readonly */
 	router:routing.IRouter;
 
 	constructor(kwArgs:Object) {
