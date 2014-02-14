@@ -62,7 +62,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	/** @protected */
 	_activeRoutes:Array<routing.IRoute> = [];
 
-	_routesSetter(routeMap:{ [id:string]: { view:string; code:number }}):{ [key:string]: { view:string; code:number } } {
+	_routesSetter(routeMap:{ [id:string]: routing.IRouteDefinition }):{ [key:string]: routing.IRouteDefinition } {
 		var routes = this._routes = {},
 			routeArray = [];
 

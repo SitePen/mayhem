@@ -1,7 +1,17 @@
 import core = require('../interfaces');
 
 /**
- * The IRoute interface
+ * A route descriptor
+ */
+export interface IRouteDefinition {
+	view?:string;
+	controller?:string;
+	path?:string;
+	code?:number;
+}
+
+/**
+ * Root interface for routes
  */
 export interface IRoute {
 	get(key:'router'):IRouter;
@@ -11,7 +21,7 @@ export interface IRoute {
 }
 
 /**
- * The IRouter interface
+ * Root interface for routers
  */
 export interface IRouter {
 	get(key:'app'):core.IApplication;

@@ -63,7 +63,7 @@ class BaseRoute extends Observable {
 		if (this._pathPattern) {
 			this._pathPattern = new RegExp(this._pathPattern.source, regExpFlags);
 
-			for (var i = 0, j = this._pathParts.length, part; i < j; ++i) {
+			for (var i = 0, j = this._pathParts.length, part:any; i < j; ++i) {
 				part = this._pathParts[i];
 
 				// These patterns are updated here instead of being generated every time someone calls serialize
@@ -91,11 +91,11 @@ class BaseRoute extends Observable {
 
 		var parameterPattern = /<([^:]+):([^>]+)>/g,
 			realPathPattern = '^',
-			pathKeys = [],
-			pathParts = [],
+			pathKeys:Array<any> = [],
+			pathParts:Array<any> = [],
 			lastIndex = 0,
-			match,
-			staticPart,
+			match:RegExpExecArray,
+			staticPart:string,
 			regExpFlags = this._isCaseSensitive ? '' : 'i';
 
 		while ((match = parameterPattern.exec(path))) {
@@ -139,8 +139,8 @@ class BaseRoute extends Observable {
 	parse(path:string, options?:{ coerce?:boolean }):Object {
 		options = options || {};
 
-		var key,
-			match;
+		var key:string,
+			match:RegExpExecArray;
 
 		if ((match = this._pathPattern.exec(path))) {
 			var kwArgs = {};
@@ -148,7 +148,7 @@ class BaseRoute extends Observable {
 			for (var i = 0, j = this._pathKeys.length; i < j; ++i) {
 				key = this._pathKeys[i];
 
-				var value = match[i + 1];
+				var value:any = match[i + 1];
 				value = isNaN(value) || options.coerce === false ? value : +value;
 
 				if (key in kwArgs) {
@@ -194,7 +194,7 @@ class BaseRoute extends Observable {
 		kwArgs = lang.mixin({}, kwArgs);
 
 		var path = '',
-			key;
+			key:string;
 
 		for (var i = 0, j = this._pathParts.length; i < j; ++i) {
 			var part = this._pathParts[i];

@@ -1,5 +1,6 @@
 import binding = require('./binding/interfaces');
 import core = require('./interfaces');
+import routing = require('./routing/interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
