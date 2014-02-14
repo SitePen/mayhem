@@ -206,7 +206,8 @@ class Router extends ObservableEvented implements routing.IRouter {
 			route.exit(event);
 		}
 
-		while ((route = this._routes.pop())) {
+		for (var id in this._routes) {
+			route = this._routes[id];
 			route.destroy && route.destroy();
 		}
 

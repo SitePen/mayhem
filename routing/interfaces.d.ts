@@ -1,4 +1,5 @@
 import core = require('../interfaces');
+import RouteEvent = require('./RouteEvent');
 
 /**
  * A route descriptor
@@ -18,6 +19,9 @@ export interface IRoute {
 	get(key:string):any;
 	set(key:'router', value:IRouter):void;
 	set(key:string, value:any):void;
+
+	enter(event:RouteEvent):IPromise<void>;
+	exit():void;
 }
 
 /**

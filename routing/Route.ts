@@ -1,6 +1,7 @@
 import Deferred = require('dojo/Deferred');
-import Route = require('./Route');
+import BaseRoute = require('./BaseRoute');
 import RouteEvent = require('./RouteEvent');
+import core = require('../interfaces');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
 import routing = require('./interfaces');
@@ -51,6 +52,9 @@ class Route extends BaseRoute implements routing.IRoute {
 	private _subViewHandles:Array<{ remove:() => void}> = [];
 	private _controllerInstance /* framework/Controller */;
 	private _viewInstance /* ui.IView */;
+
+	/** @protected */
+	_app:core.IApplication;
 
 	/**
 	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
