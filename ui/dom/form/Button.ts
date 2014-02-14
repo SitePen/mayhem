@@ -1,54 +1,29 @@
 /// <reference path="../../../dojo" />
 
-import Button = require('dijit/form/Button');
-import DijitWidget = require('../DijitWidget');
+import DijitButton = require('dijit/form/Button');
+import DijitContainer = require('../DijitContainer');
 import util = require('../../../util');
 import widgets = require('../../interfaces');
 
-class FormButton extends DijitWidget {
-	/* protected */ _dijit:Button;
-	_content:widgets.IDomWidget;
-	_iconClass:string;
-	_label:string;
-	_onClick:string;
-	_type:string;
+class FormButton extends DijitContainer {
+	/* protected */ _dijit:DijitButton;
 
 	constructor(kwArgs:Object = {}) {
-		util.deferSetters(this, [ 'content', 'label', 'onClick', 'type' ], '_render');
+		this._setDijitCtor(DijitButton);
+		this._setDijitFields('name', 'type');
+		this._setDijitActions('onClick');
 		super(kwArgs);
 	}
 
-	_contentSetter(widget:widgets.IDomWidget):void {
-		this._content = widget;
-		this._dijit.containerNode.appendChild(widget.detach());
+	_childrenSetter(children:widgets.IDomWidget[]) {
+		// TODO: use all children for button content, just using first child for now
+		
+		super._childrenSetter(children);
 	}
 
-	_labelSetter(label:string):void {
-		this._label = label;
-		this._dijit.set('label', label);
-	}
+	_contentSetter(content:widgets.IDomWidget) {
 
-	__onClick(event:Event):void {
-		var method:(event:Event) => void = this.get('mediator')[this._onClick];
-		method && method(event);
-	}
-
-	_onClickSetter(method:string):void {
-		this._onClick = method;
-	}
-
-	/* protected */ _render():void {
-		this._dijit = new Button({
-			iconClass: this._iconClass,
-			id: this._dijitId,
-			onClick: (event:Event):void => { this.__onClick(event); }
-		});
-		super._render();
-	}
-
-	_typeSetter(type:string):void {
-		this._type = type;
-		this._dijit.set('type', type);
+		this._dijit.containerNode.appendChild(content.detach());
 	}
 }
 

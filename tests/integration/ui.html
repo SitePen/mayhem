@@ -23,7 +23,8 @@ require([
 	'framework/tests/integration/MyMediator',
 	'framework/tests/integration/MyModel',
 	'framework/templating/html!./template.html',
-	'xstyle/css!dijit/themes/claro/claro.css'
+	'xstyle/css!dijit/themes/claro/claro.css',
+	'xstyle/css!dijit/themes/claro/document.css'
 ], function (Application, Master, MyMediator, MyModel, processTemplate) {
 	var app = window.app = new Application({
 		modules: { router: null }
@@ -38,10 +39,10 @@ require([
 		});
 
 		var masterView = new Master({});
-		masterView.attachToWindow(document.body);
 		masterView.add(processTemplate(app, mediator));
+		masterView.attachToWindow(document.body);
 
-		// Push to observable hobbies array
+		// Wait a few seconds and push to observables
 		setTimeout(function() {
 			mediator.get('hobbies').splice(1, 1, 'foo', 'bar', 'baz');
 			mediator.get('phone_numbers').put({ id: 'tertiary', type: 'bar', value: '800-123-4567' } );

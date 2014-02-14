@@ -1,20 +1,22 @@
+import binding = require('../../binding/interfaces');
+import core = require('../../interfaces');
 import DomPlaceholder = require('./Placeholder');
 import has = require('../../has');
 import ObservableEvented = require('../../ObservableEvented');
 import PlacePosition = require('../PlacePosition');
 import util = require('../../util');
+import MultiNodeWidget = require('./MultiNodeWidget');
 import widgets = require('../interfaces');
 
-/* abstract */ class DomContainer implements widgets.IContainer {
-	private _children:widgets.IDomWidget[] = [];
+class DomContainer extends MultiNodeWidget implements widgets.IContainer {
+	/* protected */ _children:widgets.IDomWidget[];
+	private _placeholders:{ [id:string]: DomPlaceholder; };
 
-	// widgets.IWidget
-	/* protected */ _firstNode:Node;
-	get:(key:string) => any;
-	private _id:string;
-	/* protected */ _lastNode:Node;
-	private _parent:widgets.IContainerWidget;
-	private _placeholders:{ [id:string]: DomPlaceholder; } = {};
+	constructor(kwArgs?:Object) {
+		this._children || (this._children = []);
+		this._placeholders || (this._placeholders = {});
+		super(kwArgs);
+	}
 
 	// TS#2153
 	// get(key:'children'):widget.IDomWidget[];
@@ -70,7 +72,7 @@ import widgets = require('../interfaces');
 			this._addToContainer(widget, referenceWidget);
 
 			widget.set('parent', this);
-			widget.emit('attach');
+			widget.emit('attached');
 
 			var self = this;
 			handle = {
@@ -110,6 +112,21 @@ import widgets = require('../interfaces');
 		for (var k in this._placeholders) {
 			this._placeholders[k].set('content', null);
 		}
+	}
+
+	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
+		this._mediator = mediator;
+		var child:widgets.IDomWidget;
+		// Reset parentMediator on all children and remediate those that inherit parent mediator
+		for (var i = 0, l = this._children.length; i < l; ++i) {
+			child = this._children[i];
+			child.set('parentMediator', mediator);
+		}
+		for (var k in this._placeholders) {
+			child = this._placeholders[k];
+			child.set('parentMediator', mediator);
+		}
+		super._mediatorSetter(mediator);
 	}
 
 	remove(index:number):void;

@@ -14,7 +14,7 @@ class Conditional extends DomPlaceholder {
 	private _evaluateConditions:Function;
 
 	constructor(kwArgs:any) {
-		util.deferSetters(this, [ 'conditions', 'alternate' ], '_render');
+		util.deferSetters(this, [ 'conditions', 'alternate' ], '_parentMediatorSetter');
 		this._evaluateConditions = util.debounce(this.__evaluateConditions);
 		super(kwArgs);
 	}

@@ -16,7 +16,7 @@ class MultiNodeWidget extends Widget implements widgets.IDomWidget {
 		return this._fragment;
 	}
 
-	empty():void {
+	clear():void {
 		domUtil.getRange(this._firstNode, this._lastNode, true).deleteContents();
 	}
 

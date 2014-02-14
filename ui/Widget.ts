@@ -28,8 +28,10 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	private _app:core.IApplication;
 	private _bindings:binding.IBindingHandle[];
 	private _classList:widgets.IClassList;
-	private _id:string;
-	private _mediator:core.IMediator;
+	/* protected */ _id:string;
+	/* protected */ _mediator:core.IMediator;
+	/* protected */ _parent:widgets.IContainerWidget;
+	private _parentMediator:core.IMediator;
 	private _style:Style;
 
 	get(key:'app'):core.IApplication;
@@ -112,27 +114,18 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		parent.remove && parent.remove(this);
 	}
 
-	empty():void {}
+	clear():void {}
 
 	private _mediatorGetter():core.IMediator {
-		var mediator:core.IMediator = this._mediator;
-		if (!mediator) {
-			var parent = this.get('parent');
-			if (parent) {
-				mediator = parent.get('mediator');
-			}
-		}
-
-		return mediator;
+		return this._mediator || this._parentMediator;
 	}
 
-	/* protected */ _mediatorSetter(value:core.IMediator):void {
-		this._mediator = value;
+	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
+		this._mediator = mediator;
 		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
-			binding.setSource(value);
+			binding.setSource(mediator);
 		}
-
-		// TODO: Notify all children with null mediators of an update to the parent viewscope mediator
+		this.emit('remediate');
 	}
 
 	private _nextGetter():widgets.IWidget {
@@ -144,6 +137,18 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 		var index:number = parent.get('children').indexOf(this);
 		return parent.get('children')[index + 1];
+	}
+
+	/* protected */ _parentSetter(parent:widgets.IContainerWidget):void {
+		this._parent = parent;
+		this.set('parentMediator', parent.get('mediator'));
+	}
+
+	/* protected */ _parentMediatorSetter(mediator:core.IMediator):void {
+		this._parentMediator = mediator;
+		if (!this._mediator) {
+			this.emit('remediate');
+		}
 	}
 
 	placeAt(destination:widgets.IWidget, position:PlacePosition):IHandle;

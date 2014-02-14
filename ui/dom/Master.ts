@@ -1,16 +1,11 @@
 import DomContainer = require('./Container');
-import MultiNodeWidget = require('./MultiNodeWidget');
-import PlacePosition = require('../PlacePosition');
 import util = require('../../util');
 import widgets = require('../interfaces');
 
-class DomMaster extends MultiNodeWidget implements widgets.IContainer {
-	private _children:widgets.IWidget[] = [];
-	private _placeholders:{ [id:string]:widgets.IPlaceholder } = {};
-
+class DomMaster extends DomContainer {
 	attachToWindow(node:Node):IHandle {
 		node.appendChild(this.detach());
-		this.emit('attach');
+		this.emit('attached');
 
 		var self = this;
 		return {
@@ -21,19 +16,6 @@ class DomMaster extends MultiNodeWidget implements widgets.IContainer {
 			}
 		};
 	}
-
-	// widgets.IContainer
-	add:{
-		(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
-		(widget:widgets.IDomWidget, position:number):IHandle;
-		(widget:widgets.IDomWidget, placeholder:string):IHandle;
-	};
-
-	// empty:() => void;
-
-	remove:{ (index:number):void; (widget:widgets.IWidget):void; };
 }
-
-util.applyMixins(DomMaster, [ DomContainer ]);
 
 export = DomMaster;

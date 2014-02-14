@@ -2,11 +2,29 @@
 <p>Buttons can do an action, display a menu, or both:</p>
 <div>
 	Enabled:
-	<widget is="framework/ui/dom/form/Button" icon-class="dijitIconTask" label="Simple"></widget>
+	<widget is="framework/ui/dom/form/Button" label="Simple" icon-class="dijitIconTask"></widget>
+	<widget is="framework/ui/dom/form/DropDownButton" icon-class="dijitIconEdit">
+    	<strong>Drop</strong> Down
+	    <widget is="framework/ui/dom/DropDownMenu">
+	        <widget is="framework/ui/dom/MenuItem" label="Cut" icon-class="dijitEditorIcon dijitEditorIconCut" on-click="cut"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Copy" icon-class="dijitEditorIcon dijitEditorIconCopy" on-click="copy"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Paste" icon-class="dijitEditorIcon dijitEditorIconPaste" on-click="paste"></widget>
+	    </widget>
+	</widget>
+	<widget is="framework/ui/dom/form/ToggleButton" label="Toggle" checked="checked" icon-class="dijitCheckBoxIcon"></widget>
 </div>
 <div>
 	Disabled:
-	<widget is="framework/ui/dom/form/Button" icon-class="dijitIconTask" label="Simple" disabled="disabled"></widget>
+	<widget is="framework/ui/dom/form/Button" disabled="disabled" label="Simple" icon-class="dijitIconTask"></widget>
+	<widget is="framework/ui/dom/form/DropDownButton" disabled="disabled" icon-class="dijitIconEdit">
+    	<strong>Drop</strong> Down
+	    <widget is="framework/ui/dom/DropDownMenu">
+	        <widget is="framework/ui/dom/MenuItem" label="Cut" icon-class="dijitEditorIcon dijitEditorIconCut" on-click="cut"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Copy" icon-class="dijitEditorIcon dijitEditorIconCopy" on-click="copy"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Paste" icon-class="dijitEditorIcon dijitEditorIconPaste" on-click="paste"></widget>
+	    </widget>
+	</widget>
+	<widget is="framework/ui/dom/form/ToggleButton" disabled="disabled" label="Toggle" icon-class="dijitCheckBoxIcon"></widget>
 </div>
 <h3>Check Boxes</h3>
 <fieldset>
@@ -30,7 +48,7 @@
 </fieldset>
 <br>
 <br>
-<widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
+<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget>
 First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
 <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
 Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget>
@@ -83,6 +101,5 @@ List of hobbies: {hobbies}<br>
 </when>
 <br>
 <placeholder name="bottom">
-<widget is="framework/ui/dom/form/CheckBox" label="My checkbox" value="cb"></widget>
 <widget is="framework/ui/dom/form/Button" on-click="save" label="My Save Button" ></widget>
 <widget is="framework/ui/dom/form/Button" on-click="save">Another <strong>Save</strong> Button</widget>

@@ -1,12 +1,11 @@
+import DijitTextBox = require('dijit/form/TextBox');
 import DijitWidget = require('../DijitWidget');
-import TextBox = require('dijit/form/TextBox');
 import util = require('../../../util');
 
 class FormInput extends DijitWidget {
-	/* protected */ _dijit:TextBox;
+	/* protected */ _dijit:DijitTextBox;
 	private _debounceRate:number;
 	private _listenHandle:IHandle;
-	private _value:string;
 
 	// TODO: TS#2153
 	// get(key:'debounceRate'):number;
@@ -15,8 +14,9 @@ class FormInput extends DijitWidget {
 	// set(key:'value', value:string):void;
 
 	constructor(kwArgs?:Object) {
+		this._setDijitCtor(DijitTextBox);
+		this._setDijitFields('checked', 'value');
 		util.deferMethods(this, [ '_listen' ], '_render');
-		util.deferSetters(this, [ 'value' ], '_render');
 		this._debounceRate = 100;
 		super(kwArgs);
 	}
@@ -40,17 +40,9 @@ class FormInput extends DijitWidget {
 	}
 
 	/* protected */ _render():void {
-		this._dijit = new TextBox({
-			id: this._dijitId,
-			intermediateChanges: true
-		});
+		this._dijitArgs.intermediateChanges = true;
 		super._render();
 		this._listen();
-	}
-
-	_valueSetter(value:string):void {
-		this._value = value;
-		this._dijit.set('value', value);
 	}
 }
 

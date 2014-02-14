@@ -32,7 +32,7 @@ class Iterator extends SingleNodeWidget {
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
 		this._elementIndex = {};
-		util.deferSetters(this, [ 'each', 'in' ], '_render');
+		util.deferSetters(this, [ 'each', 'in' ], '_parentMediatorSetter');
 		this._list = new OnDemandList({
 			renderRow: (record:any, options:any):HTMLElement => {
 				return this._getElementByKey(record[this._store.idProperty]);

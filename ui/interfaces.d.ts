@@ -14,6 +14,8 @@ export interface IClassList extends core.IProxty<string> {
 }
 
 export interface IContainer {
+	/* protected */ _children:IDomWidget[];
+
 	// TODO: TS#2153
 	// get(key:'children'):IWidget[];
 	// get(key:'placeholders'):{ [ id:string ]:IPlaceholder };
@@ -73,7 +75,7 @@ export interface IWidget extends ObservableEvented {
 	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
 	destroy():void;
 	detach():void;
-	empty():void;
+	clear():void;
 
 	get(key:string):any;
 

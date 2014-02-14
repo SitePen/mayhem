@@ -19,6 +19,7 @@ class FormError extends SingleNodeWidget {
 
 	constructor(kwArgs?:Object) {
 		util.deferMethods(this, [ '_updateDisplay' ], '_render');
+		util.deferMethods(this, [ '_updateBinding' ], '_parentMediatorSetter');
 		super(kwArgs);
 	}
 

@@ -17,7 +17,7 @@ class When extends DomPlaceholder {
 	private _valueField:string;
 
 	constructor(kwArgs:Object) {
-		util.deferSetters(this, [ 'error', 'progress', 'promise', 'resolved', 'value' ], '_render');
+		util.deferSetters(this, [ 'error', 'progress', 'promise', 'resolved', 'value' ], '_parentMediatorSetter');
 		super(kwArgs);
 		// TODO: this.defaultErrorWidget
 		// TODO: this.defaultProgressWidget
