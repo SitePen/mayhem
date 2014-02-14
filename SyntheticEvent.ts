@@ -19,6 +19,14 @@ class SyntheticEvent implements Event {
     AT_TARGET:number;
     BUBBLING_PHASE:number;
 
+	constructor(kwArgs?:Object) {
+		if (kwArgs) {
+			for (var k in kwArgs) {
+				this[k] = kwArgs[k];
+			}
+		}
+	}
+
     initEvent(eventTypeArg:string, canBubbleArg:boolean, cancelableArg:boolean):void {
 		if (has('debug')) {
 			throw new Error('Abstract method "initEvent" not implemented');

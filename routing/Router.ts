@@ -35,47 +35,54 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Once the router has been started, routes can no longer be changed.
 	 */
 
-	/** The routes managed by this router */
-	_routes:{ [key:string]: routing.IRoute };
+	/** @protected The app for this router. */
+	_app:core.IApplication;
 
-	/** The app for this router @protected */
-	private _app:core.IApplication;
+	/** @protected The routes managed by this router. */
+	_routes:{ [key:string]: Route };
 
-	/** The default location for controllers. @protected */
-	private _controllerPath:string = 'app/controllers';
+	/** @protected The currently active routes. */
+	_activeRoutes:Array<Route> = [];
 
-	/** The default location for views. @protected */
-	private _viewPath:string = 'app/views';
-
-	/** The default location for templates. @protected */
-	private _templatePath:string = '../template!app/views';
-
-	/** The default route when the application is loaded without an existing route. @protected */
-	private _defaultRoute:string = 'index';
-
-	/** The route to load when an unmatched route is loaded. @protected */
-	private _notFoundRoute:string = 'error';
-
-	/** @protected */
+	/** @protected The previous path after a route transition. */
 	_oldPath:string;
 
-	/** @protected */
-	_activeRoutes:Array<routing.IRoute> = [];
+	/** The default location for controllers. */
+	private _controllerPath:string = 'app/controllers';
 
-	_routesSetter(routeMap:{ [id:string]: routing.IRouteDefinition }):{ [key:string]: routing.IRouteDefinition } {
-		var routes = this._routes = {},
-			routeArray = [];
+	/** The default location for views. */
+	private _viewPath:string = 'app/views';
+
+	/** The default location for templates. */
+	private _templatePath:string = '../template!app/views';
+
+	/** The default route when the application is loaded without an existing route. */
+	private _defaultRoute:string = 'index';
+
+	/** The route to load when an unmatched route is loaded. */
+	private _notFoundRoute:string = 'error';
+
+	/**
+	 * Setter for the _routes property.
+	 *
+	 * @param routeMap A mapping of route IDs to some sort of route descriptor. The descriptor may be a an object, a
+	 * string, or a Route. An object descriptor may have the properties `controller`, `view`, `code`, or `path`.
+	 *
+	 * @returns the routeMap
+	 */
+	_routesSetter(routeMap:{ [id:string]: any }):void {
+		var routes = this._routes = {};
 
 		if (!routeMap[this._notFoundRoute]) {
 			routeMap[this._notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
 		}
 
-		var kwArgs,
-			route;
+		var kwArgs:any,
+			route:Route;
 		for (var routeId in routeMap) {
 			kwArgs = routeMap[routeId];
 
-			if (kwArgs.isInstanceOf ? kwArgs.isInstanceOf(Route) : kwArgs instanceof Route) {
+			if (kwArgs instanceof Route) {
 				route = kwArgs;
 				route.set({
 					id: routeId,
@@ -101,13 +108,14 @@ class Router extends ObservableEvented implements routing.IRouter {
 			}
 
 			routes[routeId] = route;
-			routeArray.push(route);
 		}
 
 		// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
 		// spend a little time on it
-		linkParentRoutes: for (var i = 0; (route = routeArray[i]); ++i) {
-			var parentDelimiterIndex = route.id.lastIndexOf('/');
+		linkParentRoutes: for (var routeId in routes) {
+			route = routes[routeId];
+			var parentDelimiterIndex = routeId.lastIndexOf('/');
+
 			if (parentDelimiterIndex === -1) {
 				// TODO: It feels weird to say the parent of a root route is the app, but it is the easiest way
 				// to place views into the main application view
@@ -115,21 +123,18 @@ class Router extends ObservableEvented implements routing.IRouter {
 				continue;
 			}
 
-			var parentRouteId = route.id.slice(0, parentDelimiterIndex);
-			for (var j = 0, parentRoute; (parentRoute = routeArray[j]); ++j) {
-				if (parentRoute.id === parentRouteId) {
-					route.set({
-						parent: parentRoute,
-						path: parentRoute.path + '/' + route.path
-					});
-					continue linkParentRoutes;
-				}
+			var parentRouteId = routeId.slice(0, parentDelimiterIndex),
+				parentRoute:Route = routes[parentRouteId];
+
+			if (!parentRoute) {
+				throw new Error('Could not find a parent route for ' + route.get('id'));
 			}
 
-			throw new Error('Could not find a parent route for ' + route.id);
+			route.set({
+				parent: parentRoute,
+				path: parentRoute.get('path') + '/' + route.get('path')
+			});
 		}
-
-		return routeMap;
 	}
 
 	/**
@@ -181,9 +186,10 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Starts listening for new path changes.
 	 */
 	startup():IPromise<void> {
-		// prevent routes from being modified once the router is started
-		this._routesSetter = function () { return null; }
-		this.startup = function () { return null; };
+		var dfd:IDeferred<void> = new Deferred<void>();
+		dfd.resolve(null);
+		this._routesSetter = function ():{ [key:string]: routing.IRouteDefinition } { return null; }
+		this.startup = function ():IPromise<void> { return dfd; };
 		this.resume();
 		return null;
 	}
@@ -195,15 +201,10 @@ class Router extends ObservableEvented implements routing.IRouter {
 		this.destroy = function () {};
 		this.pause();
 
-		var route,
-			event = new RouteEvent({
-				oldPath: this._oldPath,
-				newPath: null,
-				router: this
-			});
+		var route:Route;
 
 		while ((route = this._activeRoutes.pop())) {
-			route.exit(event);
+			route.exit();
 		}
 
 		for (var id in this._routes) {
@@ -329,21 +330,16 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 	/**
 	 * Exits active routes that do not match the new path given in `event`.
-	 *
-	 * @returns A promise that is resolved once all matching routes have finished deactivating.
 	 */
-	_exitRoutes(event:RouteEvent):IPromise<any> {
-		var activeRoutes = this._activeRoutes,
-			exits = [];
+	_exitRoutes(event:RouteEvent):void {
+		var activeRoutes = this._activeRoutes;
 
-		for (var i = activeRoutes.length - 1, route; (route = activeRoutes[i]); --i) {
+		for (var i = activeRoutes.length - 1, route:Route; (route = activeRoutes[i]); --i) {
 			if (!route.test(event.newPath)) {
-				exits.push(route.exit(event));
+				route.exit();
 				activeRoutes.splice(i, 1);
 			}
 		}
-
-		return whenAll(exits);
 	}
 
 	/**
@@ -352,9 +348,11 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * @returns A promise that is resolved once all matching routes have finished activating.
 	 */
 	_enterRoutes(event:RouteEvent):IPromise<any> {
-		var entrances = [];
+		var entrances:Array<IPromise<void>> = [],
+			route:Route;
 
-		for (var i = 0, route; (route = this._routes[i]); ++i) {
+		for (var id in this._routes) {
+			route = this._routes[id];
 			if (route.test(event.newPath)) {
 				entrances.push(route.enter(event));
 

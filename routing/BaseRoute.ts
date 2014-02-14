@@ -45,13 +45,21 @@ class BaseRoute extends Observable {
 	 * Any extra arbitrary arguments that are not explicitly defined as being part of a BaseRoute path are provided
 	 * using a standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 	 */
+
+	/** The path for this route. */
 	private _path:string;
+
 	/** Whether or not the path should be case-sensitive. */
-	private _isCaseSensitive:boolean = true;
+	private _isCaseSensitive:boolean;
 	
 	_pathPattern:RegExp;
 	_pathParts:Array<any>;
 	_pathKeys:Array<string>;
+
+	constructor(kwArgs?:Object) {
+		super(kwArgs);
+		this.set('isCaseSensitive', true);
+	}
 
 	/**
 	 * Sets the case-sensitivity flag on path processing regular expression patterns.
@@ -73,7 +81,7 @@ class BaseRoute extends Observable {
 				}
 			}
 		}
-		super.set('isCaseSensitive', isCaseSensitive);
+		this._isCaseSensitive = isCaseSensitive;
 	}
 
 	/**
@@ -118,8 +126,7 @@ class BaseRoute extends Observable {
 		this._pathKeys = pathKeys;
 		this._pathParts = pathParts;
 		this._pathPattern = new RegExp(realPathPattern, regExpFlags);
-
-		super.set('path', path);
+		this._path = path;
 	}
 
 	/**

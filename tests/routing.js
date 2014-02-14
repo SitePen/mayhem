@@ -1,3 +1,5 @@
 define([
-	'./routing/BaseRoute'
+	'./routing/RouteEvent',
+	'./routing/BaseRoute',
+	'./routing/Route'
 ], function () {});

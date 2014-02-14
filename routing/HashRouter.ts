@@ -78,7 +78,7 @@ class HashRouter extends Router {
 	createPath(id:string, kwArgs?:Object):string {
 		id = this.normalizeId(id);
 
-		var route = this._routes[this._routeIds[id]];
+		var route = this._routes[id];
 
 		if (!route) {
 			throw new Error('Invalid route id "' + id + '"');
@@ -87,7 +87,9 @@ class HashRouter extends Router {
 		return '#' + this.pathPrefix + route.serialize(kwArgs);
 	}
 
-	// TODO: This should get a better name once it is determined exactly what is being normalized
+	/**
+	 * Normalizes a string to a real ID value.
+	 */
 	normalizeId(id:string):string {
 		// TODO: If something is passing an thing that is prefixed they are probably passing the path instead, which
 		// is not correct

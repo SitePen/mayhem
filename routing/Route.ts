@@ -50,8 +50,8 @@ class Route extends BaseRoute implements routing.IRoute {
 	private _router:routing.IRouter;
 
 	private _subViewHandles:Array<{ remove:() => void}> = [];
-	private _controllerInstance /* framework/Controller */;
-	private _viewInstance /* ui.IView */;
+	private _controllerInstance:any /* framework/Controller */;
+	private _viewInstance:any /* ui.IView */;
 
 	/** @protected */
 	_app:core.IApplication;
@@ -62,7 +62,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * `routeState` property.
 	 */
 	enter(event:RouteEvent):IPromise<void> {
-		function setRouteState(event) {
+		function setRouteState(event:RouteEvent):IPromise<void> {
 			has('debug') && console.log('entering', self._id);
 
 			var kwArgs = { id: self._id };
@@ -88,18 +88,18 @@ class Route extends BaseRoute implements routing.IRoute {
 		has('debug') && console.log('preparing', this._id);
 
 		var self = this,
-			dfd = new Deferred<void>();
+			dfd:IDeferred<void> = new Deferred<void>();
 
 		require([
 			this._view,
 			this._controller,
 			this._template
-		], function (View, Controller, TemplateConstructor) {
+		], function (View:any, Controller:any, TemplateConstructor:any) {
 			return when(self._instantiateComponents(View, Controller, TemplateConstructor)).then(function () {
 				setRouteState(event);
-				dfd.resolve();
+				dfd.resolve(null);
 			}, function () {
-				dfd.reject();
+				dfd.reject(null);
 			});
 		});
 
@@ -114,7 +114,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	exit():void {
 		has('debug') && console.log('exiting', this._id);
 
-		var handle;
+		var handle:IHandle;
 		while ((handle = this._subViewHandles.pop())) {
 			handle.remove();
 		}
@@ -145,7 +145,7 @@ class Route extends BaseRoute implements routing.IRoute {
      *
 	 * @protected
 	 */
-	_instantiateComponents(View, Controller, TemplateConstructor):void {
+	_instantiateComponents(View:any, Controller:any, TemplateConstructor:any):void {
 		var controller = this._controllerInstance = new Controller({
 			app: this._app
 		});

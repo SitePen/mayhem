@@ -17,17 +17,11 @@ class RouteEvent extends SyntheticEvent {
 	/** @readonly */
 	router:routing.IRouter;
 
-	constructor(kwArgs:Object) {
-		super();
-		for (var k in kwArgs) {
-			this[k] = kwArgs[k];
-		}
-	}
-
 	/**
 	 * Reverts the path state on the router to the pre-event path.
 	 */
 	pause():void {
+		this.paused = true;
 		this.router.resetPath(this.oldPath, true);
 	}
 
@@ -38,8 +32,17 @@ class RouteEvent extends SyntheticEvent {
 		if (this.canceled) {
 			return;
 		}
-
 		this.router.resetPath(this.newPath);
+		this.paused = false;
+	}
+
+	/**
+	 * Cancels the event
+	 *
+	 * TODO: What exactly does this entail?
+	 */
+	cancel():void {
+		this.canceled = true;
 	}
 
 	/**
