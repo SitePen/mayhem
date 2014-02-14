@@ -8,6 +8,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-ts');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('intern');
 
 	grunt.initConfig({
 		all: [ '**/*.ts', '!node_modules/**/*.ts' ],
@@ -47,8 +48,24 @@ module.exports = function (grunt) {
 					spawn: false
 				}
 			}
+		},
+
+		intern: {
+			clientRouting: {
+				options: {
+					config: 'tests/intern',
+					suites: [ 'mayhem/tests/routing' ]
+				}
+			},
+			client: {
+				options: {
+					config: 'tests/intern'
+				}
+			}
 		}
 	});
+
+	grunt.registerTask('test', [ 'intern:client' ]);
 
 	var previousForceState = grunt.option('force');
 	grunt.registerTask('force', function (set) {
