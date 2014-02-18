@@ -1,17 +1,24 @@
-<h3>Buttons</h3>
+<h2>Buttons</h2>
 <p>Buttons can do an action, display a menu, or both:</p>
 <div>
 	Enabled:
 	<widget is="framework/ui/dom/form/Button" label="Simple" icon-class="dijitIconTask"></widget>
 	<widget is="framework/ui/dom/form/DropDownButton" icon-class="dijitIconEdit">
-    	<strong>Drop</strong> Down
+    	Drop Down
 	    <widget is="framework/ui/dom/DropDownMenu">
-	        <widget is="framework/ui/dom/MenuItem" label="Cut" icon-class="dijitEditorIcon dijitEditorIconCut" on-click="cut"></widget>
-	        <widget is="framework/ui/dom/MenuItem" label="Copy" icon-class="dijitEditorIcon dijitEditorIconCopy" on-click="copy"></widget>
-	        <widget is="framework/ui/dom/MenuItem" label="Paste" icon-class="dijitEditorIcon dijitEditorIconPaste" on-click="paste"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Cut" on-click="cut" icon-class="dijitEditorIcon dijitEditorIconCut"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Copy" on-click="copy" icon-class="dijitEditorIcon dijitEditorIconCopy"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Paste" on-click="paste" icon-class="dijitEditorIcon dijitEditorIconPaste"></widget>
 	    </widget>
 	</widget>
-	<widget is="framework/ui/dom/form/ToggleButton" label="Toggle" checked="checked" icon-class="dijitCheckBoxIcon"></widget>
+	<widget is="framework/ui/dom/form/ComboButton" label="Combo" drop-down="combo-menu" icon-class="dijitEditorIcon dijitEditorIconSave">
+	    Combo
+	    <widget is="framework/ui/dom/DropDownMenu">
+	        <widget is="framework/ui/dom/MenuItem" label="Save" on-click="save" icon-class="dijitEditorIcon dijitEditorIconSave"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Save As" on-click="save-as"></widget>
+	    </widget>
+	</widget>
+	<widget is="framework/ui/dom/form/ToggleButton" label="Toggle" icon-class="dijitCheckBoxIcon"></widget>
 </div>
 <div>
 	Disabled:
@@ -24,9 +31,16 @@
 	        <widget is="framework/ui/dom/MenuItem" label="Paste" icon-class="dijitEditorIcon dijitEditorIconPaste" on-click="paste"></widget>
 	    </widget>
 	</widget>
-	<widget is="framework/ui/dom/form/ToggleButton" disabled="disabled" label="Toggle" icon-class="dijitCheckBoxIcon"></widget>
+	<widget is="framework/ui/dom/form/ComboButton" disabled="disabled" label="Combo" drop-down="combo-menu" icon-class="dijitEditorIcon dijitEditorIconSave">
+	    Combo
+	    <widget is="framework/ui/dom/DropDownMenu">
+	        <widget is="framework/ui/dom/MenuItem" label="Save" on-click="save" icon-class="dijitEditorIcon dijitEditorIconSave"></widget>
+	        <widget is="framework/ui/dom/MenuItem" label="Save As" on-click="save-as"></widget>
+	    </widget>
+	</widget>
+	<widget is="framework/ui/dom/form/ToggleButton" disabled="disabled" label="Toggle" checked="checked" icon-class="dijitCheckBoxIcon"></widget>
 </div>
-<h3>Check Boxes</h3>
+<h2>Check Boxes</h2>
 <fieldset>
 	<widget is="framework/ui/dom/form/CheckBox" id="check1"></widget>
 	<label for="check1">unchecked</label>
@@ -37,7 +51,7 @@
 	<widget is="framework/ui/dom/form/CheckBox" id="check4" checked="checked" disabled="disabled"></widget>
 	<label for="check4">disabled and checked</label>
 </fieldset>
-<h3>Radio Buttons</h3>
+<h2>Radio Buttons</h2>
 <fieldset>
 	<widget is="framework/ui/dom/form/RadioButton" id="g1rb1"></widget>
 	<label for="g1rb1">news</label>

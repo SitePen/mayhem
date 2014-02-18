@@ -132,6 +132,19 @@ declare module 'dijit/form/CheckBox' {
 	export = CheckBox;
 }
 
+declare module 'dijit/form/ComboButton' {
+	import DropDownButton = require('dijit/form/DropDownButton');
+
+	interface ComboButton extends DropDownButton {
+	}
+
+	var ComboButton:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):ComboButton;
+	};
+
+	export = ComboButton;
+}
+
 declare module 'dijit/form/DropDownButton' {
 	import Button = require('dijit/form/Button');
 
