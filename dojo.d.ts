@@ -49,9 +49,9 @@ interface IPromise<T> {
 }
 
 interface IStore<T> {
-		idProperty:string;
-		get(id:any):T;
-		put(object:T, options?:Object):any; // string | number
+	idProperty:string;
+	get(id:any):T;
+	put(object:T, options?:Object):any; // string | number
 }
 
 declare var define:{

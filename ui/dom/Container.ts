@@ -149,6 +149,7 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 
 		widget.detach();
 		this._children.splice(index, 1);
+		// TODO: reset index on other children?
 	}
 }
 

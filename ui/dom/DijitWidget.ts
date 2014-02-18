@@ -2,12 +2,16 @@
 
 import array = require('dojo/_base/array');
 import core = require('../../interfaces');
+import DomContainer = require('./Container');
+import PlacePosition = require('../PlacePosition');
 import SingleNodeWidget = require('./SingleNodeWidget');
 import util = require('../../util');
 import _WidgetBase = require('dijit/_WidgetBase');
 import widgets = require('../interfaces');
 
-/* abstract */ class DijitWidget extends SingleNodeWidget {
+/* abstract */ class DijitWidget extends SingleNodeWidget implements widgets.IContainer {
+	/* protected */ _children:DijitWidget[];
+	/* protected */ _content:widgets.IDomWidget;
 	/* protected */ _dijit:_WidgetBase;
 	/* protected */ _dijitActions:string[];
 	/* protected */ _dijitArgs:any;
@@ -19,7 +23,8 @@ import widgets = require('../interfaces');
 	/* protected */ _parent:widgets.IContainerWidget;
 
 	constructor(kwArgs:any = {}) {
-		this._setDijitFields('disabled', 'iconClass', 'label');
+		util.deferSetters(this, [ 'content' ], '_render');
+		this._setDijitFields('disabled', 'iconClass', 'label', 'style', 'title', 'tooltip');
 
 		// Build up dijit kwArgs and methods from the fields provided
 		var dijitArgs:any = this._dijitArgs = {};
@@ -56,7 +61,48 @@ import widgets = require('../interfaces');
 		super(kwArgs);
 	}
 
+	/* protected */ _childrenSetter(children:widgets.IDomWidget[]):void {
+		this._children = [];
+		if (!children.length) {
+			return;
+		}
+		// Handle case where Element widget is our content
+		var content:widgets.IDomWidget = children[0],
+			i:number,
+			l:number;
+		if (children.length === 1 && !(content instanceof DijitWidget)) {
+			for (i = 0, l = content._children.length; i < l; ++i) {
+				// Find any child dijits and add them to our list of children
+				if (content._children[i] instanceof DijitWidget) {
+					this._children.push(<DijitWidget> content._children[i]);
+					// TODO: Remove properly dijit child from content element
+					//content.remove(content._children[i]);
+				}
+			}
+			this.set('content', content);
+			
+		}
+		else {
+			// TODO: do something with non-dijit children -- perhaps compose them into an Element for content?
+			for (i = 0, l = children.length; i < l; ++i) {
+				if (children[i] instanceof DijitWidget) {
+					this._children.push(<DijitWidget> children[i]);
+				}
+			}
+		}
+	}
+
+	/* protected */ _contentSetter(content:widgets.IDomWidget):void {
+		this._content = content;
+		this._dijit.containerNode.appendChild(content.detach());
+		setTimeout(() => { this._dijit.startup() }); // TODO
+	}
+
 	destroy():void {
+		if (this._content) {
+			this._content.destroy();
+			this._content = null;
+		}
 		if (this._dijit) {
 			this._dijit.destroyRecursive();
 			this._dijit = null;
@@ -93,6 +139,22 @@ import widgets = require('../interfaces');
 	/* protected */ _setDijitFields(...keys:string[]):void {
 		this._dijitFields = (this._dijitFields || []).concat(keys);
 	}
+
+	// widgets.IContainer
+	add:{
+		(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
+		(widget:widgets.IDomWidget, position:number):IHandle;
+		(widget:widgets.IDomWidget, placeholder:string):IHandle;
+	};
+
+	empty: { ():void; };
+
+	remove:{ (index:number):void; (widget:widgets.IWidget):void; };
 }
+
+// FIXME: util.applyMixins(DijitWidget, [ DomContainer ]);
+Object.keys(DomContainer).forEach((key:string) => {
+	DijitWidget.prototype[key] = DomContainer.prototype[key];
+})
 
 export = DijitWidget;

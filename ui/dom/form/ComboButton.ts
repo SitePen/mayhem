@@ -8,8 +8,6 @@ import util = require('../../../util');
 import widgets = require('../../interfaces');
 
 class FormComboButton extends FormDropDownButton {
-	/* protected */ _dijit:DijitComboButton;
-
 	constructor(kwArgs:Object = {}) {
 		this._setDijitCtor(DijitComboButton);
 		super(kwArgs);

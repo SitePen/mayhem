@@ -55,6 +55,9 @@ class DomElement extends DomContainer {
 		for (var i = 0, l = Math.min(targets.length, children.length); i < l; ++i) {
 			target = targets[i];
 			widget = children[i];
+			if (!widget) {
+				continue;
+			}
 			firstNode = widget.get('firstNode');
 			lastNode = widget.get('lastNode');
 			content = firstNode === lastNode ? lastNode : domUtil.getRange(firstNode, lastNode).extractContents();

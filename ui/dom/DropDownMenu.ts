@@ -1,15 +1,9 @@
-import array = require('dojo/_base/array');
-import DijitDropDownMenu = require('dijit/DropDownMenu');
+import __DropDownMenu = require('dijit/DropDownMenu');
 import DijitWidget = require('./DijitWidget');
-import DijitContainer = require('./DijitContainer');
-import util = require('../../util');
-import widgets = require('../interfaces');
 
-class DropDownMenu extends DijitContainer {
-	/* protected */ _dijit:DijitDropDownMenu;
-
+class DropDownMenu extends DijitWidget {
 	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(DijitDropDownMenu);
+		this._setDijitCtor(__DropDownMenu);
 		super(kwArgs);
 	}
 }
