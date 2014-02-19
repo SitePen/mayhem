@@ -128,7 +128,7 @@ Template
 	)? {
 		if (!root) {
 			root = {
-				constructor: 'framework/ui/dom/Element',
+				constructor: null,
 				html: '',
 				children: []
 			};
@@ -167,7 +167,7 @@ Element 'HTML'
 		}
 
 		return {
-			constructor: 'framework/ui/dom/Element',
+			constructor: null,
 			html: parseBoundText(html),
 			children: children
 		};
@@ -195,6 +195,7 @@ HtmlFragment 'HTML'
 			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
+			/ WidgetNoChildren
 		)
 		character:. { return character; }
 	)+ {
@@ -317,6 +318,14 @@ WidgetTagOpen '<widget>'
 WidgetTagClose '</widget>'
 	= OpenToken '/widget'i CloseToken
 
+WidgetNoChildren '<widget/>'
+	= OpenToken 'widget'i widget:AttributeMap SelfCloseToken {
+		validate(widget, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
+		widget.constructor = widget.is;
+		delete widget.is;
+		return widget;
+	}
+
 // all others
 
 Placeholder '<placeholder>'
@@ -347,12 +356,16 @@ Alias '<alias>'
 		return null;
 	}
 
+CustomElement
+	= 
+
 // attributes
 
 AttributeMap
 	= attributes:Attribute* S* {
 		var attributeMap = {};
 		for (var i = 0, attribute; (attribute = attributes[i]); ++i) {
+			// TODO: allow 'constructor' for Widget only
 			if (attribute.name === 'constructor') {
 				error('"constructor" is a reserved attribute name');
 			}
@@ -397,12 +410,16 @@ AnyNonElement
 	/ Data
 	/ Alias
 	/ Widget
+	/ WidgetNoChildren
 
 OpenToken '<'
 	= '<' S*
 
 CloseToken '>'
 	= S* '>'
+
+SelfCloseToken '>'
+	= S* '/>'
 
 S 'whitespace'
 	= [ \t\r\n]

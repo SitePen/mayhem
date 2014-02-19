@@ -7,19 +7,10 @@ import pegParser = require('./peg/html');
 import widgets = require('../ui/interfaces');
 import util = require('../util');
 
-function getWidgetCtor(node:any):any { // TODO: how to denote a Ctor return type?
-	var ctor:any = node.constructor,
-		moduleId:string;
-	if (typeof ctor !== 'function') {
-		moduleId = ctor.toString();
-	}
-	return moduleId ? require(moduleId) : ctor;
-}
-
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 	dojotext.load(resourceId, contextRequire, function(template:string):void {
 		var ast = parse(template);
-		var dependencies = scanForDependencies(ast);
+		var dependencies = scanDependencies(ast);
 		require(dependencies, ():void => {
 			load(function(app:core.IApplication, mediator:core.IMediator):widgets.IDomWidget {
 				return constructWidget(ast, { app: app, mediator: mediator });
@@ -28,24 +19,33 @@ export function load(resourceId:string, contextRequire:Function, load:(...module
 	});
 }
 
-export function parse(input:string):any {
+export function parse(input:string, options:any = {}):any {
 	return pegParser.parse(input);
 }
 
-function scanForDependencies(node:Object):string[] {
+// TODO: allow this to be overriden
+var defaultModuleId = 'framework/ui/dom/Element';
+
+function scanDependencies(node:Object):string[] {
 	var dependencies:string[] = [];
 	function recurse(node:Object):void {
-		var ctor = node.constructor;
+		var ctor:any = node.constructor;
 		if (typeof ctor !== 'function') {
+			if (ctor == null) {
+				ctor = defaultModuleId;
+			}
 			// Parser returns constructors as either string or 1-element string[]
 			// Either way toString should do the trick
 			var moduleId:string = ctor.toString();
-			// Add to list of dependencies if it's a string module id not already in our dep list
+			node.constructor = moduleId;
+			// Add to list of dependencies if not already in our dep list
 			dependencies.indexOf(moduleId) === -1 && dependencies.push(moduleId);
 		}
-		var key:string;
+		var key:string,
+			value:any;
+		// TODO: once we simplify our ast we can just walk children
 		for (key in node) {
-			var value:any = node[key];
+			value = node[key];
 			if (value instanceof Array) {
 				array.forEach(value, recurse);
 			}
@@ -61,7 +61,7 @@ function scanForDependencies(node:Object):string[] {
 export function constructWidget(node:any, widgetArgs:any = {}):widgets.IDomWidget {
 	var key:string,
 		items:any,
-		WidgetCtor = getWidgetCtor(node),
+		WidgetCtor:any = require(node.constructor),
 		widget:widgets.IDomWidget,
 		fieldBindings:{ [key:string]: string; } = {},
 		bindingTemplates:{ [key:string]: any; } = {};
@@ -151,7 +151,7 @@ export function constructWidget(node:any, widgetArgs:any = {}):widgets.IDomWidge
 	});
 	// Hook widget's destroy method to tear down our observer handles
 	var _destroy:() => void = widget.destroy;
-	widget.destroy = function():void {
+	widget.destroy = ():void => {
 		array.forEach(observerHandles, (handle:IHandle):void => handle.remove());
 		observerHandles = null;
 		_destroy.call(widget);
