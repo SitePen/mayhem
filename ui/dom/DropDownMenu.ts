@@ -1,5 +1,5 @@
-import __DropDownMenu = require('dijit/DropDownMenu');
 import DijitWidget = require('./DijitWidget');
+import __DropDownMenu = require('dijit/DropDownMenu');
 
 class DropDownMenu extends DijitWidget {
 	constructor(kwArgs:Object = {}) {

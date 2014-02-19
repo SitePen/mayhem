@@ -193,7 +193,7 @@ class Iterator extends SingleNodeWidget {
 
 	/* protected */ _render():void {
 		super._render();
-		this._firstNode.appendChild(this._list.domNode);
+		this._firstNode = this._lastNode = this._list.domNode;
 	}
 
 	private _templateSetter(template:any):void {

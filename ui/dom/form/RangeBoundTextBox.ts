@@ -1,5 +1,5 @@
-import __RangeBoundTextBox = require('dijit/form/RangeBoundTextBox');
 import Input = require('./Input');
+import __RangeBoundTextBox = require('dijit/form/RangeBoundTextBox');
 
 class RangeBoundTextBox extends Input {
 	constructor(kwArgs:Object = {}) {

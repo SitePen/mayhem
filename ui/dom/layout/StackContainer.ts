@@ -1,5 +1,5 @@
-import __StackContainer = require('dijit/layout/StackContainer');
 import DijitWidget = require('../DijitWidget')
+import __StackContainer = require('dijit/layout/StackContainer');
 
 class StackContainer extends DijitWidget {
 	constructor(kwArgs:Object = {}) {

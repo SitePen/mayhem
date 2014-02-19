@@ -24,7 +24,8 @@ import widgets = require('../interfaces');
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'content' ], '_render');
-		this._setDijitFields('disabled', 'iconClass', 'label', 'style', 'title', 'tooltip');
+		// TODO: this is a hack and needs cleanup
+		this._setDijitFields('disabled', 'iconClass', 'label', 'region', 'splitter', 'style', 'title', 'tooltip');
 
 		// Build up dijit kwArgs and methods from the fields provided
 		var dijitArgs:any = this._dijitArgs = {};

@@ -131,6 +131,32 @@ declare module 'dijit/MenuItem' {
 	export = MenuItem;
 }
 
+declare module 'dijit/ProgressBar' {
+	import _Widget = require('dijit/_Widget');
+
+	interface ProgressBar extends _Widget {
+	}
+
+	var ProgressBar:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):ProgressBar;
+	};
+
+	export = ProgressBar;
+}
+
+declare module 'dijit/TitlePane' {
+	import ContentPane = require('dijit/layout/ContentPane');
+
+	interface TitlePane extends ContentPane {
+	}
+
+	var TitlePane:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):TitlePane;
+	};
+
+	export = TitlePane;
+}
+
 declare module 'dijit/_Widget' {
 	import _WidgetBase = require('dijit/_WidgetBase');
 
@@ -485,6 +511,19 @@ declare module 'dijit/layout/AccordionContainer' {
 	export = AccordionContainer;
 }
 
+declare module 'dijit/layout/BorderContainer' {
+	import LayoutContainer = require('dijit/layout/LayoutContainer');
+
+	interface BorderContainer extends LayoutContainer {
+	}
+
+	var BorderContainer:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):BorderContainer;
+	};
+
+	export = BorderContainer;
+}
+
 declare module 'dijit/layout/ContentPane' {
 	import _Container = require('dijit/_Container');
 	import _Widget = require('dijit/_Widget');
@@ -497,6 +536,19 @@ declare module 'dijit/layout/ContentPane' {
 	};
 
 	export = ContentPane;
+}
+
+declare module 'dijit/layout/LayoutContainer' {
+	import _LayoutWidget = require('dijit/layout/_LayoutWidget');
+
+	interface LayoutContainer extends _LayoutWidget {
+	}
+
+	var LayoutContainer:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):LayoutContainer;
+	};
+
+	export = LayoutContainer;
 }
 
 declare module 'dijit/layout/_LayoutWidget' {

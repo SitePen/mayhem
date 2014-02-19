@@ -1,0 +1,55 @@
+<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget>
+First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
+<widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
+Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}"></widget>
+<widget is="framework/ui/dom/form/Error" binding="lastName"><widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
+fullName bound input: <widget is="framework/ui/dom/form/Input" value="{fullName}"></widget>
+<br>
+fullName computed field: {fullName}<br>
+firstName lastName: {firstName} {lastName}<br>
+<em>conditionals</em><br>
+<p style="margin-left:20px">
+	<!-- conditionals are pretty much useless until observables respect dependencies -->
+	<if condition="firstNameIsJoey">
+		(1) firstName is Joey.<br>
+	<elseif condition="lastNameIsBloggs">
+		(2) lastName is Bloggs.<br>
+	<elseif condition="fullNameIsBoeBlogger">
+		(3) fullName is Boe Blogger.<br>
+	<else>
+		(X) No match... here's a read-only widget binding for fun:
+		<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}"></widget>
+	</if>
+</p>
+<for each="phone" in="phone_numbers">
+	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
+	<widget is="framework/ui/dom/form/Input" value="{phone.value}"></widget>
+</for>
+<br>
+<placeholder name="interstitial">
+List of hobbies: {hobbies}<br>
+<for each="hobby" in="hobbies">
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value="{hobby}"></widget></span>
+</for>
+<when promise="remoteString" value="stringValue">
+	Resolved... remoteString is: <strong>{stringValue}</strong><br>
+	firstName bidi binding inside when for good measure:
+	<widget is="framework/ui/dom/form/Input" value="{firstName}"></widget>
+<error>
+	I SHOULD NOT BE VISIBLE
+<progress>
+	remoteString: waiting...
+</when>
+<br>
+<when promise="remoteError" value="errorValue">
+	I SHOULD NOT BE VISIBLE
+<error>
+	<!-- TODO: get binding to work on an Error path -->
+	Error!!! remoteError.message is {errorValue.message}
+<progress>
+	remoteError: waiting...
+</when>
+<br>
+<placeholder name="bottom">
+<widget is="framework/ui/dom/form/Button" on-click="save" label="My Save Button" ></widget>
+<widget is="framework/ui/dom/form/Button" on-click="save">Another <strong>Save</strong> Button</widget>

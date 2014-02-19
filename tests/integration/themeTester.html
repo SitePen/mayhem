@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-type"></meta>
+		<title>Dijit Theme Tester</title>
+		<style>
+			hr.spacer {
+				border: 0px none;
+				background-color: #EDEDED;
+				width: 80%;
+				height: 1px;
+			}
+		</style>
+	</head>
+	<body class="claro">
+		<script>
+var dojoConfig = {
+	async: true,
+	baseUrl: '../../../',
+	packages: [
+		'dojo',
+		'dijit',
+		'dstore',
+		'framework'
+	]
+};
+	</script>
+	<script src="../../../dojo/dojo.js"></script>
+	<script>
+require([
+	'framework/Application',
+	'framework/ui/dom/Master',
+	'framework/tests/integration/MyMediator',
+	'framework/tests/integration/MyModel',
+	'framework/templating/html!./themeTester.template.html',
+	'xstyle/css!dijit/themes/claro/claro.css',
+	'xstyle/css!dojo/resources/dojo.css'
+], function (Application, Master, MyMediator, MyModel, processTemplate) {
+	var app = window.app = new Application({
+		modules: { router: null }
+	});
+
+	app.startup().then(function () {
+		var model = window.model = new MyModel();
+		var mediator = window.mediator = new MyMediator({
+			app: app,
+			model: model
+		});
+
+		var masterView = new Master({});
+		masterView.add(processTemplate(app, mediator));
+		masterView.attachToWindow(document.body);
+	});
+});
+		</script>
+	</body>
+</html>

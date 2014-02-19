@@ -1,11 +1,9 @@
-/// <reference path="../../dojo" />
-
-import DijitMenuItem = require('dijit/MenuItem');
 import DijitWidget = require('./DijitWidget');
+import __MenuItem = require('dijit/MenuItem');
 
 class MenuItem extends DijitWidget {
 	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(DijitMenuItem);
+		this._setDijitCtor(__MenuItem);
 		this._setDijitActions('onClick');
 		super(kwArgs);
 	}
