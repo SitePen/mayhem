@@ -1,5 +1,5 @@
-<widget id="main" is="framework/ui/dom/layout/BorderContainer" style="width: 100%; height: 500px" live-splitters="" design="sidebar">
-	<widget id="leftAccordion" is="framework/ui/dom/layout/AccordionContainer" region="leading" splitter="splitter" style="width: 300px">
+<widget id="main" is="framework/ui/dom/layout/BorderContainer" live-splitters="" design="sidebar">
+	<widget id="leftAccordion" is="framework/ui/dom/layout/AccordionContainer" region="leading" splitter="splitter">
 		<widget is="framework/ui/dom/layout/ContentPane" title="Popups and Alerts">TODO</widget>
 		<widget is="framework/ui/dom/layout/ContentPane" title="Tree">TODO</widget>
 		<widget is="framework/ui/dom/layout/ContentPane" title="Rootless Tree">TODO</widget>
@@ -7,10 +7,73 @@
 			<widget is="framework/ui/dom/Calendar"></widget>
 		</widget>
 		<widget is="framework/ui/dom/layout/ContentPane" title="Color Picker">
+			<p>Selecting a color will change the background color of the page. Use this to test how tooltips and drop downs appear with different backgrounds.</p>
+
+			<h2 class="testHeader">3x4</h2>
+			<widget is="framework/ui/dom/ColorPalette" palette="3x4"></widget>
+
+			<h2 class="testHeader">7x10</h2>
 			<widget is="framework/ui/dom/ColorPalette"></widget>
 		</widget>
 	</widget>
-	<widget id="header" is="framework/ui/dom/layout/ContentPane" region="top" style="height:20px">TODO</widget>
+	<widget is="framework/ui/dom/MenuBar" region="top">
+		<widget id="file" is="framework/ui/dom/PopupMenuBarItem" label="File">
+			<widget id="fileMenu" is="framework/ui/dom/Menu">
+				<widget id="globals" is="framework/ui/dom/MenuItem">Log globals</widget>
+				<widget id="widgets" is="framework/ui/dom/MenuItem">Log widgets</widget>
+				<widget id="destroy" is="framework/ui/dom/MenuItem" icon-class="dijitIconDelete">Destroy All</widget>
+			</widget>
+		</widget>
+		<widget id="edit" is="framework/ui/dom/PopupMenuBarItem" label="Edit">
+			<widget id="editMenu" is="framework/ui/dom/Menu">
+				<widget id="cut" is="framework/ui/dom/MenuItem" label="Cut" on-click="cut" icon-class="dijitIconCut"></widget>
+				<widget id="copy" is="framework/ui/dom/MenuItem" label="Copy" on-click="copy" icon-class="dijitIconCopy"></widget>
+				<widget id="paste" is="framework/ui/dom/MenuItem" label="Paste" on-click="paste" icon-class="dijitIconPaste"></widget>
+				<widget id="separator" is="framework/ui/dom/MenuSeparator" label="Paste" on-click="paste" icon-class="dijitIconPaste"></widget>
+				<widget id="undo" is="framework/ui/dom/MenuItem" label="Undo" on-click="undo" icon-class="dijitIconUndo"></widget>
+			</widget>
+		</widget>
+		<widget id="view" is="framework/ui/dom/PopupMenuBarItem" label="View">
+			<widget id="viewMenu" is="framework/ui/dom/Menu">
+				<widget is="framework/ui/dom/MenuItem" label="Normal"></widget>
+				<widget is="framework/ui/dom/MenuItem" label="Outline"></widget>
+				<widget id="zoom" is="framework/ui/dom/PopupMenuItem">
+					Zoom
+					<widget id="zoomMenu" is="framework/ui/dom/Menu">
+						<widget is="framework/ui/dom/RadioMenuItem" label="50%" group="zoom"></widget>
+						<widget is="framework/ui/dom/RadioMenuItem" label="75%" group="zoom"></widget>
+						<widget is="framework/ui/dom/RadioMenuItem" label="100%" group="zoom" checked="checked"></widget>
+						<widget is="framework/ui/dom/RadioMenuItem" label="150%" group="zoom"></widget>
+						<widget is="framework/ui/dom/RadioMenuItem" label="200%" group="zoom"></widget>
+					</widget>
+				</widget>
+			</widget>
+		</widget>
+		<widget is="framework/ui/dom/MenuBarItem" label="Themes"></widget>
+		<widget is="framework/ui/dom/MenuBarItem" label="Dialogs"></widget>
+		<widget id="inputPadding" is="framework/ui/dom/PopupMenuBarItem" label="TextBox Padding">
+			<widget id="inputPaddingMenu" is="framework/ui/dom/Menu">
+				<widget is="framework/ui/dom/RadioMenuItem" label="theme default" group="padding" checked="checked"></widget>
+				<widget is="framework/ui/dom/RadioMenuItem" label="0px" group="padding"></widget>
+				<widget is="framework/ui/dom/RadioMenuItem" label="1px" group="padding"></widget>
+				<widget is="framework/ui/dom/RadioMenuItem" label="2px" group="padding"></widget>
+				<widget is="framework/ui/dom/RadioMenuItem" label="3px" group="padding"></widget>
+				<widget is="framework/ui/dom/RadioMenuItem" label="4px" group="padding"></widget>
+				<widget is="framework/ui/dom/RadioMenuItem" label="5px" group="padding"></widget>
+			</widget>
+		</widget>
+		<widget id="help" is="framework/ui/dom/PopupMenuBarItem" label="Help">
+			<widget id="helpMenu" is="framework/ui/dom/Menu">
+				<widget is="framework/ui/dom/MenuItem">Help Topics</widget>
+				<widget is="framework/ui/dom/MenuItem">About Dijit</widget>
+			</widget>
+		</widget>
+		<widget is="framework/ui/dom/PopupMenuBarItem" label="Disabled" disabled="disabled">
+			<widget is="framework/ui/dom/Menu">
+				<widget is="framework/ui/dom/MenuItem">You should not see this</widget>
+			</widget>
+		</widget>
+	</widget>
 	<widget id="topTabs" is="framework/ui/dom/layout/TabContainer" region="center">
 		<widget is="framework/ui/dom/layout/ContentPane" title="Basic Form Widgets" selected="selected">
 
@@ -20,19 +83,19 @@
 				Enabled:
 				<widget is="framework/ui/dom/form/Button" label="Simple" icon-class="dijitIconTask"></widget>
 				<widget is="framework/ui/dom/form/DropDownButton" icon-class="dijitIconEdit">
-			    	Drop Down
-				    <widget is="framework/ui/dom/DropDownMenu">
-				        <widget is="framework/ui/dom/MenuItem" label="Cut" on-click="cut" icon-class="dijitEditorIcon dijitEditorIconCut"></widget>
-				        <widget is="framework/ui/dom/MenuItem" label="Copy" on-click="copy" icon-class="dijitEditorIcon dijitEditorIconCopy"></widget>
-				        <widget is="framework/ui/dom/MenuItem" label="Paste" on-click="paste" icon-class="dijitEditorIcon dijitEditorIconPaste"></widget>
-				    </widget>
+					Drop Down
+					<widget is="framework/ui/dom/DropDownMenu">
+						<widget is="framework/ui/dom/MenuItem" label="Cut" on-click="cut" icon-class="dijitIconCut"></widget>
+						<widget is="framework/ui/dom/MenuItem" label="Copy" on-click="copy" icon-class="dijitIconCopy"></widget>
+						<widget is="framework/ui/dom/MenuItem" label="Paste" on-click="paste" icon-class="dijitIconPaste"></widget>
+					</widget>
 				</widget>
 				<widget is="framework/ui/dom/form/ComboButton" label="Combo" drop-down="combo-menu" icon-class="dijitEditorIcon dijitEditorIconSave">
-				    Combo
-				    <widget is="framework/ui/dom/DropDownMenu">
-				        <widget is="framework/ui/dom/MenuItem" label="Save" on-click="save" icon-class="dijitEditorIcon dijitEditorIconSave"></widget>
-				        <widget is="framework/ui/dom/MenuItem" label="Save As" on-click="save-as"></widget>
-				    </widget>
+					Combo
+					<widget is="framework/ui/dom/DropDownMenu">
+						<widget is="framework/ui/dom/MenuItem" label="Save" on-click="save" icon-class="dijitEditorIcon dijitEditorIconSave"></widget>
+						<widget is="framework/ui/dom/MenuItem" label="Save As" on-click="save-as"></widget>
+					</widget>
 				</widget>
 				<widget is="framework/ui/dom/form/ToggleButton" label="Toggle" checked="checked" icon-class="dijitCheckBoxIcon"></widget>
 			</div>
@@ -40,19 +103,19 @@
 				Disabled:
 				<widget is="framework/ui/dom/form/Button" disabled="disabled" label="Simple" icon-class="dijitIconTask"></widget>
 				<widget is="framework/ui/dom/form/DropDownButton" disabled="disabled" icon-class="dijitIconEdit">
-			    	<strong>Drop</strong> Down
-				    <widget is="framework/ui/dom/DropDownMenu">
-				        <widget is="framework/ui/dom/MenuItem" label="Cut" icon-class="dijitEditorIcon dijitEditorIconCut" on-click="cut"></widget>
-				        <widget is="framework/ui/dom/MenuItem" label="Copy" icon-class="dijitEditorIcon dijitEditorIconCopy" on-click="copy"></widget>
-				        <widget is="framework/ui/dom/MenuItem" label="Paste" icon-class="dijitEditorIcon dijitEditorIconPaste" on-click="paste"></widget>
-				    </widget>
+					<strong>Drop</strong> Down
+					<widget is="framework/ui/dom/DropDownMenu">
+						<widget is="framework/ui/dom/MenuItem" label="Cut" icon-class="dijitEditorIcon dijitEditorIconCut" on-click="cut"></widget>
+						<widget is="framework/ui/dom/MenuItem" label="Copy" icon-class="dijitEditorIcon dijitEditorIconCopy" on-click="copy"></widget>
+						<widget is="framework/ui/dom/MenuItem" label="Paste" icon-class="dijitEditorIcon dijitEditorIconPaste" on-click="paste"></widget>
+					</widget>
 				</widget>
 				<widget is="framework/ui/dom/form/ComboButton" disabled="disabled" label="Combo" drop-down="combo-menu" icon-class="dijitEditorIcon dijitEditorIconSave">
-				    Combo
-				    <widget is="framework/ui/dom/DropDownMenu">
-				        <widget is="framework/ui/dom/MenuItem" label="Save" on-click="save" icon-class="dijitEditorIcon dijitEditorIconSave"></widget>
-				        <widget is="framework/ui/dom/MenuItem" label="Save As" on-click="save-as"></widget>
-				    </widget>
+					Combo
+					<widget is="framework/ui/dom/DropDownMenu">
+						<widget is="framework/ui/dom/MenuItem" label="Save" on-click="save" icon-class="dijitEditorIcon dijitEditorIconSave"></widget>
+						<widget is="framework/ui/dom/MenuItem" label="Save As" on-click="save-as"></widget>
+					</widget>
 				</widget>
 				<widget is="framework/ui/dom/form/ToggleButton" disabled="disabled" label="Toggle" checked="checked" icon-class="dijitCheckBoxIcon"></widget>
 			</div>
@@ -123,9 +186,9 @@
 			<hr class="spacer"></hr>
 
 			<h2>ProgressBar</h2>
-			<widget id="setTestBar" is="framework/ui/dom/ProgressBar" value="10%" style="width: 400px"></widget>
+			<widget id="setTestBar" is="framework/ui/dom/ProgressBar" value="10%"></widget>
 			Indeterminate:
-			<widget id="indTestBar" is="framework/ui/dom/ProgressBar" indeterminate="indeterminate" style="width: 400px"></widget>
+			<widget id="indTestBar" is="framework/ui/dom/ProgressBar" indeterminate="indeterminate"></widget>
 		</widget>
 		<widget is="framework/ui/dom/layout/ContentPane" title="InlineEditBox">TODO</widget>
 		<widget is="framework/ui/dom/layout/ContentPane" title="DnD">TODO</widget>
@@ -134,7 +197,7 @@
 			 This pane is closable, just for the icon ...
 		</widget>
 	</widget>
-	<widget id="bottomTabs" is="framework/ui/dom/layout/TabContainer" region="bottom" style="height: 40%; width: 100%">
+	<widget id="bottomTabs" is="framework/ui/dom/layout/TabContainer" region="bottom" tab-position="bottom" splitter="splitter">
 		<widget is="framework/ui/dom/layout/ContentPane" title="Info" selected="selected">
 			<p>You can explore this single page after applying a Theme for use in creation of your own theme.</p>
 			<p>I am whole slew of Widgets on a page. Jump to <a href="/dijit/tests/">dijit tests</a> to test individual components.</p>

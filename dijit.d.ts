@@ -27,6 +27,19 @@ declare module 'dijit/CalendarLight' {
 	export = CalendarLight;
 }
 
+declare module 'dijit/CheckedMenuItem' {
+	import MenuItem = require('dijit/MenuItem');
+
+	interface CheckedMenuItem extends MenuItem {
+	}
+
+	var CheckedMenuItem:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):CheckedMenuItem;
+	};
+
+	export = CheckedMenuItem;
+}
+
 declare module 'dijit/ColorPalette' {
 	import _Widget = require('dijit/_Widget');
 
@@ -80,10 +93,9 @@ declare module 'dijit/Destroyable' {
 }
 
 declare module 'dijit/DropDownMenu' {
-	import _KeyNavContainer = require('dijit/_KeyNavContainer');
-	import _Widget = require('dijit/_Widget');
+	import _MenuBase = require('dijit/_MenuBase');
 
-	interface DropDownMenu extends _Widget, _KeyNavContainer {
+	interface DropDownMenu extends _MenuBase {
 	}
 
 	var DropDownMenu:{
@@ -118,10 +130,50 @@ declare module 'dijit/Menu' {
 	export = Menu;
 }
 
-declare module 'dijit/MenuItem' {
+declare module 'dijit/MenuBar' {
+	import _MenuBase = require('dijit/_MenuBase');
+
+	interface MenuBar extends _MenuBase {
+	}
+
+	var MenuBar:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):MenuBar;
+	};
+
+	export = MenuBar;
+}
+
+declare module 'dijit/MenuBarItem' {
+	import MenuItem = require('dijit/MenuItem');
+
+	interface MenuBarItem extends MenuItem {
+	}
+
+	var MenuBarItem:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):MenuBarItem;
+	};
+
+	export = MenuBarItem;
+}
+
+declare module 'dijit/_MenuBase' {
+	import _KeyNavContainer = require('dijit/_KeyNavContainer');
 	import _Widget = require('dijit/_Widget');
 
-	interface MenuItem extends _Widget {
+	interface _MenuBase extends _Widget, _KeyNavContainer {
+	}
+
+	var _MenuBase:{
+	};
+
+	export = _MenuBase;
+}
+
+declare module 'dijit/MenuItem' {
+	import _Contained = require('dijit/_Contained');
+	import _Widget = require('dijit/_Widget');
+
+	interface MenuItem extends _Widget, _Contained {
 	}
 
 	var MenuItem:{
@@ -129,6 +181,46 @@ declare module 'dijit/MenuItem' {
 	};
 
 	export = MenuItem;
+}
+
+declare module 'dijit/MenuSeparator' {
+	import _Contained = require('dijit/_Contained');
+	import _Widget = require('dijit/_Widget');
+
+	interface MenuSeparator extends _Widget, _Contained {
+	}
+
+	var MenuSeparator:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):MenuSeparator;
+	};
+
+	export = MenuSeparator;
+}
+
+declare module 'dijit/PopupMenuBarItem' {
+	import PopupMenuItem = require('dijit/PopupMenuItem');
+
+	interface PopupMenuBarItem extends PopupMenuItem {
+	}
+
+	var PopupMenuBarItem:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):PopupMenuBarItem;
+	};
+
+	export = PopupMenuBarItem;
+}
+
+declare module 'dijit/PopupMenuItem' {
+	import MenuItem = require('dijit/MenuItem');
+
+	interface PopupMenuItem extends MenuItem {
+	}
+
+	var PopupMenuItem:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):PopupMenuItem;
+	};
+
+	export = PopupMenuItem;
 }
 
 declare module 'dijit/ProgressBar' {
@@ -142,6 +234,19 @@ declare module 'dijit/ProgressBar' {
 	};
 
 	export = ProgressBar;
+}
+
+declare module 'dijit/RadioMenuItem' {
+	import CheckedMenuItem = require('dijit/CheckedMenuItem');
+
+	interface RadioMenuItem extends CheckedMenuItem {
+	}
+
+	var RadioMenuItem:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):RadioMenuItem;
+	};
+
+	export = RadioMenuItem;
 }
 
 declare module 'dijit/TitlePane' {
