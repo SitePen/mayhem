@@ -14,9 +14,14 @@ import util = require('../util');
 import widgets = require('./interfaces');
 
 var uid = 0,
-	platform = has('host-browser') ? 'dom/' : '';
+	platform = has('host-browser') ? 'dom/' : '',
+	registry = {};
 
 class Widget extends ObservableEvented implements widgets.IWidget {
+	static byId(id:string):widgets.IWidget {
+		return registry[id];
+	}
+
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		require([ resourceId ], load);
 	}
@@ -25,13 +30,17 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		return normalize('./' + platform + resourceId);
 	}
 
+
+	private _activeMediator:core.IMediator;
 	private _app:core.IApplication;
+	/* protected */ _attached:boolean;
 	private _bindings:binding.IBindingHandle[];
 	private _classList:widgets.IClassList;
 	/* protected */ _id:string;
 	/* protected */ _mediator:core.IMediator;
 	/* protected */ _parent:widgets.IContainerWidget;
-	private _parentMediator:core.IMediator;
+	private _parentAttachedHandle:IHandle;
+	private _parentMediatorHandle:IHandle;
 	private _style:Style;
 
 	get(key:'app'):core.IApplication;
@@ -54,11 +63,15 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		return super.set(key, value);
 	}
 
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs:Object = {}) {
 		// Set ID as early as possible so that any setters that might require it can use it
-		if (!kwArgs || !kwArgs['id']) {
-			this._id = 'Widget' + (++uid);
+		var id:string = kwArgs['id'];
+		if (!id) {
+			id = this._id = 'Widget' + (++uid);
 		}
+		// TDOO: check registry for duplicate id and throw?
+		// Helpful for debugging
+		registry[id] = this;
 
 		this._bindings = [];
 		this._classList = new ClassList();
@@ -69,22 +82,36 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		this._render();
 	}
 
-	// TODO: it's not always possible to do a strait widget.bind (e.g. array targets)
-	// but we still want binds cleaned up consistently so we can just expose the capability to add
-	/* protected */ addBinding(binding:binding.IBindingHandle):void {
-		this._bindings.push(binding);
+	/* protected */ _activeMediatorSetter(mediator:core.IMediator):void {
+		this._activeMediator = mediator;
+		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
+			binding.setSource(mediator);
+		}
 	}
 
-	// TODO: Change bind options to be an interface
-	bind(propertyName:string, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
-		var bindings = this._bindings,
-			handle:binding.IBindingHandle = this.get('app').get('binder').bind({
-				source: this.get('mediator'),
-				sourceBinding: binding,
-				target: this,
-				targetBinding: propertyName,
-				direction: options.direction || BindDirection.ONE_WAY
-			});
+	/* protected */ _attachedSetter(attached:boolean):void {
+		this._attached = attached;
+	}
+
+	// TODO: support using a binding template as a sourceBinding
+	bind(targetBinding:string, binding:string, options?:{ direction?:BindDirection; }):IHandle;
+	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
+	bind(targetBinding:any, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
+		var target:any = this,
+			bindings = this._bindings,
+			handle:binding.IBindingHandle;
+		// Special handling for binding node targets
+		if (targetBinding instanceof Node) {
+			target = targetBinding;
+			targetBinding = 'nodeValue';
+		}
+		handle = this.get('app').get('binder').bind({
+			source: this.get('mediator'),
+			sourceBinding: binding,
+			target: target,
+			targetBinding: targetBinding,
+			direction: options.direction || BindDirection.ONE_WAY
+		});
 
 		bindings.push(handle);
 		return {
@@ -117,15 +144,12 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 	clear():void {}
 
 	private _mediatorGetter():core.IMediator {
-		return this._mediator || this._parentMediator;
+		return this._activeMediator;
 	}
 
 	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
 		this._mediator = mediator;
-		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
-			binding.setSource(mediator);
-		}
-		this.emit('remediate');
+		this.set('activeMediator', mediator);
 	}
 
 	private _nextGetter():widgets.IWidget {
@@ -141,14 +165,24 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 	/* protected */ _parentSetter(parent:widgets.IContainerWidget):void {
 		this._parent = parent;
-		this.set('parentMediator', parent.get('mediator'));
-	}
+		// Observe parent active mediator
+		this._parentMediatorHandle && this._parentMediatorHandle.remove();
+		var parentMediatorHandler = (parentMediator:core.IMediator):void => {
+			if (!this._mediator) {
+				this.set('activeMediator', parentMediator);
+			}
+		};
+		this._parentMediatorHandle = parent.observe('activeMediator', parentMediatorHandler);
+		// Don't set activeMediator if parent hasn't had mediator set
+		var parentMediator:core.IMediator = parent.get('mediator');
+		parentMediator && parentMediatorHandler(parentMediator);
 
-	/* protected */ _parentMediatorSetter(mediator:core.IMediator):void {
-		this._parentMediator = mediator;
-		if (!this._mediator) {
-			this.emit('remediate');
-		}
+		// Observe parent's attached state
+		this._parentAttachedHandle && this._parentAttachedHandle.remove();
+		this._parentAttachedHandle = parent.observe('attached', (parentAttached:boolean):void => {
+			this._attached !== parentAttached && this.set('attached', parentAttached);
+		});
+		parent.get('attached') && this.set('attached', true);
 	}
 
 	placeAt(destination:widgets.IWidget, position:PlacePosition):IHandle;

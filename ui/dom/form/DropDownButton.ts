@@ -15,17 +15,12 @@ class FormDropDownButton extends FormButton {
 	}
 
 	_childrenSetter(children:widgets.IDomWidget[]):void {
-		// Use last child of content as dropDown
-		// TODO: there has to be a better way
-		if (children.length === 1 && !(children[0] instanceof DijitWidget)) {
-			var content = <DomContainer> children[0];
-			var length:number = content._children && content._children.length;
-			if (length) {
-				var dropDown:DijitWidget = <DijitWidget> content._children[length - 1];
-				content.remove(dropDown);
-				this.set('dropDown', dropDown);
-			}	
-		}
+		// We need to grab a child widget to use for dropdown
+		// If only child is Element use its last child, otherwise use last child
+		var elementChild:boolean = children.length === 1 && !(children[0] instanceof DijitWidget);
+		var widgets:widgets.IDomWidget[] = elementChild && children[0].get('children') || children;
+		var target:DijitWidget = <DijitWidget> widgets.pop();
+		target && this.set('dropDown', target);
 		super._childrenSetter(children);
 	}
 

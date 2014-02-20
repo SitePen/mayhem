@@ -13,29 +13,25 @@ class When extends DomPlaceholder {
 	private _promiseField:string;
 	private _progressWidget:widgets.IDomWidget;
 	private _resolvedWidget:widgets.IDomWidget;
+	private _scopedMediator:core.IMediator;
 	private _sourceMediator:core.IMediator;
 	private _valueField:string;
 
 	constructor(kwArgs:Object) {
-		util.deferSetters(this, [ 'error', 'progress', 'promise', 'resolved', 'value' ], '_parentMediatorSetter');
+		util.deferSetters(this, [ 'promise' ], '_activeMediatorSetter');
 		super(kwArgs);
 		// TODO: this.defaultErrorWidget
 		// TODO: this.defaultProgressWidget
 	}
 
-	private _getSourceMediator():core.IMediator {
-		if (this._sourceMediator) {
-			return this._sourceMediator;
+	/* protected */ _activeMediatorSetter(mediator:core.IMediator):void {
+		if (this._valueField) {
+			mediator = this._scopedMediator = util.createScopedMediator(mediator, this._valueField, ():any => {
+				// TODO: what should we return when value is not yet resolved?
+				return this._finalValue;
+			});
 		}
-		return this.get('parent').get('mediator');
-	}
-
-	private _createScopedMediator():core.IMediator {
-		// Create a new mediator that overrides one field and delegates for the rest
-		return util.createScopedMediator(this._getSourceMediator(), this._valueField, ():any => {
-			// TODO: should we do something when value is not yet resolved?
-			return this._finalValue;
-		});
+		super._activeMediatorSetter(mediator);
 	}
 
 	destroy():void {
@@ -44,26 +40,20 @@ class When extends DomPlaceholder {
 	}
 
 	private _errorSetter(node:any):void {
-		this._errorWidget = processor.constructWidget(node, { parent: this });
+		this._errorWidget = processor.constructWidget(node, this);
+	}
+
+	private _getSourceMediator():core.IMediator {
+		return this._mediator || this._parent && this._parent.get('mediator');
 	}
 
 	private _handleResolvedPromise(value:any):void {
 		this._finalValue = value;
 		this.set('content', this._resolvedWidget);
-		// TODO: remove this hack once super._mediatorSetter fires properly on children
-		this._resolvedWidget && this._resolvedWidget.set('mediator', this.get('mediator'));
-	}
-
-	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
-		this._sourceMediator = mediator;
-		if (this._valueField) {
-			mediator = this._createScopedMediator();
-		}
-		super._mediatorSetter(mediator);
 	}
 
 	private _progressSetter(node:any):void {
-		this._progressWidget = processor.constructWidget(node, { parent: this });
+		this._progressWidget = processor.constructWidget(node, this);
 	}
 
 	private _promiseSetter(field:string):void {
@@ -91,13 +81,14 @@ class When extends DomPlaceholder {
 	}
 
 	private _resolvedSetter(node:any):void {
-		this._resolvedWidget = processor.constructWidget(node, { parent: this });
+		this._resolvedWidget = processor.constructWidget(node, this);
 	}
 
 	private _valueSetter(field:string):void {
 		this._valueField = field;
-		// We have to rescope mediator when value field has changes
-		this.set('mediator', this._getSourceMediator());
+		// We have to rescope active mediator when value field changes
+		var activeMediator:core.IMediator = this._getSourceMediator();
+		activeMediator && this.set('activeMediator', activeMediator);
 	}
 }
 

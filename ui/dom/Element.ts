@@ -5,9 +5,8 @@ import DomContainer = require('./Container');
 import domUtil = require('./util');
 import lang = require('dojo/_base/lang');
 import MultiNodeWidget = require('./MultiNodeWidget');
-import Placeholder = require('./Placeholder');
-import NamedPlaceholder = require('../../templating/html/ui/Placeholder');
-import PlacePosition = require('../PlacePosition');
+// import Placeholder = require('./Placeholder');
+// import NamedPlaceholder = require('../../templating/html/ui/Placeholder');
 import util = require('../../util');
 import widgets = require('../interfaces');
 
@@ -18,10 +17,12 @@ var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
 class DomElement extends DomContainer {
-	private _boundTextNodes:Text[];
-	private _childPositions:Node[];
+	private _childPositionNodes:Node[];
 	/* protected */ _content:Node;
 	/* protected */ _html:string;
+	private _textBindingHandles:IHandle[];
+	private _textBindingNodes:Node[];
+	private _textBindingPaths:string[];
 
 	// TODO: TS#2153
 	// get(key:'children'):widgets.IDomWidget[];
@@ -30,10 +31,9 @@ class DomElement extends DomContainer {
 	// set(key:'children', value:widgets.IDomWidget[]):void;
 	// set(key:'html', value:string):void;
 
-	constructor(kwArgs:any) {
-		this._childPositions = [];
-		util.deferMethods(this, [ '_placeChildren' ], '_render');
-		util.deferSetters(this, [ 'content' ], '_render');
+	constructor(kwArgs:any = {}) {
+		util.deferMethods(this, [ '_bindTextNodes' ], '_activeMediatorSetter');
+		util.deferMethods(this, [ '_placeChildren', '_contentSetter' ], '_render');
 		super(kwArgs);
 	}
 
@@ -42,73 +42,65 @@ class DomElement extends DomContainer {
 		this._placeChildren();
 	}
 
+	private _bindTextNodes():void {
+		util.destroyHandles(this._textBindingHandles);
+		this._textBindingHandles = [];
+		var node:Node,
+			path:string;
+		for (var i = 0, l = this._textBindingNodes.length; i < l; i++) {
+			node = this._textBindingNodes[i];
+			path = this._textBindingPaths[i];
+			if (!node || !path) continue;
+			this._textBindingHandles[i] = this.bind(node, path);
+		}
+	}
+
 	private _placeChildren():void {
-		// TODO: find a way to use DomContainer#add to do this?
-		// TODO: this.empty();
+		// TODO: find a way to use DomContainer#add for this?
+		// TODO: work out how to do a this.empty()
 		var children:widgets.IDomWidget[] = this._children,
-			targets:Node[] = this._childPositions,
+			targets:Node[] = this._childPositionNodes,
 			target:Node,
-			widget:widgets.IDomWidget,
+			child:widgets.IDomWidget,
 			firstNode:Node,
 			lastNode:Node,
-			content:Node;
+			contents:Node;
 		for (var i = 0, l = Math.min(targets.length, children.length); i < l; ++i) {
-			target = targets[i];
-			widget = children[i];
-			if (!widget) {
+			child = children[i];
+			if (!child) {
 				continue;
 			}
-			firstNode = widget.get('firstNode');
-			lastNode = widget.get('lastNode');
-			content = firstNode === lastNode ? lastNode : domUtil.getRange(firstNode, lastNode).extractContents();
-			target.parentNode.replaceChild(content, target);
-			widget.set('index', i);
-			widget.set('parent', this);
-			widget.emit('attached');
+			target = targets[i];
+			firstNode = child.get('firstNode');
+			lastNode = child.get('lastNode');
+			contents = firstNode === lastNode ? lastNode : domUtil.getRange(firstNode, lastNode).extractContents();
+			target.parentNode.replaceChild(contents, target);
+			child.set('index', i);
+			child.set('parent', this);
 		}
-		// TODO: placeholders
+		// TODO: placeholders?
 	}
 
 	private _contentSetter(content:Node):void {
+		// TODO: clear children
 		this.clear();
 		this._lastNode.parentNode.insertBefore(content, this._lastNode);
 	}
 
-	private _createTextBinding(index:number, binding:string):Text {
-		var textNode:Text = this._boundTextNodes[index] = document.createTextNode('');
-		// TODO: might be best to do something like this: this.bind('_boundText.' + index, binding)
-		// and then set our text nodes on changes, but NestedProxty isn't cooperating
-		// If we can figure this out we can remove the half-baked NodeProxty too
-		this.addBinding(this.get('app').get('binder').bind({
-			source: this.get('mediator'),
-			sourceBinding: binding,
-			target: textNode,
-			targetBinding: 'nodeValue'
-		}));
-		return textNode;
-	}
-
 	destroy():void {
-		// TODO
-		this._boundTextNodes = null;
+		util.destroyHandles(this._textBindingHandles);
+		this._childPositionNodes = this._content = null;
+		this._textBindingHandles = this._textBindingNodes = this._textBindingPaths = null;
 		super.destroy();
 	}
 
 	private _htmlSetter(html:any):void {
-		this._boundTextNodes = [];
+		// TODO: clean up previous
+		this._textBindingNodes = [];
+		this._textBindingPaths = [];
+		this._childPositionNodes = [];
 
-		// If html is a string no need to do any fancy processing
-		if (typeof html === 'string') {
-			this._html = html;
-			this.set('content', html)
-			return;
-		}
-
-		var createTextBinding = lang.hitch(this, this._createTextBinding),
-			childPositions = this._childPositions;
-
-		// Process and create placeholders for children and text node bindings
-		// (this should typically be followed by a call to set children)
+		// Process and create placeholders for children and do text node bindings
 		var processed:string[] = array.map(html, (item:any, i:number):string => {
 			if (!item.binding) {
 				return item;
@@ -118,30 +110,29 @@ class DomElement extends DomContainer {
 		});
 		this._html = processed.join('');
 
-		function processComment(node:Node):void {
+		var processComment = (node:Node):void => {
 			var parent:Node = node.parentNode,
 				match:string[],
-				newNode:Node,
-				index:number;
+				textNode:Text;
 			// We only care about comment nodes
 			if (node.nodeType !== Node.COMMENT_NODE) {
 				return;
 			}
 			// Test for child comment marker
 			if (match = node.nodeValue.match(CHILD_PATTERN)) {
-				index = Number(match[1]);
-				childPositions[index] = node;
+				this._childPositionNodes[Number(match[1])] = node;
 			}
 			// Test for bound text comment marker
 			else if (match = node.nodeValue.match(BINDING_PATTERN)) {
-				index = Number(match[1]);
-				newNode = createTextBinding(index, html[index].binding);
-				parent.replaceChild(newNode, node);
+				textNode = new Text();
+				this._textBindingNodes.push(textNode);
+				this._textBindingPaths.push(html[Number(match[1])].binding);
+				parent.replaceChild(textNode, node);
 			}
 		}
 
 		// Recurse and handle comments standing in for child and binding placeholders
-		function processChildComments(node:Node):void {
+		var processChildComments = (node:Node):void => {
 			var next:Node;
 			// Iterate siblings
 			while (node != null) {
@@ -159,6 +150,7 @@ class DomElement extends DomContainer {
 		// We need to get a fragment from our markup and process its comments before inserting
 		var content:Node = domConstruct.toDom(this._html);
 		processChildComments(content);
+		this._bindTextNodes();
 		this.set('content', content);
 	}
 }

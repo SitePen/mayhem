@@ -14,13 +14,18 @@ class Conditional extends DomPlaceholder {
 	private _evaluateConditions:Function;
 
 	constructor(kwArgs:any) {
-		util.deferSetters(this, [ 'conditions', 'alternate' ], '_parentMediatorSetter');
+		util.deferMethods(this, [ '_updateBinding' ], '_activeMediatorSetter');
 		this._evaluateConditions = util.debounce(this.__evaluateConditions);
 		super(kwArgs);
 	}
 
+	/* protected */ _activeMediatorSetter(value:core.IMediator):void {
+		super._activeMediatorSetter(value);
+		this._updateBinding();
+	}
+
 	private _alternateSetter(alternate:any):void {
-		this._alternateWidget = processor.constructWidget(alternate, { parent: this });
+		this._alternateWidget = processor.constructWidget(alternate, this);
 	}
 
 	private _clearConditionHandles():void {
@@ -35,7 +40,7 @@ class Conditional extends DomPlaceholder {
 		this._conditionWidgets = [];
 		this._conditions = conditions;
 		for (var i = 0, length = conditions.length; i < length; ++i) {
-			this._conditionWidgets[i] = processor.constructWidget(conditions[i].content, { parent: this });
+			this._conditionWidgets[i] = processor.constructWidget(conditions[i].content, this);
 		}
 		this._updateBinding();
 	}
@@ -66,17 +71,12 @@ class Conditional extends DomPlaceholder {
 	}
 
 	private _getBindingFields():string[] {
-		var fields:string[] = [];
-		for (var i = 0, length = this._conditions.length; i < length; ++i) {
-			// Coerce to string since condition might be a 1-element array
-			fields.push('' + this._conditions[i].condition);
+		var fields:string[] = [],
+			condition:any;
+		for (var i = 0; (condition = this._conditions[i]); ++i) {
+			fields.push(condition.condition);
 		};
 		return fields;
-	}
-
-	/* protected */ _mediatorSetter(value:core.IMediator):void {
-		super._mediatorSetter(value);
-		this._updateBinding();
 	}
 
 	private _updateBinding():void {

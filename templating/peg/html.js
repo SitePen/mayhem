@@ -46,6 +46,12 @@ define([], function () {
         			};
         		}
 
+        		// Collapse root w/ no content and 1 child widget to child
+        		var children = root.children;
+        		if (children.length === 1 && root.html === null) {
+        			root = children[0];
+        		}
+
         		aliases.validate();
         		aliases.resolve(root);
         		return root;
@@ -54,7 +60,13 @@ define([], function () {
         peg$c7 = [],
         peg$c8 = function(content) {
         		var html = '',
-        			children = [];
+        			element = {
+        				constructor: null,
+        				children: []
+        			},
+        			children = element.children,
+        			nonWhitespace = /\S/,
+        			hasText = false;
 
         		for (var i = 0, j = content.length; i < j; ++i) {
         			var node = content[i];
@@ -66,6 +78,7 @@ define([], function () {
 
         			if (typeof node === 'string') {
         				html += node;
+        				hasText || (hasText = nonWhitespace.test(node));
         			}
         			else {
         				html += '<!-- child#' + children.length + ' -->';
@@ -73,11 +86,9 @@ define([], function () {
         			}
         		}
 
-        		return {
-        			constructor: null,
-        			html: parseBoundText(html),
-        			children: children
-        		};
+        		// If Element is just children and whitespace null out html as a signal to collapse it
+        		element.html = hasText || !children.length ? parseBoundText(html) : null;
+        		return element;
         	},
         peg$c9 = function(character) { return character; },
         peg$c10 = function(content) {
@@ -176,13 +187,19 @@ define([], function () {
         		widget.constructor = widget.is;
         		delete widget.is;
 
-        		widget.children = children;
+        		// Collapse single Element child w/ no content
+        		if (children.length === 1 && children[0].html === null) {
+        			widget.children = children[0].children;
+        		}
+        		else {
+        			widget.children = children;
+        		}
         		return widget;
         	},
         peg$c68 = "widget",
         peg$c69 = { type: "literal", value: "widget", description: "\"widget\"" },
         peg$c70 = function(attributes) {
-        		validate(attributes, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
+        		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
         		return attributes;
         	},
         peg$c71 = { type: "other", description: "</widget>" },
@@ -190,7 +207,7 @@ define([], function () {
         peg$c73 = { type: "literal", value: "/widget", description: "\"/widget\"" },
         peg$c74 = { type: "other", description: "<widget/>" },
         peg$c75 = function(widget) {
-        		validate(widget, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
+        		validate(widget, { type: '<widget>', required: [ 'is' ], constructable: true });
         		widget.constructor = widget.is;
         		delete widget.is;
         		return widget;
@@ -277,11 +294,12 @@ define([], function () {
         peg$c114 = { type: "other", description: ">" },
         peg$c115 = ">",
         peg$c116 = { type: "literal", value: ">", description: "\">\"" },
-        peg$c117 = "/>",
-        peg$c118 = { type: "literal", value: "/>", description: "\"/>\"" },
-        peg$c119 = { type: "other", description: "whitespace" },
-        peg$c120 = /^[ \t\r\n]/,
-        peg$c121 = { type: "class", value: "[ \\t\\r\\n]", description: "[ \\t\\r\\n]" },
+        peg$c117 = { type: "other", description: "/>" },
+        peg$c118 = "/>",
+        peg$c119 = { type: "literal", value: "/>", description: "\"/>\"" },
+        peg$c120 = { type: "other", description: "whitespace" },
+        peg$c121 = /^[ \t\r\n]/,
+        peg$c122 = { type: "class", value: "[ \\t\\r\\n]", description: "[ \\t\\r\\n]" },
 
         peg$currPos          = 0,
         peg$reportedPos      = 0,
@@ -2081,14 +2099,6 @@ define([], function () {
       return s0;
     }
 
-    function peg$parseCustomElement() {
-      var s0;
-
-      s0 = [];
-
-      return s0;
-    }
-
     function peg$parseAttributeMap() {
       var s0, s1, s2, s3;
 
@@ -2542,12 +2552,12 @@ define([], function () {
         s2 = peg$parseS();
       }
       if (s1 !== peg$FAILED) {
-        if (input.substr(peg$currPos, 2) === peg$c117) {
-          s2 = peg$c117;
+        if (input.substr(peg$currPos, 2) === peg$c118) {
+          s2 = peg$c118;
           peg$currPos += 2;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c118); }
+          if (peg$silentFails === 0) { peg$fail(peg$c119); }
         }
         if (s2 !== peg$FAILED) {
           s1 = [s1, s2];
@@ -2563,7 +2573,7 @@ define([], function () {
       peg$silentFails--;
       if (s0 === peg$FAILED) {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c114); }
+        if (peg$silentFails === 0) { peg$fail(peg$c117); }
       }
 
       return s0;
@@ -2573,17 +2583,17 @@ define([], function () {
       var s0, s1;
 
       peg$silentFails++;
-      if (peg$c120.test(input.charAt(peg$currPos))) {
+      if (peg$c121.test(input.charAt(peg$currPos))) {
         s0 = input.charAt(peg$currPos);
         peg$currPos++;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c121); }
+        if (peg$silentFails === 0) { peg$fail(peg$c122); }
       }
       peg$silentFails--;
       if (s0 === peg$FAILED) {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c119); }
+        if (peg$silentFails === 0) { peg$fail(peg$c120); }
       }
 
       return s0;
@@ -2595,36 +2605,34 @@ define([], function () {
     	 */
     	function validate(attributes, rules) {
     		var required = rules.required || [],
-    			optional = rules.optional || [],
     			type = rules.type ? ' on ' + rules.type : '';
 
-    		var i = 0,
-    			permitted = {};
-
-    		for (i = 0; i < required.length; ++i) {
-    			permitted[required[i]] = true;
-    		}
-    		for (i = 0; i < optional.length; ++i) {
-    			permitted[optional[i]] = true;
-    		}
-
-    		for (i = 0; i < required.length; ++i) {
+    		for (var i = 0; i < required.length; ++i) {
     			if (!(required[i] in attributes)) {
     				error('Missing required attribute "' + required[i] + '"' + type);
     			}
     		}
 
-    		if (!rules.allowAnyAttribute) {
-    			for (var name in attributes) {
-    				if (!(name in permitted)) {
-    					error('Invalid attribute "' + name + '"' + type);
-    				}
-    			}
+    		if (!rules.constructable && 'is' in attributes) {
+    			error('Constructor is not allowed' + type);
+    		}
+
+    		if (attributes.id) {
+    			// TODO: ensure valid id
     		}
     	}
 
     	function parseBoundText(text) {
-    		return parse(text, { startRule: 'BoundText' });
+    		var results = parse(text, { startRule: 'BoundText' });
+    		// Loop over results list and inspect for binding objects
+    		for (var i = 0, l = results.length; i < l; ++i) {
+    			if (results[i].binding) {
+    				// Return as binding object if only one item
+    				return l === 1 ? results[0] : results;
+    			}
+    		}
+    		// If no bindings in array flatten into a string
+    		return results.join('');
     	}
 
     	var aliases = {

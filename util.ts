@@ -125,6 +125,15 @@ export function deferSetters(target:Object, methods:string[], untilMethod:string
 	deferMethods(target, array.map(methods, method => '_' + method + 'Setter'), untilMethod);
 }
 
+export function destroyHandles(handles:IHandle[]):void {
+	if (!handles) {
+		return;
+	}
+	for (var i = 0, l = handles.length; i < l; ++i) {
+		handles[i] && handles[i].remove();
+	}
+}
+
 /**
  * Escapes a string of text for injection into a serialization of HTML or XML.
  */

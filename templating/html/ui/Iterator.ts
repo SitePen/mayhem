@@ -32,7 +32,7 @@ class Iterator extends SingleNodeWidget {
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
 		this._elementIndex = {};
-		util.deferSetters(this, [ 'each', 'in' ], '_parentMediatorSetter');
+		util.deferSetters(this, [ 'each', 'in' ], '_activeMediatorSetter');
 		this._list = new OnDemandList({
 			renderRow: (record:any, options:any):HTMLElement => {
 				return this._getElementByKey(record[this._store.idProperty]);
@@ -109,10 +109,7 @@ class Iterator extends SingleNodeWidget {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		return this._widgetIndex[key] = processor.constructWidget(this._template, {
-			mediator: mediator,
-			parent: this
-		});
+		return this._widgetIndex[key] = processor.constructWidget(this._template, this, { mediator: mediator });
 	}
 
 	private _inSetter(sourceField:string):void {

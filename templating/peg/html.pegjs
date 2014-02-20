@@ -4,36 +4,34 @@
 	 */
 	function validate(attributes, rules) {
 		var required = rules.required || [],
-			optional = rules.optional || [],
 			type = rules.type ? ' on ' + rules.type : '';
 
-		var i = 0,
-			permitted = {};
-
-		for (i = 0; i < required.length; ++i) {
-			permitted[required[i]] = true;
-		}
-		for (i = 0; i < optional.length; ++i) {
-			permitted[optional[i]] = true;
-		}
-
-		for (i = 0; i < required.length; ++i) {
+		for (var i = 0; i < required.length; ++i) {
 			if (!(required[i] in attributes)) {
 				error('Missing required attribute "' + required[i] + '"' + type);
 			}
 		}
 
-		if (!rules.allowAnyAttribute) {
-			for (var name in attributes) {
-				if (!(name in permitted)) {
-					error('Invalid attribute "' + name + '"' + type);
-				}
-			}
+		if (!rules.constructable && 'is' in attributes) {
+			error('Constructor is not allowed' + type);
+		}
+
+		if (attributes.id) {
+			// TODO: ensure valid id
 		}
 	}
 
 	function parseBoundText(text) {
-		return parse(text, { startRule: 'BoundText' });
+		var results = parse(text, { startRule: 'BoundText' });
+		// Loop over results list and inspect for binding objects
+		for (var i = 0, l = results.length; i < l; ++i) {
+			if (results[i].binding) {
+				// Return as binding object if only one item
+				return l === 1 ? results[0] : results;
+			}
+		}
+		// If no bindings in array flatten into a string
+		return results.join('');
 	}
 
 	var aliases = {
@@ -134,6 +132,12 @@ Template
 			};
 		}
 
+		// Collapse root w/ no content and 1 child widget to child
+		var children = root.children;
+		if (children.length === 1 && root.html === null) {
+			root = children[0];
+		}
+
 		aliases.validate();
 		aliases.resolve(root);
 		return root;
@@ -147,7 +151,13 @@ Element 'HTML'
 		/ HtmlFragment
 	)+ {
 		var html = '',
-			children = [];
+			element = {
+				constructor: null,
+				children: []
+			},
+			children = element.children,
+			nonWhitespace = /\S/,
+			hasText = false;
 
 		for (var i = 0, j = content.length; i < j; ++i) {
 			var node = content[i];
@@ -159,6 +169,7 @@ Element 'HTML'
 
 			if (typeof node === 'string') {
 				html += node;
+				hasText || (hasText = nonWhitespace.test(node));
 			}
 			else {
 				html += '<!-- child#' + children.length + ' -->';
@@ -166,11 +177,9 @@ Element 'HTML'
 			}
 		}
 
-		return {
-			constructor: null,
-			html: parseBoundText(html),
-			children: children
-		};
+		// If Element is just children and whitespace null out html as a signal to collapse it
+		element.html = hasText || !children.length ? parseBoundText(html) : null;
+		return element;
 	}
 
 HtmlFragment 'HTML'
@@ -305,13 +314,19 @@ Widget '<widget>'
 		widget.constructor = widget.is;
 		delete widget.is;
 
-		widget.children = children;
+		// Collapse single Element child w/ no content
+		if (children.length === 1 && children[0].html === null) {
+			widget.children = children[0].children;
+		}
+		else {
+			widget.children = children;
+		}
 		return widget;
 	}
 
 WidgetTagOpen '<widget>'
 	= OpenToken 'widget'i attributes:AttributeMap CloseToken {
-		validate(attributes, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
+		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
 		return attributes;
 	}
 
@@ -320,7 +335,7 @@ WidgetTagClose '</widget>'
 
 WidgetNoChildren '<widget/>'
 	= OpenToken 'widget'i widget:AttributeMap SelfCloseToken {
-		validate(widget, { type: '<widget>', required: [ 'is' ], allowAnyAttribute: true });
+		validate(widget, { type: '<widget>', required: [ 'is' ], constructable: true });
 		widget.constructor = widget.is;
 		delete widget.is;
 		return widget;
@@ -355,9 +370,6 @@ Alias '<alias>'
 		aliases.add(alias);
 		return null;
 	}
-
-CustomElement
-	= 
 
 // attributes
 
@@ -418,7 +430,7 @@ OpenToken '<'
 CloseToken '>'
 	= S* '>'
 
-SelfCloseToken '>'
+SelfCloseToken '/>'
 	= S* '/>'
 
 S 'whitespace'

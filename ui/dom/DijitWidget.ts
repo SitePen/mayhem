@@ -23,12 +23,16 @@ import widgets = require('../interfaces');
 	/* protected */ _parent:widgets.IContainerWidget;
 
 	constructor(kwArgs:any = {}) {
-		util.deferSetters(this, [ 'content' ], '_render');
+		util.deferMethods(this, [ '_placeChildren', '_contentSetter' ], '_render');
 		// TODO: this is a hack and needs cleanup
 		this._setDijitFields('disabled', 'iconClass', 'label', 'region', 'splitter', 'style', 'title', 'tooltip');
 
 		// Build up dijit kwArgs and methods from the fields provided
 		var dijitArgs:any = this._dijitArgs = {};
+		if ('id' in kwArgs) {
+			dijitArgs.id = kwArgs.id;
+		}
+
 		array.forEach(this._dijitFields || [], (field:string) => {
 			if (field in kwArgs) {
 				dijitArgs[field] = kwArgs[field];
@@ -55,48 +59,32 @@ import widgets = require('../interfaces');
 			};
 		});
 
-		// Prevent id attribute from being passed through to widgets
-		dijitArgs.id = kwArgs.id;
-		delete kwArgs.id;
-
 		super(kwArgs);
+	}
+
+	/* protected */ _attachedSetter(attached:boolean):void {
+		if (attached) this._dijit.startup();
+		super._attachedSetter(attached);
 	}
 
 	/* protected */ _childrenSetter(children:widgets.IDomWidget[]):void {
 		this._children = [];
-		if (!children.length) {
+		// Handle case where Element widget is our content
+		var content:widgets.IDomWidget = children[0];
+		// TODO: better test for element
+		if (content && content['_html'] && children.length === 1) {
+			this.set('content', content);
 			return;
 		}
-		// Handle case where Element widget is our content
-		var content:widgets.IDomWidget = children[0],
-			i:number,
-			l:number;
-		if (children.length === 1 && !(content instanceof DijitWidget)) {
-			for (i = 0, l = content._children.length; i < l; ++i) {
-				// Find any child dijits and add them to our list of children
-				if (content._children[i] instanceof DijitWidget) {
-					this._children.push(<DijitWidget> content._children[i]);
-					// TODO: Remove properly dijit child from content element
-					//content.remove(content._children[i]);
-				}
-			}
-			this.set('content', content);
-			
-		}
-		else {
-			// TODO: do something with non-dijit children -- perhaps compose them into an Element for content?
-			for (i = 0, l = children.length; i < l; ++i) {
-				if (children[i] instanceof DijitWidget) {
-					this._children.push(<DijitWidget> children[i]);
-				}
-			}
-		}
+		this._children = <DijitWidget[]> children;
+		this._placeChildren();
 	}
 
 	/* protected */ _contentSetter(content:widgets.IDomWidget):void {
 		this._content = content;
-		this._dijit.containerNode.appendChild(content.detach());
-		setTimeout(() => { this._dijit.startup() }); // TODO
+		if (content) {
+			this._dijit.containerNode.appendChild(content.detach());
+		}
 	}
 
 	destroy():void {
@@ -111,13 +99,14 @@ import widgets = require('../interfaces');
 		super.destroy();
 	}
 
-	/* protected */ _parentSetter(parent:widgets.IContainerWidget):void {
-		this._parent = parent;
-		if (document.documentElement.contains(this._firstNode)) {
-			this._dijit.startup();
+	// TODO: DijitContainer?
+	private _placeChildren():void {
+		var child:DijitWidget;
+		for (var i = 0; (child = this._children[i]); ++i) {
+			this._dijit.addChild(child._dijit);
+			child.set('index', i);
+			child.set('parent', this);
 		}
-		// TODO: otherwise, we need to start when the parent starts, whenever that is, whatever that means
-		super._parentSetter(parent);
 	}
 
 	/* protected */ _render():void {

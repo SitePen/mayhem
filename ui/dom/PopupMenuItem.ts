@@ -15,17 +15,12 @@ class PopupMenuItem extends MenuItem {
 	}
 
 	_childrenSetter(children:widgets.IDomWidget[]):void {
-		// Use last child of content as popup
-		// TODO: there has to be a better way
-		if (children.length === 1 && !(children[0] instanceof DijitWidget)) {
-			var content = <DomContainer> children[0];
-			var length:number = content._children && content._children.length;
-			if (length) {
-				var popup:DijitWidget = <DijitWidget> content._children[length - 1];
-				content.remove(popup);
-				this.set('popup', popup);
-			}	
-		}
+		// We need to grab a child widget to use for popup
+		// If only child is Element use its last child, otherwise use last child
+		var elementChild:boolean = children.length === 1 && !(children[0] instanceof DijitWidget);
+		var widgets:widgets.IDomWidget[] = elementChild && children[0].get('children') || children;
+		var target:DijitWidget = <DijitWidget> widgets.pop();
+		target && this.set('popup', target);
 		super._childrenSetter(children);
 	}
 

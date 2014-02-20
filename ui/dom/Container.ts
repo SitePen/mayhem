@@ -72,7 +72,6 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 			this._addToContainer(widget, referenceWidget);
 
 			widget.set('parent', this);
-			widget.emit('attached');
 
 			var self = this;
 			handle = {
@@ -112,21 +111,6 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 		for (var k in this._placeholders) {
 			this._placeholders[k].set('content', null);
 		}
-	}
-
-	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
-		this._mediator = mediator;
-		var child:widgets.IDomWidget;
-		// Reset parentMediator on all children and remediate those that inherit parent mediator
-		for (var i = 0, l = this._children.length; i < l; ++i) {
-			child = this._children[i];
-			child.set('parentMediator', mediator);
-		}
-		for (var k in this._placeholders) {
-			child = this._placeholders[k];
-			child.set('parentMediator', mediator);
-		}
-		super._mediatorSetter(mediator);
 	}
 
 	remove(index:number):void;

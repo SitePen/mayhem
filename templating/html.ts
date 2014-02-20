@@ -7,13 +7,18 @@ import pegParser = require('./peg/html');
 import widgets = require('../ui/interfaces');
 import util = require('../util');
 
+export var options = {
+	defaultModuleId: 'framework/ui/dom/Element'
+};
+
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 	dojotext.load(resourceId, contextRequire, function(template:string):void {
 		var ast = parse(template);
+		console.log(ast)
 		var dependencies = scanDependencies(ast);
 		require(dependencies, ():void => {
-			load(function(app:core.IApplication, mediator:core.IMediator):widgets.IDomWidget {
-				return constructWidget(ast, { app: app, mediator: mediator });
+			load(function(app?:core.IApplication, mediator?:core.IMediator):widgets.IDomWidget {
+				return constructWidget(ast, null, { app: app, mediator: mediator });
 			});
 		});
 	});
@@ -23,21 +28,18 @@ export function parse(input:string, options:any = {}):any {
 	return pegParser.parse(input);
 }
 
-// TODO: allow this to be overriden
-var defaultModuleId = 'framework/ui/dom/Element';
-
 function scanDependencies(node:Object):string[] {
 	var dependencies:string[] = [];
 	function recurse(node:Object):void {
 		var ctor:any = node.constructor;
 		if (typeof ctor !== 'function') {
 			if (ctor == null) {
-				ctor = defaultModuleId;
+				ctor = options.defaultModuleId;
 			}
 			// Parser returns constructors as either string or 1-element string[]
 			// Either way toString should do the trick
 			var moduleId:string = ctor.toString();
-			node.constructor = moduleId;
+			node['constructor'] = moduleId;
 			// Add to list of dependencies if not already in our dep list
 			dependencies.indexOf(moduleId) === -1 && dependencies.push(moduleId);
 		}
@@ -58,7 +60,7 @@ function scanDependencies(node:Object):string[] {
 	return dependencies;
 }
 
-export function constructWidget(node:any, widgetArgs:any = {}):widgets.IDomWidget {
+export function constructWidget(node:any, parent:widgets.IWidget, widgetArgs:any = {}):widgets.IDomWidget {
 	var key:string,
 		items:any,
 		WidgetCtor:any = require(node.constructor),
@@ -66,7 +68,9 @@ export function constructWidget(node:any, widgetArgs:any = {}):widgets.IDomWidge
 		fieldBindings:{ [key:string]: string; } = {},
 		bindingTemplates:{ [key:string]: any; } = {};
 
-	widgetArgs.app || (widgetArgs.app = widgetArgs.parent.get('app')); // FIXME
+	if (parent) {
+		widgetArgs.app = parent.get('app') || widgetArgs.app // FIXME
+	}
 
 	// A little clean up for the keys from our node before we can use them to construct a widget
 	for (key in node) {
@@ -74,17 +78,21 @@ export function constructWidget(node:any, widgetArgs:any = {}):widgets.IDomWidge
 		if (items === undefined) {
 			// Treat undefined keys as non-existent
 		}
-		else if ([ 'constructor', 'app', 'parent', 'mediator' ].indexOf(key) >= 0) {
-			// Ignore these keys since we handle them later
-		}
-		else if (key === 'html') {
-			// Don't bother with bindings on html -- Element uses its own mechanism
-			widgetArgs[key] = items;
+		else if ([ 'constructor', 'app', 'mediator' ].indexOf(key) >= 0) {
+			// Ignore these keys
 		}
 		else if (key === 'children' && node.children && node.children.length) {
 			widgetArgs[key] = array.map(node.children, (child:any):widgets.IDomWidget => {
-				return constructWidget(child, { app: widgetArgs.app });
+				return constructWidget(child, null, { app: widgetArgs.app });
 			});
+		}
+		else if (key === 'html') {
+			// Pass through unmolested
+			widgetArgs[key] = items;
+		}
+		else if (items.binding) {
+			// If items is an object with a binding key it's a field binding
+			fieldBindings[key] = items.binding;
 		}
 		else if (!(items instanceof Array)) {
 			// Pass non-array items through to widgetArgs unmolested
@@ -95,67 +103,61 @@ export function constructWidget(node:any, widgetArgs:any = {}):widgets.IDomWidge
 			// TODO: this is another place we have to dance around complex keys (e.g. Conditional's conditions key)
 			widgetArgs[key] = items;
 		}
-		else if (items.length === 1 && items[0] && items[0].binding) {
-			// Set up field binding when items is a single element binding descriptor
-			fieldBindings[key] = items[0].binding;
-		}
-		else if (array.some(items, (item:any):boolean => item && item.binding)) {
-			// If array contains any bindings at all add it as a binding template
-			bindingTemplates[key] = items;
-		}
 		else {
-			// Otherwise stringify all keys as they can be string | string[]
-			widgetArgs[key] = items.join('');
+			// Otherwise items should be a binding template
+			bindingTemplates[key] = items;
 		}
 	}
 
 	widget = new WidgetCtor(widgetArgs);
 
-	function fillBindingTemplate(mediator:core.IMediator, items:any[]):string {
-		return array.map(items, (item:any):any => {
-			return item.binding ? mediator.get(item.binding) : item;
-		}).join('');
-	}
-
-	function observeBindingTemplate(mediator:core.IMediator, field:string, items:any[]):IHandle[] {
-		var handles:IHandle[] = [];
-		for (var i = 0, length = items.length; i < length; ++i) {
-			var binding:string = items[i] && items[i].binding;
-			if (!binding) {
-				continue;
-			}
-			handles.push(mediator.observe(binding, ():void => {
-				widget.set(field, fillBindingTemplate(mediator, items));
-			}));
-			widget.set(field, fillBindingTemplate(mediator, items));
-		}
-		return handles;
-	}
-
-	var rebind:boolean,
+	var firstBind:boolean = true,
 		observerHandles:IHandle[];
-
-	widget.on('remediate', () => { // TODO: IRemediateEvent, so we don't ahve to look up mediator
-		var mediator:core.IMediator = widget.get('mediator');
-		if (!rebind) { // TODO: this sucks
-			rebind = true;
+	var activeMediatorHandle = widget.observe('activeMediator', (mediator:core.IMediator) => {
+		if (firstBind) {
+			firstBind = false;
 			for (key in fieldBindings) {
 				widget.bind(key, fieldBindings[key], { direction: BindDirection.TWO_WAY });
 			}
 		}
-		array.forEach(observerHandles, (handle:IHandle):void => handle.remove());
+		util.destroyHandles(observerHandles);
 		observerHandles = [];
-		for (key in bindingTemplates) {
-			observerHandles = observerHandles.concat(observeBindingTemplate(mediator, key, bindingTemplates[key]));
-		}
+		// Observe bindings and accumulate binding handles
+		array.forEach(util.getObjectKeys(bindingTemplates), (field:string) => {
+			var template:any[] = bindingTemplates[field];
+			observerHandles = observerHandles.concat(observeBindingTemplate(mediator, template, () => {
+				widget.set(field, fillBindingTemplate(mediator, template));
+			}));
+		});
 	});
+
 	// Hook widget's destroy method to tear down our observer handles
 	var _destroy:() => void = widget.destroy;
 	widget.destroy = ():void => {
-		array.forEach(observerHandles, (handle:IHandle):void => handle.remove());
+		util.destroyHandles(observerHandles);
 		observerHandles = null;
 		_destroy.call(widget);
 	};
 
 	return widget;
+}
+
+function fillBindingTemplate(mediator:core.IMediator, template:any[]):string {
+	return array.map(template, (item:any):any => {
+		return item.binding ? mediator.get(item.binding) : item;
+	}).join('');
+}
+
+function observeBindingTemplate(mediator:core.IMediator, template:any[], handler:() => void):IHandle[] {
+	var handles:IHandle[] = [];
+	for (var i = 0, l = template.length; i < l; ++i) {
+		var binding:string = template[i] && template[i].binding;
+		if (!binding) {
+			continue;
+		}
+		handles.push(mediator.observe(binding, handler));
+		// Call handler one time to initialize fields with interpreted values
+		handler();
+	}
+	return handles;
 }
