@@ -15,10 +15,6 @@
 		if (!rules.constructable && 'is' in attributes) {
 			error('Constructor is not allowed' + type);
 		}
-
-		if (attributes.id) {
-			// TODO: ensure valid id
-		}
 	}
 
 	function parseBoundText(text) {
@@ -33,83 +29,6 @@
 		// If no bindings in array flatten into a string
 		return results.join('');
 	}
-
-	var aliases = {
-		_aliases: [],
-		_map: null,
-
-		/**
-		 * Adds a new alias to the alias list for this template.
-		 *
-		 * @param newAlias {Object}
-		 * An object with the following keys:
-		 *   * `from` (string): The module ID fragment to replace.
-		 *   * `to` (string): The replacement module ID fragment.
-		 *   * `line` (number): The one-indexed line number where the alias was defined in the template.
-		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
-		 */
-		add: function (newAlias) {
-			var aliases = this._aliases;
-
-			// Ensure that aliases are limited to complete module ID fragments
-			newAlias.from = newAlias.from.toString().replace(/\/*$/, '/');
-			newAlias.to = newAlias.to.toString().replace(/\/*$/, '/');
-
-			for (var i = 0, oldAlias; (oldAlias = aliases[i]); ++i) {
-				// The same alias has already been parsed once before, probably by some look-ahead; do not add it
-				// again
-				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
-					return;
-				}
-
-				// Aliases are ordered and applied by length, then by entry order if the lengths are identical
-				if (oldAlias.from.length < newAlias.from.length) {
-					break;
-				}
-			}
-
-			aliases.splice(i, 0, newAlias);
-		},
-
-		/**
-		 * Walks the widget tree, resolving constructor aliases for the given node and its children.
-		 */
-		resolve: function (node) {
-			var aliasMap = this._map;
-
-			for (var k in aliasMap) {
-				if (node.constructor.indexOf(k) === 0) {
-					node.constructor = node.constructor.replace(k, aliasMap[k].to);
-				}
-			}
-
-			if (node.children && node.children.length) {
-				for (var i = 0, child; (child = node.children[i]); ++i) {
-					this.resolve(child);
-				}
-			}
-		},
-
-		/**
-		 * Validates that the collected aliases from the template are valid and do not contain duplicate definitions.
-		 */
-		validate: function () {
-			var aliases = this._aliases,
-				aliasMap = {};
-
-			for (var i = 0, alias; (alias = aliases[i]); ++i) {
-				if (aliasMap[alias.from]) {
-					var oldAlias = aliasMap[alias.from];
-					throw new Error('Line ' + alias.line + ', column ' + alias.column + ': Alias "' + alias.from +
-						'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
-				}
-
-				aliasMap[alias.from] = alias;
-			}
-
-			this._map = aliasMap;
-		}
-	};
 }
 
 // template root
@@ -133,13 +52,10 @@ Template
 		}
 
 		// Collapse root w/ no content and 1 child widget to child
-		var children = root.children;
+		var children = root.children || [];
 		if (children.length === 1 && root.html === null) {
 			root = children[0];
 		}
-
-		aliases.validate();
-		aliases.resolve(root);
 		return root;
 	}
 
@@ -162,7 +78,7 @@ Element 'HTML'
 		for (var i = 0, j = content.length; i < j; ++i) {
 			var node = content[i];
 
-			// An alias node will be transformed into a null node
+			// Ignore null nodes
 			if (!node) {
 				continue;
 			}
@@ -186,8 +102,9 @@ HtmlFragment 'HTML'
 	= content:(
 		// TODO: Not sure how valid these exclusions are
 		!(
-			// Optimization: Only check tag rules when the current position matches the OpenToken
-			& OpenToken
+			// Optimization: Only check tag rules when the current position matches the tag opening token
+			// TODO: soon we should only have to check on `'<' CustomElementTagName`
+			& '<'
 
 			IfTagOpen
 			/ ElseIfTag
@@ -200,11 +117,12 @@ HtmlFragment 'HTML'
 			/ WhenErrorTag
 			/ WhenProgressTag
 			/ Placeholder
-			/ Data
-			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
 			/ WidgetNoChildren
+			/ CustomElementTagOpen
+			/ CustomElementTagClose
+			/ CustomElementNoChildren
 		)
 		character:. { return character; }
 	)+ {
@@ -242,22 +160,22 @@ If '<if>'
 	}
 
 IfTagOpen '<if>'
-	= OpenToken 'if'i attributes:AttributeMap CloseToken {
+	= '<' 'if'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<if>', required: [ 'condition' ] });
 		return attributes;
 	}
 
 IfTagClose '</if>'
-	= OpenToken '/if'i CloseToken
+	= '</if>'i
 
 ElseIfTag '<elseif>'
-	= OpenToken 'elseif'i attributes:AttributeMap CloseToken {
+	= '<' 'elseif'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<elseif>', required: [ 'condition' ] });
 		return attributes;
 	}
 
 ElseTag '<else>'
-	= OpenToken 'else'i CloseToken
+	= '<else>'
 
 // loops
 
@@ -269,13 +187,13 @@ For '<for>'
 	}
 
 ForTagOpen '<for>'
-	= OpenToken 'for'i attributes:AttributeMap CloseToken {
+	= '<for'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<for>', required: [ 'each', 'in' ] });
 		return attributes;
 	}
 
 ForTagClose '</for>'
-	= OpenToken '/for'i CloseToken
+	= '</for>'i
 
 // promises
 
@@ -293,23 +211,23 @@ When '<when>'
 	}
 
 WhenTagOpen '<when>'
-	= OpenToken 'when'i attributes:AttributeMap CloseToken S* {
+	= '<when'i attributes:AttributeMap '>' S* {
 		validate(attributes, { type: '<when>', required: [ 'promise' ], optional: [ 'value' ] });
 		return attributes;
 	}
 
 WhenTagClose '</when>'
-	= OpenToken '/when'i CloseToken
+	= '</when>'i
 
 WhenErrorTag '<error>'
-	= OpenToken 'error'i CloseToken
+	= '<error>'i
 
 WhenProgressTag '<progress>'
-	= OpenToken 'progress'i CloseToken
+	= '<progress>'i
 
 // widgets
 
-Widget '<widget>'
+Widget '<widget...>'
 	= widget:WidgetTagOpen children:(Any)* WidgetTagClose {
 		widget.constructor = widget.is;
 		delete widget.is;
@@ -325,50 +243,63 @@ Widget '<widget>'
 	}
 
 WidgetTagOpen '<widget>'
-	= OpenToken 'widget'i attributes:AttributeMap CloseToken {
+	= '<widget'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
 		return attributes;
 	}
 
 WidgetTagClose '</widget>'
-	= OpenToken '/widget'i CloseToken
+	= '</widget>'i
 
 WidgetNoChildren '<widget/>'
-	= OpenToken 'widget'i widget:AttributeMap SelfCloseToken {
+	= '<widget'i widget:AttributeMap '/>' {
 		validate(widget, { type: '<widget>', required: [ 'is' ], constructable: true });
 		widget.constructor = widget.is;
 		delete widget.is;
 		return widget;
 	}
 
+CustomElement '<custom-element...>'
+	= element:CustomElementTagOpen children:(Any)* (endTag:CustomElementTagClose & {
+		return element.tagName.toLowerCase() === endTag.toLowerCase();
+	}) {
+		element.constructor = null;
+		element.children = children;
+		return element;
+	}
+
+CustomElementTagOpen '<custom-element>'
+	= '<' tagName:CustomElementTagName element:AttributeMap '>' {
+		validate(element, { type: '<custom-element>' });
+		element.tagName = tagName;
+		return element;
+	}
+
+CustomElementTagName
+	= head:[a-zA-Z]+ '-' tail:[a-zA-Z\-]* {
+		return head.concat('-').concat(tail).join('');
+	}
+
+CustomElementTagClose '</custom-element>'
+	= '</' tagName:CustomElementTagName '>' {
+		return tagName;
+	}
+
+CustomElementNoChildren '<custom-element/>'
+	= '<' tagName:CustomElementTagName element:AttributeMap '/>' {
+		validate(element, { type: '<custom-element>' });
+		element.constructor = null;
+		element.tagName = tagName;
+		return element;
+	}
+
 // all others
 
 Placeholder '<placeholder>'
-	= OpenToken 'placeholder'i placeholder:AttributeMap CloseToken {
+	= '<placeholder'i placeholder:AttributeMap '>' {
 		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
 		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
 		return placeholder;
-	}
-
-Data '<data>'
-	= OpenToken 'data'i attributes:AttributeMap CloseToken {
-		validate(attributes, { type: '<data>', required: [ 'var' ], optional: [ 'safe' ] });
-
-		var label = {
-			constructor: 'framework/ui/dom/Label'
-		};
-
-		label[attributes.safe ? 'formattedText' : 'text'] = attributes['var'];
-		return label;
-	}
-
-Alias '<alias>'
-	= OpenToken 'alias'i alias:AttributeMap CloseToken {
-		validate(alias, { type: '<alias>', required: [ 'from', 'to' ] });
-		alias.line = line();
-		alias.column = column();
-		aliases.add(alias);
-		return null;
 	}
 
 // attributes
@@ -393,16 +324,12 @@ AttributeMap
 	}
 
 Attribute
-	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue { return value; })? {
+	= S+ name:$(AttributeName) value:(S* '=' S* value:AttributeValue { return value; })? {
 		return { name: name, value: value };
 	}
 
 AttributeName
-	= nameChars:[a-zA-Z\-]+ {
-		return nameChars.join('').toLowerCase().replace(/-([a-z])/, function () {
-			return arguments[1].toUpperCase();
-		});
-	}
+	= nameChars:[a-zA-Z\-]+
 
 AttributeValue
 	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return parseBoundText(value.join('')); })
@@ -419,19 +346,10 @@ AnyNonElement
 	/ For
 	/ When
 	/ Placeholder
-	/ Data
-	/ Alias
 	/ Widget
 	/ WidgetNoChildren
-
-OpenToken '<'
-	= '<' S*
-
-CloseToken '>'
-	= S* '>'
-
-SelfCloseToken '/>'
-	= S* '/>'
+	/ CustomElement
+	/ CustomElementNoChildren
 
 S 'whitespace'
 	= [ \t\r\n]

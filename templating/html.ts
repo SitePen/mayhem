@@ -7,8 +7,55 @@ import pegParser = require('./peg/html');
 import widgets = require('../ui/interfaces');
 import util = require('../util');
 
-export var options = {
-	defaultModuleId: 'framework/ui/dom/Element'
+export var defaults = {
+	htmlModuleId: 'framework/ui/dom/Element',
+};
+
+// TODO: find a better place for this
+export var widgetMap = {
+	'mf-button': 'framework/ui/dom/form/Button',
+	'mf-error': 'framework/ui/dom/form/Error',
+	'mf-input': 'framework/ui/dom/form/Input',
+
+
+	'dj-calendar': 'framework/ui/dom/Calendar',
+	'dj-checkedmenuitem': 'framework/ui/dom/CheckedMenuItem',
+	'dj-colorpalette': 'framework/ui/dom/ColorPalette',
+	'dj-dropdownmenu': 'framework/ui/dom/DropDownMenu',
+	'dj-menu': 'framework/ui/dom/Menu',
+	'dj-menubar': 'framework/ui/dom/MenuBar',
+	'dj-menubaritem': 'framework/ui/dom/MenuBarItem',
+	'dj-menuitem': 'framework/ui/dom/MenuItem',
+	'dj-menuseparator': 'framework/ui/dom/MenuSeparator',
+	'dj-popupmenubaritem': 'framework/ui/dom/PopupMenuBarItem',
+	'dj-popupmenuitem': 'framework/ui/dom/PopupMenuItem',
+	'dj-progressbar': 'framework/ui/dom/ProgressBar',
+	'dj-radiomenuitem': 'framework/ui/dom/RadioMenuItem',
+
+
+	// TODO: remap all the dijits to their own namespace
+	//'dj-button': 'framework/ui/dijit/form/Button',
+	//'dj-textbox': 'framework/ui/dijit/form/TextBox',
+
+	'dj-checkbox': 'framework/ui/dom/form/CheckBox',
+	'dj-combobutton': 'framework/ui/dom/form/ComboButton',
+	'dj-currencytextbox': 'framework/ui/dom/form/CurrencyTextBox',
+	'dj-datetextbox': 'framework/ui/dom/form/DateTextBox',
+	'dj-dropdownbutton': 'framework/ui/dom/form/DropDownButton',
+	'dj-numberspinner': 'framework/ui/dom/form/NumberSpinner',
+	'dj-radiobutton': 'framework/ui/dom/form/RadioButton',
+	'dj-rangeboundtextbox': 'framework/ui/dom/form/RangeBoundTextBox',
+	'dj-timetextbox': 'framework/ui/dom/form/TimeTextBox',
+	'dj-togglebutton': 'framework/ui/dom/form/ToggleButton',
+
+	'dj-accordioncontainer': 'framework/ui/dom/layout/AccordionContainer',
+	'dj-bordercontainer': 'framework/ui/dom/layout/BorderContainer',
+	'dj-contentpane': 'framework/ui/dom/layout/ContentPane',
+	'dj-layoutcontainer': 'framework/ui/dom/layout/LayoutContainer',
+	'dj-stackcontainer': 'framework/ui/dom/layout/StackContainer',
+	'dj-tabcontainer': 'framework/ui/dom/layout/TabContainer',
+	'dj-titlepane': 'framework/ui/dom/layout/TitlePane'
+
 };
 
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
@@ -31,10 +78,16 @@ export function parse(input:string, options:any = {}):any {
 function scanDependencies(node:Object):string[] {
 	var dependencies:string[] = [];
 	function recurse(node:Object):void {
-		var ctor:any = node.constructor;
+		var ctor:any = node.constructor,
+			tagName:string = node['tagName'];
 		if (typeof ctor !== 'function') {
 			if (ctor == null) {
-				ctor = options.defaultModuleId;
+				if (tagName) {
+					ctor = widgetMap[tagName];
+				}
+				else {
+					ctor = defaults.htmlModuleId;
+				}
 			}
 			// Parser returns constructors as either string or 1-element string[]
 			// Either way toString should do the trick

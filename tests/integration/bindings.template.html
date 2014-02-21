@@ -1,9 +1,9 @@
-<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}" />
-First Name: <widget is="framework/ui/dom/form/Input" value="{firstName}" label="{firstName}" />
-<widget is="framework/ui/dom/form/Error" binding="firstName" />
-Last Name: <widget is="framework/ui/dom/form/Input" value="{lastName}" />
-<widget is="framework/ui/dom/form/Error" binding="lastName"><widget is="framework/ui/dom/form/Error" binding="lastName" /><widget is="framework/ui/dom/form/Error" binding="lastName" /></widget>
-fullName bound input: <widget is="framework/ui/dom/form/Input" value="{fullName}" />
+<mf-input value="{firstName} {lastName}" />
+First Name: <mf-input value="{firstName}" label="{firstName}" />
+<mf-error binding="firstName" />
+Last Name: <mf-input value="{lastName}" />
+<mf-error binding="lastName"><mf-error binding="lastName" /><mf-error  binding="lastName" /></mf-error>
+fullName bound input: <mf-input value="{fullName}" />
 <br>
 fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
@@ -18,26 +18,26 @@ firstName lastName: {firstName} {lastName}<br>
 		(3) fullName is Boe Blogger.<br>
 	<else>
 		(X) No match... here's a read-only widget binding for fun:
-		<widget is="framework/ui/dom/form/Input" value="{firstName} {lastName}" />
+		<mf-input value="{firstName} {lastName}" />
 	</if>
 </p>
 <for id="phone-iter" each="phone" in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
-	<widget is="framework/ui/dom/form/Input" value="{phone.value}" />
+	<mf-input value="{phone.value}" />
 </for>
 <br>
 <placeholder id="test-slot" name="interstitial">
 List of hobbies: {hobbies}<br>
 <for id="hobby-iter" each="hobby" in="hobbies">
-	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value="{hobby}" /></span>
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <mf-input value="{hobby}" /></span>
 </for>
-Original hobbies: <widget is="framework/ui/dom/form/Input" value="{hobbies}" style="width:20em" />
+Original hobbies: <mf-input value="{hobbies}" style="width:20em" />
 <br>
 <br>
 <when id="when" promise="remoteString" value="stringValue">
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
 	firstName bidi binding inside when for good measure:
-	<widget is="framework/ui/dom/form/Input" value="{firstName}" />
+	<mf-input value="{firstName}" />
 <error>
 	I SHOULD NOT BE VISIBLE
 <progress>
@@ -54,5 +54,5 @@ Original hobbies: <widget is="framework/ui/dom/form/Input" value="{hobbies}" sty
 </when>
 <br>
 <placeholder id="bottom-slot" name="bottom">
-<widget is="framework/ui/dom/form/Button" on-click="save" label="My Save Button" />
-<widget is="framework/ui/dom/form/Button" on-click="save">Another <strong>Save</strong> Button</widget>
+<mf-button onClick="save" label="My Save Button" />
+<mf-button onClick="save">Another <strong>Save</strong> Button</mf-button>
