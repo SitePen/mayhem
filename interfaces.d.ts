@@ -56,6 +56,11 @@ export interface IHasMetadata {
 	getMetadata(key:string):IObservable;
 }
 
+export interface IProxy extends IObservable {
+	destroy():void;
+	setTarget(observable:IObservable):void;
+}
+
 /**
  * A proxty object is an opaque object that represents a mutable value, typically an arbitrary property of an object,
  * that can be observed for changes and accessed without knowing the location of the original object or the name of

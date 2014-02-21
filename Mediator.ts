@@ -8,6 +8,7 @@ import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
 import Property = require('./data/Property');
+import Proxy = require('./Proxy');
 import Observable = require('./Observable');
 import Stateful = require('dojo/Stateful');
 import util = require('./util');
@@ -45,24 +46,21 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		return value;
 	}
 
-	getMetadata(key:string):data.IProperty<any> {
-		var property:data.IProperty<any> = new Property();
+	getMetadata(key:string):core.IProxy {
+		var proxy:Proxy;
 
 		// TODO: Leak?
 		this.observe('model', function (newModel:data.IModel):void {
 			var newProperty = newModel.getMetadata(key);
-			if (newProperty) {
-				property.set(newProperty.get());
-			}
+			proxy.setTarget(newProperty || null);
 		});
 
 		var model = this.get('model'),
 			modelProperty = model && model.getMetadata(key);
-		if (modelProperty) {
-			property.set(modelProperty.get());
-		}
 
-		return property;
+		proxy = new Proxy(modelProperty);
+
+		return proxy;
 	}
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
