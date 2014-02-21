@@ -1,212 +1,212 @@
-<widget id="main" is="framework/ui/dom/layout/BorderContainer" liveSplitters="" design="sidebar">
-	<widget id="leftAccordion" is="framework/ui/dom/layout/AccordionContainer" region="leading" splitter="splitter">
-		<widget is="framework/ui/dom/layout/ContentPane" title="Popups and Alerts">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Tree">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Rootless Tree">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Calendar" selected>
-			<widget is="framework/ui/dom/Calendar"></widget>
+<widget is='framework/ui/dom/layout/BorderContainer' id='main' liveSplitters='' design='sidebar'>
+	<widget id='leftAccordion' is='framework/ui/dom/layout/AccordionContainer' region='leading' splitter='splitter'>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Popups and Alerts'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Tree'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Rootless Tree'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Calendar' selected>
+			<widget is='framework/ui/dom/Calendar'></widget>
 		</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Color Picker">
+		<widget is='framework/ui/dom/layout/ContentPane' title='Color Picker'>
 			<p>Selecting a color will change the background color of the page. Use this to test how tooltips and drop downs appear with different backgrounds.</p>
 
-			<h2 class="testHeader">3x4</h2>
-			<widget is="framework/ui/dom/ColorPalette" palette="3x4" />
+			<h2 class='testHeader'>3x4</h2>
+			<widget is='framework/ui/dom/ColorPalette' palette='3x4'/>
 
-			<h2 class="testHeader">7x10</h2>
-			<widget is="framework/ui/dom/ColorPalette" />
+			<h2 class='testHeader'>7x10</h2>
+			<widget is='framework/ui/dom/ColorPalette'/>
 		</widget>
 	</widget>
-	<widget is="framework/ui/dom/MenuBar" region="top">
-		<widget id="file" is="framework/ui/dom/PopupMenuBarItem" label="File">
-			<widget id="fileMenu" is="framework/ui/dom/Menu">
-				<widget id="globals" is="framework/ui/dom/MenuItem">Log globals</widget>
-				<widget id="widgets" is="framework/ui/dom/MenuItem">Log widgets</widget>
-				<widget id="destroy" is="framework/ui/dom/MenuItem" iconClass="dijitIconDelete">Destroy All</widget>
+	<widget is='framework/ui/dom/MenuBar' region='top'>
+		<widget id='file' is='framework/ui/dom/PopupMenuBarItem' label='File'>
+			<widget id='fileMenu' is='framework/ui/dom/Menu'>
+				<widget id='globals' is='framework/ui/dom/MenuItem'>Log globals</widget>
+				<widget id='widgets' is='framework/ui/dom/MenuItem'>Log widgets</widget>
+				<widget id='destroy' is='framework/ui/dom/MenuItem' iconClass='dijitIconDelete'>Destroy All</widget>
 			</widget>
 		</widget>
-		<widget id="edit" is="framework/ui/dom/PopupMenuBarItem" label="Edit">
-			<widget id="editMenu" is="framework/ui/dom/Menu">
-				<widget id="cut" is="framework/ui/dom/MenuItem" label="Cut" onClick="cut" iconClass="dijitIconCut"/>
-				<widget id="copy" is="framework/ui/dom/MenuItem" label="Copy" onClick="copy" iconClass="dijitIconCopy"  />
-				<widget id="paste" is="framework/ui/dom/MenuItem" label="Paste" onClick="paste" iconClass="dijitIconPaste" />
-				<widget id="separator" is="framework/ui/dom/MenuSeparator" label="Paste" onClick="paste" iconClass="dijitIconPaste" />
-				<widget id="undo" is="framework/ui/dom/MenuItem" label="Undo" onClick="undo" iconClass="dijitIconUndo" />
+		<widget id='edit' is='framework/ui/dom/PopupMenuBarItem' label='Edit'>
+			<widget id='editMenu' is='framework/ui/dom/Menu'>
+				<widget id='cut' is='framework/ui/dom/MenuItem' label='Cut' onClick='cut' iconClass='dijitIconCut'/>
+				<widget id='copy' is='framework/ui/dom/MenuItem' label='Copy' onClick='copy' iconClass='dijitIconCopy' />
+				<widget id='paste' is='framework/ui/dom/MenuItem' label='Paste' onClick='paste' iconClass='dijitIconPaste'/>
+				<widget id='separator' is='framework/ui/dom/MenuSeparator' label='Paste' onClick='paste' iconClass='dijitIconPaste'/>
+				<widget id='undo' is='framework/ui/dom/MenuItem' label='Undo' onClick='undo' iconClass='dijitIconUndo'/>
 			</widget>
 		</widget>
-		<widget id="view" is="framework/ui/dom/PopupMenuBarItem" label="View">
-			<widget id="viewMenu" is="framework/ui/dom/Menu">
-				<widget is="framework/ui/dom/MenuItem" label="Normal" />
-				<widget is="framework/ui/dom/MenuItem" label="Outline" />
-				<widget id="zoom" is="framework/ui/dom/PopupMenuItem">
+		<widget id='view' is='framework/ui/dom/PopupMenuBarItem' label='View'>
+			<widget id='viewMenu' is='framework/ui/dom/Menu'>
+				<widget is='framework/ui/dom/MenuItem' label='Normal'/>
+				<widget is='framework/ui/dom/MenuItem' label='Outline'/>
+				<widget id='zoom' is='framework/ui/dom/PopupMenuItem'>
 					Zoom
-					<widget id="zoomMenu" is="framework/ui/dom/Menu">
-						<widget is="framework/ui/dom/RadioMenuItem" label="50%" group="zoom" />
-						<widget is="framework/ui/dom/RadioMenuItem" label="75%" group="zoom" />
-						<widget is="framework/ui/dom/RadioMenuItem" label="100%" group="zoom" checked />
-						<widget is="framework/ui/dom/RadioMenuItem" label="150%" group="zoom" />
-						<widget is="framework/ui/dom/RadioMenuItem" label="200%" group="zoom" />
+					<widget id='zoomMenu' is='framework/ui/dom/Menu'>
+						<widget is='framework/ui/dom/RadioMenuItem' label='50%' group='zoom'/>
+						<widget is='framework/ui/dom/RadioMenuItem' label='75%' group='zoom'/>
+						<widget is='framework/ui/dom/RadioMenuItem' label='100%' group='zoom' checked/>
+						<widget is='framework/ui/dom/RadioMenuItem' label='150%' group='zoom'/>
+						<widget is='framework/ui/dom/RadioMenuItem' label='200%' group='zoom'/>
 					</widget>
 				</widget>
 			</widget>
 		</widget>
-		<widget is="framework/ui/dom/MenuBarItem" label="Themes" />
-		<widget is="framework/ui/dom/MenuBarItem" label="Dialogs" />
-		<widget id="inputPadding" is="framework/ui/dom/PopupMenuBarItem" label="TextBox Padding">
-			<widget id="inputPaddingMenu" is="framework/ui/dom/Menu">
-				<widget is="framework/ui/dom/RadioMenuItem" label="theme default" group="padding" checked />
-				<widget is="framework/ui/dom/RadioMenuItem" label="0px" group="padding" />
-				<widget is="framework/ui/dom/RadioMenuItem" label="1px" group="padding" />
-				<widget is="framework/ui/dom/RadioMenuItem" label="2px" group="padding" />
-				<widget is="framework/ui/dom/RadioMenuItem" label="3px" group="padding" />
-				<widget is="framework/ui/dom/RadioMenuItem" label="4px" group="padding" />
-				<widget is="framework/ui/dom/RadioMenuItem" label="5px" group="padding" />
+		<widget is='framework/ui/dom/MenuBarItem' label='Themes'/>
+		<widget is='framework/ui/dom/MenuBarItem' label='Dialogs'/>
+		<widget id='inputPadding' is='framework/ui/dom/PopupMenuBarItem' label='TextBox Padding'>
+			<widget id='inputPaddingMenu' is='framework/ui/dom/Menu'>
+				<widget is='framework/ui/dom/RadioMenuItem' label='theme default' group='padding' checked/>
+				<widget is='framework/ui/dom/RadioMenuItem' label='0px' group='padding'/>
+				<widget is='framework/ui/dom/RadioMenuItem' label='1px' group='padding'/>
+				<widget is='framework/ui/dom/RadioMenuItem' label='2px' group='padding'/>
+				<widget is='framework/ui/dom/RadioMenuItem' label='3px' group='padding'/>
+				<widget is='framework/ui/dom/RadioMenuItem' label='4px' group='padding'/>
+				<widget is='framework/ui/dom/RadioMenuItem' label='5px' group='padding'/>
 			</widget>
 		</widget>
-		<widget id="help" is="framework/ui/dom/PopupMenuBarItem" label="Help">
-			<widget id="helpMenu" is="framework/ui/dom/Menu">
-				<widget is="framework/ui/dom/MenuItem">Help Topics</widget>
-				<widget is="framework/ui/dom/MenuItem">About Dijit</widget>
+		<widget id='help' is='framework/ui/dom/PopupMenuBarItem' label='Help'>
+			<widget id='helpMenu' is='framework/ui/dom/Menu'>
+				<widget is='framework/ui/dom/MenuItem'>Help Topics</widget>
+				<widget is='framework/ui/dom/MenuItem'>About Dijit</widget>
 			</widget>
 		</widget>
-		<widget is="framework/ui/dom/PopupMenuBarItem" label="Disabled" disabled>
-			<widget is="framework/ui/dom/Menu">
-				<widget is="framework/ui/dom/MenuItem">You should not see this</widget>
+		<widget is='framework/ui/dom/PopupMenuBarItem' label='Disabled' disabled>
+			<widget is='framework/ui/dom/Menu'>
+				<widget is='framework/ui/dom/MenuItem'>You should not see this</widget>
 			</widget>
 		</widget>
 	</widget>
-	<widget id="topTabs" is="framework/ui/dom/layout/TabContainer" region="center">
-		<widget id="xxx" is="framework/ui/dom/layout/ContentPane" title="Basic Form Widgets" selected>
+	<widget id='topTabs' is='framework/ui/dom/layout/TabContainer' region='center'>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Basic Form Widgets' selected>
 
 			<h2>Buttons</h2>
 			<p>Buttons can do an action, display a menu, or both:</p>
 			<div>
 				Enabled:
-				<widget is="framework/ui/dom/form/Button" label="Simple" iconClass="dijitIconTask" />
-				<widget is="framework/ui/dom/form/DropDownButton" iconClass="dijitIconEdit">
+				<widget is='framework/ui/dom/form/Button' label='Simple' iconClass='dijitIconTask'/>
+				<widget is='framework/ui/dom/form/DropDownButton' iconClass='dijitIconEdit'>
 					Drop Down
-					<widget is="framework/ui/dom/DropDownMenu">
-						<widget is="framework/ui/dom/MenuItem" label="Cut" onClick="cut" iconClass="dijitIconCut" />
-						<widget is="framework/ui/dom/MenuItem" label="Copy" onClick="copy" iconClass="dijitIconCopy" />
-						<widget is="framework/ui/dom/MenuItem" label="Paste" onClick="paste" iconClass="dijitIconPaste" />
+					<widget is='framework/ui/dom/DropDownMenu'>
+						<widget is='framework/ui/dom/MenuItem' label='Cut' onClick='cut' iconClass='dijitIconCut'/>
+						<widget is='framework/ui/dom/MenuItem' label='Copy' onClick='copy' iconClass='dijitIconCopy'/>
+						<widget is='framework/ui/dom/MenuItem' label='Paste' onClick='paste' iconClass='dijitIconPaste'/>
 					</widget>
 				</widget>
-				<widget is="framework/ui/dom/form/ComboButton" label="Combo" dropDown="combo-menu" iconClass="dijitEditorIcon dijitEditorIconSave">
+				<widget is='framework/ui/dom/form/ComboButton' label='Combo' dropDown='combo-menu' iconClass='dijitEditorIcon dijitEditorIconSave'>
 					Combo
-					<widget is="framework/ui/dom/DropDownMenu">
-						<widget is="framework/ui/dom/MenuItem" label="Save" onClick="save" iconClass="dijitEditorIcon dijitEditorIconSave" />
-						<widget is="framework/ui/dom/MenuItem" label="Save As" onClick="save-as" />
+					<widget is='framework/ui/dom/DropDownMenu'>
+						<widget is='framework/ui/dom/MenuItem' label='Save' onClick='save' iconClass='dijitEditorIcon dijitEditorIconSave'/>
+						<widget is='framework/ui/dom/MenuItem' label='Save As' onClick='save-as'/>
 					</widget>
 				</widget>
-				<widget is="framework/ui/dom/form/ToggleButton" label="Toggle" checked iconClass="dijitCheckBoxIcon" />
+				<widget is='framework/ui/dom/form/ToggleButton' label='Toggle' checked iconClass='dijitCheckBoxIcon'/>
 			</div>
 			<div>
 				Disabled:
-				<widget is="framework/ui/dom/form/Button" disabled label="Simple" iconClass="dijitIconTask" />
-				<widget is="framework/ui/dom/form/DropDownButton" disabled iconClass="dijitIconEdit">
+				<widget is='framework/ui/dom/form/Button' disabled label='Simple' iconClass='dijitIconTask'/>
+				<widget is='framework/ui/dom/form/DropDownButton' disabled iconClass='dijitIconEdit'>
 					<strong>Drop</strong> Down
-					<widget is="framework/ui/dom/DropDownMenu">
-						<widget is="framework/ui/dom/MenuItem" label="Cut" iconClass="dijitEditorIcon dijitEditorIconCut" onClick="cut" />
-						<widget is="framework/ui/dom/MenuItem" label="Copy" iconClass="dijitEditorIcon dijitEditorIconCopy" onClick="copy" />
-						<widget is="framework/ui/dom/MenuItem" label="Paste" iconClass="dijitEditorIcon dijitEditorIconPaste" onClick="paste" />
+					<widget is='framework/ui/dom/DropDownMenu'>
+						<widget is='framework/ui/dom/MenuItem' label='Cut' iconClass='dijitEditorIcon dijitEditorIconCut' onClick='cut'/>
+						<widget is='framework/ui/dom/MenuItem' label='Copy' iconClass='dijitEditorIcon dijitEditorIconCopy' onClick='copy'/>
+						<widget is='framework/ui/dom/MenuItem' label='Paste' iconClass='dijitEditorIcon dijitEditorIconPaste' onClick='paste'/>
 					</widget>
 				</widget>
-				<widget is="framework/ui/dom/form/ComboButton" disabled label="Combo" dropDown="combo-menu" iconClass="dijitEditorIcon dijitEditorIconSave">
+				<widget is='framework/ui/dom/form/ComboButton' disabled label='Combo' dropDown='combo-menu' iconClass='dijitEditorIcon dijitEditorIconSave'>
 					Combo
-					<widget is="framework/ui/dom/DropDownMenu">
-						<widget is="framework/ui/dom/MenuItem" label="Save" onClick="save" iconClass="dijitEditorIcon dijitEditorIconSave" />
-						<widget is="framework/ui/dom/MenuItem" label="Save As" onClick="save-as" />
+					<widget is='framework/ui/dom/DropDownMenu'>
+						<widget is='framework/ui/dom/MenuItem' label='Save' onClick='save' iconClass='dijitEditorIcon dijitEditorIconSave'/>
+						<widget is='framework/ui/dom/MenuItem' label='Save As' onClick='save-as'/>
 					</widget>
 				</widget>
-				<widget is="framework/ui/dom/form/ToggleButton" disabled label="Toggle" checked iconClass="dijitCheckBoxIcon" />
+				<widget is='framework/ui/dom/form/ToggleButton' disabled label='Toggle' checked iconClass='dijitCheckBoxIcon'/>
 			</div>
 
-			<hr class="spacer"></hr>
+			<hr class='spacer'></hr>
 
 			<h2>Check Boxes</h2>
 			<fieldset>
-				<widget is="framework/ui/dom/form/CheckBox" id="check1" />
-				<label for="check1">unchecked</label>
-				<widget is="framework/ui/dom/form/CheckBox" id="check2" checked />
-				<label for="check2">checked</label>
-				<widget is="framework/ui/dom/form/CheckBox" id="check3" checked="" disabled />
-				<label for="check3">disabled</label>
-				<widget is="framework/ui/dom/form/CheckBox" id="check4" checked disabled />
-				<label for="check4">disabled and checked</label>
+				<widget is='framework/ui/dom/form/CheckBox' id='check1'/>
+				<label for='check1'>unchecked</label>
+				<widget is='framework/ui/dom/form/CheckBox' id='check2' checked/>
+				<label for='check2'>checked</label>
+				<widget is='framework/ui/dom/form/CheckBox' id='check3' checked='' disabled/>
+				<label for='check3'>disabled</label>
+				<widget is='framework/ui/dom/form/CheckBox' id='check4' checked disabled/>
+				<label for='check4'>disabled and checked</label>
 			</fieldset>
 
 			<h2>Radio Buttons</h2>
 			<fieldset>
-				<widget is="framework/ui/dom/form/RadioButton" id="g1rb1" />
-				<label for="g1rb1">news</label>
-				<widget is="framework/ui/dom/form/RadioButton" id="g1rb2" checked />
-				<label for="g1rb2">talk</label>
-				<widget is="framework/ui/dom/form/RadioButton" id="g1rb3" disabled />
-				<label for="g1rb3">weather (disabled)</label>
+				<widget is='framework/ui/dom/form/RadioButton' id='g1rb1'/>
+				<label for='g1rb1'>news</label>
+				<widget is='framework/ui/dom/form/RadioButton' id='g1rb2' checked/>
+				<label for='g1rb2'>talk</label>
+				<widget is='framework/ui/dom/form/RadioButton' id='g1rb3' disabled/>
+				<label for='g1rb3'>weather (disabled)</label>
 			</fieldset>
 		</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Text Input Widgets">
+		<widget is='framework/ui/dom/layout/ContentPane' title='Text Input Widgets'>
 
 			<h2>DateTextBox</h2>
-			<label for="date1">Enabled w/placeHolder:</label>
-			<widget id="date1" is="framework/ui/dom/form/DateTextBox" placeHolder="Birthday" />
-			<label for="date2">Disabled w/placeHolder:</label>
-			<widget id="date2" is="framework/ui/dom/form/DateTextBox" disabled placeHolder="Birthday" />
-			<label for="date3">Disabled w/value:</label>
-			<widget id="date3" is="framework/ui/dom/form/DateTextBox" disabled value="2008-12-25" />
+			<label for='date1'>Enabled w/placeHolder:</label>
+			<widget id='date1' is='framework/ui/dom/form/DateTextBox' placeHolder='Birthday'/>
+			<label for='date2'>Disabled w/placeHolder:</label>
+			<widget id='date2' is='framework/ui/dom/form/DateTextBox' disabled placeHolder='Birthday'/>
+			<label for='date3'>Disabled w/value:</label>
+			<widget id='date3' is='framework/ui/dom/form/DateTextBox' disabled value='2008-12-25'/>
 
 			<h2>TimeTextBox</h2>
-			<label for="time1">Enabled w/placeHolder:</label>
-			<widget id="time1" is="framework/ui/dom/form/TimeTextBox" value="T17:45" />
-			<label for="time2">Enabled w/placeHolder:</label>
-			<widget id="time2" is="framework/ui/dom/form/TimeTextBox" disabled value="T17:45" />
+			<label for='time1'>Enabled w/placeHolder:</label>
+			<widget id='time1' is='framework/ui/dom/form/TimeTextBox' value='T17:45'/>
+			<label for='time2'>Enabled w/placeHolder:</label>
+			<widget id='time2' is='framework/ui/dom/form/TimeTextBox' disabled value='T17:45'/>
 
 			<h2>CurrencyTextBox</h2>
-			<label for="currency1">Enabled:</label>
-			<widget id="currency1" is="framework/ui/dom/form/CurrencyTextBox" value="54775.53" currency="USD" />
-			<label for="currency2">Disabled:</label>
-			<widget id="currency2" is="framework/ui/dom/form/CurrencyTextBox" disabled value="54775.53" currency="USD" />
+			<label for='currency1'>Enabled:</label>
+			<widget id='currency1' is='framework/ui/dom/form/CurrencyTextBox' value='54775.53' currency='USD'/>
+			<label for='currency2'>Disabled:</label>
+			<widget id='currency2' is='framework/ui/dom/form/CurrencyTextBox' disabled value='54775.53' currency='USD'/>
 
 			<h2>NumberSpinner</h2>
-			<label for="spinner1">Enabled:</label>
-			<widget id="spinner1" is="framework/ui/dom/form/NumberSpinner" value="10" />
-			<label for="spinner2">Disabled:</label>
-			<widget id="spinner2" is="framework/ui/dom/form/NumberSpinner" disabled value="10" />
+			<label for='spinner1'>Enabled:</label>
+			<widget id='spinner1' is='framework/ui/dom/form/NumberSpinner' value='10'/>
+			<label for='spinner2'>Disabled:</label>
+			<widget id='spinner2' is='framework/ui/dom/form/NumberSpinner' disabled value='10'/>
 		</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Select Widgets">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Textarea">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Editor">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Sliders">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Various Dijits">
+		<widget is='framework/ui/dom/layout/ContentPane' title='Select Widgets'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Textarea'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Editor'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Sliders'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Various Dijits'>
 			<h2>TitlePane</h2>
-			<widget is="framework/ui/dom/layout/TitlePane" title="my pane">
+			<widget is='framework/ui/dom/layout/TitlePane' title='my pane'>
 				<p>This is a title pane. It can be expanded and collapsed.</p>
 				<p>Sed sollicitudin suscipit risus. Nam ullamcorper. Sed nisl lectus, pellentesque nec, malesuada eget, ornare a, libero. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>
 			</widget>
 
-			<hr class="spacer"></hr>
+			<hr class='spacer'></hr>
 
 			<h2>ProgressBar</h2>
-			<widget id="setTestBar" is="framework/ui/dom/ProgressBar" value="10%" />
+			<widget id='setTestBar' is='framework/ui/dom/ProgressBar' value='10%'/>
 			Indeterminate:
-			<widget id="indTestBar" is="framework/ui/dom/ProgressBar" indeterminate />
+			<widget id='indTestBar' is='framework/ui/dom/ProgressBar' indeterminate/>
 		</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="InlineEditBox">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="DnD">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Nested TabContainer">TODO</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Closable" closable>
+		<widget is='framework/ui/dom/layout/ContentPane' title='InlineEditBox'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='DnD'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Nested TabContainer'>TODO</widget>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Closable' closable>
 			 This pane is closable, just for the icon ...
 		</widget>
 	</widget>
-	<widget id="bottomTabs" is="framework/ui/dom/layout/TabContainer" region="bottom" tabPosition="bottom" splitter="splitter">
-		<widget is="framework/ui/dom/layout/ContentPane" title="Info" selected>
+	<widget id='bottomTabs' is='framework/ui/dom/layout/TabContainer' region='bottom' tabPosition='bottom' splitter='splitter'>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Info' selected>
 			<p>You can explore this single page after applying a Theme for use in creation of your own theme.</p>
-			<p>I am whole slew of Widgets on a page. Jump to <a href="/dijit/tests/">dijit tests</a> to test individual components.</p>
+			<p>I am whole slew of Widgets on a page. Jump to <a href='/dijit/tests/'>dijit tests</a> to test individual components.</p>
 			<p>There is a right-click [context] pop-up menu here, as well.</p>
 		</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Alternate Themes">
+		<widget is='framework/ui/dom/layout/ContentPane' title='Alternate Themes'>
 			TODO
 		</widget>
-		<widget is="framework/ui/dom/layout/ContentPane" title="Bottom 3" closable>
+		<widget is='framework/ui/dom/layout/ContentPane' title='Bottom 3' closable>
 			I am the last Tab
 		</widget>
 	</widget>

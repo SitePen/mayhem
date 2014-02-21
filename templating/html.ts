@@ -13,48 +13,48 @@ export var defaults = {
 
 // TODO: find a better place for this
 export var widgetMap = {
-	'mf-button': 'framework/ui/dom/form/Button',
-	'mf-error': 'framework/ui/dom/form/Error',
-	'mf-input': 'framework/ui/dom/form/Input',
+	'ui-button': 'framework/ui/dom/form/Button',
+	'ui-error': 'framework/ui/dom/form/Error',
+	'ui-input': 'framework/ui/dom/form/Input',
 
 
-	'dj-calendar': 'framework/ui/dom/Calendar',
-	'dj-checkedmenuitem': 'framework/ui/dom/CheckedMenuItem',
-	'dj-colorpalette': 'framework/ui/dom/ColorPalette',
-	'dj-dropdownmenu': 'framework/ui/dom/DropDownMenu',
-	'dj-menu': 'framework/ui/dom/Menu',
-	'dj-menubar': 'framework/ui/dom/MenuBar',
-	'dj-menubaritem': 'framework/ui/dom/MenuBarItem',
-	'dj-menuitem': 'framework/ui/dom/MenuItem',
-	'dj-menuseparator': 'framework/ui/dom/MenuSeparator',
-	'dj-popupmenubaritem': 'framework/ui/dom/PopupMenuBarItem',
-	'dj-popupmenuitem': 'framework/ui/dom/PopupMenuItem',
-	'dj-progressbar': 'framework/ui/dom/ProgressBar',
-	'dj-radiomenuitem': 'framework/ui/dom/RadioMenuItem',
+	'dijit-calendar': 'framework/ui/dom/Calendar',
+	'dijit-checkedmenuitem': 'framework/ui/dom/CheckedMenuItem',
+	'dijit-colorpalette': 'framework/ui/dom/ColorPalette',
+	'dijit-dropdownmenu': 'framework/ui/dom/DropDownMenu',
+	'dijit-menu': 'framework/ui/dom/Menu',
+	'dijit-menubar': 'framework/ui/dom/MenuBar',
+	'dijit-menubaritem': 'framework/ui/dom/MenuBarItem',
+	'dijit-menuitem': 'framework/ui/dom/MenuItem',
+	'dijit-menuseparator': 'framework/ui/dom/MenuSeparator',
+	'dijit-popupmenubaritem': 'framework/ui/dom/PopupMenuBarItem',
+	'dijit-popupmenuitem': 'framework/ui/dom/PopupMenuItem',
+	'dijit-progressbar': 'framework/ui/dom/ProgressBar',
+	'dijit-radiomenuitem': 'framework/ui/dom/RadioMenuItem',
 
 
 	// TODO: remap all the dijits to their own namespace
-	//'dj-button': 'framework/ui/dijit/form/Button',
-	//'dj-textbox': 'framework/ui/dijit/form/TextBox',
+	//'dijit-button': 'framework/ui/dijit/form/Button',
+	//'dijit-textbox': 'framework/ui/dijit/form/TextBox',
 
-	'dj-checkbox': 'framework/ui/dom/form/CheckBox',
-	'dj-combobutton': 'framework/ui/dom/form/ComboButton',
-	'dj-currencytextbox': 'framework/ui/dom/form/CurrencyTextBox',
-	'dj-datetextbox': 'framework/ui/dom/form/DateTextBox',
-	'dj-dropdownbutton': 'framework/ui/dom/form/DropDownButton',
-	'dj-numberspinner': 'framework/ui/dom/form/NumberSpinner',
-	'dj-radiobutton': 'framework/ui/dom/form/RadioButton',
-	'dj-rangeboundtextbox': 'framework/ui/dom/form/RangeBoundTextBox',
-	'dj-timetextbox': 'framework/ui/dom/form/TimeTextBox',
-	'dj-togglebutton': 'framework/ui/dom/form/ToggleButton',
+	'dijit-checkbox': 'framework/ui/dom/form/CheckBox',
+	'dijit-combobutton': 'framework/ui/dom/form/ComboButton',
+	'dijit-currencytextbox': 'framework/ui/dom/form/CurrencyTextBox',
+	'dijit-datetextbox': 'framework/ui/dom/form/DateTextBox',
+	'dijit-dropdownbutton': 'framework/ui/dom/form/DropDownButton',
+	'dijit-numberspinner': 'framework/ui/dom/form/NumberSpinner',
+	'dijit-radiobutton': 'framework/ui/dom/form/RadioButton',
+	'dijit-rangeboundtextbox': 'framework/ui/dom/form/RangeBoundTextBox',
+	'dijit-timetextbox': 'framework/ui/dom/form/TimeTextBox',
+	'dijit-togglebutton': 'framework/ui/dom/form/ToggleButton',
 
-	'dj-accordioncontainer': 'framework/ui/dom/layout/AccordionContainer',
-	'dj-bordercontainer': 'framework/ui/dom/layout/BorderContainer',
-	'dj-contentpane': 'framework/ui/dom/layout/ContentPane',
-	'dj-layoutcontainer': 'framework/ui/dom/layout/LayoutContainer',
-	'dj-stackcontainer': 'framework/ui/dom/layout/StackContainer',
-	'dj-tabcontainer': 'framework/ui/dom/layout/TabContainer',
-	'dj-titlepane': 'framework/ui/dom/layout/TitlePane'
+	'dijit-accordioncontainer': 'framework/ui/dom/layout/AccordionContainer',
+	'dijit-bordercontainer': 'framework/ui/dom/layout/BorderContainer',
+	'dijit-contentpane': 'framework/ui/dom/layout/ContentPane',
+	'dijit-layoutcontainer': 'framework/ui/dom/layout/LayoutContainer',
+	'dijit-stackcontainer': 'framework/ui/dom/layout/StackContainer',
+	'dijit-tabs': 'framework/ui/dom/layout/TabContainer',
+	'dijit-titlepane': 'framework/ui/dom/layout/TitlePane'
 
 };
 
@@ -115,7 +115,8 @@ function scanDependencies(node:Object):string[] {
 
 export function constructWidget(node:any, parent:widgets.IWidget, widgetArgs:any = {}):widgets.IDomWidget {
 	var key:string,
-		items:any,
+		value:any,
+		binding:any,
 		WidgetCtor:any = require(node.constructor),
 		widget:widgets.IDomWidget,
 		fieldBindings:{ [key:string]: string; } = {},
@@ -127,38 +128,33 @@ export function constructWidget(node:any, parent:widgets.IWidget, widgetArgs:any
 
 	// A little clean up for the keys from our node before we can use them to construct a widget
 	for (key in node) {
-		items = node[key];
-		if (items === undefined) {
-			// Treat undefined keys as non-existent
-		}
-		else if ([ 'constructor', 'app', 'mediator' ].indexOf(key) >= 0) {
+		value = node[key];
+		if ([ 'constructor', 'app', 'mediator' ].indexOf(key) >= 0) {
 			// Ignore these keys
 		}
-		else if (key === 'children' && node.children && node.children.length) {
-			widgetArgs[key] = array.map(node.children, (child:any):widgets.IDomWidget => {
+		else if (key === 'children' && value) {
+			widgetArgs.children = array.map(node.children, (child:any):widgets.IDomWidget => {
 				return constructWidget(child, null, { app: widgetArgs.app });
 			});
 		}
-		else if (key === 'html') {
-			// Pass through unmolested
-			widgetArgs[key] = items;
-		}
-		else if (items.binding) {
-			// If items is an object with a binding key it's a field binding
-			fieldBindings[key] = items.binding;
-		}
-		else if (!(items instanceof Array)) {
-			// Pass non-array items through to widgetArgs unmolested
-			widgetArgs[key] = items;
-		}
-		else if (array.some(items, (item:any):boolean => util.isObject(item) && !item.binding)) {
-			// If there are any complex objects that aren't binding also pass through
-			// TODO: this is another place we have to dance around complex keys (e.g. Conditional's conditions key)
-			widgetArgs[key] = items;
+		else if (value && value.binding) {
+			binding = value.binding;
+			if (key === 'html') {
+				// Pass through binding directly (for now)
+				widgetArgs.html = binding;
+			}
+			else if (typeof binding === 'string') {
+				// If binding value is a string it's a field binding
+				fieldBindings[key] = binding;	
+			}
+			else {
+				// Otherwise it should be a binding template
+				bindingTemplates[key] = binding;
+			}
 		}
 		else {
-			// Otherwise items should be a binding template
-			bindingTemplates[key] = items;
+			// Pass non-binding values to widgetArgs unmolested
+			widgetArgs[key] = value;
 		}
 	}
 

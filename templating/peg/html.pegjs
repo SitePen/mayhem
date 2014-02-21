@@ -20,13 +20,14 @@
 	function parseBoundText(text) {
 		var results = parse(text, { startRule: 'BoundText' });
 		// Loop over results list and inspect for binding objects
-		for (var i = 0, l = results.length; i < l; ++i) {
+		for (var i = 0, len = results.length; i < len; ++i) {
 			if (results[i].binding) {
-				// Return as binding object if only one item
-				return l === 1 ? results[0] : results;
+				// Flatten binding template if only one item
+				return { binding: len === 1 ? results[0].binding : results };
 			}
 		}
 		// If no bindings in array flatten into a string
+		// TODO: should we generate an error instead?
 		return results.join('');
 	}
 }
@@ -40,7 +41,7 @@ Template
 		// require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky tree
 		// where the first widget is the first widget and then the second widget is an Element widget containing all
 		// the rest of the widgets
-		(widget:AnyNonElement !. { return widget; })
+		(widget:AnyNonElement !. { return widget })
 		/ Element
 	)? {
 		if (!root) {
@@ -124,7 +125,7 @@ HtmlFragment 'HTML'
 			/ CustomElementTagClose
 			/ CustomElementNoChildren
 		)
-		character:. { return character; }
+		character:. { return character }
 	)+ {
 		return content.join('');
 	}
@@ -132,8 +133,8 @@ HtmlFragment 'HTML'
 BoundText
 	// Curly brackets inside the actions needs to be escaped due to https://github.com/dmajda/pegjs/issues/89
 	= (
-		'{' value:('\\}' { return '\x7d'; } / [^}])* '}' { return { binding: value.join('') }; }
-		/ !'{' value:('\\{' { return '\x7b'; } / [^{])+ { return value.join(''); }
+		'{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { binding: value.join('') } }
+		/ !'{' value:('\\{' { return '\x7b' } / [^{])+ { return value.join('') }
 	)*
 
 // conditionals
@@ -148,7 +149,7 @@ If '<if>'
 			return alternate;
 		}
 	)*
-	alternate:(ElseTag content:Any { return content; })?
+	alternate:(ElseTag content:Any { return content })?
 	IfTagClose {
 		conditional.content = consequent;
 
@@ -179,7 +180,7 @@ ElseTag '<else>'
 
 // loops
 
-For '<for>'
+For '<for...>'
 	= forWidget:ForTagOpen template:Any ForTagClose {
 		forWidget.constructor = 'framework/templating/html/ui/Iterator';
 		forWidget.template = template;
@@ -200,8 +201,8 @@ ForTagClose '</for>'
 When '<when>'
 	= when:WhenTagOpen
 	resolved:Any?
-	error:(WhenErrorTag content:Any? { return content; })?
-	progress:(WhenProgressTag content:Any? { return content; })?
+	error:(WhenErrorTag content:Any? { return content })?
+	progress:(WhenProgressTag content:Any? { return content })?
 	WhenTagClose {
 		when.constructor = 'framework/templating/html/ui/When';
 		when.resolved = resolved;
@@ -317,23 +318,147 @@ AttributeMap
 				error('Duplicate attribute "' + attribute.name + '"');
 			}
 
-			attributeMap[attribute.name] = attribute.value == null ? true : attribute.value;
+			attributeMap[attribute.name] = attribute.value;
 		}
 
 		return attributeMap;
 	}
 
 Attribute
-	= S+ name:$(AttributeName) value:(S* '=' S* value:AttributeValue { return value; })? {
-		return { name: name, value: value };
+	= S+ name:$(AttributeName) value:(S* '=' S* value:AttributeValue {
+		// We have to invert null and undefined here to disambiguate null return from JSONAttributeValue
+		return value === null ? undefined : value;
+	})? {
+		// Treat attributes without values as true
+		if (value === null) {
+			return { name: name, value: true };
+		}
+		// Treat undefined as null since we inverted it earlier
+		return { name: name, value: value === undefined ? null : value };
 	}
 
 AttributeName
 	= nameChars:[a-zA-Z\-]+
 
+// Attribute values can be JSON or single-quoted strings which are parsed for curly-quoted bindings
+
 AttributeValue
-	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return parseBoundText(value.join('')); })
-	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return parseBoundText(value.join('')); })
+	= BindStringAttributeValue
+	/ JSONAttributeValue
+
+BindStringAttributeValue "single-quoted string"
+	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return parseBoundText(value.join('')) })
+
+JSONAttributeValue "json"
+	= S* value:JSONValue { return value }
+
+// JSON parser adapted from PEG.js example
+
+JSONObject
+	= "{" S* "}" S* { return {} }
+	/ "{" S* members:JSONMembers "}" S* { return members }
+
+JSONMembers
+	= head:JSONPair tail:("," S* JSONPair)* {
+      var result = {};
+      result[head[0]] = head[1];
+      for (var i = 0; i < tail.length; i++) {
+        result[tail[i][2][0]] = tail[i][2][1];
+      }
+      return result;
+    }
+
+JSONPair
+	= name:JSONString ":" S* value:JSONValue { return [name, value] }
+
+JSONArray
+	= "[" S* "]" S* { return [] }
+	/ "[" S* elements:JSONElements "]" S* { return elements }
+
+JSONElements
+	= head:JSONValue tail:("," S* JSONValue)* {
+      var result = [head];
+      for (var i = 0, l = tail.length; i < l; ++i) {
+        result.push(tail[i][2]);
+      }
+      return result;
+    }
+
+JSONValue
+	= JSONLiteral
+	/ JSONObject
+	/ JSONArray
+
+JSONLiteral
+	= JSONString
+	/ JSONNumber
+	/ JSONTrue
+	/ JSONFalse
+	/ JSONNull
+
+JSONTrue "true"
+	= "true" S* { return true }
+
+JSONFalse "false"
+	= "false" S* { return false }
+
+JSONNull "null"
+	= "null" S* { return null }
+
+// JSON lexical elements
+
+JSONString "string"
+	= '"' '"' S* { return "" }
+	/ '"' chars:JSONChars '"' S* { return chars }
+
+JSONChars
+	= chars:JSONChar+ { return chars.join("") }
+
+JSONChar
+  // In the original JSON grammar: "any-Unicode-character-except-"-or-\-or-control-character"
+	= [^"\\\0-\x1F\x7f]
+	/ '\\"' { return '"' }
+	/ "\\\\" { return "\\" }
+	/ "\\/" { return "/"  }
+	/ "\\b" { return "\b" }
+	/ "\\f" { return "\f" }
+	/ "\\n" { return "\n" }
+	/ "\\r" { return "\r" }
+	/ "\\t" { return "\t" }
+	/ "\\u" digits:$(HexDigit HexDigit HexDigit HexDigit) { return String.fromCharCode(parseInt(digits, 16)) }
+
+JSONNumber "number"
+	= parts:$(JSONInteger JSONFraction JSONExponent) S* { return parseFloat(parts) }
+	/ parts:$(JSONInteger JSONFraction) S* { return parseFloat(parts) }
+	/ parts:$(JSONInteger JSONExponent) S* { return parseFloat(parts) }
+	/ parts:$(JSONInteger) S* { return parseFloat(parts) }
+
+JSONInteger
+	= Digit19 Digits
+	/ Digit
+	/ "-" Digit19 Digits
+	/ "-" Digit
+
+JSONFraction
+	= "." Digits
+
+JSONExponent
+	= E Digits
+
+Digits
+	= Digit+
+
+Digit
+	= [0-9]
+
+Digit19
+	= [1-9]
+
+HexDigit
+	= [0-9a-fA-F]
+
+E
+	= [eE] [+-]?
 
 // miscellaneous
 
@@ -351,5 +476,5 @@ AnyNonElement
 	/ CustomElement
 	/ CustomElementNoChildren
 
-S 'whitespace'
+S "whitespace"
 	= [ \t\r\n]
