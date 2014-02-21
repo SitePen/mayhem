@@ -35,32 +35,135 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Once the router has been started, routes can no longer be changed.
 	 */
 
-	/** @protected The app for this router. */
+	/** The app for this router. @protected */
 	_app:core.IApplication;
 
-	/** @protected The routes managed by this router. */
+	/** The routes managed by this router. @protected */
 	_routes:{ [key:string]: Route };
 
-	/** @protected The currently active routes. */
+	/** The currently active routes. @protected */
 	_activeRoutes:Array<Route> = [];
 
-	/** @protected The previous path after a route transition. */
+	/** The previous path after a route transition. @protected */
 	_oldPath:string;
 
-	/** The default location for controllers. */
-	private _controllerPath:string = 'app/controllers';
+	/** The default location for controllers. @protected */
+	_controllerPath:string;
 
-	/** The default location for views. */
-	private _viewPath:string = 'app/views';
+	/** The default location for views. @protected */
+	_viewPath:string;
 
-	/** The default location for templates. */
-	private _templatePath:string = '../template!app/views';
+	/** The default location for templates. @protected */
+	_templatePath:string;
 
-	/** The default route when the application is loaded without an existing route. */
-	private _defaultRoute:string = 'index';
+	/** The default route when the application is loaded without an existing route. @protected */
+	_defaultRoute:string;
 
-	/** The route to load when an unmatched route is loaded. */
-	private _notFoundRoute:string = 'error';
+	/** The route to load when an unmatched route is loaded. @protected */
+	_notFoundRoute:string;
+
+	/**
+	 * Starts listening for new path changes.
+	 */
+	startup():IPromise<void> {
+		var dfd:IDeferred<void> = new Deferred<void>();
+		dfd.resolve(null);
+		this._routesSetter = function ():void { }
+		this.startup = function ():IPromise<void> { return dfd; };
+		this.resume();
+		return dfd;
+	}
+
+	/**
+	 * Stops listening for any new path changes, exits all active routes, and destroys all registered routes.
+	 */
+	destroy():void {
+		this.destroy = function () {};
+		this.pause();
+
+		var route:Route;
+
+		while ((route = this._activeRoutes.pop())) {
+			route.exit();
+		}
+
+		for (var id in this._routes) {
+			route = this._routes[id];
+			route.destroy && route.destroy();
+		}
+
+		this._activeRoutes = this._routes = null;
+	}
+
+	/**
+	 * Starts the router responding to route changes.
+	 */
+	resume():void {
+		if (has('debug')) {
+			throw new Error('Abstract method "resume" not implemented');
+		}
+	}
+
+	/**
+	 * Stops the router from responding to any route changes.
+	 */
+	pause():void {
+		if (has('debug')) {
+			throw new Error('Abstract method "pause" not implemented');
+		}
+	}
+
+	/**
+	 * Transitions to a new route.
+	 */
+	go(routeId:string, kwArgs:Object):void {
+		if (has('debug')) {
+			throw new Error('Abstract method "go" not implemented');
+		}
+	}
+
+	/**
+	 * Resets the path of the underlying state mechanism without triggering a routing update.
+	 *
+	 * @param path The path to set.
+	 * @param replace Whether or not to replace the previous path in history with the provided path.
+	 */
+	resetPath(path:string, replace?:boolean):void {
+		if (has('debug')) {
+			throw new Error('Abstract method "resetPath" not implemented');
+		}
+	}
+
+	/**
+	 * Creates a unique identifier for the given route.
+	 */
+	createPath(path:string, kwArgs?:Object):string {
+		if (has('debug')) {
+			throw new Error('Abstract method "createPath" not implemented');
+		}
+		return null;
+	}
+
+	/**
+	 * Normalizes a string to a real ID value.
+	 */
+	normalizeId(id:string):string {
+		// Normalize relative IDs
+		var activeRoutes = this._activeRoutes,
+			idPrefix = activeRoutes.length ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
+
+		id = id.replace(/^\.\//, idPrefix);
+
+		if (id === '') {
+			id = this._defaultRoute;
+		}
+
+		if (id.charAt(id.length - 1) === '/') {
+			id += this._defaultRoute;
+		}
+
+		return id;
+	}
 
 	/**
 	 * Setter for the _routes property.
@@ -79,6 +182,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 		var kwArgs:any,
 			route:Route;
+
 		for (var routeId in routeMap) {
 			kwArgs = routeMap[routeId];
 
@@ -183,113 +287,13 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Starts listening for new path changes.
-	 */
-	startup():IPromise<void> {
-		var dfd:IDeferred<void> = new Deferred<void>();
-		dfd.resolve(null);
-		this._routesSetter = function ():{ [key:string]: routing.IRouteDefinition } { return null; }
-		this.startup = function ():IPromise<void> { return dfd; };
-		this.resume();
-		return null;
-	}
-
-	/**
-	 * Stops listening for any new path changes, exits all active routes, and destroys all registered routes.
-	 */
-	destroy():void {
-		this.destroy = function () {};
-		this.pause();
-
-		var route:Route;
-
-		while ((route = this._activeRoutes.pop())) {
-			route.exit();
-		}
-
-		for (var id in this._routes) {
-			route = this._routes[id];
-			route.destroy && route.destroy();
-		}
-
-		this._activeRoutes = this._routes = null;
-	}
-
-	/**
-	 * Starts the router responding to route changes.
-	 */
-	resume():void {
-		if (has('debug')) {
-			throw new Error('Abstract method "resume" not implemented');
-		}
-	}
-
-	/**
-	 * Stops the router from responding to any route changes.
-	 */
-	pause():void {
-		if (has('debug')) {
-			throw new Error('Abstract method "pause" not implemented');
-		}
-	}
-
-	/**
-	 * Transitions to a new route.
-	 */
-	go(routeId:string, kwArgs:Object):void {
-		if (has('debug')) {
-			throw new Error('Abstract method "go" not implemented');
-		}
-	}
-
-	/**
-	 * Resets the path of the underlying state mechanism without triggering a routing update.
-	 *
-	 * @param path The path to set.
-	 * @param replace Whether or not to replace the previous path in history with the provided path.
-	 */
-	resetPath(path:string, replace?:boolean):void {
-		if (has('debug')) {
-			throw new Error('Abstract method "resetPath" not implemented');
-		}
-	}
-
-	/**
-	 * Creates a unique identifier for the given route.
-	 */
-	createPath(path:string, kwArgs?:Object):string {
-		if (has('debug')) {
-			throw new Error('Abstract method "createPath" not implemented');
-		}
-		return null;
-	}
-
-	/**
-	 * Normalizes a string to a real ID value.
-	 */
-	normalizeId(id:string):string {
-		// Normalize relative IDs
-		var activeRoutes = this._activeRoutes,
-			idPrefix = activeRoutes.length ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
-
-		id = id.replace(/^\.\//, idPrefix);
-
-		if (id === '') {
-			id = this._defaultRoute;
-		}
-
-		if (id.charAt(id.length - 1) === '/') {
-			id += this._defaultRoute;
-		}
-
-		return id;
-	}
-
-	/**
 	 * Activates and deactivates routes in response to a path change.
+	 *
+	 * @protected
+	 *
+	 * TODO: Better name for this function?
 	 */
 	_handlePathChange(newPath:string):void {
-		// TODO: Maybe this is the wrong name for this function
 		newPath = this.normalizeId(newPath);
 
 		if (newPath === this._oldPath) {
@@ -306,6 +310,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 			self = this;
 
 		if (this.emit('change', event)) {
+			// only do this if a listener didn't cancel the change event
 			whenAll([
 				this._exitRoutes(event),
 				this._enterRoutes(event)
@@ -317,6 +322,8 @@ class Router extends ObservableEvented implements routing.IRouter {
 						router: self
 					}));
 				}
+
+				self._oldPath = newPath;
 
 				if (!self._activeRoutes.length) {
 					return self._handleNotFoundRoute(event).then(emitIdle);
@@ -374,5 +381,14 @@ class Router extends ObservableEvented implements routing.IRouter {
 		return when(notFoundRoute.enter(event));
 	}
 }
+
+// Set default primitive properties on the prototype so that they exist before any code depending on them runs.
+lang.mixin(Router.prototype, {
+	_controllerPath: 'app/controllers',
+	_viewPath: 'app/views',
+	_templatePath: '../template!app/views',
+	_defaultRoute: 'index',
+	_notFoundRoute: 'error'
+});
 
 export = Router;

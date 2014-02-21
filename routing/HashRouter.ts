@@ -10,7 +10,7 @@ import when = require('dojo/when');
  */
 class HashRouter extends Router {
 	/** A prefix that is expected to exist on all URLs loaded through this router. */
-	pathPrefix:string = '!/';
+	pathPrefix:string;
 
 	private _changeHandle:{ remove:() => void };
 
@@ -52,12 +52,12 @@ class HashRouter extends Router {
 	/**
 	 * Transitions to a new route.
 	 */
-	go():void {
+	go(routeId:string, kwArgs?:Object):void {
 		if (!this._changeHandle) {
 			throw new Error('Router is paused');
 		}
 
-		hash(this.createPath.apply(this, arguments));
+		hash(this.createPath(routeId, kwArgs));
 	}
 
 	/**
@@ -100,5 +100,10 @@ class HashRouter extends Router {
 		return super.normalizeId(id);
 	}
 }
+
+// Default primitive property values
+lang.mixin(HashRouter.prototype, {
+	pathPrefix: '!/'
+});
 
 export = HashRouter;

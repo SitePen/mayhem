@@ -44,7 +44,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	private _template:string;
 
 	/** The ID of the placeholder in the parent route's view that this route's view should be injected into. */
-	private _placeholder:string = 'default';
+	private _placeholder:string;
 
 	/** The router to which this route belongs. */
 	private _router:routing.IRouter;
@@ -161,5 +161,10 @@ class Route extends BaseRoute implements routing.IRoute {
 		return this._viewInstance.startup();
 	}
 }
+
+// Default primitive property values
+lang.mixin(Route.prototype, {
+	_placeholder: 'default'
+});
 
 export = Route;

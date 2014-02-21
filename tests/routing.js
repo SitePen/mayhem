@@ -1,5 +1,7 @@
 define([
 	'./routing/RouteEvent',
 	'./routing/BaseRoute',
-	'./routing/Route'
+	'./routing/Route',
+	'./routing/Router',
+	'./routing/NullRouter'
 ], function () {});

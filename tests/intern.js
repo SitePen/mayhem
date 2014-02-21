@@ -68,5 +68,6 @@ define({
 	functionalSuites: [ ],
 
 	// A regular expression matching URLs to files that should not be included in code coverage analysis
-	excludeInstrumentation: /^(?:dojo|framework\/tests|framework\/node_modules)\//
+	//excludeInstrumentation: /^(?:dojo|framework\/tests|framework\/node_modules)\//
+	excludeInstrumentation: /.*/
 });

@@ -11,7 +11,7 @@ interface IDeferred<T> extends IPromise<T> {
 }
 
 interface IEvented {
-	emit(type:string, event?:Event):void;
+	emit(type:string, event?:Event):boolean;
 	on(type:IExtensionEvent, listener:EventListener):IHandle;
 	on(type:string, listener:EventListener):IHandle;
 }
@@ -145,7 +145,7 @@ declare module 'dojo/errors/create' {
 
 declare module 'dojo/Evented' {
 	class Evented implements IEvented {
-		emit(type:string, event?:Event):void;
+		emit(type:string, event?:Event):boolean;
 		on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
 		on(type:string, listener:(event:Event) => void):IHandle;
 	}

@@ -2,16 +2,6 @@ import core = require('../interfaces');
 import RouteEvent = require('./RouteEvent');
 
 /**
- * A route descriptor
- */
-export interface IRouteDefinition {
-	view?:string;
-	controller?:string;
-	path?:string;
-	code?:number;
-}
-
-/**
  * Root interface for routes
  */
 export interface IRoute {

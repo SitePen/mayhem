@@ -10,8 +10,8 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 		Evented.apply(this, arguments);
 	}
 
-	emit(type:any, event?:Event):void {
-		Evented.prototype.emit.apply(this, arguments);
+	emit(type:any, event?:Event):boolean {
+		return Evented.prototype.emit.apply(this, arguments);
 	}
 
 	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;

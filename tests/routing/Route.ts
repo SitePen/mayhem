@@ -7,7 +7,7 @@ import registerSuite = require('intern!object');
 var route:Route;
 
 registerSuite({
-	name: 'BaseRoute',
+	name: 'Route',
 
 	setup: function () {
 		route = new Route({ path: '<foo:foo>/<bar:\\d+>/<baz:\\w+>' });
@@ -18,7 +18,6 @@ registerSuite({
 		assert.isFalse(route.test('oof/hi/1234'), 'invalid route should test to false');
 	},
 
-	/*
 	'#isCaseSensitive': function () {
 		assert.isFalse(route.test('FOO/1234/HI'),
 			'route with different case should test to false in case-sensitive mode');
@@ -76,7 +75,6 @@ registerSuite({
 			'serialized route with extra arguments should match path definition'
 		);
 
-		// TODO: Fix to use assert.throws
 		assert.throws(
 			function () { route.serialize({}); },
 			Error,
@@ -93,13 +91,13 @@ registerSuite({
 	},
 
 	'RegExp-like paths': function () {
-		var route = new BaseRoute({ path: '<foo:\\w+>\\d+' });
+		var route = new Route({ path: '<foo:\\w+>\\d+' });
 		assert.isTrue(route.test('foo\\d+'),
 			'regular expressions outside capturing groups should be treated as string literals');
 	},
 
 	'multiple identical named identifiers': function () {
-		var route = new BaseRoute({ path: '<foo:\\w+>/<foo:\\w+>/<bar:\\w+>' });
+		var route = new Route({ path: '<foo:\\w+>/<foo:\\w+>/<bar:\\w+>' });
 
 		assert.isTrue(route.test('foo/bar/baz'), 'basic test on path with MINIs should pass');
 
@@ -127,5 +125,4 @@ registerSuite({
 			'serializing path with MINIs should return a path with MINI arguments in the correct order'
 		);
 	}
-	*/
 });
