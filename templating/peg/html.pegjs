@@ -30,6 +30,83 @@
 		// TODO: should we generate an error instead?
 		return results.join('');
 	}
+
+	var aliases = {
+		_aliases: [],
+		_map: null,
+
+		/**
+		 * Adds a new alias to the alias list for this template.
+		 *
+		 * @param newAlias {Object}
+		 * An object with the following keys:
+		 *   * `from` (string): The module ID fragment to replace.
+		 *   * `to` (string): The replacement module ID fragment.
+		 *   * `line` (number): The one-indexed line number where the alias was defined in the template.
+		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
+		 */
+		add: function (newAlias) {
+			var aliases = this._aliases;
+
+			// Ensure that aliases are limited to complete module ID fragments
+			newAlias.from = newAlias.from.toString().replace(/\/*$/, '/');
+			newAlias.to = newAlias.to.toString().replace(/\/*$/, '/');
+
+			for (var i = 0, oldAlias; (oldAlias = aliases[i]); ++i) {
+				// The same alias has already been parsed once before, probably by some look-ahead; do not add it
+				// again
+				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
+					return;
+				}
+
+				// Aliases are ordered and applied by length, then by entry order if the lengths are identical
+				if (oldAlias.from.length < newAlias.from.length) {
+					break;
+				}
+			}
+
+			aliases.splice(i, 0, newAlias);
+		},
+
+		/**
+		 * Walks the widget tree, resolving constructor aliases for the given node and its children.
+		 */
+		resolve: function (node) {
+			var aliasMap = this._map;
+
+			for (var k in aliasMap) {
+				if (node.constructor.indexOf(k) === 0) {
+					node.constructor = node.constructor.replace(k, aliasMap[k].to);
+				}
+			}
+
+			if (node.children && node.children.length) {
+				for (var i = 0, child; (child = node.children[i]); ++i) {
+					this.resolve(child);
+				}
+			}
+		},
+
+		/**
+		 * Validates that the collected aliases from the template are valid and do not contain duplicate definitions.
+		 */
+		validate: function () {
+			var aliases = this._aliases,
+				aliasMap = {};
+
+			for (var i = 0, alias; (alias = aliases[i]); ++i) {
+				if (aliasMap[alias.from]) {
+					var oldAlias = aliasMap[alias.from];
+					throw new Error('Line ' + alias.line + ', column ' + alias.column + ': Alias "' + alias.from +
+						'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
+				}
+
+				aliasMap[alias.from] = alias;
+			}
+
+			this._map = aliasMap;
+		}
+	};
 }
 
 // template root
@@ -57,6 +134,9 @@ Template
 		if (children.length === 1 && root.html === null) {
 			root = children[0];
 		}
+
+		aliases.validate();
+		aliases.resolve(root);
 		return root;
 	}
 
@@ -104,7 +184,6 @@ HtmlFragment 'HTML'
 		// TODO: Not sure how valid these exclusions are
 		!(
 			// Optimization: Only check tag rules when the current position matches the tag opening token
-			// TODO: soon we should only have to check on `'<' CustomElementTagName`
 			& '<'
 
 			IfTagOpen
@@ -118,12 +197,10 @@ HtmlFragment 'HTML'
 			/ WhenErrorTag
 			/ WhenProgressTag
 			/ Placeholder
+			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
 			/ WidgetNoChildren
-			/ CustomElementTagOpen
-			/ CustomElementTagClose
-			/ CustomElementNoChildren
 		)
 		character:. { return character }
 	)+ {
@@ -260,40 +337,6 @@ WidgetNoChildren '<widget/>'
 		return widget;
 	}
 
-CustomElement '<custom-element...>'
-	= element:CustomElementTagOpen children:(Any)* (endTag:CustomElementTagClose & {
-		return element.tagName.toLowerCase() === endTag.toLowerCase();
-	}) {
-		element.constructor = null;
-		element.children = children;
-		return element;
-	}
-
-CustomElementTagOpen '<custom-element>'
-	= '<' tagName:CustomElementTagName element:AttributeMap '>' {
-		validate(element, { type: '<custom-element>' });
-		element.tagName = tagName;
-		return element;
-	}
-
-CustomElementTagName
-	= head:[a-zA-Z]+ '-' tail:[a-zA-Z\-]* {
-		return head.concat('-').concat(tail).join('');
-	}
-
-CustomElementTagClose '</custom-element>'
-	= '</' tagName:CustomElementTagName '>' {
-		return tagName;
-	}
-
-CustomElementNoChildren '<custom-element/>'
-	= '<' tagName:CustomElementTagName element:AttributeMap '/>' {
-		validate(element, { type: '<custom-element>' });
-		element.constructor = null;
-		element.tagName = tagName;
-		return element;
-	}
-
 // all others
 
 Placeholder '<placeholder>'
@@ -301,6 +344,15 @@ Placeholder '<placeholder>'
 		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
 		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
 		return placeholder;
+	}
+
+Alias '<alias>'
+	= '<alias'i alias:AttributeMap '>' {
+		validate(alias, { type: '<alias>', required: [ 'from', 'to' ] });
+		alias.line = line();
+		alias.column = column();
+		aliases.add(alias);
+		return null;
 	}
 
 // attributes
@@ -325,7 +377,7 @@ AttributeMap
 	}
 
 Attribute
-	= S+ name:$(AttributeName) value:(S* '=' S* value:AttributeValue {
+	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue {
 		// We have to invert null and undefined here to disambiguate null return from JSONAttributeValue
 		return value === null ? undefined : value;
 	})? {
@@ -338,16 +390,21 @@ Attribute
 	}
 
 AttributeName
-	= nameChars:[a-zA-Z\-]+
+	= nameChars:[a-zA-Z\-]+ {
+		return nameChars.join('').toLowerCase().replace(/-([a-z])/, function () {
+			return arguments[1].toUpperCase();
+		});
+	}
 
 // Attribute values can be JSON or single-quoted strings which are parsed for curly-quoted bindings
 
 AttributeValue
-	= BindStringAttributeValue
+	= StringAttributeValue
 	/ JSONAttributeValue
 
-BindStringAttributeValue "single-quoted string"
+StringAttributeValue
 	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return parseBoundText(value.join('')) })
+	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return parseBoundText(value.join('')); })
 
 JSONAttributeValue "json"
 	= S* value:JSONValue { return value }
@@ -471,10 +528,9 @@ AnyNonElement
 	/ For
 	/ When
 	/ Placeholder
+	/ Alias
 	/ Widget
 	/ WidgetNoChildren
-	/ CustomElement
-	/ CustomElementNoChildren
 
 S "whitespace"
 	= [ \t\r\n]

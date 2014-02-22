@@ -11,56 +11,9 @@ export var defaults = {
 	htmlModuleId: 'framework/ui/dom/Element',
 };
 
-// TODO: find a better place for this
-export var widgetMap = {
-	'ui-button': 'framework/ui/dom/form/Button',
-	'ui-error': 'framework/ui/dom/form/Error',
-	'ui-input': 'framework/ui/dom/form/Input',
-
-
-	'dijit-calendar': 'framework/ui/dom/Calendar',
-	'dijit-checkedmenuitem': 'framework/ui/dom/CheckedMenuItem',
-	'dijit-colorpalette': 'framework/ui/dom/ColorPalette',
-	'dijit-dropdownmenu': 'framework/ui/dom/DropDownMenu',
-	'dijit-menu': 'framework/ui/dom/Menu',
-	'dijit-menubar': 'framework/ui/dom/MenuBar',
-	'dijit-menubaritem': 'framework/ui/dom/MenuBarItem',
-	'dijit-menuitem': 'framework/ui/dom/MenuItem',
-	'dijit-menuseparator': 'framework/ui/dom/MenuSeparator',
-	'dijit-popupmenubaritem': 'framework/ui/dom/PopupMenuBarItem',
-	'dijit-popupmenuitem': 'framework/ui/dom/PopupMenuItem',
-	'dijit-progressbar': 'framework/ui/dom/ProgressBar',
-	'dijit-radiomenuitem': 'framework/ui/dom/RadioMenuItem',
-
-
-	// TODO: remap all the dijits to their own namespace
-	//'dijit-button': 'framework/ui/dijit/form/Button',
-	//'dijit-textbox': 'framework/ui/dijit/form/TextBox',
-
-	'dijit-checkbox': 'framework/ui/dom/form/CheckBox',
-	'dijit-combobutton': 'framework/ui/dom/form/ComboButton',
-	'dijit-currencytextbox': 'framework/ui/dom/form/CurrencyTextBox',
-	'dijit-datetextbox': 'framework/ui/dom/form/DateTextBox',
-	'dijit-dropdownbutton': 'framework/ui/dom/form/DropDownButton',
-	'dijit-numberspinner': 'framework/ui/dom/form/NumberSpinner',
-	'dijit-radiobutton': 'framework/ui/dom/form/RadioButton',
-	'dijit-rangeboundtextbox': 'framework/ui/dom/form/RangeBoundTextBox',
-	'dijit-timetextbox': 'framework/ui/dom/form/TimeTextBox',
-	'dijit-togglebutton': 'framework/ui/dom/form/ToggleButton',
-
-	'dijit-accordioncontainer': 'framework/ui/dom/layout/AccordionContainer',
-	'dijit-bordercontainer': 'framework/ui/dom/layout/BorderContainer',
-	'dijit-contentpane': 'framework/ui/dom/layout/ContentPane',
-	'dijit-layoutcontainer': 'framework/ui/dom/layout/LayoutContainer',
-	'dijit-stackcontainer': 'framework/ui/dom/layout/StackContainer',
-	'dijit-tabs': 'framework/ui/dom/layout/TabContainer',
-	'dijit-titlepane': 'framework/ui/dom/layout/TitlePane'
-
-};
-
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 	dojotext.load(resourceId, contextRequire, function(template:string):void {
-		var ast = parse(template);
+		var ast = AST= parse(template);
 		console.log(ast)
 		var dependencies = scanDependencies(ast);
 		require(dependencies, ():void => {
@@ -82,12 +35,7 @@ function scanDependencies(node:Object):string[] {
 			tagName:string = node['tagName'];
 		if (typeof ctor !== 'function') {
 			if (ctor == null) {
-				if (tagName) {
-					ctor = widgetMap[tagName];
-				}
-				else {
-					ctor = defaults.htmlModuleId;
-				}
+				ctor = defaults.htmlModuleId;
 			}
 			// Parser returns constructors as either string or 1-element string[]
 			// Either way toString should do the trick

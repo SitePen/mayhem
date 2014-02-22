@@ -1,9 +1,9 @@
-<ui-input value='{firstName} {lastName}'/>
-First Name: <ui-input value='{firstName}' label='{firstName}'/>
-<ui-error binding="firstName"/>
-Last Name: <ui-input value='{lastName}'/>
-<ui-error binding='lastName'><ui-error binding="lastName"/><ui-error binding="lastName"/></ui-error>
-fullName bound input: <ui-input value='{fullName}'/>
+<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
+First Name: <widget is="framework/ui/dom/form/Input" value='{firstName}' label='{firstName}'/>
+<widget is="framework/ui/dom/form/Error" binding="firstName"/>
+Last Name: <widget is="framework/ui/dom/form/Input" value='{lastName}'/>
+<widget is="framework/ui/dom/form/Error" binding='lastName'><widget is="framework/ui/dom/form/Error" binding="lastName"/><widget is="framework/ui/dom/form/Error" binding="lastName"/></widget>
+fullName bound input: <widget is="framework/ui/dom/form/Input" value='{fullName}'/>
 <br>
 fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
@@ -15,29 +15,29 @@ firstName lastName: {firstName} {lastName}<br>
 	<elseif condition="lastNameIsBloggs">
 		(2) lastName is Bloggs.<br>
 	<elseif condition="fullNameIsBoeBlogger">
-		(3) fullName is Boe Blogger.<br>
+		(3) transformed fullName is Boe Blogger (actual name: {firstName}).<br>
 	<else>
 		(X) No match... here's a read-only widget binding for fun:
-		<ui-input value='{firstName} {lastName}'/>
+		<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
 	</if>
 </p>
 <for id='phone-iter' each='phone' x='y' in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
-	<ui-input value='{phone.value}'/>
+	<widget is="framework/ui/dom/form/Input" value='{phone.value}'/>
 </for>
 <br>
 <placeholder id="test-slot" name="interstitial">
 List of hobbies: {hobbies}<br>
 <for id='hobby-iter' each='hobby' in="hobbies">
-	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <ui-input value='{hobby}'/></span>
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value='{hobby}'/></span>
 </for>
-Original hobbies: <ui-input value='{hobbies}' style="width:20em"/>
+Original hobbies: <widget is="framework/ui/dom/form/Input" value='{hobbies}' style="width:20em"/>
 <br>
 <br>
 <when id='when' promise='remoteString' value='stringValue'>
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
 	firstName bidi binding inside when for good measure:
-	<ui-input value='{firstName}'/>
+	<widget is="framework/ui/dom/form/Input" value='{firstName}'/>
 <error>
 	I SHOULD NOT BE VISIBLE
 <progress>
@@ -54,5 +54,5 @@ Original hobbies: <ui-input value='{hobbies}' style="width:20em"/>
 </when>
 <br>
 <placeholder id='bottom-slot' name='bottom'>
-<ui-button onClick='save' label='My Save Button'/>
-<ui-button onClick='save'>Another <strong>Save</strong> Button</ui-button>
+<widget is="framework/ui/dom/form/Button" on-click='save' label='My Save Button'/>
+<widget is="framework/ui/dom/form/Button" on-click='save'>Another <strong>Save</strong> Button</widget>
