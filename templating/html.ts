@@ -4,7 +4,7 @@ import core = require('../interfaces');
 import dojotext = require('dojo/text');
 import lang = require('dojo/_base/lang');
 import pegParser = require('./peg/html');
-import widgets = require('../ui/interfaces');
+import ui = require('../ui/interfaces');
 import util = require('../util');
 
 export var defaults = {
@@ -13,11 +13,11 @@ export var defaults = {
 
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 	dojotext.load(resourceId, contextRequire, function(template:string):void {
-		var ast = AST= parse(template);
+		var ast = parse(template);
 		console.log(ast)
 		var dependencies = scanDependencies(ast);
 		require(dependencies, ():void => {
-			load(function(app?:core.IApplication, mediator?:core.IMediator):widgets.IDomWidget {
+			load(function(app?:core.IApplication, mediator?:core.IMediator):ui.IDomWidget {
 				return constructWidget(ast, null, { app: app, mediator: mediator });
 			});
 		});
@@ -30,43 +30,39 @@ export function parse(input:string, options:any = {}):any {
 
 function scanDependencies(node:Object):string[] {
 	var dependencies:string[] = [];
-	function recurse(node:Object):void {
+	function scan(node:Object):void {
 		var ctor:any = node.constructor,
-			tagName:string = node['tagName'];
+			key:string,
+			value:any;
 		if (typeof ctor !== 'function') {
 			if (ctor == null) {
-				ctor = defaults.htmlModuleId;
+				node['constructor'] = ctor = defaults.htmlModuleId;
 			}
-			// Parser returns constructors as either string or 1-element string[]
-			// Either way toString should do the trick
-			var moduleId:string = ctor.toString();
-			node['constructor'] = moduleId;
 			// Add to list of dependencies if not already in our dep list
-			dependencies.indexOf(moduleId) === -1 && dependencies.push(moduleId);
+			dependencies.indexOf(ctor) === -1 && dependencies.push(ctor);
 		}
 		var key:string,
 			value:any;
-		// TODO: once we simplify our ast we can just walk children
 		for (key in node) {
 			value = node[key];
 			if (value instanceof Array) {
-				array.forEach(value, recurse);
+				array.forEach(value, scan);
 			}
 			else if (value && typeof value === 'object') {
-				recurse(value);
+				scan(value);
 			}
 		}
 	}
-	recurse(node);
+	scan(node);
 	return dependencies;
 }
 
-export function constructWidget(node:any, parent:widgets.IWidget, widgetArgs:any = {}):widgets.IDomWidget {
+export function constructWidget(node:any, parent:ui.IWidget, widgetArgs:any = {}):ui.IDomWidget {
 	var key:string,
 		value:any,
 		binding:any,
 		WidgetCtor:any = require(node.constructor),
-		widget:widgets.IDomWidget,
+		widget:ui.IDomWidget,
 		fieldBindings:{ [key:string]: string; } = {},
 		bindingTemplates:{ [key:string]: any; } = {};
 
@@ -81,7 +77,7 @@ export function constructWidget(node:any, parent:widgets.IWidget, widgetArgs:any
 			// Ignore these keys
 		}
 		else if (key === 'children' && value) {
-			widgetArgs.children = array.map(node.children, (child:any):widgets.IDomWidget => {
+			widgetArgs.children = array.map(node.children, (child:any):ui.IDomWidget => {
 				return constructWidget(child, null, { app: widgetArgs.app });
 			});
 		}

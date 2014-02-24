@@ -5,7 +5,7 @@ import ValidationError = require('../validation/ValidationError');
  * The IModel interface should be implemented by any object that is intended to be used as a data model within the
  * framework.
  */
-export interface IModel extends core.IComponent, core.IObservable {
+export interface IModel extends core.IApplicationComponent, core.IObservable {
 	addError(key:string, error:ValidationError):void;
 
 	/**

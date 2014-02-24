@@ -21,7 +21,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		return new Property<T>(kwArgs);
 	}
 
-	private _app:core.IApplication;
+	/* private */ _app:core.IApplication;
 	private _collection:any /*dstore.Collection*/;
 	private _isExtensible:boolean = false;
 	private _scenario:string = 'insert';

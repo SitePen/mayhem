@@ -10,15 +10,15 @@ import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
 import Style = require('./style/Style');
 import style = require('./style/interfaces');
+import ui = require('./interfaces');
 import util = require('../util');
-import widgets = require('./interfaces');
 
 var uid = 0,
 	platform = has('host-browser') ? 'dom/' : '',
 	registry = {};
 
-class Widget extends ObservableEvented implements widgets.IWidget {
-	static byId(id:string):widgets.IWidget {
+class Widget extends ObservableEvented implements ui.IWidget {
+	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
 
@@ -32,24 +32,24 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 
 
 	private _activeMediator:core.IMediator;
-	private _app:core.IApplication;
+	/* private */ _app:core.IApplication;
 	/* protected */ _attached:boolean;
 	private _bindings:binding.IBindingHandle[];
-	private _classList:widgets.IClassList;
+	/* private */ _classList:ui.IClassList;
 	/* protected */ _id:string;
 	/* protected */ _mediator:core.IMediator;
-	/* protected */ _parent:widgets.IContainerWidget;
+	/* protected */ _parent:ui.IContainer;
 	private _parentAttachedHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
-	private _style:Style;
+	/* private */ _style:Style;
 
 	get(key:'app'):core.IApplication;
-	get(key:'classList'):widgets.IClassList;
+	get(key:'classList'):ui.IClassList;
 	get(key:'id'):string;
 	get(key:'index'):number;
 	// TODO: Not sure if mediator belongs here. Should go to IView?
 	get(key:'mediator'):core.IMediator;
-	get(key:'parent'):widgets.IContainerWidget;
+	get(key:'parent'):ui.IContainer;
 	get(key:'style'):Style;
 	get(key:string):void;
 	get(key:string):any {
@@ -152,7 +152,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		this.set('activeMediator', mediator);
 	}
 
-	private _nextGetter():widgets.IWidget {
+	private _nextGetter():ui.IWidget {
 		var parent = this.get('parent');
 
 		if (!parent) {
@@ -163,7 +163,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		return parent.get('children')[index + 1];
 	}
 
-	/* protected */ _parentSetter(parent:widgets.IContainerWidget):void {
+	/* protected */ _parentSetter(parent:ui.IContainer):void {
 		this._parent = parent;
 		// Observe parent active mediator
 		this._parentMediatorHandle && this._parentMediatorHandle.remove();
@@ -180,22 +180,26 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		// Observe parent's attached state
 		this._parentAttachedHandle && this._parentAttachedHandle.remove();
 		this._parentAttachedHandle = parent.observe('attached', (parentAttached:boolean):void => {
-			this._attached !== parentAttached && this.set('attached', parentAttached);
+			if (this._attached !== parentAttached) {
+				this.set('attached', parentAttached);
+			}
 		});
-		parent.get('attached') && this.set('attached', true);
+		if (parent.get('attached')) {
+			this.set('attached', true);
+		}
 	}
 
-	placeAt(destination:widgets.IWidget, position:PlacePosition):IHandle;
-	placeAt(destination:widgets.IContainerWidget, position:number):IHandle;
-	placeAt(destination:widgets.IContainerWidget, placeholder:string):IHandle;
-	placeAt(destination:widgets.IContainerWidget, position:any = PlacePosition.LAST):IHandle {
+	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
+	placeAt(destination:ui.IContainer, position:number):IHandle;
+	placeAt(destination:ui.IContainer, placeholder:string):IHandle;
+	placeAt(destination:any, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
 		if (has('debug') && !destination) {
 			throw new Error('Cannot place widget at undefined destination');
 		}
 
-		var destinationParent:widgets.IContainerWidget = destination.get('parent');
+		var destinationParent:ui.IContainer = destination.get('parent');
 
 		if (position === PlacePosition.BEFORE) {
 			if (has('debug') && !destinationParent) {
@@ -217,7 +221,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 			}
 
 			var index:number = destination.get('index'),
-				parent:widgets.IContainer = destinationParent;
+				parent:ui.IContainer = destinationParent;
 			destination.detach();
 			handle = parent.add(this, index);
 		}
@@ -228,7 +232,7 @@ class Widget extends ObservableEvented implements widgets.IWidget {
 		return handle;
 	}
 
-	private _previousGetter():widgets.IWidget {
+	private _previousGetter():ui.IWidget {
 		var parent = this.get('parent');
 
 		if (!parent) {

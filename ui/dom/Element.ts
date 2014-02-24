@@ -1,14 +1,10 @@
 import array = require('dojo/_base/array');
+import ContentComponent = require('./ContentComponent');
 import core = require('../../interfaces');
 import domConstruct = require('dojo/dom-construct');
-import DomContainer = require('./Container');
 import domUtil = require('./util');
-import lang = require('dojo/_base/lang');
-import MultiNodeWidget = require('./MultiNodeWidget');
-// import Placeholder = require('./Placeholder');
-// import NamedPlaceholder = require('../../templating/html/ui/Placeholder');
 import util = require('../../util');
-import widgets = require('../interfaces');
+import ui = require('../interfaces');
 
 var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
 	BINDING_PATTERN:RegExp = /^\s*binding#(\d+)\s*$/;
@@ -16,7 +12,7 @@ var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
-class DomElement extends DomContainer {
+class DomElement extends ContentComponent { // implements ui.IViewWidget
 	private _childPositionNodes:Node[];
 	/* protected */ _content:Node;
 	/* protected */ _html:string;
@@ -25,10 +21,10 @@ class DomElement extends DomContainer {
 	private _textBindingPaths:string[];
 
 	// TODO: TS#2153
-	// get(key:'children'):widgets.IDomWidget[];
+	// get(key:'children'):ui.IDomWidget[];
 	// get(key:'html'):string;
-	// get(key:'placeholders'):{ [id:string]:widgets.IPlaceholder; };
-	// set(key:'children', value:widgets.IDomWidget[]):void;
+	// get(key:'placeholders'):{ [id:string]:ui.IPlaceholder; };
+	// set(key:'children', value:ui.IDomWidget[]):void;
 	// set(key:'html', value:string):void;
 
 	constructor(kwArgs:any = {}) {
@@ -37,7 +33,7 @@ class DomElement extends DomContainer {
 		super(kwArgs);
 	}
 
-	/* protected */ _childrenSetter(children:widgets.IDomWidget[]):void {
+	/* protected */ _childrenSetter(children:ui.IDomWidget[]):void {
 		this._children = children || [];
 		this._placeChildren();
 	}
@@ -58,10 +54,10 @@ class DomElement extends DomContainer {
 	private _placeChildren():void {
 		// TODO: find a way to use DomContainer#add for this?
 		// TODO: work out how to do a this.empty()
-		var children:widgets.IDomWidget[] = this._children,
+		var children:ui.IDomWidget[] = this._children,
 			targets:Node[] = this._childPositionNodes,
 			target:Node,
-			child:widgets.IDomWidget,
+			child:ui.IDomWidget,
 			firstNode:Node,
 			lastNode:Node,
 			contents:Node;
@@ -99,14 +95,18 @@ class DomElement extends DomContainer {
 		this._textBindingNodes = [];
 		this._textBindingPaths = [];
 		this._childPositionNodes = [];
+		var bindingCount = 0;
 
-		// Process and create placeholders for children and do text node bindings
-		var processed:string[] = array.map(html, (item:any, i:number):string => {
-			if (!item.binding) {
-				return item;
+		// Process and create placeholders for children and text bindings
+		var processed:string[] = array.map(html, (item:any):string => {
+			// Insert comment to mark binding or child location so we easily replace in generated dom
+			if (item.binding != null) {
+				return '<!-- binding#' + bindingCount++ + ' -->';
 			}
-			// Insert comment to mark binding location so we easily replace in generated dom
-			return '<!-- binding#' + i + ' -->';
+			if (item.child != null) {
+				return '<!-- child#' + item.child + ' -->';
+			}
+			return item;
 		});
 		this._html = processed.join('');
 

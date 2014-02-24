@@ -1,9 +1,8 @@
-import DomContainer = require('./Container');
 import DijitWidget = require('./DijitWidget');
 import MenuItem = require('./MenuItem');
 import __PopupMenuItem = require('dijit/PopupMenuItem');
+import ui = require('../interfaces');
 import util = require('../../util');
-import widgets = require('../interfaces');
 
 class PopupMenuItem extends MenuItem {
 	private _popup:DijitWidget;
@@ -14,11 +13,11 @@ class PopupMenuItem extends MenuItem {
 		super(kwArgs);
 	}
 
-	_childrenSetter(children:widgets.IDomWidget[]):void {
+	_childrenSetter(children:ui.IDomWidget[]):void {
 		// We need to grab a child widget to use for popup
 		// If only child is Element use its last child, otherwise use last child
 		var elementChild:boolean = children.length === 1 && !(children[0] instanceof DijitWidget);
-		var widgets:widgets.IDomWidget[] = elementChild && children[0].get('children') || children;
+		var widgets:ui.IDomWidget[] = elementChild && children[0].get('children') || children;
 		var target:DijitWidget = <DijitWidget> widgets.pop();
 		target && this.set('popup', target);
 		super._childrenSetter(children);

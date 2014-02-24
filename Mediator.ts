@@ -14,7 +14,7 @@ import Stateful = require('dojo/Stateful');
 import util = require('./util');
 
 class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
-	private _app:core.IApplication;
+	/* private */ _app:core.IApplication;
 	private _model:data.IModel;
 
 	get(key:'model'):data.IModel;

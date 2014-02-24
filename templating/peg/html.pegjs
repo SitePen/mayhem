@@ -143,11 +143,11 @@ Template
 // HTML
 
 Element 'HTML'
-	= content:(
+	= items:(
 		AnyNonElement
 		/ HtmlFragment
 	)+ {
-		var html = '',
+		var content = [],
 			element = {
 				constructor: null,
 				children: []
@@ -156,26 +156,55 @@ Element 'HTML'
 			nonWhitespace = /\S/,
 			hasText = false;
 
-		for (var i = 0, j = content.length; i < j; ++i) {
-			var node = content[i];
+		for (var i = 0, j = items.length; i < j; ++i) {
+			var node = items[i];
 
-			// Ignore null nodes
+			// An alias node will be transformed into a null node
 			if (!node) {
 				continue;
 			}
 
 			if (typeof node === 'string') {
-				html += node;
-				hasText || (hasText = nonWhitespace.test(node));
+				content.push(node);
+				hasText || (hasText = nonWhitespace.test(node))
 			}
 			else {
-				html += '<!-- child#' + children.length + ' -->';
+				content.push({ child: children.length });
 				children.push(node);
 			}
 		}
 
-		// If Element is just children and whitespace null out html as a signal to collapse it
-		element.html = hasText || !children.length ? parseBoundText(html) : null;
+		if (children.length && !hasText) {
+			// If Element is just children and whitespace null out html as a signal to collapse it
+			element.html = null;
+			return element;
+		}
+		if (content.length === 1 && typeof content[0] === 'string') {
+			// Flatten to string if content is just a single string in an array
+			element.html = content[0];
+			return element;
+		}
+		// Parse the string portions of our html template for text bindings
+		var results = [],
+			item,
+			parsed;
+		for (var i = 0, len = content.length; i < len; ++i) {
+			item = content[i];
+			if (typeof item === 'string') {
+				parsed = parseBoundText(item);
+				// TODO: clean this up
+				if (parsed.binding) {
+					results = results.concat(parsed.binding);
+				}
+				else {
+					results.push(parsed);
+				}
+			}
+			else {
+				results.push(item);
+			}
+		}
+		element.html = results;
 		return element;
 	}
 
@@ -344,6 +373,7 @@ Placeholder '<placeholder>'
 		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
 		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
 		return placeholder;
+		// TODO: return { named: attribute.name };
 	}
 
 Alias '<alias>'
@@ -378,7 +408,7 @@ AttributeMap
 
 Attribute
 	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue {
-		// We have to invert null and undefined here to disambiguate null return from JSONAttributeValue
+		// We have to invert null and undefined here to disambiguate a null return from JSONAttributeValue
 		return value === null ? undefined : value;
 	})? {
 		// Treat attributes without values as true

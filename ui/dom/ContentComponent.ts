@@ -1,16 +1,15 @@
 import binding = require('../../binding/interfaces');
 import core = require('../../interfaces');
-import DomPlaceholder = require('./Placeholder');
 import has = require('../../has');
+import MultiNodeWidget = require('./MultiNodeWidget');
 import ObservableEvented = require('../../ObservableEvented');
 import PlacePosition = require('../PlacePosition');
+import ui = require('../interfaces');
 import util = require('../../util');
-import MultiNodeWidget = require('./MultiNodeWidget');
-import widgets = require('../interfaces');
 
-class DomContainer extends MultiNodeWidget implements widgets.IContainer {
-	/* protected */ _children:widgets.IDomWidget[];
-	private _placeholders:{ [id:string]: DomPlaceholder; };
+class ContentComponent extends MultiNodeWidget implements ui.IContainer {
+	/* protected */ _children:ui.IDomWidget[];
+	private _placeholders:{ [name:string]: ui.IPlaceholder; };
 
 	constructor(kwArgs?:Object) {
 		this._children || (this._children = []);
@@ -19,13 +18,13 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 	}
 
 	// TS#2153
-	// get(key:'children'):widget.IDomWidget[];
-	// get(key:'placeholders'):{ [id:string]: DomPlaceholder; };
+	// get(key:'children'):ui.IDomWidget[];
+	// get(key:'placeholders'):{ [name:string]: ui.IPlaceholder; };
 
-	add(widget:widgets.IDomWidget, position:PlacePosition):IHandle;
-	add(widget:widgets.IDomWidget, position:number):IHandle;
-	add(widget:widgets.IDomWidget, placeholder:string):IHandle;
-	add(widget:widgets.IDomWidget, position:any = PlacePosition.LAST):IHandle {
+	add(widget:ui.IDomWidget, position:PlacePosition):IHandle;
+	add(widget:ui.IDomWidget, position:number):IHandle;
+	add(widget:ui.IDomWidget, placeholder:string):IHandle;
+	add(widget:ui.IDomWidget, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
 		if (typeof position === 'string') {
@@ -67,7 +66,7 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 				position = Math.max(0, Math.min(this._children.length, position));
 			}
 
-			var referenceWidget:widgets.IWidget = this._children[position];
+			var referenceWidget:ui.IWidget = this._children[position];
 			this._children.splice(position, 0, widget);
 			this._addToContainer(widget, referenceWidget);
 
@@ -87,7 +86,7 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 		return handle;
 	}
 
-	/* protected */ _addToContainer(widget:widgets.IDomWidget, referenceWidget:widgets.IWidget):void {
+	/* protected */ _addToContainer(widget:ui.IDomWidget, referenceWidget:ui.IWidget):void {
 		var widgetNode:Node = widget.detach(),
 			referenceNode:Node = referenceWidget ? referenceWidget.get('firstNode') : null;
 
@@ -103,7 +102,7 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 	}
 
 	empty():void {
-		var widget:widgets.IWidget;
+		var widget:ui.IWidget;
 		while ((widget = this._children.pop())) {
 			widget.detach();
 		}
@@ -114,9 +113,9 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 	}
 
 	remove(index:number):void;
-	remove(widget:widgets.IWidget):void;
+	remove(widget:ui.IWidget):void;
 	remove(index:any):void {
-		var widget:widgets.IWidget;
+		var widget:ui.IWidget;
 
 		if (typeof index !== 'number') {
 			widget = index;
@@ -137,4 +136,4 @@ class DomContainer extends MultiNodeWidget implements widgets.IContainer {
 	}
 }
 
-export = DomContainer;
+export = ContentComponent;

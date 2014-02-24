@@ -4,7 +4,7 @@ import core = require('./interfaces');
 import Evented = require('dojo/Evented');
 import Observable = require('./Observable');
 
-class ObservableEvented extends Observable implements Evented {
+class ObservableEvented extends Observable implements core.IObservableEvented {
 	constructor(kwArgs?:Object) {
 		super(kwArgs);
 		Evented.apply(this, arguments);

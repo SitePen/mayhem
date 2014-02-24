@@ -2,6 +2,7 @@
 
 import binding = require('./binding/interfaces');
 import data = require('./data/interfaces');
+import IEvented = require('dojo/Evented');
 import ObservableArray = require('./ObservableArray');
 import ValidationError = require('./validation/ValidationError');
 
@@ -16,17 +17,15 @@ export interface IArrayObserver<T> {
 	(atIndex:number, insertedItems:ObservableArray<T>, removedItems:ObservableArray<T>):void;
 }
 
-export interface IComponent {
-	get(key:'app'):IApplication;
-	set(key:'app', value:IApplication):void;
+export interface IApplicationComponent {
+	/* private */ _app:IApplication;
+
+	// get(key:'app'):IApplication;
 
 	get(key:string):any;
-
-	set(kwArgs:Object):void;
-	set(key:string, value:any):void;
 }
 
-export interface IMediator extends IComponent, IObservable {
+export interface IMediator extends IApplicationComponent, IObservable {
 	/* protected */ _observers:{ [key:string]: IObserver<any>[]; };
 
 	get(key:'model'):data.IModel;
@@ -46,6 +45,9 @@ export interface IObservable {
 	observe<T>(key:string, observer:IObserver<T>):IHandle;
 	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
+}
+
+export interface IObservableEvented extends IObservable, IEvented {
 }
 
 export interface IObserver<T> {

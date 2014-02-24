@@ -1,4 +1,4 @@
-<widget is='framework/ui/dom/layout/BorderContainer' id='main' liveSplitters='' design='sidebar'>
+<widget is='framework/ui/dom/layout/BorderContainer' id='main' live-splitters='' design='sidebar'>
 	<widget id='leftAccordion' is='framework/ui/dom/layout/AccordionContainer' region='leading' splitter='splitter'>
 		<widget is='framework/ui/dom/layout/ContentPane' title='Popups and Alerts'>TODO</widget>
 		<widget is='framework/ui/dom/layout/ContentPane' title='Tree'>TODO</widget>
@@ -21,16 +21,16 @@
 			<widget id='fileMenu' is='framework/ui/dom/Menu'>
 				<widget id='globals' is='framework/ui/dom/MenuItem'>Log globals</widget>
 				<widget id='widgets' is='framework/ui/dom/MenuItem'>Log widgets</widget>
-				<widget id='destroy' is='framework/ui/dom/MenuItem' iconClass='dijitIconDelete'>Destroy All</widget>
+				<widget id='destroy' is='framework/ui/dom/MenuItem' icon-class='dijitIconDelete'>Destroy All</widget>
 			</widget>
 		</widget>
 		<widget id='edit' is='framework/ui/dom/PopupMenuBarItem' label='Edit'>
 			<widget id='editMenu' is='framework/ui/dom/Menu'>
-				<widget id='cut' is='framework/ui/dom/MenuItem' label='Cut' onClick='cut' iconClass='dijitIconCut'/>
-				<widget id='copy' is='framework/ui/dom/MenuItem' label='Copy' onClick='copy' iconClass='dijitIconCopy' />
-				<widget id='paste' is='framework/ui/dom/MenuItem' label='Paste' onClick='paste' iconClass='dijitIconPaste'/>
-				<widget id='separator' is='framework/ui/dom/MenuSeparator' label='Paste' onClick='paste' iconClass='dijitIconPaste'/>
-				<widget id='undo' is='framework/ui/dom/MenuItem' label='Undo' onClick='undo' iconClass='dijitIconUndo'/>
+				<widget id='cut' is='framework/ui/dom/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'/>
+				<widget id='copy' is='framework/ui/dom/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy' />
+				<widget id='paste' is='framework/ui/dom/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'/>
+				<widget id='separator' is='framework/ui/dom/MenuSeparator' label='Paste' on-click='paste' icon-class='dijitIconPaste'/>
+				<widget id='undo' is='framework/ui/dom/MenuItem' label='Undo' on-click='undo' icon-class='dijitIconUndo'/>
 			</widget>
 		</widget>
 		<widget id='view' is='framework/ui/dom/PopupMenuBarItem' label='View'>
@@ -81,43 +81,43 @@
 			<p>Buttons can do an action, display a menu, or both:</p>
 			<div>
 				Enabled:
-				<widget is='framework/ui/dom/form/Button' label='Simple' iconClass='dijitIconTask'/>
-				<widget is='framework/ui/dom/form/DropDownButton' iconClass='dijitIconEdit'>
+				<widget is='framework/ui/dom/form/Button' label='Simple' icon-class='dijitIconTask'/>
+				<widget is='framework/ui/dom/form/DropDownButton' icon-class='dijitIconEdit'>
 					Drop Down
 					<widget is='framework/ui/dom/DropDownMenu'>
-						<widget is='framework/ui/dom/MenuItem' label='Cut' onClick='cut' iconClass='dijitIconCut'/>
-						<widget is='framework/ui/dom/MenuItem' label='Copy' onClick='copy' iconClass='dijitIconCopy'/>
-						<widget is='framework/ui/dom/MenuItem' label='Paste' onClick='paste' iconClass='dijitIconPaste'/>
+						<widget is='framework/ui/dom/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'/>
+						<widget is='framework/ui/dom/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'/>
+						<widget is='framework/ui/dom/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'/>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dom/form/ComboButton' label='Combo' dropDown='combo-menu' iconClass='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='framework/ui/dom/form/ComboButton' label='Combo' drop-down='combo-menu' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
 					<widget is='framework/ui/dom/DropDownMenu'>
-						<widget is='framework/ui/dom/MenuItem' label='Save' onClick='save' iconClass='dijitEditorIcon dijitEditorIconSave'/>
-						<widget is='framework/ui/dom/MenuItem' label='Save As' onClick='save-as'/>
+						<widget is='framework/ui/dom/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'/>
+						<widget is='framework/ui/dom/MenuItem' label='Save As' on-click='save-as'/>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dom/form/ToggleButton' label='Toggle' checked iconClass='dijitCheckBoxIcon'/>
+				<widget is='framework/ui/dom/form/ToggleButton' label='Toggle' checked icon-class='dijitCheckBoxIcon'/>
 			</div>
 			<div>
 				Disabled:
-				<widget is='framework/ui/dom/form/Button' disabled label='Simple' iconClass='dijitIconTask'/>
-				<widget is='framework/ui/dom/form/DropDownButton' disabled iconClass='dijitIconEdit'>
+				<widget is='framework/ui/dom/form/Button' disabled label='Simple' icon-class='dijitIconTask'/>
+				<widget is='framework/ui/dom/form/DropDownButton' disabled icon-class='dijitIconEdit'>
 					<strong>Drop</strong> Down
 					<widget is='framework/ui/dom/DropDownMenu'>
-						<widget is='framework/ui/dom/MenuItem' label='Cut' iconClass='dijitEditorIcon dijitEditorIconCut' onClick='cut'/>
-						<widget is='framework/ui/dom/MenuItem' label='Copy' iconClass='dijitEditorIcon dijitEditorIconCopy' onClick='copy'/>
-						<widget is='framework/ui/dom/MenuItem' label='Paste' iconClass='dijitEditorIcon dijitEditorIconPaste' onClick='paste'/>
+						<widget is='framework/ui/dom/MenuItem' label='Cut' icon-class='dijitEditorIcon dijitEditorIconCut' on-click='cut'/>
+						<widget is='framework/ui/dom/MenuItem' label='Copy' icon-class='dijitEditorIcon dijitEditorIconCopy' on-click='copy'/>
+						<widget is='framework/ui/dom/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'/>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dom/form/ComboButton' disabled label='Combo' dropDown='combo-menu' iconClass='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='framework/ui/dom/form/ComboButton' disabled label='Combo' drop-down='combo-menu' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
 					<widget is='framework/ui/dom/DropDownMenu'>
-						<widget is='framework/ui/dom/MenuItem' label='Save' onClick='save' iconClass='dijitEditorIcon dijitEditorIconSave'/>
-						<widget is='framework/ui/dom/MenuItem' label='Save As' onClick='save-as'/>
+						<widget is='framework/ui/dom/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'/>
+						<widget is='framework/ui/dom/MenuItem' label='Save As' on-click='save-as'/>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dom/form/ToggleButton' disabled label='Toggle' checked iconClass='dijitCheckBoxIcon'/>
+				<widget is='framework/ui/dom/form/ToggleButton' disabled label='Toggle' checked icon-class='dijitCheckBoxIcon'/>
 			</div>
 
 			<hr class='spacer'></hr>
@@ -148,9 +148,9 @@
 
 			<h2>DateTextBox</h2>
 			<label for='date1'>Enabled w/placeHolder:</label>
-			<widget id='date1' is='framework/ui/dom/form/DateTextBox' placeHolder='Birthday'/>
+			<widget id='date1' is='framework/ui/dom/form/DateTextBox' place-holder='Birthday'/>
 			<label for='date2'>Disabled w/placeHolder:</label>
-			<widget id='date2' is='framework/ui/dom/form/DateTextBox' disabled placeHolder='Birthday'/>
+			<widget id='date2' is='framework/ui/dom/form/DateTextBox' disabled place-holder='Birthday'/>
 			<label for='date3'>Disabled w/value:</label>
 			<widget id='date3' is='framework/ui/dom/form/DateTextBox' disabled value='2008-12-25'/>
 
@@ -197,7 +197,7 @@
 			 This pane is closable, just for the icon ...
 		</widget>
 	</widget>
-	<widget id='bottomTabs' is='framework/ui/dom/layout/TabContainer' region='bottom' tabPosition='bottom' splitter='splitter'>
+	<widget id='bottomTabs' is='framework/ui/dom/layout/TabContainer' region='bottom' tab-position='bottom' splitter='splitter'>
 		<widget is='framework/ui/dom/layout/ContentPane' title='Info' selected>
 			<p>You can explore this single page after applying a Theme for use in creation of your own theme.</p>
 			<p>I am whole slew of Widgets on a page. Jump to <a href='/dijit/tests/'>dijit tests</a> to test individual components.</p>
