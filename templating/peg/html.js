@@ -151,7 +151,7 @@ define([], function () {
         		conditional.content = consequent;
 
         		return {
-        			constructor: 'framework/templating/html/ui/Conditional',
+        			constructor: 'framework/templating/html/Conditional',
         			conditions: [ conditional ].concat(alternates),
         			alternate: alternate
         		};
@@ -179,7 +179,7 @@ define([], function () {
         peg$c47 = { type: "literal", value: "<else>", description: "\"<else>\"" },
         peg$c48 = { type: "other", description: "<for...>" },
         peg$c49 = function(forWidget, template) {
-        		forWidget.constructor = 'framework/templating/html/ui/Iterator';
+        		forWidget.constructor = 'framework/templating/html/Iterator';
         		forWidget.template = template;
         		return forWidget;
         	},
@@ -195,7 +195,7 @@ define([], function () {
         peg$c56 = { type: "literal", value: "</for>", description: "\"</for>\"" },
         peg$c57 = { type: "other", description: "<when>" },
         peg$c58 = function(when, resolved, error, progress) {
-        		when.constructor = 'framework/templating/html/ui/When';
+        		when.constructor = 'framework/templating/html/When';
         		when.resolved = resolved;
         		when.error = error;
         		when.progress = progress;
@@ -254,7 +254,7 @@ define([], function () {
         peg$c86 = { type: "literal", value: "<placeholder", description: "\"<placeholder\"" },
         peg$c87 = function(placeholder) {
         		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
-        		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
+        		placeholder.constructor = 'framework/templating/html/Placeholder';
         		return placeholder;
         		// TODO: return { named: attribute.name };
         	},

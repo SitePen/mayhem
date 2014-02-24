@@ -3,13 +3,12 @@
 import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
-import ClassList = require('./style/ClassList');
+import ClassList = require('./ClassList');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
-import Style = require('./style/Style');
-import style = require('./style/interfaces');
+import Style = require('./Style');
 import ui = require('./interfaces');
 import util = require('../util');
 
@@ -41,7 +40,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _parent:ui.IContainer;
 	private _parentAttachedHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
-	/* private */ _style:Style;
+	/* private */ _style:ui.IStyle;
 
 	get(key:'app'):core.IApplication;
 	get(key:'classList'):ui.IClassList;
@@ -50,7 +49,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	// TODO: Not sure if mediator belongs here. Should go to IView?
 	get(key:'mediator'):core.IMediator;
 	get(key:'parent'):ui.IContainer;
-	get(key:'style'):Style;
+	get(key:'style'):ui.IStyle;
 	get(key:string):void;
 	get(key:string):any {
 		return super.get(key);

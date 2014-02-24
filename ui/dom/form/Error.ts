@@ -3,11 +3,11 @@ import core = require('../../../interfaces');
 import data = require('../../../data/interfaces');
 import domConstruct = require('dojo/dom-construct');
 import domUtil = require('../util');
-import SingleNodeWidget = require('../SingleNodeWidget');
+import ElementWidget = require('../ElementWidget');
 import util = require('../../../util');
 import ValidationError = require('../../../validation/ValidationError');
 
-class FormError extends SingleNodeWidget {
+class FormError extends ElementWidget {
 	private _binding:string;
 	private _errorsProxty:core.IProxty<ValidationError[]>;
 	/* protected */ _firstNode:HTMLUListElement;

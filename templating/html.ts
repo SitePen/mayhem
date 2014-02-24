@@ -8,7 +8,7 @@ import ui = require('../ui/interfaces');
 import util = require('../util');
 
 export var defaults = {
-	htmlModuleId: 'framework/ui/dom/Element',
+	htmlModuleId: 'framework/ui/dom/ViewWidget',
 };
 
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {

@@ -260,7 +260,7 @@ If '<if>'
 		conditional.content = consequent;
 
 		return {
-			constructor: 'framework/templating/html/ui/Conditional',
+			constructor: 'framework/templating/html/Conditional',
 			conditions: [ conditional ].concat(alternates),
 			alternate: alternate
 		};
@@ -288,7 +288,7 @@ ElseTag '<else>'
 
 For '<for...>'
 	= forWidget:ForTagOpen template:Any ForTagClose {
-		forWidget.constructor = 'framework/templating/html/ui/Iterator';
+		forWidget.constructor = 'framework/templating/html/Iterator';
 		forWidget.template = template;
 		return forWidget;
 	}
@@ -310,7 +310,7 @@ When '<when>'
 	error:(WhenErrorTag content:Any? { return content })?
 	progress:(WhenProgressTag content:Any? { return content })?
 	WhenTagClose {
-		when.constructor = 'framework/templating/html/ui/When';
+		when.constructor = 'framework/templating/html/When';
 		when.resolved = resolved;
 		when.error = error;
 		when.progress = progress;
@@ -371,7 +371,7 @@ WidgetNoChildren '<widget/>'
 Placeholder '<placeholder>'
 	= '<placeholder'i placeholder:AttributeMap '>' {
 		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
-		placeholder.constructor = 'framework/templating/html/ui/Placeholder';
+		placeholder.constructor = 'framework/templating/html/Placeholder';
 		return placeholder;
 		// TODO: return { named: attribute.name };
 	}

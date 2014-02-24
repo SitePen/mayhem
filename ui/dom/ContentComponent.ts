@@ -1,15 +1,15 @@
 import binding = require('../../binding/interfaces');
 import core = require('../../interfaces');
 import has = require('../../has');
-import MultiNodeWidget = require('./MultiNodeWidget');
+import FragmentWidget = require('./FragmentWidget');
 import ObservableEvented = require('../../ObservableEvented');
 import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
 
-class ContentComponent extends MultiNodeWidget implements ui.IContainer {
+class ContentComponent extends FragmentWidget implements ui.IContainer {
 	/* protected */ _children:ui.IDomWidget[];
-	private _placeholders:{ [name:string]: ui.IPlaceholder; };
+	private _placeholders:{ [name:string]: ui.IPlaceholder; }; // TOOD: move to IPlacehodlingWidget
 
 	constructor(kwArgs?:Object) {
 		this._children || (this._children = []);

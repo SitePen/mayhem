@@ -1,11 +1,11 @@
 import domUtil = require('./util');
-import MultiNodeWidget = require('./MultiNodeWidget');
-import widgets = require('../interfaces');
+import FragmentWidget = require('./FragmentWidget');
+import ui = require('../interfaces');
 
-class DomPlaceholder extends MultiNodeWidget {
-	private _content:widgets.IDomWidget;
+class DomPlaceholder extends FragmentWidget implements ui.IPlaceholder {
+	private _content:ui.IDomWidget;
 
-	private _contentSetter(widget:widgets.IDomWidget):void {
+	private _contentSetter(widget:ui.IDomWidget):void {
 		if (this._content === widget) {
 			return;
 		}

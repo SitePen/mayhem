@@ -1,6 +1,5 @@
 import ContentComponent = require('./ContentComponent');
 import util = require('../../util');
-import widgets = require('../interfaces');
 
 class DomMaster extends ContentComponent {
 	attachToWindow(node:Node):IHandle {

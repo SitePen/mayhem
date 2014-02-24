@@ -1,12 +1,10 @@
 /// <reference path="../dojo" />
 
+import AddPosition = require('./AddPosition');
+import BackgroundRepeat = require('./BackgroundRepeat');
 import BindDirection = require('../binding/BindDirection');
-import binding = require('../binding/interfaces');
 import core = require('../interfaces');
-import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
-import Style = require('./style/Style');
-import style = require('./style/interfaces');
 
 export interface IClassList extends core.IProxty<string> {
 	add(className:string):void;
@@ -21,7 +19,7 @@ export interface IComponentWidget extends IElementWidget, IContentComponent {
 export interface IContainer extends core.IObservable {
 	/* protected */ _children:IDomWidget[];
 
-	add(widget:IWidget, position:PlacePosition):IHandle;
+	add(widget:IWidget, position:AddPosition):IHandle;
 	add(widget:IWidget, position:number):IHandle;
 	add(widget:IWidget, placeholder:string):IHandle;
 
@@ -34,7 +32,7 @@ export interface IContainer extends core.IObservable {
 }
 
 export interface IContainerWidget extends IContentWidget, IContainer {
-	_childPlaceholders:IPlaceholder[];
+	// _childPlaceholders:IPlaceholder[];
 }
 
 export interface IContentComponent extends ITextBindingWidget, IContainerWidget, IPlaceholdingWidget {
@@ -42,10 +40,9 @@ export interface IContentComponent extends ITextBindingWidget, IContainerWidget,
 }
 
 export interface IContentWidget extends IDomWidget {
-	_contentFragment:DocumentFragment;
-	_contentString:string;
+	_content:DocumentFragment;
 
-	setContent(value:string):void;
+	setContent(content:any /* Node | string */):void;
 
 	clear():void;
 } 
@@ -54,18 +51,17 @@ export interface IDomWidget extends IWidget, core.IApplicationComponent {
 	_classList:IClassList;
 	_firstNode:Node;
 	_lastNode:Node;
-	_style:Style;
+	_style:IStyle;
 
 	// get(key:'classList'):IClassList;
 	// get(key:'firstNode'):Node;
 	// get(key:'lastNode'):Node;
-	// get(key:'style'):Style;
+	// get(key:'style'):IStyle;
 
 	detach():Node;
 }
 
 export interface IElementWidget extends IDomWidget {
-	// note: this represents framework/ui/dom/SingleNodeWidget, NOT framework/ui/dom/Element
 	_elementType:string;
 	_firstNode:Node; // HTMLElement
 	_lastNode:Node; // HTMLElement
@@ -95,21 +91,21 @@ export interface IPaneWidget extends IViewWidget {
 }
 
 export interface IPlaceholder extends IFragmentWidget {
-	_content:IDomWidget;
+	// _content:IDomWidget;
 
 	// get(key:'content'):IDomWidget;
 }
 
 export interface IPlaceholdingWidget extends IContentWidget, IContainer {
-	 _namedPlaceholders:{ [key:string]: IPlaceholder };
+	// _namedPlaceholders:{ [key:string]: IPlaceholder };
 
-	 // get(key:'namedPlaceholders'):{ [key:string]: IPlaceholder };
+	// get(key:'namedPlaceholders'):{ [key:string]: IPlaceholder };
 }
 
 export interface ITextBindingWidget extends IContentWidget {
-	_textBindingNodes:Node[];
-	_textBindingHandles:IHandle[];
-	_textBindingPaths:string[];
+	// _textBindingNodes:Node[];
+	// _textBindingHandles:IHandle[];
+	// _textBindingPaths:string[];
 }
 
 export interface IViewWidget extends IFragmentWidget, IContentComponent {
@@ -135,3 +131,44 @@ export interface IWidget extends core.IObservableEvented {
 	placeAt(destination:IContainer, placeholder:string):IHandle;
 	resize?(bounds?:{ width:number; height:number; }):void;
 }
+
+/* Style */
+
+export interface IBackgroundImage {
+	attachment: string /* should be enum */;
+	clip: string /* should be enum */;
+	origin: string /* should be enum */;
+	position: string /* should be enum */;
+	repeat: BackgroundRepeat;
+	size: string /* should be enum */;
+	url: string;
+}
+
+/* not all widget backends would support all background features; we are just starting with HTML/CSS for now */
+export interface IBackgroundStyle {
+	color: IColor;
+	images: IBackgroundImage[];
+}
+
+export /* class */ interface IColor {
+	r: number;
+	g: number;
+	b: number;
+	h: number;
+	s: number;
+	l: number;
+	a: number;
+	toHex(): string;
+	toString(): string;
+}
+
+export interface IStyle extends core.IObservable {
+	// Combined styles interface for multiple platform support
+	background?: IBackgroundStyle;
+	textColor?: IColor;
+	/* etc. */
+
+	observe(observer:core.IObserver<any>):IHandle;
+	observe(key:string, observer:core.IObserver<any>):IHandle;
+}
+

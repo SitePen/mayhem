@@ -1,10 +1,10 @@
 /// <reference path="../../../dojo" />
 
 import core = require('../../../interfaces');
-import SingleNodeWidget = require('../SingleNodeWidget');
+import ElementWidget = require('../ElementWidget');
 import util = require('../../../util');
 
-class Label extends SingleNodeWidget {
+class Label extends ElementWidget {
 	private _binding:string;
 	/* protected */ _firstNode:HTMLLabelElement;
 	private _formattedText:string;
