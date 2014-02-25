@@ -34,7 +34,7 @@ require([
 	'framework/templating/html!./bindings.template.html',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dijit/themes/claro/document.css'
-], function (Application, Master, MyMediator, MyModel, processTemplate) {
+], function (Application, Master, MyMediator, MyModel, widget) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -48,7 +48,9 @@ require([
 		});
 
 		var masterView = new Master({});
-		masterView.add(processTemplate(app, mediator));
+		masterView.add(widget);
+		masterView.set('app', app);
+		masterView.set('mediator', mediator);
 		masterView.attachToWindow(document.body);
 
 		// Wait a few seconds and push to observables

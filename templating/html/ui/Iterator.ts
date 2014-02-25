@@ -1,15 +1,15 @@
-/// <reference path="../../dgrid" />
-/// <reference path="../../dojo" />
+/// <reference path="../../../dgrid" />
+/// <reference path="../../../dojo" />
 
 import array = require('dojo/_base/array');
-import core = require('../../interfaces');
+import core = require('../../../interfaces');
 import MemoryStore = require('dojo/store/Memory');
 import OnDemandList = require('dgrid/OnDemandList');
-import ObservableArray = require('../../ObservableArray');
-import processor = require('../html');
-import ElementWidget = require('../../ui/dom/ElementWidget');
-import ui = require('../../ui/interfaces');
-import util = require('../../util');
+import ObservableArray = require('../../../ObservableArray');
+import processor = require('../../processor');
+import ElementWidget = require('../../../ui/dom/ElementWidget');
+import ui = require('../../../ui/interfaces');
+import util = require('../../../util');
 
 class Iterator extends ElementWidget {
 	private _list:OnDemandList;
@@ -105,7 +105,7 @@ class Iterator extends ElementWidget {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		return this._widgetIndex[key] = processor.construct(this._template, {
+		return this._widgetIndex[key] = processor.constructWidget(this._template, {
 			app: this.get('app'),
 			mediator: mediator
 		});

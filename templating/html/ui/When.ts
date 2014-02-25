@@ -1,9 +1,9 @@
-import core = require('../../interfaces');
-import Placeholder = require('../../ui/dom/Placeholder');
+import core = require('../../../interfaces');
+import Placeholder = require('../../../ui/dom/Placeholder');
 import lang = require('dojo/_base/lang');
-import processor = require('../html');
-import ui = require('../../ui/interfaces');
-import util = require('../../util');
+import processor = require('../../processor');
+import ui = require('../../../ui/interfaces');
+import util = require('../../../util');
 
 class When extends Placeholder {
 	defaultErrorWidget:ui.IDomWidget;
@@ -40,7 +40,7 @@ class When extends Placeholder {
 	}
 
 	private _errorSetter(node:any):void {
-		this._errorWidget = processor.construct(node, { parent: this, app: this.get('app') });
+		this._errorWidget = processor.constructWidget(node, { parent: this, app: this.get('app') });
 	}
 
 	private _getSourceMediator():core.IMediator {
@@ -53,7 +53,7 @@ class When extends Placeholder {
 	}
 
 	private _progressSetter(node:any):void {
-		this._progressWidget = processor.construct(node, { parent: this, app: this.get('app') });
+		this._progressWidget = processor.constructWidget(node, { parent: this, app: this.get('app') });
 	}
 
 	private _promiseSetter(field:string):void {
@@ -81,7 +81,7 @@ class When extends Placeholder {
 	}
 
 	private _resolvedSetter(node:any):void {
-		this._resolvedWidget = processor.construct(node, { parent: this });
+		this._resolvedWidget = processor.constructWidget(node, { parent: this });
 	}
 
 	private _valueSetter(field:string):void {

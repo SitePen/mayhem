@@ -1,10 +1,10 @@
 import array = require('dojo/_base/array');
-import core = require('../../interfaces');
-import Placeholder = require('../../ui/dom/Placeholder');
-import domUtil = require('../../ui/dom/util');
-import processor = require('../html');
-import ui = require('../../ui/interfaces');
-import util = require('../../util');
+import core = require('../../../interfaces');
+import Placeholder = require('../../../ui/dom/Placeholder');
+import domUtil = require('../../../ui/dom/util');
+import processor = require('../../processor');
+import ui = require('../../../ui/interfaces');
+import util = require('../../../util');
 
 class Conditional extends Placeholder {
 	private _alternateWidget:ui.IDomWidget;
@@ -25,7 +25,7 @@ class Conditional extends Placeholder {
 	}
 
 	private _alternateSetter(alternate:any):void {
-		this._alternateWidget = processor.construct(alternate, { parent: this });
+		this._alternateWidget = processor.constructWidget(alternate, { parent: this });
 	}
 
 	private _clearConditionHandles():void {
@@ -40,7 +40,7 @@ class Conditional extends Placeholder {
 		this._conditionWidgets = [];
 		this._conditions = conditions;
 		for (var i = 0, length = conditions.length; i < length; ++i) {
-			this._conditionWidgets[i] = processor.construct(conditions[i].content, { parent: this });
+			this._conditionWidgets[i] = processor.constructWidget(conditions[i].content, { parent: this });
 		}
 		this._updateBinding();
 	}

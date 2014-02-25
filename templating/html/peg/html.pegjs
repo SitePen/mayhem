@@ -261,7 +261,7 @@ If '<if>'
 		// TODO: `id` attribute
 		// TODO: make Conditional ternary and restructure AST to nest <elseif> and <else> tags
 		return {
-			constructor: 'framework/templating/html/Conditional',
+			constructor: 'framework/templating/html/ui/Conditional',
 			kwArgs: {
 				conditions: [ conditional ].concat(alternates),
 				alternate: alternate
@@ -294,7 +294,7 @@ ElseTag '<else>'
 For '<for...>'
 	= iterator:ForTagOpen template:Any ForTagClose {
 		// TODO: get module path from parser options and resolve './html/Iterator'
-		iterator.constructor = 'framework/templating/html/Iterator';
+		iterator.constructor = 'framework/templating/html/ui/Iterator';
 		iterator.kwArgs.template = template;
 		return iterator;
 	}
@@ -321,7 +321,7 @@ When '<when>'
 		kwArgs.error = error; // TODO: separate widget
 		kwArgs.progress = progress; // TODO: separate widget
 		return {
-			constructor: 'framework/templating/html/When',
+			constructor: 'framework/templating/html/ui/When',
 			kwArgs: kwArgs
 		}
 	}
@@ -384,7 +384,7 @@ Placeholder '<placeholder>'
 	= '<placeholder'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<placeholder>', required: [ 'name' ] });
 		return {
-			constructor: 'framework/templating/html/Placeholder',
+			constructor: 'framework/templating/html/ui/Placeholder',
 			kwArgs: attributes
 		};
 		// TODO: this should just be a marker object in content like $bind and $child

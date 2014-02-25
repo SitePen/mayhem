@@ -38,6 +38,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _id:string;
 	/* protected */ _mediator:core.IMediator;
 	/* protected */ _parent:ui.IContainer;
+	private _parentAppHandle:IHandle;
 	private _parentAttachedHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
 	/* private */ _style:ui.IStyle;
@@ -187,6 +188,14 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		if (parent.get('attached')) {
 			this.set('attached', true);
 		}
+
+		// Pass app down to children
+		this._parentAppHandle && this._parentAppHandle.remove();
+		this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
+			this.set('app', parentApp);
+			// Only once
+			this._parentAppHandle.remove();
+		});
 	}
 
 	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
