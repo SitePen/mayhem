@@ -2,7 +2,7 @@ import domUtil = require('./util');
 import FragmentWidget = require('./FragmentWidget');
 import ui = require('../interfaces');
 
-class DomPlaceholder extends FragmentWidget implements ui.IPlaceholder {
+class Placeholder extends FragmentWidget implements ui.IPlaceholder {
 	private _content:ui.IDomWidget;
 
 	private _contentSetter(widget:ui.IDomWidget):void {
@@ -26,4 +26,4 @@ class DomPlaceholder extends FragmentWidget implements ui.IPlaceholder {
 	}
 }
 
-export = DomPlaceholder;
+export = Placeholder;

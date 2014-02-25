@@ -106,9 +106,12 @@ class Iterator extends ElementWidget {
 		}
 		var mediator = this._getMediatorByKey(key);
 		return this._widgetIndex[key] = processor.constructWidget(this._template, {
-			app: this.get('app'),
-			mediator: mediator
+			mediator: mediator,
+			parent: this
 		});
+		if (this._app) {
+			debugger
+		}
 	}
 
 	private _inSetter(sourceField:string):void {

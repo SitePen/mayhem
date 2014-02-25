@@ -37,7 +37,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* private */ _classList:ui.IClassList;
 	/* protected */ _id:string;
 	/* protected */ _mediator:core.IMediator;
-	/* protected */ _parent:ui.IContainer;
+	/* protected */ _parent:ui.IWidgetContainer;
 	private _parentAppHandle:IHandle;
 	private _parentAttachedHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
@@ -49,7 +49,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	get(key:'index'):number;
 	// TODO: Not sure if mediator belongs here. Should go to IView?
 	get(key:'mediator'):core.IMediator;
-	get(key:'parent'):ui.IContainer;
+	get(key:'parent'):ui.IWidgetContainer;
 	get(key:'style'):ui.IStyle;
 	get(key:string):void;
 	get(key:string):any {
@@ -164,7 +164,16 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return parent.get('children')[index + 1];
 	}
 
-	/* protected */ _parentSetter(parent:ui.IContainer):void {
+	/* protected */ _parentSetter(parent:ui.IWidgetContainer):void {
+		// Pass app down to children
+		// TODO: kill this when Bryan finishes his binding refactor
+		this._parentAppHandle && this._parentAppHandle.remove();
+		this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
+			this.set('app', parentApp);
+			// Only once
+			this._parentAppHandle.remove();
+		});
+
 		this._parent = parent;
 		// Observe parent active mediator
 		this._parentMediatorHandle && this._parentMediatorHandle.remove();
@@ -188,19 +197,11 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		if (parent.get('attached')) {
 			this.set('attached', true);
 		}
-
-		// Pass app down to children
-		this._parentAppHandle && this._parentAppHandle.remove();
-		this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
-			this.set('app', parentApp);
-			// Only once
-			this._parentAppHandle.remove();
-		});
 	}
 
 	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
-	placeAt(destination:ui.IContainer, position:number):IHandle;
-	placeAt(destination:ui.IContainer, placeholder:string):IHandle;
+	placeAt(destination:ui.IWidgetContainer, position:number):IHandle;
+	placeAt(destination:ui.IWidgetContainer, placeholder:string):IHandle;
 	placeAt(destination:any, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
@@ -208,7 +209,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			throw new Error('Cannot place widget at undefined destination');
 		}
 
-		var destinationParent:ui.IContainer = destination.get('parent');
+		var destinationParent:ui.IWidgetContainer = destination.get('parent');
 
 		if (position === PlacePosition.BEFORE) {
 			if (has('debug') && !destinationParent) {
@@ -230,7 +231,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			}
 
 			var index:number = destination.get('index'),
-				parent:ui.IContainer = destinationParent;
+				parent:ui.IWidgetContainer = destinationParent;
 			destination.detach();
 			handle = parent.add(this, index);
 		}

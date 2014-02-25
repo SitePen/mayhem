@@ -41,8 +41,6 @@ export function constructWidget(node:any /* templating.IWidgetNode */ , options:
 	}
 	var WidgetCtor:any = require(node.constructor),
 		kwArgs:any = node.kwArgs, // TODO: ITemplateWidgetArgsNode
-		children:any[] = node.children, // TODO: ITemplateWidgetNode[]
-		//content:ITemplateContentNode = node.content,
 		key:string,
 		value:any,
 		binding:any,
@@ -77,21 +75,27 @@ export function constructWidget(node:any /* templating.IWidgetNode */ , options:
 		}
 	}
 
-	if (children) {
-		widgetArgs.children = array.map(children, (child:any):ui.IDomWidget => {
-			//return constructWidget(child, lang.mixin({}, options));
-			return constructWidget(child);
-		});
-	}
-	// TODO: temp hacks
-	if (node.html) widgetArgs.html = node.html;
-	if (options.mediator) {
-		var initialMediator = options.mediator;
-		delete options.mediator;
-	}
-
 	//var widget:ui.IDomWidget = new WidgetCtor(lang.mixin({}, options, widgetArgs));
 	var widget:ui.IDomWidget = new WidgetCtor(lang.mixin({}, { app: options.app }, widgetArgs));
+
+	var content:any = node.content;
+	if (content && content instanceof Array) {
+		// Process and create placeholders for children and text bindings
+		content = array.map(node.content, (item:any, i:number):string => {
+			// Replace markers with comments that content widgets can process
+			return typeof item === 'string' ? item : '<!-- ⟨' + JSON.stringify(item) + '⟩ -->';
+		}).join('');
+	}
+	if (content) {
+		widget.setContent(content);
+	}
+
+	if (node.children) {
+		widget.set('children', array.map(node.children, (child:any):ui.IDomWidget => {
+			//return constructWidget(child, lang.mixin({}, options));
+			return constructWidget(child);
+		}));
+	}
 
 	// TODO: explicitly add children when we finish refactoring
 	// node.children && array.forEach(node.children, (child:any):ui.IDomWidget => {
@@ -117,11 +121,6 @@ export function constructWidget(node:any /* templating.IWidgetNode */ , options:
 			}));
 		});
 	});
-
-	// TODO: hack
-	if (initialMediator) {
-		setTimeout(() => { widget.set('mediator', initialMediator) });
-	}
 
 	// Hook widget's destroy method to tear down our observer handles
 	var _destroy:() => void = widget.destroy;
@@ -166,8 +165,9 @@ export function findDependencies(node:Object):string[] {
 
 // Parses a template (if necessary), and returns a promise with an optional timeout for loader failure
 export function process(graph:any /* templating.IWidgetNode */, timeout?:number):IPromise<ui.IWidget> {
-	var timeoutHandle:number;
-	var dfd:IDeferred<ui.IWidget> = new Deferred<ui.IWidget>();
+	console.log('Widget Graph:', graph)
+	var dfd:IDeferred<ui.IWidget> = new Deferred<ui.IWidget>(),
+		timeoutHandle:number;
 	require(findDependencies(graph), ():void => {
 		clearTimeout(timeoutHandle);
 		dfd.resolve(constructWidget(graph));

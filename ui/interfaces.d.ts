@@ -13,10 +13,10 @@ export interface IClassList extends core.IProxty<string> {
 	toggle(className:string, forceState?:boolean):void;
 }
 
-export interface IComponentWidget extends IElementWidget, IContentComponent {
+export interface IComponentWidget extends IElementWidget, IContentWidget {
 }
 
-export interface IContainer extends core.IObservable {
+export interface IWidgetContainer extends core.IObservable {
 	/* protected */ _children:IDomWidget[];
 
 	add(widget:IWidget, position:AddPosition):IHandle;
@@ -31,21 +31,21 @@ export interface IContainer extends core.IObservable {
 	remove(widget:IWidget):void;
 }
 
-export interface IContainerWidget extends IContentWidget, IContainer {
-	// _childPlaceholders:IPlaceholder[];
+export interface IPositionalChildContainer extends IContentContainer, IWidgetContainer {
+	// _indexedPlaceholders:IPlaceholder[];
 }
 
-export interface IContentComponent extends ITextBindingWidget, IContainerWidget, IPlaceholdingWidget {
-
-}
-
-export interface IContentWidget extends IDomWidget {
+export interface IContentContainer extends IDomWidget {
 	_content:DocumentFragment;
 
 	setContent(content:any /* Node | string */):void;
 
 	clear():void;
-} 
+}
+
+export interface IContentWidget extends ITextBindingContainer, IPositionalChildContainer, INamedChildContainer {
+
+}
 
 export interface IDomWidget extends IWidget, core.IApplicationComponent {
 	_classList:IClassList;
@@ -85,10 +85,10 @@ export interface IFragmentWidget extends IDomWidget {
 	detach():Node; // DocumentFragment
 }
 
-export interface IPaneWidget extends IViewWidget {
-	_selected:boolean;
-	_keepScrollPosition:boolean;
-}
+// export interface IPaneWidget extends IViewWidget {
+// 	_selected:boolean;
+// 	_keepScrollPosition:boolean;
+// }
 
 export interface IPlaceholder extends IFragmentWidget {
 	// _content:IDomWidget;
@@ -96,19 +96,19 @@ export interface IPlaceholder extends IFragmentWidget {
 	// get(key:'content'):IDomWidget;
 }
 
-export interface IPlaceholdingWidget extends IContentWidget, IContainer {
+export interface INamedChildContainer extends IContentContainer, IWidgetContainer {
 	// _namedPlaceholders:{ [key:string]: IPlaceholder };
 
 	// get(key:'namedPlaceholders'):{ [key:string]: IPlaceholder };
 }
 
-export interface ITextBindingWidget extends IContentWidget {
+export interface ITextBindingContainer extends IContentContainer {
 	// _textBindingNodes:Node[];
 	// _textBindingHandles:IHandle[];
 	// _textBindingPaths:string[];
 }
 
-export interface IViewWidget extends IFragmentWidget, IContentComponent {
+export interface IViewWidget extends IFragmentWidget, IContentWidget {
 }
 
 export interface IWidget extends core.IObservableEvented {
@@ -118,7 +118,7 @@ export interface IWidget extends core.IObservableEvented {
 	// get(key:'activeMediator'):core.IMediator; // represents the actual, active mediator being used by widget
 	// set(key:'mediator', value:core.IMediator):void;
 	// get(key:'next'):IWidget;
-	// get(key:'parent'):IContainer;
+	// get(key:'parent'):IWidgetContainer;
 	// get(key:'previous'):IWidget;
 
 	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
@@ -127,8 +127,8 @@ export interface IWidget extends core.IObservableEvented {
 	clear():void;
 
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
-	placeAt(destination:IContainer, position:number):IHandle;
-	placeAt(destination:IContainer, placeholder:string):IHandle;
+	placeAt(destination:IWidgetContainer, position:number):IHandle;
+	placeAt(destination:IWidgetContainer, placeholder:string):IHandle;
 	resize?(bounds?:{ width:number; height:number; }):void;
 }
 

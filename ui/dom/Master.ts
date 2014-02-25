@@ -1,7 +1,7 @@
-import ContentComponent = require('./ContentComponent');
+import ContentWidget = require('./ContentWidget');
 import util = require('../../util');
 
-class DomMaster extends ContentComponent {
+class DomMaster extends ContentWidget {
 	attachToWindow(node:Node):IHandle {
 		node.appendChild(this.detach());
 		this.set('attached', true);

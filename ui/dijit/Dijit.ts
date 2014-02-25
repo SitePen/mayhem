@@ -1,7 +1,7 @@
 /// <reference path="../../dijit" />
 
 import array = require('dojo/_base/array');
-import ContentComponent = require('../dom/ContentComponent');
+import ContentWidget = require('../dom/ContentWidget');
 import core = require('../../interfaces');
 import PlacePosition = require('../PlacePosition');
 import ElementWidget = require('../dom/ElementWidget');
@@ -9,7 +9,7 @@ import ui = require('../interfaces');
 import util = require('../../util');
 import __WidgetBase = require('dijit/_WidgetBase');
 
-/* abstract */ class Dijit extends ElementWidget implements ui.IContainer {
+/* abstract */ class Dijit extends ElementWidget implements ui.IWidgetContainer {
 	/* protected */ _children:Dijit[];
 	/* protected */ _content:ui.IDomWidget;
 	/* protected */ _dijit:__WidgetBase;
@@ -20,7 +20,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 	/* protected */ _disabled:boolean; // TODO: coerce string values coming from templates
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;
-	/* protected */ _parent:ui.IContainer;
+	/* protected */ _parent:ui.IWidgetContainer;
 
 	constructor(kwArgs:any = {}) {
 		util.deferMethods(this, [ '_placeChildren', '_contentSetter' ], '_render');
@@ -71,8 +71,8 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		this._children = [];
 		// Handle case where Element widget is our content
 		var content:ui.IDomWidget = children[0];
-		// TODO: better test for element
-		if (content && content['_html'] && children.length === 1) {
+		// TODO: better test for ViewWidget
+		if (content && content['_indexedPlaceholders'] && children.length === 1) {
 			this.set('content', content);
 			return;
 		}
@@ -82,6 +82,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 
 	/* protected */ _contentSetter(content:ui.IDomWidget):void {
 		this._content = content;
+		if (content instanceof Array) debugger
 		if (content) {
 			this._dijit.containerNode.appendChild(content.detach());
 		}
@@ -130,7 +131,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		this._dijitFields = (this._dijitFields || []).concat(keys);
 	}
 
-	// ui.IContainer
+	// ui.IWidgetContainer
 	add:{
 		(widget:ui.IDomWidget, position:PlacePosition):IHandle;
 		(widget:ui.IDomWidget, position:number):IHandle;
@@ -142,9 +143,9 @@ import __WidgetBase = require('dijit/_WidgetBase');
 	remove:{ (index:number):void; (widget:ui.IWidget):void; };
 }
 
-// FIXME: util.applyMixins(Dijit, [ ContentComponent ]);
-Object.keys(ContentComponent).forEach((key:string) => {
-	Dijit.prototype[key] = ContentComponent.prototype[key];
+// FIXME: util.applyMixins(Dijit, [ ContentWidget ]);
+Object.keys(ContentWidget).forEach((key:string) => {
+	Dijit.prototype[key] = ContentWidget.prototype[key];
 })
 
 export = Dijit;

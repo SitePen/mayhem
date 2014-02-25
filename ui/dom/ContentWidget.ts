@@ -7,7 +7,7 @@ import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
 
-class ContentComponent extends FragmentWidget implements ui.IContainer {
+class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // ui.IContentWidget
 	/* protected */ _children:ui.IDomWidget[];
 	private _placeholders:{ [name:string]: ui.IPlaceholder; }; // TOOD: move to IPlacehodlingWidget
 
@@ -136,4 +136,4 @@ class ContentComponent extends FragmentWidget implements ui.IContainer {
 	}
 }
 
-export = ContentComponent;
+export = ContentWidget;

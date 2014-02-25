@@ -22,12 +22,12 @@ firstName lastName: {firstName} {lastName}<br>
 		<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
 	</if>
 </p>
-<for id='phone-iter' each='phone' x='y' in="phone_numbers">
+<for id='phone-iter' each='phone' in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
 	<widget is="framework/ui/dom/form/Input" value='{phone.value}'/>
 </for>
 <br>
-<placeholder id="test-slot" name="interstitial">
+<placeholder name="interstitial">
 List of hobbies: {hobbies}<br>
 <for id='hobby-iter' each='hobby' in="hobbies">
 	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value='{hobby}'/></span>
@@ -54,6 +54,6 @@ Original hobbies: <widget is="framework/ui/dom/form/Input" value='{hobbies}' sty
 	remoteError: waiting...
 </when>
 <br>
-<placeholder id='bottom-slot' name='bottom'>
+<placeholder name='bottom'>
 <widget is="framework/ui/dom/form/Button" on-click='save' label='My Save Button'/>
 <widget is="framework/ui/dom/form/Button" on-click='save'>Another <strong>Save</strong> Button</widget>

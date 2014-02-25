@@ -1,34 +1,28 @@
 import array = require('dojo/_base/array');
-import ContentComponent = require('./ContentComponent');
+import ContentWidget = require('./ContentWidget');
 import core = require('../../interfaces');
 import domConstruct = require('dojo/dom-construct');
 import domUtil = require('./util');
+import Placeholder = require('./Placeholder');
 import util = require('../../util');
 import ui = require('../interfaces');
 
-var CHILD_PATTERN:RegExp = /^\s*child#(\d+)\s*$/,
-	BINDING_PATTERN:RegExp = /^\s*binding#(\d+)\s*$/;
+var COMMENT_PATTERN:RegExp = /^\s*\⟨({[^{]+})\⟩\s*$/;
 
 /**
  * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
  */
-class ViewWidget extends ContentComponent implements ui.IViewWidget {
-	/* private */ _childPlaceholders:ui.IPlaceholder[]; // TODO
-	private _childPositionNodes:Node[];
+class ViewWidget extends ContentWidget implements ui.IViewWidget {
+	private _childPositionNodes:Node[]; // TODO: remove
 	/* protected */ _content:DocumentFragment;
-	/* protected */ _html:string;
+	/* protected */ _indexedPlaceholders:ui.IPlaceholder[]; // TODO
+	/* protected */ _namedPlaceholders:{ [key:string]: ui.IPlaceholder };
 	private _textBindingHandles:IHandle[];
 	private _textBindingNodes:Node[];
 	private _textBindingPaths:string[];
 
-	// TODO: TS#2153
-	// get(key:'children'):ui.IDomWidget[];
-	// get(key:'html'):string;
-	// get(key:'placeholders'):{ [name:string]:ui.IPlaceholder; };
-	// set(key:'children', value:ui.IDomWidget[]):void;
-	// set(key:'html', value:string):void;
-
 	constructor(kwArgs:any = {}) {
+		this._indexedPlaceholders = []; // TODO: remove this once we fix Dijit
 		util.deferMethods(this, [ '_bindTextNodes' ], '_activeMediatorSetter');
 		util.deferMethods(this, [ '_placeChildren', '_contentSetter' ], '_render');
 		super(kwArgs);
@@ -44,7 +38,7 @@ class ViewWidget extends ContentComponent implements ui.IViewWidget {
 		this._textBindingHandles = [];
 		var node:Node,
 			path:string;
-		for (var i = 0, l = this._textBindingNodes.length; i < l; i++) {
+		for (var i = 0, len = this._textBindingNodes.length; i < len; i++) {
 			node = this._textBindingNodes[i];
 			path = this._textBindingPaths[i];
 			if (!node || !path) continue;
@@ -53,25 +47,25 @@ class ViewWidget extends ContentComponent implements ui.IViewWidget {
 	}
 
 	private _placeChildren():void {
-		// TODO: find a way to use DomContainer#add for this?
-		// TODO: work out how to do a this.empty()
 		var children:ui.IDomWidget[] = this._children,
-			targets:Node[] = this._childPositionNodes,
-			target:Node,
+			positions:Node[] = this._childPositionNodes,
+			position:Node,
 			child:ui.IDomWidget,
 			firstNode:Node,
 			lastNode:Node,
 			contents:Node;
-		for (var i = 0, l = Math.min(targets.length, children.length); i < l; ++i) {
+		// We can't do anything unless we have both
+		if (!positions || !children) return;
+		for (var i = 0, len = Math.min(positions.length, children.length); i < len; ++i) {
 			child = children[i];
 			if (!child) {
 				continue;
 			}
-			target = targets[i];
+			position = positions[i];
 			firstNode = child.get('firstNode');
 			lastNode = child.get('lastNode');
 			contents = firstNode === lastNode ? lastNode : domUtil.getRange(firstNode, lastNode).extractContents();
-			target.parentNode.replaceChild(contents, target);
+			position.parentNode.replaceChild(contents, position);
 			child.set('index', i);
 			child.set('parent', this);
 		}
@@ -86,77 +80,64 @@ class ViewWidget extends ContentComponent implements ui.IViewWidget {
 
 	destroy():void {
 		util.destroyHandles(this._textBindingHandles);
-		this._childPositionNodes = this._content = null;
+		this._childPositionNodes = this._indexedPlaceholders = this._content = null;
 		this._textBindingHandles = this._textBindingNodes = this._textBindingPaths = null;
 		super.destroy();
 	}
 
-	private _htmlSetter(html:any):void {
+	setContent(content:any  /* Node | string */):void {
 		// TODO: clean up previous
 		this._textBindingNodes = [];
 		this._textBindingPaths = [];
 		this._childPositionNodes = [];
+		this._indexedPlaceholders = [];
+		this._namedPlaceholders = {};
 
-		// Process and create placeholders for children and text bindings
-		var processed:string[] = array.map(html, (item:any, i:number):string => {
-			// Insert comment to mark binding or child location so we easily replace in generated dom
-			if (item.$bind !== undefined) {
-				return '<!-- binding#' + i + ' -->';
-			}
-			if (item.$child !== undefined) {
-				return '<!-- child#' + item.$child + ' -->';
-			}
-			if (typeof item !== 'string') debugger
-			return item;
-		});
-		this._html = processed.join('');
-
-		var processComment = (node:Node):void => {
+		var handleComment = (node:Node):void => {
 			var parent:Node = node.parentNode,
-				match:string[],
-				textNode:Text;
-			// We only care about comment nodes
-			if (node.nodeType !== Node.COMMENT_NODE) {
+				match:string[] = node.nodeValue.match(COMMENT_PATTERN),
+				descriptor:any = match && JSON.parse(match[1]);
+			if (!descriptor) {
 				return;
 			}
-			// Test for child comment marker
-			if (match = node.nodeValue.match(CHILD_PATTERN)) {
-				this._childPositionNodes[Number(match[1])] = node;
+			if (descriptor.$child != null) {
+				this._childPositionNodes[descriptor.$child] = node;
 			}
-			// Test for bound text comment marker
-			else if (match = node.nodeValue.match(BINDING_PATTERN)) {
-				textNode = new Text();
+			else if (descriptor.$bind != null) {
+				var textNode:Text = new Text();
 				this._textBindingNodes.push(textNode);
-				this._textBindingPaths.push(html[Number(match[1])].$bind);
+				this._textBindingPaths.push(descriptor.$bind);
 				parent.replaceChild(textNode, node);
 			}
-		}
+			else if (descriptor.$named != null) {
+				// TODO
+				// var placeholder = this._namedPlaceholders[descriptor.$named] = new Placeholder();
+			}
+		};
 
 		// Recurse and handle comments standing in for child and binding placeholders
-		var processChildComments = (node:Node):void => {
+		var scanForComments = (node:Node):void => {
 			var next:Node;
 			// Iterate siblings
 			while (node != null) {
 				// Capture next sibling before manipulating dom
 				next = node.nextSibling;
-				// Sweep and process children recursively
-				for (var i = 0, length = node.childNodes.length; i < length; ++i) {
-					processChildComments(node.childNodes[i]);
+				for (var i = 0, len = node.childNodes.length; i < len; ++i) {
+					scanForComments(node.childNodes[i]);
 				}
-				processComment(node);
+				if (node.nodeType === Node.COMMENT_NODE) {
+					handleComment(node);
+				}
 				node = next;
 			}
 		}
 
 		// We need to get a fragment from our markup and process its comments before inserting
-		var content:Node = domConstruct.toDom(this._html);
-		processChildComments(content);
+		var node:Node = this._content = <DocumentFragment> domConstruct.toDom(content);
+		scanForComments(node);
 		this._bindTextNodes();
-		this.setContent(<DocumentFragment> content);
-	}
-
-	setContent(content:DocumentFragment):void {
-		this.set('content', content);
+		this.set('content', node);
+		this._placeChildren();
 	}
 }
 

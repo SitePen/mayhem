@@ -2,13 +2,32 @@
 	/**
 	 * Validates that the attributes provided in the given attribute map are correct according to the provided rules.
 	 */
-	function validate(attributes, rules) {
+	 function validate(attributes, rules) {
 		var required = rules.required || [],
+			optional = rules.optional || [],
 			type = rules.type ? ' on ' + rules.type : '';
 
-		for (var i = 0; i < required.length; ++i) {
+		var i = 0,
+			permitted = {};
+
+		for (i = 0; i < required.length; ++i) {
+			permitted[required[i]] = true;
+		}
+		for (i = 0; i < optional.length; ++i) {
+			permitted[optional[i]] = true;
+		}
+
+		for (i = 0; i < required.length; ++i) {
 			if (!(required[i] in attributes)) {
 				error('Missing required attribute "' + required[i] + '"' + type);
+			}
+		}
+
+		if (!rules.extensible) {
+			for (var name in attributes) {
+				if (!(name in permitted)) {
+					error('Invalid attribute "' + name + '"' + type);
+				}
 			}
 		}
 
@@ -124,14 +143,14 @@ Template
 		if (!root) {
 			root = {
 				constructor: '',
-				html: '',
+				content: '',
 				children: []
 			};
 		}
 
 		// Collapse root w/ no content and 1 child widget to child
 		var children = root.children || [];
-		if (children.length === 1 && root.html === null) {
+		if (children.length === 1 && root.content === null) {
 			root = children[0];
 		}
 
@@ -168,6 +187,9 @@ Element 'HTML'
 				content.push(node);
 				hasText || (hasText = nonWhitespace.test(node))
 			}
+			else if (node.$named) {
+				content.push(node)
+			}
 			else {
 				content.push({ $child: children.length });
 				children.push(node);
@@ -175,13 +197,13 @@ Element 'HTML'
 		}
 
 		if (children.length && !hasText) {
-			// If Element is just children and whitespace null out html as a signal to collapse it
-			element.html = null;
+			// If Element is just children and whitespace null out content as a signal to collapse it
+			element.content = null;
 			return element;
 		}
 		if (content.length === 1 && typeof content[0] === 'string') {
 			// Flatten to string if content is just a single string in an array
-			element.html = content[0];
+			element.content = content[0];
 			return element;
 		}
 		// Parse the string portions of our html template for text bindings
@@ -204,7 +226,7 @@ Element 'HTML'
 				results.push(item);
 			}
 		}
-		element.html = results;
+		element.content = results;
 		return element;
 	}
 
@@ -270,9 +292,12 @@ If '<if>'
 	}
 
 IfTagOpen '<if>'
-	= '<' 'if'i attributes:AttributeMap '>' {
-		validate(attributes, { type: '<if>', required: [ 'condition' ] });
-		// return { kwArgs: attributes };
+	= '<if'i attributes:AttributeMap '>' {
+		validate(attributes, {
+			type: '<if>',
+			required: [ 'condition' ],
+			optional: [ 'id' ]
+		});
 		return attributes;
 	}
 
@@ -280,14 +305,23 @@ IfTagClose '</if>'
 	= '</if>'i
 
 ElseIfTag '<elseif>'
-	= '<' 'elseif'i attributes:AttributeMap '>' {
-		validate(attributes, { type: '<elseif>', required: [ 'condition' ] });
-		// return { kwArgs: attributes };
+	= '<elseif'i attributes:AttributeMap '>' {
+		validate(attributes, {
+			type: '<elseif>',
+			required: [ 'condition' ],
+			optional: [ 'id' ]
+		});
 		return attributes;
 	}
 
 ElseTag '<else>'
-	= '<else>'
+	= '<else'i attributes:AttributeMap '>' {
+		validate(attributes, {
+			type: '<else>',
+			optional: [ 'id' ]
+		});
+		return attributes;
+	}
 
 // loops
 
@@ -301,7 +335,11 @@ For '<for...>'
 
 ForTagOpen '<for>'
 	= '<for'i attributes:AttributeMap '>' {
-		validate(attributes, { type: '<for>', required: [ 'each', 'in' ] });
+		validate(attributes, {
+			type: '<for>',
+			required: [ 'each', 'in' ],
+			optional: [ 'index', 'id' ]
+		});
 		return { kwArgs: attributes };
 	}
 
@@ -328,7 +366,11 @@ When '<when>'
 
 WhenTagOpen '<when>'
 	= '<when'i attributes:AttributeMap '>' S* {
-		validate(attributes, { type: '<when>', required: [ 'promise' ], optional: [ 'value' ] });
+		validate(attributes, {
+			type: '<when>',
+			required: [ 'promise' ],
+			optional: [ 'value', 'id' ]
+		});
 		return attributes;
 	}
 
@@ -349,7 +391,7 @@ Widget '<widget...>'
 		delete widget.kwArgs.is;
 
 		// Collapse single Element child w/ no content
-		if (children.length === 1 && children[0].html === null) {
+		if (children.length === 1 && children[0].content === null) {
 			widget.children = children[0].children;
 		}
 		else {
@@ -360,7 +402,12 @@ Widget '<widget...>'
 
 WidgetTagOpen '<widget>'
 	= '<widget'i attributes:AttributeMap '>' {
-		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
+		validate(attributes, {
+			type: '<widget>',
+			required: [ 'is' ],
+			constructable: true,
+			extensible: true
+		});
 		return { kwArgs: attributes };
 	}
 
@@ -369,7 +416,12 @@ WidgetTagClose '</widget>'
 
 WidgetNoChildren '<widget/>'
 	= '<widget'i attributes:AttributeMap '/>' {
-		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
+		validate(attributes, {
+			type: '<widget>',
+			required: [ 'is' ],
+			constructable: true,
+			extensible: true
+		});
 		var is = attributes.is;
 		delete attributes.is;
 		return {
@@ -382,18 +434,20 @@ WidgetNoChildren '<widget/>'
 
 Placeholder '<placeholder>'
 	= '<placeholder'i attributes:AttributeMap '>' {
-		validate(attributes, { type: '<placeholder>', required: [ 'name' ] });
-		return {
-			constructor: 'framework/templating/html/ui/Placeholder',
-			kwArgs: attributes
-		};
-		// TODO: this should just be a marker object in content like $bind and $child
-		// return { $named: attribute.name };
+		validate(attributes, {
+			type: '<placeholder>',
+			required: [ 'name' ]
+		});
+		// return just another marker object (like $bind and $child)
+		return { $named: attributes.name };
 	}
 
 Alias '<alias>'
 	= '<alias'i alias:AttributeMap '>' {
-		validate(alias, { type: '<alias>', required: [ 'from', 'to' ] });
+		validate(alias, {
+			type: '<alias>',
+			required: [ 'from', 'to' ]
+		});
 		alias.line = line();
 		alias.column = column();
 		aliases.add(alias);
