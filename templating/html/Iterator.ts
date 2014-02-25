@@ -33,11 +33,7 @@ class Iterator extends ElementWidget {
 		this._widgetIndex = {};
 		this._elementIndex = {};
 		util.deferSetters(this, [ 'each', 'in' ], '_activeMediatorSetter');
-		this._list = new OnDemandList({
-			renderRow: (record:any, options:any):HTMLElement => {
-				return this._getElementByKey(record[this._store.idProperty]);
-			}
-		});
+		this._renderList();
 		super(kwArgs);
 	}
 
@@ -109,7 +105,10 @@ class Iterator extends ElementWidget {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		return this._widgetIndex[key] = processor.constructWidget(this._template, this, { mediator: mediator });
+		return this._widgetIndex[key] = processor.construct(this._template, {
+			app: this.get('app'),
+			mediator: mediator
+		});
 	}
 
 	private _inSetter(sourceField:string):void {
@@ -126,6 +125,19 @@ class Iterator extends ElementWidget {
 	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
 		super._mediatorSetter(mediator);
 		// TODO: update bindings
+	}
+
+	/* protected */ _render():void {
+		super._render();
+		this._firstNode = this._lastNode = this._list.domNode;
+	}
+
+	private _renderList():void {
+		this._list = new OnDemandList({
+			renderRow: (record:any, options:any):HTMLElement => {
+				return this._getElementByKey(record[this._store.idProperty]);
+			}
+		});
 	}
 
 	private _sourceSetter(source:any):void {
@@ -186,11 +198,6 @@ class Iterator extends ElementWidget {
 		}
 
 		this._list.set('store', this._store);
-	}
-
-	/* protected */ _render():void {
-		super._render();
-		this._firstNode = this._lastNode = this._list.domNode;
 	}
 
 	private _templateSetter(template:any):void {

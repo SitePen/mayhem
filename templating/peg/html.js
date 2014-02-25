@@ -149,11 +149,14 @@ define([], function () {
         peg$c31 = function(content) { return content },
         peg$c32 = function(conditional, consequent, alternates, alternate) {
         		conditional.content = consequent;
-
+        		// TODO: `id` attribute
+        		// TODO: make Conditional ternary and restructure AST to nest <elseif> and <else> tags
         		return {
         			constructor: 'framework/templating/html/Conditional',
-        			conditions: [ conditional ].concat(alternates),
-        			alternate: alternate
+        			kwArgs: {
+        				conditions: [ conditional ].concat(alternates),
+        				alternate: alternate
+        			}
         		};
         	},
         peg$c33 = "if",
@@ -162,6 +165,7 @@ define([], function () {
         peg$c36 = { type: "literal", value: ">", description: "\">\"" },
         peg$c37 = function(attributes) {
         		validate(attributes, { type: '<if>', required: [ 'condition' ] });
+        		// return { kwArgs: attributes };
         		return attributes;
         	},
         peg$c38 = { type: "other", description: "</if>" },
@@ -172,34 +176,39 @@ define([], function () {
         peg$c43 = { type: "literal", value: "elseif", description: "\"elseif\"" },
         peg$c44 = function(attributes) {
         		validate(attributes, { type: '<elseif>', required: [ 'condition' ] });
+        		// return { kwArgs: attributes };
         		return attributes;
         	},
         peg$c45 = { type: "other", description: "<else>" },
         peg$c46 = "<else>",
         peg$c47 = { type: "literal", value: "<else>", description: "\"<else>\"" },
         peg$c48 = { type: "other", description: "<for...>" },
-        peg$c49 = function(forWidget, template) {
-        		forWidget.constructor = 'framework/templating/html/Iterator';
-        		forWidget.template = template;
-        		return forWidget;
+        peg$c49 = function(iterator, template) {
+        		// TODO: get module path from parser options and resolve './html/Iterator'
+        		iterator.constructor = 'framework/templating/html/Iterator';
+        		iterator.kwArgs.template = template;
+        		return iterator;
         	},
         peg$c50 = { type: "other", description: "<for>" },
         peg$c51 = "<for",
         peg$c52 = { type: "literal", value: "<for", description: "\"<for\"" },
         peg$c53 = function(attributes) {
         		validate(attributes, { type: '<for>', required: [ 'each', 'in' ] });
-        		return attributes;
+        		return { kwArgs: attributes };
         	},
         peg$c54 = { type: "other", description: "</for>" },
         peg$c55 = "</for>",
         peg$c56 = { type: "literal", value: "</for>", description: "\"</for>\"" },
         peg$c57 = { type: "other", description: "<when>" },
-        peg$c58 = function(when, resolved, error, progress) {
-        		when.constructor = 'framework/templating/html/When';
-        		when.resolved = resolved;
-        		when.error = error;
-        		when.progress = progress;
-        		return when;
+        peg$c58 = function(kwArgs, resolved, error, progress) {
+        		// TODO: process bindings in these content widget nodes
+        		kwArgs.resolved = resolved; // TODO: make this element content
+        		kwArgs.error = error; // TODO: separate widget
+        		kwArgs.progress = progress; // TODO: separate widget
+        		return {
+        			constructor: 'framework/templating/html/When',
+        			kwArgs: kwArgs
+        		}
         	},
         peg$c59 = "<when",
         peg$c60 = { type: "literal", value: "<when", description: "\"<when\"" },
@@ -218,8 +227,8 @@ define([], function () {
         peg$c70 = { type: "literal", value: "<progress>", description: "\"<progress>\"" },
         peg$c71 = { type: "other", description: "<widget...>" },
         peg$c72 = function(widget, children) {
-        		widget.constructor = widget.is;
-        		delete widget.is;
+        		widget.constructor = widget.kwArgs.is;
+        		delete widget.kwArgs.is;
 
         		// Collapse single Element child w/ no content
         		if (children.length === 1 && children[0].html === null) {
@@ -235,7 +244,7 @@ define([], function () {
         peg$c75 = { type: "literal", value: "<widget", description: "\"<widget\"" },
         peg$c76 = function(attributes) {
         		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
-        		return attributes;
+        		return { kwArgs: attributes };
         	},
         peg$c77 = { type: "other", description: "</widget>" },
         peg$c78 = "</widget>",
@@ -243,20 +252,26 @@ define([], function () {
         peg$c80 = { type: "other", description: "<widget/>" },
         peg$c81 = "/>",
         peg$c82 = { type: "literal", value: "/>", description: "\"/>\"" },
-        peg$c83 = function(widget) {
-        		validate(widget, { type: '<widget>', required: [ 'is' ], constructable: true });
-        		widget.constructor = widget.is;
-        		delete widget.is;
-        		return widget;
+        peg$c83 = function(attributes) {
+        		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
+        		var is = attributes.is;
+        		delete attributes.is;
+        		return {
+        			constructor: is,
+        			kwArgs: attributes
+        		};
         	},
         peg$c84 = { type: "other", description: "<placeholder>" },
         peg$c85 = "<placeholder",
         peg$c86 = { type: "literal", value: "<placeholder", description: "\"<placeholder\"" },
-        peg$c87 = function(placeholder) {
-        		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
-        		placeholder.constructor = 'framework/templating/html/Placeholder';
-        		return placeholder;
-        		// TODO: return { named: attribute.name };
+        peg$c87 = function(attributes) {
+        		validate(attributes, { type: '<placeholder>', required: [ 'name' ] });
+        		return {
+        			constructor: 'framework/templating/html/Placeholder',
+        			kwArgs: attributes
+        		};
+        		// TODO: this should just be a marker object in content like $bind and $child
+        		// return { $named: attribute.name };
         	},
         peg$c88 = { type: "other", description: "<alias>" },
         peg$c89 = "<alias",

@@ -1,12 +1,12 @@
 import array = require('dojo/_base/array');
 import core = require('../../interfaces');
-import DomPlaceholder = require('../../ui/dom/Placeholder');
+import Placeholder = require('../../ui/dom/Placeholder');
 import domUtil = require('../../ui/dom/util');
 import processor = require('../html');
 import ui = require('../../ui/interfaces');
 import util = require('../../util');
 
-class Conditional extends DomPlaceholder {
+class Conditional extends Placeholder {
 	private _alternateWidget:ui.IDomWidget;
 	private _conditionHandles:IHandle[];
 	private _conditions:any;
@@ -25,7 +25,7 @@ class Conditional extends DomPlaceholder {
 	}
 
 	private _alternateSetter(alternate:any):void {
-		this._alternateWidget = processor.constructWidget(alternate, this);
+		this._alternateWidget = processor.construct(alternate, { parent: this });
 	}
 
 	private _clearConditionHandles():void {
@@ -40,7 +40,7 @@ class Conditional extends DomPlaceholder {
 		this._conditionWidgets = [];
 		this._conditions = conditions;
 		for (var i = 0, length = conditions.length; i < length; ++i) {
-			this._conditionWidgets[i] = processor.constructWidget(conditions[i].content, this);
+			this._conditionWidgets[i] = processor.construct(conditions[i].content, { parent: this });
 		}
 		this._updateBinding();
 	}

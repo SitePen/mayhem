@@ -258,17 +258,21 @@ If '<if>'
 	alternate:(ElseTag content:Any { return content })?
 	IfTagClose {
 		conditional.content = consequent;
-
+		// TODO: `id` attribute
+		// TODO: make Conditional ternary and restructure AST to nest <elseif> and <else> tags
 		return {
 			constructor: 'framework/templating/html/Conditional',
-			conditions: [ conditional ].concat(alternates),
-			alternate: alternate
+			kwArgs: {
+				conditions: [ conditional ].concat(alternates),
+				alternate: alternate
+			}
 		};
 	}
 
 IfTagOpen '<if>'
 	= '<' 'if'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<if>', required: [ 'condition' ] });
+		// return { kwArgs: attributes };
 		return attributes;
 	}
 
@@ -278,6 +282,7 @@ IfTagClose '</if>'
 ElseIfTag '<elseif>'
 	= '<' 'elseif'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<elseif>', required: [ 'condition' ] });
+		// return { kwArgs: attributes };
 		return attributes;
 	}
 
@@ -287,16 +292,17 @@ ElseTag '<else>'
 // loops
 
 For '<for...>'
-	= forWidget:ForTagOpen template:Any ForTagClose {
-		forWidget.constructor = 'framework/templating/html/Iterator';
-		forWidget.template = template;
-		return forWidget;
+	= iterator:ForTagOpen template:Any ForTagClose {
+		// TODO: get module path from parser options and resolve './html/Iterator'
+		iterator.constructor = 'framework/templating/html/Iterator';
+		iterator.kwArgs.template = template;
+		return iterator;
 	}
 
 ForTagOpen '<for>'
 	= '<for'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<for>', required: [ 'each', 'in' ] });
-		return attributes;
+		return { kwArgs: attributes };
 	}
 
 ForTagClose '</for>'
@@ -305,16 +311,19 @@ ForTagClose '</for>'
 // promises
 
 When '<when>'
-	= when:WhenTagOpen
+	= kwArgs:WhenTagOpen
 	resolved:Any?
 	error:(WhenErrorTag content:Any? { return content })?
 	progress:(WhenProgressTag content:Any? { return content })?
 	WhenTagClose {
-		when.constructor = 'framework/templating/html/When';
-		when.resolved = resolved;
-		when.error = error;
-		when.progress = progress;
-		return when;
+		// TODO: process bindings in these content widget nodes
+		kwArgs.resolved = resolved; // TODO: make this element content
+		kwArgs.error = error; // TODO: separate widget
+		kwArgs.progress = progress; // TODO: separate widget
+		return {
+			constructor: 'framework/templating/html/When',
+			kwArgs: kwArgs
+		}
 	}
 
 WhenTagOpen '<when>'
@@ -336,8 +345,8 @@ WhenProgressTag '<progress>'
 
 Widget '<widget...>'
 	= widget:WidgetTagOpen children:(Any)* WidgetTagClose {
-		widget.constructor = widget.is;
-		delete widget.is;
+		widget.constructor = widget.kwArgs.is;
+		delete widget.kwArgs.is;
 
 		// Collapse single Element child w/ no content
 		if (children.length === 1 && children[0].html === null) {
@@ -352,28 +361,34 @@ Widget '<widget...>'
 WidgetTagOpen '<widget>'
 	= '<widget'i attributes:AttributeMap '>' {
 		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
-		return attributes;
+		return { kwArgs: attributes };
 	}
 
 WidgetTagClose '</widget>'
 	= '</widget>'i
 
 WidgetNoChildren '<widget/>'
-	= '<widget'i widget:AttributeMap '/>' {
-		validate(widget, { type: '<widget>', required: [ 'is' ], constructable: true });
-		widget.constructor = widget.is;
-		delete widget.is;
-		return widget;
+	= '<widget'i attributes:AttributeMap '/>' {
+		validate(attributes, { type: '<widget>', required: [ 'is' ], constructable: true });
+		var is = attributes.is;
+		delete attributes.is;
+		return {
+			constructor: is,
+			kwArgs: attributes
+		};
 	}
 
 // all others
 
 Placeholder '<placeholder>'
-	= '<placeholder'i placeholder:AttributeMap '>' {
-		validate(placeholder, { type: '<placeholder>', required: [ 'name' ] });
-		placeholder.constructor = 'framework/templating/html/Placeholder';
-		return placeholder;
-		// TODO: return { named: attribute.name };
+	= '<placeholder'i attributes:AttributeMap '>' {
+		validate(attributes, { type: '<placeholder>', required: [ 'name' ] });
+		return {
+			constructor: 'framework/templating/html/Placeholder',
+			kwArgs: attributes
+		};
+		// TODO: this should just be a marker object in content like $bind and $child
+		// return { $named: attribute.name };
 	}
 
 Alias '<alias>'

@@ -18,7 +18,7 @@ export function load(resourceId:string, contextRequire:Function, load:(...module
 		var dependencies = scanDependencies(ast);
 		require(dependencies, ():void => {
 			load(function(app?:core.IApplication, mediator?:core.IMediator):ui.IDomWidget {
-				return constructWidget(ast, null, { app: app, mediator: mediator });
+				return construct(ast, { app: app, mediator: mediator });
 			});
 		});
 	});
@@ -28,7 +28,7 @@ export function parse(input:string, options:any = {}):any {
 	return pegParser.parse(input);
 }
 
-function scanDependencies(node:Object):string[] {
+export function scanDependencies(node:Object):string[] {
 	var dependencies:string[] = [];
 	function scan(node:Object):void {
 		var ctor:any = node.constructor;
@@ -55,52 +55,70 @@ function scanDependencies(node:Object):string[] {
 	return dependencies;
 }
 
-export function constructWidget(node:any, parent:ui.IWidget, widgetArgs:any = {}):ui.IDomWidget {
-	var key:string,
+// TODO: move to another module -- processing the ast is separate from template parsing
+// TODO: ITemplateWidgetASTNode
+export function construct(node:any, options:any = {}):ui.IDomWidget {
+	if (typeof node.constructor !== 'string') {
+		throw new Error('Widget has non-string constructor');
+	}
+	var WidgetCtor:any = require(node.constructor),
+		kwArgs:any = node.kwArgs, // TODO: ITemplateWidgetArgsNode
+		children:any[] = node.children, // TODO: ITemplateWidgetNode[]
+		//content:ITemplateContentNode = node.content,
+		key:string,
 		value:any,
 		binding:any,
-		WidgetCtor:any = require(node.constructor),
-		widget:ui.IDomWidget,
 		fieldBindings:{ [key:string]: string; } = {},
-		bindingTemplates:{ [key:string]: any; } = {};
-
-	if (parent) {
-		widgetArgs.app = parent.get('app') || widgetArgs.app // FIXME
-	}
-
-	// A little clean up for the keys from our node before we can use them to construct a widget
-	for (key in node) {
-		value = node[key];
-		if ([ 'constructor', 'app', 'mediator' ].indexOf(key) >= 0) {
-			// Ignore these keys
-		}
-		else if (key === 'children' && value) {
-			widgetArgs.children = array.map(node.children, (child:any):ui.IDomWidget => {
-				return constructWidget(child, null, { app: widgetArgs.app });
-			});
-		}
-		else if (value && value.$bind) {
+		bindingTemplates:{ [key:string]: any; } = {},
+		widgetArgs:any = {};
+	// A little clean up for the keys from our kwArgs before we can use them to construct a widget
+	for (key in kwArgs) {
+		value = kwArgs[key];
+		if (value && value.$bind) {
 			binding = value.$bind;
-			if (key === 'html') {
-				// Pass through binding directly (for now)
-				widgetArgs.html = binding;
+			// String binding paths are bidirectional field bindings
+			if (typeof binding === 'string') {
+				fieldBindings[key] = binding;
 			}
-			else if (typeof binding === 'string') {
-				// If binding value is a string it's a field binding
-				fieldBindings[key] = binding;	
+			// Arrays are binding templates
+			else if (binding instanceof Array) {
+				bindingTemplates[key] = binding;
 			}
 			else {
-				// Otherwise it should be a binding template
-				bindingTemplates[key] = binding;
+				throw new Error('Unknown binding: ' + binding);
 			}
 		}
 		else {
 			// Pass non-binding values to widgetArgs unmolested
 			widgetArgs[key] = value;
 		}
+
+		// TODO: what's the right thing to do here?
+		if (!options.app && options.parent) {
+			options.app = options.parent.get('app');
+		}
 	}
 
-	widget = new WidgetCtor(widgetArgs);
+	if (children) {
+		widgetArgs.children = array.map(children, (child:any):ui.IDomWidget => {
+			//return construct(child, lang.mixin({}, options));
+			return construct(child, { app: options.app });
+		});
+	}
+	// TODO: temp hacks
+	if (node.html) widgetArgs.html = node.html;
+	if (options.mediator) {
+		var initialMediator = options.mediator;
+		delete options.mediator;
+	}
+
+	//var widget:ui.IDomWidget = new WidgetCtor(lang.mixin({}, options, widgetArgs));
+	var widget:ui.IDomWidget = new WidgetCtor(lang.mixin({}, { app: options.app }, widgetArgs));
+
+	// TODO: explicitly add children when we finish refactoring
+	// node.children && array.forEach(node.children, (child:any):ui.IDomWidget => {
+	// 	widget.add(construct(child, lang.mixin({}, options));
+	// });
 
 	var firstBind:boolean = true,
 		observerHandles:IHandle[];
@@ -121,6 +139,11 @@ export function constructWidget(node:any, parent:ui.IWidget, widgetArgs:any = {}
 			}));
 		});
 	});
+
+	// TODO: hack
+	if (initialMediator) {
+		setTimeout(() => { widget.set('mediator', initialMediator) });
+	}
 
 	// Hook widget's destroy method to tear down our observer handles
 	var _destroy:() => void = widget.destroy;

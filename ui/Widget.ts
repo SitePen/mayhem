@@ -63,6 +63,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	constructor(kwArgs:Object = {}) {
+		this.__kwArgs = kwArgs;
 		// Set ID as early as possible so that any setters that might require it can use it
 		var id:string = kwArgs['id'];
 		if (!id) {

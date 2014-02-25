@@ -1,6 +1,6 @@
-import DomPlaceholder = require('../../ui/dom/Placeholder');
+import Placeholder = require('../../ui/dom/Placeholder');
 
-class NamedPlaceholder extends DomPlaceholder {
+class NamedPlaceholder extends Placeholder {
 	/* protected */ _name:string;
 }
 
