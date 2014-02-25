@@ -8,7 +8,7 @@ import ui = require('../ui/interfaces');
 import util = require('../util');
 
 export var defaults = {
-	htmlModuleId: 'framework/ui/dom/ViewWidget',
+	viewModuleId: 'framework/ui/dom/ViewWidget',
 };
 
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
@@ -31,12 +31,10 @@ export function parse(input:string, options:any = {}):any {
 function scanDependencies(node:Object):string[] {
 	var dependencies:string[] = [];
 	function scan(node:Object):void {
-		var ctor:any = node.constructor,
-			key:string,
-			value:any;
-		if (typeof ctor !== 'function') {
-			if (ctor == null) {
-				node['constructor'] = ctor = defaults.htmlModuleId;
+		var ctor:any = node.constructor;
+		if (typeof ctor === 'string') {
+			if (!ctor) {
+				node['constructor'+''] = ctor = defaults.viewModuleId;
 			}
 			// Add to list of dependencies if not already in our dep list
 			dependencies.indexOf(ctor) === -1 && dependencies.push(ctor);
@@ -81,8 +79,8 @@ export function constructWidget(node:any, parent:ui.IWidget, widgetArgs:any = {}
 				return constructWidget(child, null, { app: widgetArgs.app });
 			});
 		}
-		else if (value && value.binding) {
-			binding = value.binding;
+		else if (value && value.$bind) {
+			binding = value.$bind;
 			if (key === 'html') {
 				// Pass through binding directly (for now)
 				widgetArgs.html = binding;
@@ -137,14 +135,14 @@ export function constructWidget(node:any, parent:ui.IWidget, widgetArgs:any = {}
 
 function fillBindingTemplate(mediator:core.IMediator, template:any[]):string {
 	return array.map(template, (item:any):any => {
-		return item.binding ? mediator.get(item.binding) : item;
+		return item.$bind ? mediator.get(item.$bind) : item;
 	}).join('');
 }
 
 function observeBindingTemplate(mediator:core.IMediator, template:any[], handler:() => void):IHandle[] {
 	var handles:IHandle[] = [];
 	for (var i = 0, l = template.length; i < l; ++i) {
-		var binding:string = template[i] && template[i].binding;
+		var binding:string = template[i] && template[i].$bind;
 		if (!binding) {
 			continue;
 		}

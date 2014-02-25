@@ -40,7 +40,7 @@ define([], function () {
         peg$c5 = function(root) {
         		if (!root) {
         			root = {
-        				constructor: null,
+        				constructor: '',
         				html: '',
         				children: []
         			};
@@ -61,7 +61,7 @@ define([], function () {
         peg$c8 = function(items) {
         		var content = [],
         			element = {
-        				constructor: null,
+        				constructor: '',
         				children: []
         			},
         			children = element.children,
@@ -81,7 +81,7 @@ define([], function () {
         				hasText || (hasText = nonWhitespace.test(node))
         			}
         			else {
-        				content.push({ child: children.length });
+        				content.push({ $child: children.length });
         				children.push(node);
         			}
         		}
@@ -105,8 +105,8 @@ define([], function () {
         			if (typeof item === 'string') {
         				parsed = parseBoundText(item);
         				// TODO: clean this up
-        				if (parsed.binding) {
-        					results = results.concat(parsed.binding);
+        				if (parsed.$bind) {
+        					results = results.concat(parsed.$bind);
         				}
         				else {
         					results.push(parsed);
@@ -134,7 +134,7 @@ define([], function () {
         peg$c19 = { type: "class", value: "[^}]", description: "[^}]" },
         peg$c20 = "}",
         peg$c21 = { type: "literal", value: "}", description: "\"}\"" },
-        peg$c22 = function(value) { return { binding: value.join('') } },
+        peg$c22 = function(value) { return { $bind: value.join('') } },
         peg$c23 = "\\{",
         peg$c24 = { type: "literal", value: "\\{", description: "\"\\\\{\"" },
         peg$c25 = function() { return '\x7b' },
@@ -3819,9 +3819,9 @@ define([], function () {
     		var results = parse(text, { startRule: 'BoundText' });
     		// Loop over results list and inspect for binding objects
     		for (var i = 0, len = results.length; i < len; ++i) {
-    			if (results[i].binding) {
+    			if (results[i].$bind) {
     				// Flatten binding template if only one item
-    				return { binding: len === 1 ? results[0].binding : results };
+    				return { $bind: len === 1 ? results[0].$bind : results };
     			}
     		}
     		// If no bindings in array flatten into a string

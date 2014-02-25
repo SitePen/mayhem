@@ -100,12 +100,13 @@ class ViewWidget extends ContentComponent implements ui.IViewWidget {
 		// Process and create placeholders for children and text bindings
 		var processed:string[] = array.map(html, (item:any, i:number):string => {
 			// Insert comment to mark binding or child location so we easily replace in generated dom
-			if (item.binding != null) {
+			if (item.$bind !== undefined) {
 				return '<!-- binding#' + i + ' -->';
 			}
-			if (item.child != null) {
-				return '<!-- child#' + item.child + ' -->';
+			if (item.$child !== undefined) {
+				return '<!-- child#' + item.$child + ' -->';
 			}
+			if (typeof item !== 'string') debugger
 			return item;
 		});
 		this._html = processed.join('');
@@ -126,7 +127,7 @@ class ViewWidget extends ContentComponent implements ui.IViewWidget {
 			else if (match = node.nodeValue.match(BINDING_PATTERN)) {
 				textNode = new Text();
 				this._textBindingNodes.push(textNode);
-				this._textBindingPaths.push(html[Number(match[1])].binding);
+				this._textBindingPaths.push(html[Number(match[1])].$bind);
 				parent.replaceChild(textNode, node);
 			}
 		}

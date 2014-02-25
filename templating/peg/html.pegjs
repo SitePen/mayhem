@@ -21,9 +21,9 @@
 		var results = parse(text, { startRule: 'BoundText' });
 		// Loop over results list and inspect for binding objects
 		for (var i = 0, len = results.length; i < len; ++i) {
-			if (results[i].binding) {
+			if (results[i].$bind) {
 				// Flatten binding template if only one item
-				return { binding: len === 1 ? results[0].binding : results };
+				return { $bind: len === 1 ? results[0].$bind : results };
 			}
 		}
 		// If no bindings in array flatten into a string
@@ -123,7 +123,7 @@ Template
 	)? {
 		if (!root) {
 			root = {
-				constructor: null,
+				constructor: '',
 				html: '',
 				children: []
 			};
@@ -149,7 +149,7 @@ Element 'HTML'
 	)+ {
 		var content = [],
 			element = {
-				constructor: null,
+				constructor: '',
 				children: []
 			},
 			children = element.children,
@@ -169,7 +169,7 @@ Element 'HTML'
 				hasText || (hasText = nonWhitespace.test(node))
 			}
 			else {
-				content.push({ child: children.length });
+				content.push({ $child: children.length });
 				children.push(node);
 			}
 		}
@@ -193,8 +193,8 @@ Element 'HTML'
 			if (typeof item === 'string') {
 				parsed = parseBoundText(item);
 				// TODO: clean this up
-				if (parsed.binding) {
-					results = results.concat(parsed.binding);
+				if (parsed.$bind) {
+					results = results.concat(parsed.$bind);
 				}
 				else {
 					results.push(parsed);
@@ -239,7 +239,7 @@ HtmlFragment 'HTML'
 BoundText
 	// Curly brackets inside the actions needs to be escaped due to https://github.com/dmajda/pegjs/issues/89
 	= (
-		'{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { binding: value.join('') } }
+		'{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { $bind: value.join('') } }
 		/ !'{' value:('\\{' { return '\x7b' } / [^{])+ { return value.join('') }
 	)*
 
