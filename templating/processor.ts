@@ -22,17 +22,17 @@ function fillBindingTemplate(mediator:core.IMediator, template:any[]):string {
 }
 
 function observeBindingTemplate(mediator:core.IMediator, template:any[], handler:() => void):IHandle[] {
-	var handles:IHandle[] = [];
+	var observerHandles:IHandle[] = [];
 	for (var i = 0, l = template.length; i < l; ++i) {
 		var binding:string = template[i] && template[i].$bind;
 		if (!binding) {
 			continue;
 		}
-		handles.push(mediator.observe(binding, handler));
+		observerHandles.push(mediator.observe(binding, handler));
 		// Call handler one time to initialize fields with interpreted values
 		handler();
 	}
-	return handles;
+	return observerHandles;
 }
 
 export function constructWidget(node:any /* templating.IWidgetNode */ , options:any = {}):ui.IDomWidget {
@@ -83,7 +83,7 @@ export function constructWidget(node:any /* templating.IWidgetNode */ , options:
 		// Process and create placeholders for children and text bindings
 		content = array.map(node.content, (item:any, i:number):string => {
 			// Replace markers with comments that content widgets can process
-			return typeof item === 'string' ? item : '<!-- ⟨' + JSON.stringify(item) + '⟩ -->';
+			return typeof item === 'string' ? item : '<!-- ⟨⟨' + JSON.stringify(item) + '⟩⟩ -->';
 		}).join('');
 	}
 	if (content) {

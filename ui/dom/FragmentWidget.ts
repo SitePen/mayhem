@@ -21,7 +21,7 @@ class FragmentWidget extends Widget implements ui.IFragmentWidget {
 	}
 
 	/* protected */ _render():void {
-		var commentId:string = this.get('id').replace(/--/g, '\u2010\u2010');
+		var commentId:string = (this.constructor.name || '') + '#' + this.get('id').replace(/--/g, '\u2010\u2010');
 		this._firstNode = document.createComment(commentId);
 		this._lastNode = document.createComment('/' + commentId);
 

@@ -8,27 +8,31 @@ fullName bound input: <widget is="framework/ui/dom/form/Input" value='{fullName}
 <br>
 fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
-<em>conditionals</em><br>
-<p style="margin-left:20px">
-	<!-- conditionals are pretty much useless until observables respect dependencies -->
-	<if condition="firstNameIsJoey">
-		(1) firstName is Joey.<br>
-	<elseif condition="lastNameIsBloggs">
-		(2) lastName is Bloggs.<br>
-	<elseif condition="fullNameIsBoeBlogger">
-		(3) transformed fullName is Boe Blogger (actual name: {firstName}).<br>
-	<else>
-		(X) No match... here's a read-only widget binding for fun:
-		<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
-	</if>
-</p>
+
+<h3>Conditionals</h3>
+
+<!-- conditionals are pretty much useless until observables respect dependencies -->
+<if condition="firstNameIsJoey">
+	(1) firstName is Joey.<br>
+<elseif condition="lastNameIsBloggs">
+	(2) lastName is Bloggs.<br>
+<elseif condition="fullNameIsBoeBlogger">
+	(3) transformed fullName is Boe Blogger (actual name: {firstName}).<br>
+<else>
+	(X) No match... here's a read-only widget binding for fun:
+	<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
+</if>
+
+<h3>Iterators</h3>
+
 <for id='phone-iter' each='phone' in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
 	<widget is="framework/ui/dom/form/Input" value='{phone.value}'/>
 </for>
-<br>
+
 <placeholder name="interstitial">
 List of hobbies: {hobbies}<br>
+
 <for id='hobby-iter' each='hobby' in="hobbies">
 	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value='{hobby}'/></span>
 </for>
@@ -39,19 +43,21 @@ Original hobbies: <widget is="framework/ui/dom/form/Input" value='{hobbies}' sty
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
 	firstName bidi binding inside when for good measure:
 	<widget is="framework/ui/dom/form/Input" value='{firstName}'/>
+<during>
+	remoteString: waiting...
+</during>
 <error>
 	I SHOULD NOT BE VISIBLE
-<progress>
-	remoteString: waiting...
 </when>
 <br>
 <when promise='remoteError' value='errorValue'>
 	I SHOULD NOT BE VISIBLE
+<during>
+	remoteError: waiting...
 <error>
 	<!-- TODO: get binding to work on an Error path -->
 	Error!!! remoteError.message is {errorValue.message}
-<progress>
-	remoteError: waiting...
+</error>
 </when>
 <br>
 <placeholder name='bottom'>

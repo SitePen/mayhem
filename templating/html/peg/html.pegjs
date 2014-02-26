@@ -31,8 +31,9 @@
 			}
 		}
 
-		if (!rules.constructable && 'is' in attributes) {
-			error('Constructor is not allowed' + type);
+		var idType = typeof attributes.id;
+		if (idType !== 'undefined' && idType !== 'string') {
+			error('Invalid "id" attribute type: ' + idType);
 		}
 	}
 
@@ -238,15 +239,19 @@ HtmlFragment 'HTML'
 			& '<'
 
 			IfTagOpen
-			/ ElseIfTag
-			/ ElseTag
 			/ IfTagClose
+			/ ElseIfTagOpen
+			/ ElseIfTagClose
+			/ ElseTagOpen
+			/ ElseTagClose
 			/ ForTagOpen
 			/ ForTagClose
 			/ WhenTagOpen
 			/ WhenTagClose
-			/ WhenErrorTag
-			/ WhenProgressTag
+			/ ErrorTagOpen
+			/ DuringTagOpen
+			/ DuringTagClose
+			/ ErrorTagClose
 			/ Placeholder
 			/ Alias
 			/ WidgetTagOpen
@@ -267,80 +272,99 @@ BoundText
 
 // conditionals
 
-If '<if>'
-	= conditional:IfTagOpen
-	consequent:Any
+If '<if/>'
+	= kwArgs:IfTagOpen
+	content:Any
 	alternates:(
-		alternate:ElseIfTag
-		consequent:Any {
-			alternate.content = consequent;
-			return alternate;
+		alternate:ElseIfTagOpen consequent:Any (ElseIfTagClose S*)? {
+			return {
+				kwArgs: alternate,
+				content: consequent
+			};
 		}
 	)*
-	alternate:(ElseTag content:Any { return content })?
-	IfTagClose {
-		conditional.content = consequent;
-		// TODO: `id` attribute
-		// TODO: make Conditional ternary and restructure AST to nest <elseif> and <else> tags
+	finalAlternate:(kwArgs:ElseTagOpen content:Any (ElseTagClose S*)? {
 		return {
-			constructor: 'framework/templating/html/ui/Conditional',
-			kwArgs: {
-				conditions: [ conditional ].concat(alternates),
-				alternate: alternate
-			}
+			constructor: '',
+			kwArgs: kwArgs,
+			content: content
 		};
+	})?
+	IfTagClose {
+		var conditional = {
+			constructor: 'framework/templating/html/ui/Conditional',
+			kwArgs: kwArgs,
+			content: content
+		};
+
+		// Loop over our alternates and turn them into a recursive list of conditional widgets
+		var target = conditional, i, alternate;
+		for (i = 0; (alternate = alternates[i]); ++i) {
+			alternate.constructor = conditional.constructor;
+			target = target.kwArgs.alternate = alternate;
+		}
+		if (finalAlternate) {
+			target.kwArgs.alternate = finalAlternate;
+		}
+		return conditional;
 	}
 
 IfTagOpen '<if>'
-	= '<if'i attributes:AttributeMap '>' {
-		validate(attributes, {
+	= '<if'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
 			type: '<if>',
 			required: [ 'condition' ],
 			optional: [ 'id' ]
 		});
-		return attributes;
+		return kwArgs;
 	}
 
 IfTagClose '</if>'
 	= '</if>'i
 
-ElseIfTag '<elseif>'
-	= '<elseif'i attributes:AttributeMap '>' {
-		validate(attributes, {
+ElseIfTagOpen '<elseif>'
+	= '<elseif'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
 			type: '<elseif>',
 			required: [ 'condition' ],
 			optional: [ 'id' ]
 		});
-		return attributes;
+		return kwArgs;
 	}
 
-ElseTag '<else>'
-	= '<else'i attributes:AttributeMap '>' {
-		validate(attributes, {
+ElseIfTagClose '</elseif>'
+	= '</elseif>'i
+
+ElseTagOpen '<else>'
+	= '<else'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
 			type: '<else>',
 			optional: [ 'id' ]
 		});
-		return attributes;
+		return kwArgs;
 	}
+
+ElseTagClose '</else>'
+	= '</else>'i
 
 // loops
 
-For '<for...>'
+For '<for/>'
 	= iterator:ForTagOpen template:Any ForTagClose {
-		// TODO: get module path from parser options and resolve './html/Iterator'
+		// TODO: have processor resolve dependency paths and just return './html/Iterator'
 		iterator.constructor = 'framework/templating/html/ui/Iterator';
 		iterator.kwArgs.template = template;
 		return iterator;
 	}
 
 ForTagOpen '<for>'
-	= '<for'i attributes:AttributeMap '>' {
-		validate(attributes, {
+	= '<for'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
 			type: '<for>',
 			required: [ 'each', 'in' ],
 			optional: [ 'index', 'id' ]
 		});
-		return { kwArgs: attributes };
+		return { kwArgs: kwArgs };
 	}
 
 ForTagClose '</for>'
@@ -348,16 +372,16 @@ ForTagClose '</for>'
 
 // promises
 
-When '<when>'
+When '<when/>'
 	= kwArgs:WhenTagOpen
 	resolved:Any?
-	error:(WhenErrorTag content:Any? { return content })?
-	progress:(WhenProgressTag content:Any? { return content })?
+	during:(DuringTagOpen content:Any? (DuringTagClose S*)? { return content })?
+	error:(ErrorTagOpen content:Any? (ErrorTagClose S*)? { return content })?
 	WhenTagClose {
 		// TODO: process bindings in these content widget nodes
 		kwArgs.resolved = resolved; // TODO: make this element content
 		kwArgs.error = error; // TODO: separate widget
-		kwArgs.progress = progress; // TODO: separate widget
+		kwArgs.progress = during; // TODO: separate widget
 		return {
 			constructor: 'framework/templating/html/ui/When',
 			kwArgs: kwArgs
@@ -365,30 +389,62 @@ When '<when>'
 	}
 
 WhenTagOpen '<when>'
-	= '<when'i attributes:AttributeMap '>' S* {
-		validate(attributes, {
+	= '<when'i kwArgs:AttributeMap '>' S* {
+		validate(kwArgs, {
 			type: '<when>',
 			required: [ 'promise' ],
 			optional: [ 'value', 'id' ]
 		});
-		return attributes;
+		return kwArgs;
 	}
 
 WhenTagClose '</when>'
 	= '</when>'i
 
-WhenErrorTag '<error>'
-	= '<error>'i
+DuringTagOpen '<during>'
+	= '<during'i kwArgs:AttributeMap '>' S* {
+		validate(kwArgs, {
+			type: '<during>',
+			optional: [ 'id' ]
+		});
+		return {
+			constructor: '',
+			kwArgs: kwArgs
+		};
+	}
 
-WhenProgressTag '<progress>'
-	= '<progress>'i
+DuringTagClose '</during>'
+	= '</during>'i
+
+ErrorTagOpen '<error>'
+	= '<error'i kwArgs:AttributeMap '>' S* {
+		validate(kwArgs, {
+			type: '<error>',
+			optional: [ 'id' ]
+		});
+		return {
+			constructor: '',
+			kwArgs: kwArgs
+		};
+	}
+
+ErrorTagClose '</error>'
+	= '</error>'i
 
 // widgets
 
-Widget '<widget...>'
-	= widget:WidgetTagOpen children:(Any)* WidgetTagClose {
-		widget.constructor = widget.kwArgs.is;
-		delete widget.kwArgs.is;
+Widget '<widget>'
+	= kwArgs:WidgetTagOpen children:(Any)* WidgetTagClose {
+		var widget = {
+			constructor: kwArgs.is,
+			kwArgs: kwArgs,
+			children: children
+		};
+
+		if (typeof widget.constructor !== 'string') {
+			error('Widget constructor ' + widget.constructor + ' must be a string');
+		}
+		delete kwArgs.is;
 
 		// Collapse single Element child w/ no content
 		if (children.length === 1 && children[0].content === null) {
@@ -397,49 +453,54 @@ Widget '<widget...>'
 		else {
 			widget.children = children;
 		}
+
 		return widget;
 	}
 
 WidgetTagOpen '<widget>'
-	= '<widget'i attributes:AttributeMap '>' {
-		validate(attributes, {
+	= '<widget'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
 			type: '<widget>',
 			required: [ 'is' ],
-			constructable: true,
 			extensible: true
 		});
-		return { kwArgs: attributes };
+		return kwArgs;
 	}
 
 WidgetTagClose '</widget>'
 	= '</widget>'i
 
 WidgetNoChildren '<widget/>'
-	= '<widget'i attributes:AttributeMap '/>' {
-		validate(attributes, {
+	= '<widget'i kwArgs:AttributeMap '/>' {
+		validate(kwArgs, {
 			type: '<widget>',
 			required: [ 'is' ],
-			constructable: true,
 			extensible: true
 		});
-		var is = attributes.is;
-		delete attributes.is;
-		return {
-			constructor: is,
-			kwArgs: attributes
+
+		var widget = {
+			constructor: kwArgs.is,
+			kwArgs: kwArgs
 		};
+
+		if (typeof widget.constructor !== 'string') {
+			error('Widget constructor ' + widget.constructor + ' must be a string');
+		}
+		delete kwArgs.is;
+
+		return widget;
 	}
 
 // all others
 
 Placeholder '<placeholder>'
-	= '<placeholder'i attributes:AttributeMap '>' {
-		validate(attributes, {
+	= '<placeholder'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
 			type: '<placeholder>',
 			required: [ 'name' ]
 		});
 		// return just another marker object (like $bind and $child)
-		return { $named: attributes.name };
+		return { $named: kwArgs.name };
 	}
 
 Alias '<alias>'
@@ -460,18 +521,12 @@ AttributeMap
 	= attributes:Attribute* S* {
 		var attributeMap = {};
 		for (var i = 0, attribute; (attribute = attributes[i]); ++i) {
-			// TODO: allow 'constructor' for Widget only
-			if (attribute.name === 'constructor') {
-				error('"constructor" is a reserved attribute name');
-			}
-
 			if (Object.prototype.hasOwnProperty.call(attributeMap, attribute.name)) {
 				error('Duplicate attribute "' + attribute.name + '"');
 			}
 
 			attributeMap[attribute.name] = attribute.value;
 		}
-
 		return attributeMap;
 	}
 
@@ -534,7 +589,7 @@ JSONArray
 JSONElements
 	= head:JSONValue tail:("," S* JSONValue)* {
       var result = [head];
-      for (var i = 0, l = tail.length; i < l; ++i) {
+      for (var i = 0, len = tail.length; i < len; ++i) {
         result.push(tail[i][2]);
       }
       return result;

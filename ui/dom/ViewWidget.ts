@@ -7,11 +7,8 @@ import Placeholder = require('./Placeholder');
 import util = require('../../util');
 import ui = require('../interfaces');
 
-var COMMENT_PATTERN:RegExp = /^\s*\⟨({[^{]+})\⟩\s*$/;
+var COMMENT_PATTERN:RegExp = /^\s*⟨⟨({[^{]+})⟩⟩\s*$/;
 
-/**
- * The Element class provides a DOM-specific widget that encapsulates one or more DOM nodes.
- */
 class ViewWidget extends ContentWidget implements ui.IViewWidget {
 	private _childPositionNodes:Node[]; // TODO: remove
 	/* protected */ _content:DocumentFragment;
