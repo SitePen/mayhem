@@ -254,9 +254,9 @@ HtmlFragment 'HTML'
 			/ ErrorTagClose
 			/ Placeholder
 			/ Alias
+			/ WidgetNoContent
 			/ WidgetTagOpen
 			/ WidgetTagClose
-			/ WidgetNoChildren
 		)
 		character:. { return character }
 	)+ {
@@ -374,18 +374,16 @@ ForTagClose '</for>'
 
 When '<when/>'
 	= kwArgs:WhenTagOpen
-	resolved:Any?
+	widget:Any?
 	during:(DuringTagOpen content:Any? (DuringTagClose S*)? { return content })?
 	error:(ErrorTagOpen content:Any? (ErrorTagClose S*)? { return content })?
 	WhenTagClose {
-		// TODO: process bindings in these content widget nodes
-		kwArgs.resolved = resolved; // TODO: make this element content
-		kwArgs.error = error; // TODO: separate widget
-		kwArgs.progress = during; // TODO: separate widget
-		return {
-			constructor: 'framework/templating/html/ui/When',
-			kwArgs: kwArgs
-		}
+		// TODO: process bindings within content, and wihtin during and error widgets
+		kwArgs.during = during;
+		kwArgs.error = error;
+		widget.kwArgs = kwArgs;
+		widget.constructor = 'framework/templating/html/ui/When';
+		return widget;
 	}
 
 WhenTagOpen '<when>'
@@ -433,68 +431,63 @@ ErrorTagClose '</error>'
 
 // widgets
 
-Widget '<widget>'
-	= kwArgs:WidgetTagOpen children:(Any)* WidgetTagClose {
-		var widget = {
-			constructor: kwArgs.is,
-			kwArgs: kwArgs,
-			children: children
-		};
 
-		if (typeof widget.constructor !== 'string') {
-			error('Widget constructor ' + widget.constructor + ' must be a string');
+Widget '<widget></widget>'
+	= widget:(WidgetNoContent / WidgetWithContent) {
+		var kwArgs = widget.kwArgs,
+			children = widget.children;
+		validate(kwArgs, {
+			type: '<widget>',
+			required: [ 'is' ],
+			extensible: true
+		});
+
+		var ctor = widget.constructor = kwArgs.is;
+		if (typeof ctor !== 'string') {
+			error('Widget constructor ' + ctor + ' must be a string');
 		}
 		delete kwArgs.is;
 
 		// Collapse single Element child w/ no content
-		if (children.length === 1 && children[0].content === null) {
-			widget.children = children[0].children;
+		if (children && children.length === 1 && children[0].content === null) {
+			children = widget.children = children[0].children;
 		}
-		else {
-			widget.children = children;
+
+		// Resolve any attribute reference functions with widget children
+		var value;
+		for (var key in kwArgs) {
+			value = kwArgs[key];
+			if (typeof value === 'function') {
+				kwArgs[key] = value(children);
+			}
 		}
 
 		return widget;
 	}
 
+WidgetWithContent '<widget>'
+	= kwArgs:WidgetTagOpen children:(Any)* WidgetTagClose {
+		return { kwArgs: kwArgs, children: children };
+	};
+
 WidgetTagOpen '<widget>'
-	= '<widget'i kwArgs:AttributeMap '>' {
-		validate(kwArgs, {
-			type: '<widget>',
-			required: [ 'is' ],
-			extensible: true
-		});
-		return kwArgs;
-	}
+	= '<widget'i kwArgs:AttributeMap '>' { return kwArgs }
 
 WidgetTagClose '</widget>'
 	= '</widget>'i
 
-WidgetNoChildren '<widget/>'
-	= '<widget'i kwArgs:AttributeMap '/>' {
-		validate(kwArgs, {
-			type: '<widget>',
-			required: [ 'is' ],
-			extensible: true
-		});
+WidgetNoContent '<widget/>'
+	= '<widget'i kwArgs:AttributeMap '/>' { return { kwArgs: kwArgs } }
 
-		var widget = {
-			constructor: kwArgs.is,
-			kwArgs: kwArgs
-		};
+// actions
 
-		if (typeof widget.constructor !== 'string') {
-			error('Widget constructor ' + widget.constructor + ' must be a string');
-		}
-		delete kwArgs.is;
-
-		return widget;
-	}
+// Action '<action/>'
+//	= '<action'i 
 
 // all others
 
-Placeholder '<placeholder>'
-	= '<placeholder'i kwArgs:AttributeMap '>' {
+Placeholder '<placeholder/>'
+	= '<placeholder'i kwArgs:AttributeMap '/'? '>' {
 		validate(kwArgs, {
 			type: '<placeholder>',
 			required: [ 'name' ]
@@ -503,8 +496,8 @@ Placeholder '<placeholder>'
 		return { $named: kwArgs.name };
 	}
 
-Alias '<alias>'
-	= '<alias'i alias:AttributeMap '>' {
+Alias '<alias/>'
+	= '<alias'i alias:AttributeMap '/'? '>' {
 		validate(alias, {
 			type: '<alias>',
 			required: [ 'from', 'to' ]
@@ -532,7 +525,7 @@ AttributeMap
 
 Attribute
 	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue {
-		// We have to invert null and undefined here to disambiguate a null return from JSONAttributeValue
+		// We have to invert null and undefined here to disambiguate empty attributes from JSONValue null
 		return value === null ? undefined : value;
 	})? {
 		// Treat attributes without values as true
@@ -553,15 +546,36 @@ AttributeName
 // Attribute values can be JSON or single-quoted strings which are parsed for curly-quoted bindings
 
 AttributeValue
-	= StringAttributeValue
-	/ JSONAttributeValue
+	= AttributeReferenceValue
+	/ AttributeStringValue
+	/ JSONValue
+	/ BoundText
 
-StringAttributeValue
+AttributeReferenceValue
+	= '#' id:Identifier {
+		// Returns a function to resolve a child given a children array
+		return function resolve(children) {
+			// TODO: recurse for ids?
+			var child;
+			for (var i = 0, len = children.length; i < len; ++i) {
+				child = children[i];
+				if (child && child.kwArgs && child.kwArgs.id === id) {
+					// null out child since it's no longer part of content
+					children[i] = null;
+					return child;
+				}
+			}
+			error('Referenced child id "' + id + '" not found');
+		};
+	}
+
+// Identifiers per HTML
+Identifier
+	= $([A-Za-z] [A-Za-z0-9\-_\:\.]*)
+
+AttributeStringValue
 	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return parseBoundText(value.join('')) })
 	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return parseBoundText(value.join('')); })
-
-JSONAttributeValue "json"
-	= S* value:JSONValue { return value }
 
 // JSON parser adapted from PEG.js example
 
@@ -684,7 +698,7 @@ AnyNonElement
 	/ Placeholder
 	/ Alias
 	/ Widget
-	/ WidgetNoChildren
+	/ WidgetNoContent
 
 S "whitespace"
 	= [ \t\r\n]
