@@ -350,22 +350,22 @@ ElseTagClose '</else>'
 // loops
 
 For '<for/>'
-	= iterator:ForTagOpen template:Any ForTagClose {
-		// TODO: have processor resolve dependency paths and just return './html/Iterator'
-		iterator.constructor = 'framework/templating/html/ui/Iterator';
-		iterator.kwArgs.template = template;
-		return iterator;
-	}
-
-ForTagOpen '<for>'
-	= '<for'i kwArgs:AttributeMap '>' {
+	= kwArgs:ForTagOpen template:Any ForTagClose {
 		validate(kwArgs, {
 			type: '<for>',
 			required: [ 'each', 'in' ],
 			optional: [ 'index', 'id' ]
 		});
-		return { kwArgs: kwArgs };
+		// Wrap template with an array to keep it from being instantiated by processor
+		kwArgs.template = [ template ];
+		return {
+			constructor: 'framework/templating/html/ui/Iterator',
+			kwArgs: kwArgs
+		};
 	}
+
+ForTagOpen '<for>'
+	= '<for'i kwArgs:AttributeMap '>' { return kwArgs }
 
 ForTagClose '</for>'
 	= '</for>'i

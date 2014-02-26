@@ -6,7 +6,7 @@ import core = require('../../../interfaces');
 import MemoryStore = require('dojo/store/Memory');
 import OnDemandList = require('dgrid/OnDemandList');
 import ObservableArray = require('../../../ObservableArray');
-import processor = require('../../processor');
+import Processor = require('../../Processor');
 import ElementWidget = require('../../../ui/dom/ElementWidget');
 import ui = require('../../../ui/interfaces');
 import util = require('../../../util');
@@ -105,10 +105,10 @@ class Iterator extends ElementWidget {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		return this._widgetIndex[key] = processor.constructWidget(this._template, {
+		return this._widgetIndex[key] = (new Processor(this._template, {
 			mediator: mediator,
 			parent: this
-		});
+		})).initialize();
 		if (this._app) {
 			debugger
 		}
@@ -204,7 +204,10 @@ class Iterator extends ElementWidget {
 	}
 
 	private _templateSetter(template:any):void {
-		this._template = template;
+		template = this._template = template[0];
+		if (!template.constructor) {
+			template.constructor = Processor.defaultModuleId;
+		}
 		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
 	}
 }
