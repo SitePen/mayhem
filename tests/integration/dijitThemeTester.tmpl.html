@@ -90,9 +90,9 @@
 						<widget is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ComboButton' label='Combo' drop-down='combo-menu' icon-class='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='framework/ui/dijit/form/ComboButton' drop-down='#combo-menu' label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
-					<widget is='framework/ui/dijit/DropDownMenu'>
+					<widget id='combo-menu' is='framework/ui/dijit/DropDownMenu'>
 						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
 						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
 					</widget>
@@ -110,9 +110,9 @@
 						<widget is='framework/ui/dijit/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ComboButton' disabled label='Combo' drop-down='combo-menu' icon-class='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='framework/ui/dijit/form/ComboButton' disabled drop-down='#disabled-combo-menu' label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
-					<widget is='framework/ui/dijit/DropDownMenu'>
+					<widget id='disabled-combo-menu' is='framework/ui/dijit/DropDownMenu'>
 						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
 						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
 					</widget>
