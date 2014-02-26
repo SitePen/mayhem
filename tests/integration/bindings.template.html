@@ -1,10 +1,10 @@
 {firstName}
-<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
-First Name: <widget is="framework/ui/dom/form/Input" value='{firstName}' label='{firstName}'/>
-<widget is="framework/ui/dom/form/Error" binding="firstName"/>
-Last Name: <widget is="framework/ui/dom/form/Input" value='{lastName}'/>
-<widget is="framework/ui/dom/form/Error" binding='lastName'><widget is="framework/ui/dom/form/Error" binding="lastName"/><widget is="framework/ui/dom/form/Error" binding="lastName"/></widget>
-fullName bound input: <widget is="framework/ui/dom/form/Input" value='{fullName}'/>
+<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'></widget>
+First Name: <widget is="framework/ui/dom/form/Input" value='{firstName}' label='{firstName}'></widget>
+<widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
+Last Name: <widget is="framework/ui/dom/form/Input" value='{lastName}'></widget>
+<widget is="framework/ui/dom/form/Error" binding='lastName'><widget is="framework/ui/dom/form/Error" binding="lastName"></widget><widget is="framework/ui/dom/form/Error" binding="lastName"></widget></widget>
+fullName bound input: <widget is="framework/ui/dom/form/Input" value='{fullName}'></widget>
 <br>
 fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
@@ -20,29 +20,29 @@ firstName lastName: {firstName} {lastName}<br>
 	(3) transformed fullName is Boe Blogger (actual name: {firstName}).<br>
 <else>
 	(X) No match... here's a read-only widget binding for fun:
-	<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'/>
+	<widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'></widget>
 </if>
 
 <h3>Iterators</h3>
 
 <for id='phone-iter' each='phone' in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
-	<widget is="framework/ui/dom/form/Input" value='{phone.value}'/>
+	<widget is="framework/ui/dom/form/Input" value='{phone.value}'></widget>
 </for>
 
 <placeholder name="interstitial">
 List of hobbies: {hobbies}<br>
 
 <for id='hobby-iter' each='hobby' in="hobbies">
-	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value='{hobby}'/></span>
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/Input" value='{hobby}'></widget></span>
 </for>
-Original hobbies: <widget is="framework/ui/dom/form/Input" value='{hobbies}' style="width:20em"/>
+Original hobbies: <widget is="framework/ui/dom/form/Input" value='{hobbies}' style="width:20em"></widget>
 <br>
 <br>
 <when id='when' promise='remoteString' value='stringValue'>
 	Resolved... remoteString is: <strong>{stringValue}</strong><br>
 	firstName bidi binding inside when for good measure:
-	<widget is="framework/ui/dom/form/Input" value='{firstName}'/>
+	<widget is="framework/ui/dom/form/Input" value='{firstName}'></widget>
 <during>
 	remoteString: waiting...
 </during>
@@ -61,5 +61,5 @@ Original hobbies: <widget is="framework/ui/dom/form/Input" value='{hobbies}' sty
 </when>
 <br>
 <placeholder name='bottom'>
-<widget is="framework/ui/dom/form/Button" on-click='save' label='My Save Button'/>
+<widget is="framework/ui/dom/form/Button" on-click='save' label='My Save Button'></widget>
 <widget is="framework/ui/dom/form/Button" on-click='save'>Another <strong>Save</strong> Button</widget>

@@ -254,7 +254,6 @@ HtmlFragment 'HTML'
 			/ ErrorTagClose
 			/ Placeholder
 			/ Alias
-			/ WidgetNoContent
 			/ WidgetTagOpen
 			/ WidgetTagClose
 		)
@@ -433,9 +432,8 @@ ErrorTagClose '</error>'
 
 
 Widget '<widget></widget>'
-	= widget:(WidgetNoContent / WidgetWithContent) {
-		var kwArgs = widget.kwArgs,
-			children = widget.children;
+	= widget:(WidgetVoid / WidgetNonVoid) {
+		var kwArgs = widget.kwArgs;
 		validate(kwArgs, {
 			type: '<widget>',
 			required: [ 'is' ],
@@ -448,6 +446,7 @@ Widget '<widget></widget>'
 		}
 		delete kwArgs.is;
 
+		var children = widget.children;
 		// Collapse single Element child w/ no content
 		if (children && children.length === 1 && children[0].content === null) {
 			children = widget.children = children[0].children;
@@ -465,7 +464,7 @@ Widget '<widget></widget>'
 		return widget;
 	}
 
-WidgetWithContent '<widget>'
+WidgetNonVoid '<widget>'
 	= kwArgs:WidgetTagOpen children:(Any)* WidgetTagClose {
 		return { kwArgs: kwArgs, children: children };
 	};
@@ -476,8 +475,11 @@ WidgetTagOpen '<widget>'
 WidgetTagClose '</widget>'
 	= '</widget>'i
 
-WidgetNoContent '<widget/>'
-	= '<widget'i kwArgs:AttributeMap '/>' { return { kwArgs: kwArgs } }
+WidgetVoid '<widget/>'
+	= '<widget'i kwArgs:AttributeMap '/>' {
+		// return { kwArgs: kwArgs };
+		error('Widget cannot be void');
+	}
 
 // actions
 
@@ -698,7 +700,6 @@ AnyNonElement
 	/ Placeholder
 	/ Alias
 	/ Widget
-	/ WidgetNoContent
 
 S "whitespace"
 	= [ \t\r\n]

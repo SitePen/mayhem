@@ -10,10 +10,10 @@
 			<p>Selecting a color will change the background color of the page. Use this to test how tooltips and drop downs appear with different backgrounds.</p>
 
 			<h2 class='testHeader'>3x4</h2>
-			<widget is='framework/ui/dijit/ColorPalette' palette='3x4'/>
+			<widget is='framework/ui/dijit/ColorPalette' palette='3x4'></widget>
 
 			<h2 class='testHeader'>7x10</h2>
-			<widget is='framework/ui/dijit/ColorPalette'/>
+			<widget is='framework/ui/dijit/ColorPalette'></widget>
 		</widget>
 	</widget>
 	<widget is='framework/ui/dijit/MenuBar' region='top'>
@@ -26,40 +26,40 @@
 		</widget>
 		<widget id='edit' is='framework/ui/dijit/PopupMenuBarItem' label='Edit'>
 			<widget id='editMenu' is='framework/ui/dijit/Menu'>
-				<widget id='cut' is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'/>
-				<widget id='copy' is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy' />
-				<widget id='paste' is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'/>
-				<widget id='separator' is='framework/ui/dijit/MenuSeparator' label='Paste' on-click='paste' icon-class='dijitIconPaste'/>
-				<widget id='undo' is='framework/ui/dijit/MenuItem' label='Undo' on-click='undo' icon-class='dijitIconUndo'/>
+				<widget id='cut' is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
+				<widget id='copy' is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
+				<widget id='paste' is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
+				<widget id='separator' is='framework/ui/dijit/MenuSeparator' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
+				<widget id='undo' is='framework/ui/dijit/MenuItem' label='Undo' on-click='undo' icon-class='dijitIconUndo'></widget>
 			</widget>
 		</widget>
 		<widget id='view' is='framework/ui/dijit/PopupMenuBarItem' label='View'>
 			<widget id='viewMenu' is='framework/ui/dijit/Menu'>
-				<widget is='framework/ui/dijit/MenuItem' label='Normal'/>
-				<widget is='framework/ui/dijit/MenuItem' label='Outline'/>
+				<widget is='framework/ui/dijit/MenuItem' label='Normal'></widget>
+				<widget is='framework/ui/dijit/MenuItem' label='Outline'></widget>
 				<widget id='zoom' is='framework/ui/dijit/PopupMenuItem'>
 					Zoom
 					<widget id='zoomMenu' is='framework/ui/dijit/Menu'>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='50%' group='zoom'/>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='75%' group='zoom'/>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='100%' group='zoom' checked/>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='150%' group='zoom'/>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='200%' group='zoom'/>
+						<widget is='framework/ui/dijit/RadioMenuItem' label='50%' group='zoom'></widget>
+						<widget is='framework/ui/dijit/RadioMenuItem' label='75%' group='zoom'></widget>
+						<widget is='framework/ui/dijit/RadioMenuItem' label='100%' group='zoom' checked></widget>
+						<widget is='framework/ui/dijit/RadioMenuItem' label='150%' group='zoom'></widget>
+						<widget is='framework/ui/dijit/RadioMenuItem' label='200%' group='zoom'></widget>
 					</widget>
 				</widget>
 			</widget>
 		</widget>
-		<widget is='framework/ui/dijit/MenuBarItem' label='Themes'/>
-		<widget is='framework/ui/dijit/MenuBarItem' label='Dialogs'/>
+		<widget is='framework/ui/dijit/MenuBarItem' label='Themes'></widget>
+		<widget is='framework/ui/dijit/MenuBarItem' label='Dialogs'></widget>
 		<widget id='inputPadding' is='framework/ui/dijit/PopupMenuBarItem' label='TextBox Padding'>
 			<widget id='inputPaddingMenu' is='framework/ui/dijit/Menu'>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='theme default' group='padding' checked/>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='0px' group='padding'/>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='1px' group='padding'/>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='2px' group='padding'/>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='3px' group='padding'/>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='4px' group='padding'/>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='5px' group='padding'/>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='theme default' group='padding' checked></widget>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='0px' group='padding'></widget>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='1px' group='padding'></widget>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='2px' group='padding'></widget>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='3px' group='padding'></widget>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='4px' group='padding'></widget>
+				<widget is='framework/ui/dijit/RadioMenuItem' label='5px' group='padding'></widget>
 			</widget>
 		</widget>
 		<widget id='help' is='framework/ui/dijit/PopupMenuBarItem' label='Help'>
@@ -81,66 +81,66 @@
 			<p>Buttons can do an action, display a menu, or both:</p>
 			<div>
 				Enabled:
-				<widget is='framework/ui/dijit/form/Button' label='Simple' icon-class='dijitIconTask'/>
+				<widget is='framework/ui/dijit/form/Button' label='Simple' icon-class='dijitIconTask'></widget>
 				<widget is='framework/ui/dijit/form/DropDownButton' icon-class='dijitIconEdit'>
 					Drop Down
 					<widget is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'/>
-						<widget is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'/>
-						<widget is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'/>
+						<widget is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
+						<widget is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
+						<widget is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
 					</widget>
 				</widget>
 				<widget is='framework/ui/dijit/form/ComboButton' label='Combo' drop-down='combo-menu' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
 					<widget is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'/>
-						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'/>
+						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
+						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ToggleButton' label='Toggle' checked icon-class='dijitCheckBoxIcon'/>
+				<widget is='framework/ui/dijit/form/ToggleButton' label='Toggle' checked icon-class='dijitCheckBoxIcon'></widget>
 			</div>
 			<div>
 				Disabled:
-				<widget is='framework/ui/dijit/form/Button' disabled label='Simple' icon-class='dijitIconTask'/>
+				<widget is='framework/ui/dijit/form/Button' disabled label='Simple' icon-class='dijitIconTask'></widget>
 				<widget is='framework/ui/dijit/form/DropDownButton' disabled icon-class='dijitIconEdit'>
 					<strong>Drop</strong> Down
 					<widget is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Cut' icon-class='dijitEditorIcon dijitEditorIconCut' on-click='cut'/>
-						<widget is='framework/ui/dijit/MenuItem' label='Copy' icon-class='dijitEditorIcon dijitEditorIconCopy' on-click='copy'/>
-						<widget is='framework/ui/dijit/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'/>
+						<widget is='framework/ui/dijit/MenuItem' label='Cut' icon-class='dijitEditorIcon dijitEditorIconCut' on-click='cut'></widget>
+						<widget is='framework/ui/dijit/MenuItem' label='Copy' icon-class='dijitEditorIcon dijitEditorIconCopy' on-click='copy'></widget>
+						<widget is='framework/ui/dijit/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'></widget>
 					</widget>
 				</widget>
 				<widget is='framework/ui/dijit/form/ComboButton' disabled label='Combo' drop-down='combo-menu' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
 					<widget is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'/>
-						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'/>
+						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
+						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ToggleButton' disabled label='Toggle' checked icon-class='dijitCheckBoxIcon'/>
+				<widget is='framework/ui/dijit/form/ToggleButton' disabled label='Toggle' checked icon-class='dijitCheckBoxIcon'></widget>
 			</div>
 
 			<hr class='spacer'></hr>
 
 			<h2>Check Boxes</h2>
 			<fieldset>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check1'/>
+				<widget is='framework/ui/dijit/form/CheckBox' id='check1'></widget>
 				<label for='check1'>unchecked</label>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check2' checked/>
+				<widget is='framework/ui/dijit/form/CheckBox' id='check2' checked></widget>
 				<label for='check2'>checked</label>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check3' checked='' disabled/>
+				<widget is='framework/ui/dijit/form/CheckBox' id='check3' checked='' disabled></widget>
 				<label for='check3'>disabled</label>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check4' checked disabled/>
+				<widget is='framework/ui/dijit/form/CheckBox' id='check4' checked disabled></widget>
 				<label for='check4'>disabled and checked</label>
 			</fieldset>
 
 			<h2>Radio Buttons</h2>
 			<fieldset>
-				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb1'/>
+				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb1'></widget>
 				<label for='g1rb1'>news</label>
-				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb2' checked/>
+				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb2' checked></widget>
 				<label for='g1rb2'>talk</label>
-				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb3' disabled/>
+				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb3' disabled></widget>
 				<label for='g1rb3'>weather (disabled)</label>
 			</fieldset>
 		</widget>
@@ -148,29 +148,29 @@
 
 			<h2>DateTextBox</h2>
 			<label for='date1'>Enabled w/placeHolder:</label>
-			<widget id='date1' is='framework/ui/dijit/form/DateTextBox' place-holder='Birthday'/>
+			<widget id='date1' is='framework/ui/dijit/form/DateTextBox' place-holder='Birthday'></widget>
 			<label for='date2'>Disabled w/placeHolder:</label>
-			<widget id='date2' is='framework/ui/dijit/form/DateTextBox' disabled place-holder='Birthday'/>
+			<widget id='date2' is='framework/ui/dijit/form/DateTextBox' disabled place-holder='Birthday'></widget>
 			<label for='date3'>Disabled w/value:</label>
-			<widget id='date3' is='framework/ui/dijit/form/DateTextBox' disabled value='2008-12-25'/>
+			<widget id='date3' is='framework/ui/dijit/form/DateTextBox' disabled value='2008-12-25'></widget>
 
 			<h2>TimeTextBox</h2>
 			<label for='time1'>Enabled w/placeHolder:</label>
-			<widget id='time1' is='framework/ui/dijit/form/TimeTextBox' value='T17:45'/>
+			<widget id='time1' is='framework/ui/dijit/form/TimeTextBox' value='T17:45'></widget>
 			<label for='time2'>Enabled w/placeHolder:</label>
-			<widget id='time2' is='framework/ui/dijit/form/TimeTextBox' disabled value='T17:45'/>
+			<widget id='time2' is='framework/ui/dijit/form/TimeTextBox' disabled value='T17:45'></widget>
 
 			<h2>CurrencyTextBox</h2>
 			<label for='currency1'>Enabled:</label>
-			<widget id='currency1' is='framework/ui/dijit/form/CurrencyTextBox' value='54775.53' currency='USD'/>
+			<widget id='currency1' is='framework/ui/dijit/form/CurrencyTextBox' value='54775.53' currency='USD'></widget>
 			<label for='currency2'>Disabled:</label>
-			<widget id='currency2' is='framework/ui/dijit/form/CurrencyTextBox' disabled value='54775.53' currency='USD'/>
+			<widget id='currency2' is='framework/ui/dijit/form/CurrencyTextBox' disabled value='54775.53' currency='USD'></widget>
 
 			<h2>NumberSpinner</h2>
 			<label for='spinner1'>Enabled:</label>
-			<widget id='spinner1' is='framework/ui/dijit/form/NumberSpinner' value='10'/>
+			<widget id='spinner1' is='framework/ui/dijit/form/NumberSpinner' value='10'></widget>
 			<label for='spinner2'>Disabled:</label>
-			<widget id='spinner2' is='framework/ui/dijit/form/NumberSpinner' disabled value='10'/>
+			<widget id='spinner2' is='framework/ui/dijit/form/NumberSpinner' disabled value='10'></widget>
 		</widget>
 		<widget is='framework/ui/dijit/layout/ContentPane' title='Select Widgets'>TODO</widget>
 		<widget is='framework/ui/dijit/layout/ContentPane' title='Textarea'>TODO</widget>
@@ -186,9 +186,9 @@
 			<hr class='spacer'></hr>
 
 			<h2>ProgressBar</h2>
-			<widget id='setTestBar' is='framework/ui/dijit/ProgressBar' value='10%'/>
+			<widget id='setTestBar' is='framework/ui/dijit/ProgressBar' value='10%'></widget>
 			Indeterminate:
-			<widget id='indTestBar' is='framework/ui/dijit/ProgressBar' indeterminate/>
+			<widget id='indTestBar' is='framework/ui/dijit/ProgressBar' indeterminate></widget>
 		</widget>
 		<widget is='framework/ui/dijit/layout/ContentPane' title='InlineEditBox'>TODO</widget>
 		<widget is='framework/ui/dijit/layout/ContentPane' title='DnD'>TODO</widget>
