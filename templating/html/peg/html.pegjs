@@ -141,20 +141,18 @@ Template
 		(widget:AnyNonElement !. { return widget })
 		/ Element
 	)? {
-		if (!root) {
-			root = {
-				constructor: '',
-				content: '',
-				children: []
-			};
+		if (root) {
+			// If just one child and no content, collapse it
+			if (!root.content && root.children && root.children.length === 1) {
+				root = root.children[0];
+			}
+			else {
+				root.constructor = 'framework/templating/html/ui/View';
+			}
 		}
-
-		// Collapse root w/ no content and 1 child widget to child
-		var children = root.children || [];
-		if (children.length === 1 && root.content === null) {
-			root = children[0];
+		else {
+			root = { constructor: 'framework/templating/html/ui/View' };
 		}
-
 		aliases.validate();
 		aliases.resolve(root);
 		return root;
@@ -163,21 +161,18 @@ Template
 // HTML
 
 Element 'HTML'
-	= items:(
+	= nodes:(
 		AnyNonElement
 		/ HtmlFragment
 	)+ {
 		var content = [],
-			element = {
-				constructor: '',
-				children: []
-			},
-			children = element.children,
+			element = {},
+			children = [],
 			nonWhitespace = /\S/,
-			hasText = false;
+			hasContent;
 
-		for (var i = 0, j = items.length; i < j; ++i) {
-			var node = items[i];
+		for (var i = 0, j = nodes.length; i < j; ++i) {
+			var node = nodes[i];
 
 			// An alias node will be transformed into a null node
 			if (!node) {
@@ -186,10 +181,11 @@ Element 'HTML'
 
 			if (typeof node === 'string') {
 				content.push(node);
-				hasText || (hasText = nonWhitespace.test(node))
+				hasContent || (hasContent = nonWhitespace.test(node))
 			}
 			else if (node.$named) {
-				content.push(node)
+				content.push(node);
+				hasContent = true;
 			}
 			else {
 				content.push({ $child: children.length });
@@ -197,16 +193,20 @@ Element 'HTML'
 			}
 		}
 
-		if (children.length && !hasText) {
-			// If Element is just children and whitespace null out content as a signal to collapse it
-			element.content = null;
+		if (children.length) {
+			element.children = children;
+		}
+
+		if (!hasContent) {
+			// Set content to empty if it's just whitespace and/or children
 			return element;
 		}
 		if (content.length === 1 && typeof content[0] === 'string') {
-			// Flatten to string if content is just a single string in an array
+			// Flatten to string if there's no complex content
 			element.content = content[0];
 			return element;
 		}
+
 		// Parse the string portions of our html template for text bindings
 		var results = [],
 			item,
@@ -273,39 +273,32 @@ BoundText
 
 If '<if/>'
 	= kwArgs:IfTagOpen
-	content:Any
+	body:Any
 	alternates:(
-		alternate:ElseIfTagOpen consequent:Any (ElseIfTagClose S*)? {
-			return {
-				kwArgs: alternate,
-				content: consequent
-			};
+		kwArgs:ElseIfTagOpen body:Any (ElseIfTagClose S*)? {
+			body.constructor = 'framework/templating/html/ui/Conditional';
+			body.kwArgs = kwArgs;
+			return body;
 		}
 	)*
-	finalAlternate:(kwArgs:ElseTagOpen content:Any (ElseTagClose S*)? {
-		return {
-			constructor: '',
-			kwArgs: kwArgs,
-			content: content
-		};
+	finalAlternate:(kwArgs:ElseTagOpen body:Any (ElseTagClose S*)? {
+		body.constructor = 'framework/templating/html/ui/View';
+		body.kwArgs = kwArgs;
+		return body;
 	})?
 	IfTagClose {
-		var conditional = {
-			constructor: 'framework/templating/html/ui/Conditional',
-			kwArgs: kwArgs,
-			content: content
-		};
+		body.constructor = 'framework/templating/html/ui/Conditional';
+		body.kwArgs = kwArgs;
 
 		// Loop over our alternates and turn them into a recursive list of conditional widgets
-		var target = conditional, i, alternate;
+		var target = body, i, alternate;
 		for (i = 0; (alternate = alternates[i]); ++i) {
-			alternate.constructor = conditional.constructor;
 			target = target.kwArgs.alternate = alternate;
 		}
 		if (finalAlternate) {
 			target.kwArgs.alternate = finalAlternate;
 		}
-		return conditional;
+		return body;
 	}
 
 IfTagOpen '<if>'
@@ -349,14 +342,14 @@ ElseTagClose '</else>'
 // loops
 
 For '<for/>'
-	= kwArgs:ForTagOpen template:Any ForTagClose {
+	= kwArgs:ForTagOpen body:Element ForTagClose {
 		validate(kwArgs, {
 			type: '<for>',
 			required: [ 'each', 'in' ],
 			optional: [ 'index', 'id' ]
 		});
 		// Wrap template with an array to keep it from being instantiated by processor
-		kwArgs.template = [ template ];
+		kwArgs.template = body;
 		return {
 			constructor: 'framework/templating/html/ui/Iterator',
 			kwArgs: kwArgs
@@ -374,14 +367,14 @@ ForTagClose '</for>'
 When '<when/>'
 	= kwArgs:WhenTagOpen
 	widget:Any?
-	during:(DuringTagOpen content:Any? (DuringTagClose S*)? { return content })?
-	error:(ErrorTagOpen content:Any? (ErrorTagClose S*)? { return content })?
+	during:(DuringTagOpen body:Any? (DuringTagClose S*)? { return body })?
+	error:(ErrorTagOpen body:Any? (ErrorTagClose S*)? { return body })?
 	WhenTagClose {
-		// TODO: process bindings within content, and wihtin during and error widgets
+		// TODO: process bindings within content, and within during and error content
 		kwArgs.during = during;
 		kwArgs.error = error;
-		widget.kwArgs = kwArgs;
 		widget.constructor = 'framework/templating/html/ui/When';
+		widget.kwArgs = kwArgs;
 		return widget;
 	}
 
@@ -405,7 +398,7 @@ DuringTagOpen '<during>'
 			optional: [ 'id' ]
 		});
 		return {
-			constructor: '',
+			constructor: 'framework/templating/html/ui/View',
 			kwArgs: kwArgs
 		};
 	}
@@ -420,7 +413,7 @@ ErrorTagOpen '<error>'
 			optional: [ 'id' ]
 		});
 		return {
-			constructor: '',
+			constructor: 'framework/templating/html/ui/View',
 			kwArgs: kwArgs
 		};
 	}
@@ -432,54 +425,45 @@ ErrorTagClose '</error>'
 
 
 Widget '<widget></widget>'
-	= widget:(WidgetVoid / WidgetNonVoid) {
-		var kwArgs = widget.kwArgs;
+	= kwArgs:WidgetTagOpen body:Element? WidgetTagClose {
 		validate(kwArgs, {
 			type: '<widget>',
 			required: [ 'is' ],
 			extensible: true
 		});
 
-		var ctor = widget.constructor = kwArgs.is;
-		if (typeof ctor !== 'string') {
-			error('Widget constructor ' + ctor + ' must be a string');
-		}
+		var widget = {
+			constructor: kwArgs.is,
+			kwArgs: kwArgs
+		};
 		delete kwArgs.is;
-
-		var children = widget.children;
-		// Collapse single Element child w/ no content
-		if (children && children.length === 1 && children[0].content === null) {
-			children = widget.children = children[0].children;
+		if (typeof widget.constructor !== 'string') {
+			error('Widget constructor ' + widget.constructor + ' must be a string');
 		}
 
 		// Resolve any attribute reference functions with widget children
-		var value;
-		for (var key in kwArgs) {
-			value = kwArgs[key];
-			if (typeof value === 'function') {
-				kwArgs[key] = value(children);
+		if (body && body.children) {
+			widget.children = body.children;
+			var value;
+			for (var key in kwArgs) {
+				value = kwArgs[key];
+				if (typeof value === 'function') {
+					kwArgs[key] = value(widget.children);
+				}
 			}
+		}
+		if (body && body.content) {
+			widget.content = body.content;
 		}
 
 		return widget;
 	}
-
-WidgetNonVoid '<widget>'
-	= kwArgs:WidgetTagOpen children:(Any)* WidgetTagClose {
-		return { kwArgs: kwArgs, children: children };
-	};
 
 WidgetTagOpen '<widget>'
 	= '<widget'i kwArgs:AttributeMap '>' { return kwArgs }
 
 WidgetTagClose '</widget>'
 	= '</widget>'i
-
-WidgetVoid '<widget/>'
-	= '<widget'i kwArgs:AttributeMap '/>' {
-		// return { kwArgs: kwArgs };
-		error('Widget cannot be void');
-	}
 
 // actions
 

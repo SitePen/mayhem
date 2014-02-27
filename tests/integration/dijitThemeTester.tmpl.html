@@ -17,14 +17,14 @@
 		</widget>
 	</widget>
 	<widget is='framework/ui/dijit/MenuBar' region='top'>
-		<widget id='file' is='framework/ui/dijit/PopupMenuBarItem' label='File'>
+		<widget id='file' is='framework/ui/dijit/PopupMenuBarItem' popup=#fileMenu label='File'>
 			<widget id='fileMenu' is='framework/ui/dijit/Menu'>
 				<widget id='globals' is='framework/ui/dijit/MenuItem'>Log globals</widget>
 				<widget id='widgets' is='framework/ui/dijit/MenuItem'>Log widgets</widget>
 				<widget id='destroy' is='framework/ui/dijit/MenuItem' icon-class='dijitIconDelete'>Destroy All</widget>
 			</widget>
 		</widget>
-		<widget id='edit' is='framework/ui/dijit/PopupMenuBarItem' label='Edit'>
+		<widget id='edit' is='framework/ui/dijit/PopupMenuBarItem' popup=#editMenu label='Edit'>
 			<widget id='editMenu' is='framework/ui/dijit/Menu'>
 				<widget id='cut' is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
 				<widget id='copy' is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
@@ -33,11 +33,11 @@
 				<widget id='undo' is='framework/ui/dijit/MenuItem' label='Undo' on-click='undo' icon-class='dijitIconUndo'></widget>
 			</widget>
 		</widget>
-		<widget id='view' is='framework/ui/dijit/PopupMenuBarItem' label='View'>
+		<widget id='view' is='framework/ui/dijit/PopupMenuBarItem' popup=#viewMenu label='View'>
 			<widget id='viewMenu' is='framework/ui/dijit/Menu'>
 				<widget is='framework/ui/dijit/MenuItem' label='Normal'></widget>
 				<widget is='framework/ui/dijit/MenuItem' label='Outline'></widget>
-				<widget id='zoom' is='framework/ui/dijit/PopupMenuItem'>
+				<widget id='zoom' is='framework/ui/dijit/PopupMenuItem' popup=#zoomMenu>
 					Zoom
 					<widget id='zoomMenu' is='framework/ui/dijit/Menu'>
 						<widget is='framework/ui/dijit/RadioMenuItem' label='50%' group='zoom'></widget>
@@ -51,7 +51,7 @@
 		</widget>
 		<widget is='framework/ui/dijit/MenuBarItem' label='Themes'></widget>
 		<widget is='framework/ui/dijit/MenuBarItem' label='Dialogs'></widget>
-		<widget id='inputPadding' is='framework/ui/dijit/PopupMenuBarItem' label='TextBox Padding'>
+		<widget id='inputPadding' is='framework/ui/dijit/PopupMenuBarItem' popup=#inputPaddingMenu label='TextBox Padding'>
 			<widget id='inputPaddingMenu' is='framework/ui/dijit/Menu'>
 				<widget is='framework/ui/dijit/RadioMenuItem' label='theme default' group='padding' checked></widget>
 				<widget is='framework/ui/dijit/RadioMenuItem' label='0px' group='padding'></widget>
@@ -62,14 +62,14 @@
 				<widget is='framework/ui/dijit/RadioMenuItem' label='5px' group='padding'></widget>
 			</widget>
 		</widget>
-		<widget id='help' is='framework/ui/dijit/PopupMenuBarItem' label='Help'>
+		<widget id='help' is='framework/ui/dijit/PopupMenuBarItem' popup=#helpMenu label='Help'>
 			<widget id='helpMenu' is='framework/ui/dijit/Menu'>
 				<widget is='framework/ui/dijit/MenuItem'>Help Topics</widget>
 				<widget is='framework/ui/dijit/MenuItem'>About Dijit</widget>
 			</widget>
 		</widget>
-		<widget is='framework/ui/dijit/PopupMenuBarItem' label='Disabled' disabled>
-			<widget is='framework/ui/dijit/Menu'>
+		<widget is='framework/ui/dijit/PopupMenuBarItem' popup=#disabledMenu label='Disabled' disabled>
+			<widget id='disabledMenu' is='framework/ui/dijit/Menu'>
 				<widget is='framework/ui/dijit/MenuItem'>You should not see this</widget>
 			</widget>
 		</widget>
@@ -82,15 +82,15 @@
 			<div>
 				Enabled:
 				<widget is='framework/ui/dijit/form/Button' label='Simple' icon-class='dijitIconTask'></widget>
-				<widget is='framework/ui/dijit/form/DropDownButton' icon-class='dijitIconEdit'>
+				<widget is='framework/ui/dijit/form/DropDownButton' drop-down=#dd-menu icon-class='dijitIconEdit'>
 					Drop Down
-					<widget is='framework/ui/dijit/DropDownMenu'>
+					<widget id='dd-menu' is='framework/ui/dijit/DropDownMenu'>
 						<widget is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
 						<widget is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
 						<widget is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ComboButton' drop-down='#combo-menu' label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='framework/ui/dijit/form/ComboButton' drop-down=#combo-menu label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
 					<widget id='combo-menu' is='framework/ui/dijit/DropDownMenu'>
 						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
@@ -102,15 +102,15 @@
 			<div>
 				Disabled:
 				<widget is='framework/ui/dijit/form/Button' disabled label='Simple' icon-class='dijitIconTask'></widget>
-				<widget is='framework/ui/dijit/form/DropDownButton' disabled icon-class='dijitIconEdit'>
+				<widget is='framework/ui/dijit/form/DropDownButton' disabled drop-down=#disabled-dd-menu icon-class='dijitIconEdit'>
 					<strong>Drop</strong> Down
-					<widget is='framework/ui/dijit/DropDownMenu'>
+					<widget id='disabled-dd-menu' is='framework/ui/dijit/DropDownMenu'>
 						<widget is='framework/ui/dijit/MenuItem' label='Cut' icon-class='dijitEditorIcon dijitEditorIconCut' on-click='cut'></widget>
 						<widget is='framework/ui/dijit/MenuItem' label='Copy' icon-class='dijitEditorIcon dijitEditorIconCopy' on-click='copy'></widget>
 						<widget is='framework/ui/dijit/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ComboButton' disabled drop-down='#disabled-combo-menu' label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='framework/ui/dijit/form/ComboButton' disabled drop-down=#disabled-combo-menu label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
 					<widget id='disabled-combo-menu' is='framework/ui/dijit/DropDownMenu'>
 						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>

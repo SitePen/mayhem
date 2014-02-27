@@ -28,6 +28,10 @@ class ElementWidget extends Widget implements ui.IElementWidget {
 		});
 	}
 
+	clear():void {
+		this._firstNode.innerHTML = '';
+	}
+
 	detach():HTMLElement {
 		// TODO: Make sure this is a reasonably logical thing to do; it introduces an inconsistency where
 		// the widget is still parented in the widget tree but not in the DOM tree.

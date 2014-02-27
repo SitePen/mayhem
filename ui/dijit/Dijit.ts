@@ -1,29 +1,26 @@
 /// <reference path="../../dijit" />
+/// <reference path="../../dojo" />
 
 import array = require('dojo/_base/array');
 import ContentWidget = require('../dom/ContentWidget');
 import core = require('../../interfaces');
+import domConstruct = require('dojo/dom-construct');
 import PlacePosition = require('../PlacePosition');
-import ElementWidget = require('../dom/ElementWidget');
 import ui = require('../interfaces');
 import util = require('../../util');
+import ViewWidget = require('../dom/ViewWidget');
 import __WidgetBase = require('dijit/_WidgetBase');
 
-/* abstract */ class Dijit extends ElementWidget implements ui.IWidgetContainer {
+/* abstract */ class Dijit extends ViewWidget { // TODO: extend a content-aware ElementWidget instead
 	/* protected */ _children:Dijit[];
-	/* protected */ _content:ui.IDomWidget;
+	/* protected */ _content:DocumentFragment;
 	/* protected */ _dijit:__WidgetBase;
 	/* protected */ _dijitActions:string[];
 	/* protected */ _dijitArgs:any;
 	/* protected */ _dijitCtor:any; // new () => __WidgetBase;
 	/* protected */ _dijitFields:string[];
-	/* protected */ _disabled:boolean; // TODO: coerce string values coming from templates
-	/* protected */ _firstNode:HTMLElement;
-	/* protected */ _lastNode:HTMLElement;
-	/* protected */ _parent:ui.IWidgetContainer;
 
 	constructor(kwArgs:any = {}) {
-		util.deferMethods(this, [ '_placeChildren', '_contentSetter' ], '_render');
 		// TODO: this is a hack and needs cleanup
 		this._setDijitFields('disabled', 'iconClass', 'label', 'region', 'splitter', 'style', 'title', 'tooltip');
 
@@ -62,37 +59,45 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		super(kwArgs);
 	}
 
+	add(widget:ui.IDomWidget, position:any = PlacePosition.LAST):IHandle {
+		// TODO: create a distinctino for DijitContainers
+		// We only support adding children to dijits by index for now
+		if (!(widget instanceof Dijit)) {
+			throw new Error('Only Dijit instances can be added to DijitContainer');
+		}
+		var handle:IHandle;
+
+		position || (position = 0);
+		if (typeof position === 'number' && position >= 0) {
+			widget.set('parent', this);
+			if (this._childPlaceholders && this._childPlaceholders[position]) {
+				// If widget has placeholder for this child let super fill it
+				handle = super.add(widget, position);
+			}
+			else {
+				// TODO: this is awkward
+				// Otherwise manually addChild
+				this.get('children')[position] = widget;
+				this._dijit.addChild((<Dijit> widget)._dijit, position);
+				// TODO: handle
+			}
+			return handle; 
+		}
+		throw new Error('NYI');
+	}
+
 	/* protected */ _attachedSetter(attached:boolean):void {
-		if (attached) this._dijit.startup();
+		if (attached) {
+			this._startup();
+		}
 		super._attachedSetter(attached);
 	}
 
-	/* protected */ _childrenSetter(children:ui.IDomWidget[]):void {
-		this._children = [];
-		// Handle case where Element widget is our content
-		var content:ui.IDomWidget = children[0];
-		// TODO: better test for ViewWidget
-		if (content && content['_indexedPlaceholders'] && children.length === 1) {
-			this.set('content', content);
-			return;
-		}
-		this._children = <Dijit[]> children;
-		this._placeChildren();
-	}
-
-	/* protected */ _contentSetter(content:ui.IDomWidget):void {
-		this._content = content;
-		if (content instanceof Array) debugger
-		if (content) {
-			this._dijit.containerNode.appendChild(content.detach());
-		}
+	clear():void {
+		this._dijit.containerNode.innerHTML = '';
 	}
 
 	destroy():void {
-		if (this._content) {
-			this._content.destroy();
-			this._content = null;
-		}
 		if (this._dijit) {
 			this._dijit.destroyRecursive();
 			this._dijit = null;
@@ -100,20 +105,17 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		super.destroy();
 	}
 
-	// TODO: DijitContainer?
-	private _placeChildren():void {
-		var child:Dijit;
-		for (var i = 0; (child = this._children[i]); ++i) {
-			this._dijit.addChild(child._dijit);
-			child.set('index', i);
-			child.set('parent', this);
-		}
+	/* protected */ _placeContent():void {
+		this.clear();
+		var container = this._dijit.containerNode; // TODO: or this._dijit.domNode?
+		container.appendChild(this._content);
 	}
 
 	/* protected */ _render():void {
+		super._render();
 		var dijit:__WidgetBase = new this._dijitCtor(this._dijitArgs);
 		this.get('classList').set(dijit.domNode.className);
-		this._firstNode = this._lastNode = dijit.domNode;
+		this._lastNode.parentNode.insertBefore(dijit.domNode, this._lastNode);
 		this.set('dijit', dijit);
 	}
 
@@ -131,21 +133,9 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		this._dijitFields = (this._dijitFields || []).concat(keys);
 	}
 
-	// ui.IWidgetContainer
-	add:{
-		(widget:ui.IDomWidget, position:PlacePosition):IHandle;
-		(widget:ui.IDomWidget, position:number):IHandle;
-		(widget:ui.IDomWidget, placeholder:string):IHandle;
-	};
-
-	empty: { ():void; };
-
-	remove:{ (index:number):void; (widget:ui.IWidget):void; };
+	/* protected */ _startup():void {
+		this._dijit.startup();
+	}
 }
-
-// FIXME: util.applyMixins(Dijit, [ ContentWidget ]);
-Object.keys(ContentWidget).forEach((key:string) => {
-	Dijit.prototype[key] = ContentWidget.prototype[key];
-})
 
 export = Dijit;

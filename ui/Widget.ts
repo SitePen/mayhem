@@ -124,6 +124,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		};
 	}
 
+	clear():void {}
+
 	destroy():void {
 		this.detach();
 
@@ -141,7 +143,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		parent.remove && parent.remove(this);
 	}
 
-	clear():void {}
+	private _indexGetter():ui.IWidget {
+		var parent = this.get('parent');
+		if (!parent) {
+			return null;
+		}
+		return parent.get('children').indexOf(this);
+	}
 
 	private _mediatorGetter():core.IMediator {
 		return this._activeMediator;
@@ -154,12 +162,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	private _nextGetter():ui.IWidget {
 		var parent = this.get('parent');
-
 		if (!parent) {
 			return null;
 		}
-
-		var index:number = parent.get('children').indexOf(this);
+		var index:number = this.get('index');
 		return parent.get('children')[index + 1];
 	}
 

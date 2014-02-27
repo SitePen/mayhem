@@ -16,34 +16,17 @@ export interface IClassList extends core.IProxty<string> {
 export interface IComponentWidget extends IElementWidget, IContentWidget {
 }
 
-export interface IWidgetContainer extends core.IObservable {
-	/* protected */ _children:IDomWidget[];
-
-	add(widget:IWidget, position:AddPosition):IHandle;
-	add(widget:IWidget, position:number):IHandle;
-	add(widget:IWidget, placeholder:string):IHandle;
-
-	get(key:string):any;
-
-	empty():void;
-
-	remove(index:number):void;
-	remove(widget:IWidget):void;
-}
-
-export interface IPositionalChildContainer extends IContentContainer, IWidgetContainer {
-	// _indexedPlaceholders:IPlaceholder[];
+export interface IChildContainer extends IContentContainer, IWidgetContainer {
+	// _childPlaceholders:IPlaceholder[];
 }
 
 export interface IContentContainer extends IDomWidget {
 	_content:DocumentFragment;
 
-	setContent(content:any /* Node | string */):void;
-
 	clear():void;
 }
 
-export interface IContentWidget extends ITextBindingContainer, IPositionalChildContainer, INamedChildContainer {
+export interface IContentWidget extends ITextBindingContainer, IChildContainer, IPlaceholdingContainer {
 
 }
 
@@ -85,6 +68,10 @@ export interface IFragmentWidget extends IDomWidget {
 	detach():Node; // DocumentFragment
 }
 
+export interface IPlaceholdingContainer extends IContentContainer, IWidgetContainer {
+	// placeholders:{ [key:string]: IPlaceholder };
+}
+
 // export interface IPaneWidget extends IViewWidget {
 // 	_selected:boolean;
 // 	_keepScrollPosition:boolean;
@@ -94,12 +81,6 @@ export interface IPlaceholder extends IFragmentWidget {
 	// _content:IDomWidget;
 
 	// get(key:'content'):IDomWidget;
-}
-
-export interface INamedChildContainer extends IContentContainer, IWidgetContainer {
-	// _namedPlaceholders:{ [key:string]: IPlaceholder };
-
-	// get(key:'namedPlaceholders'):{ [key:string]: IPlaceholder };
 }
 
 export interface ITextBindingContainer extends IContentContainer {
@@ -123,13 +104,27 @@ export interface IWidget extends core.IObservableEvented {
 
 	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
 	destroy():void;
-	detach():void;
-	clear():void;
 
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IWidgetContainer, position:number):IHandle;
 	placeAt(destination:IWidgetContainer, placeholder:string):IHandle;
 	resize?(bounds?:{ width:number; height:number; }):void;
+}
+
+// TODO: ideally this only needs to extend core.IObservable
+export interface IWidgetContainer extends IDomWidget {
+	/* protected */ _children:IDomWidget[];
+
+	add(widget:IWidget, position:AddPosition):IHandle;
+	add(widget:IWidget, position:number):IHandle;
+	add(widget:IWidget, placeholder:string):IHandle;
+
+	get(key:string):any;
+
+	empty():void;
+
+	remove(index:number):void;
+	remove(widget:IWidget):void;
 }
 
 /* Style */

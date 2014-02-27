@@ -9,17 +9,13 @@ import util = require('../../util');
 
 class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // ui.IContentWidget
 	/* protected */ _children:ui.IDomWidget[];
-	private _placeholders:{ [name:string]: ui.IPlaceholder; }; // TOOD: move to IPlacehodlingWidget
+	private _placeholders:{ [name:string]: ui.IPlaceholder; }; // TOOD: move to IPlaceholdingContainer
 
 	constructor(kwArgs?:Object) {
 		this._children || (this._children = []);
 		this._placeholders || (this._placeholders = {});
 		super(kwArgs);
 	}
-
-	// TS#2153
-	// get(key:'children'):ui.IDomWidget[];
-	// get(key:'placeholders'):{ [name:string]: ui.IPlaceholder; };
 
 	add(widget:ui.IDomWidget, position:PlacePosition):IHandle;
 	add(widget:ui.IDomWidget, position:number):IHandle;
@@ -66,7 +62,7 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 				position = Math.max(0, Math.min(this._children.length, position));
 			}
 
-			var referenceWidget:ui.IWidget = this._children[position];
+			var referenceWidget:ui.IDomWidget = this._children[position];
 			this._children.splice(position, 0, widget);
 			this._addToContainer(widget, referenceWidget);
 
@@ -86,7 +82,7 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 		return handle;
 	}
 
-	/* protected */ _addToContainer(widget:ui.IDomWidget, referenceWidget:ui.IWidget):void {
+	/* protected */ _addToContainer(widget:ui.IDomWidget, referenceWidget:ui.IDomWidget):void {
 		var widgetNode:Node = widget.detach(),
 			referenceNode:Node = referenceWidget ? referenceWidget.get('firstNode') : null;
 
@@ -102,7 +98,7 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 	}
 
 	empty():void {
-		var widget:ui.IWidget;
+		var widget:ui.IDomWidget;
 		while ((widget = this._children.pop())) {
 			widget.detach();
 		}
@@ -113,9 +109,9 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 	}
 
 	remove(index:number):void;
-	remove(widget:ui.IWidget):void;
+	remove(widget:ui.IDomWidget):void;
 	remove(index:any):void {
-		var widget:ui.IWidget;
+		var widget:ui.IDomWidget;
 
 		if (typeof index !== 'number') {
 			widget = index;

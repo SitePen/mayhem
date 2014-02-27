@@ -3,13 +3,14 @@
 
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
+import ElementWidget = require('../../../ui/dom/ElementWidget');
 import MemoryStore = require('dojo/store/Memory');
 import OnDemandList = require('dgrid/OnDemandList');
 import ObservableArray = require('../../../ObservableArray');
 import Processor = require('../../Processor');
-import ElementWidget = require('../../../ui/dom/ElementWidget');
 import ui = require('../../../ui/interfaces');
 import util = require('../../../util');
+import ViewWidget = require('../../../ui/dom/ViewWidget');
 
 class Iterator extends ElementWidget {
 	private _list:OnDemandList;
@@ -20,6 +21,7 @@ class Iterator extends ElementWidget {
 	private _sourceFieldObserver:IHandle;
 	private _store:MemoryStore<any>;
 	private _template:any;
+	private _templateConstructor:any;
 	private _scopedField:string;
 	private _silent:boolean;
 	private _source:any; // Array | ObservableArray | IStore<any>
@@ -28,6 +30,7 @@ class Iterator extends ElementWidget {
 	private _widgetIndex:{ [key:string]: ui.IDomWidget; };
 
 	constructor(kwArgs:Object) {
+		this._templateConstructor = ViewWidget;
 		this._rowElementType = 'div';
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
@@ -106,12 +109,10 @@ class Iterator extends ElementWidget {
 		}
 		var mediator = this._getMediatorByKey(key);
 		return this._widgetIndex[key] = (new Processor(this._template, {
+			ctor: this._templateConstructor,
 			mediator: mediator,
 			parent: this
 		})).initialize();
-		if (this._app) {
-			debugger
-		}
 	}
 
 	private _inSetter(sourceField:string):void {
@@ -204,10 +205,8 @@ class Iterator extends ElementWidget {
 	}
 
 	private _templateSetter(template:any):void {
-		template = this._template = template[0];
-		if (!template.constructor) {
-			template.constructor = Processor.defaultModuleId;
-		}
+		// Set constructor since it comes in without one (to avoid being constructed during processing)
+		template = this._template = template;
 		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
 	}
 }

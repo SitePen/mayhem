@@ -13,19 +13,16 @@ class DropDownButton extends Button {
 		super(kwArgs);
 	}
 
-	_childrenSetter(children:ui.IDomWidget[]):void {
-		// We need to grab a child widget to use for dropdown
-		// If only child is Element use its last child, otherwise use last child
-		var elementChild:boolean = children.length === 1 && !(children[0] instanceof Dijit);
-		var widgets:ui.IDomWidget[] = elementChild && children[0].get('children') || children;
-		var target:Dijit = <Dijit> widgets.pop();
-		target && this.set('dropDown', target);
-		super._childrenSetter(children);
-	}
-
 	_dropDownSetter(dropDown:Dijit):void {
 		this._dropDown = dropDown;
 		this._dijit.set('dropDown', this._dropDown._dijit);
+	}
+
+	_startup():void {
+		if (!this._dropDown) {
+			throw new Error('Dijit dropdown widget requires a `dropDown` property');
+		}
+		super._startup()
 	}
 }
 

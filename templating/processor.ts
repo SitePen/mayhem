@@ -7,33 +7,38 @@ import Deferred = require('dojo/Deferred');
 import lang = require('dojo/_base/lang');
 import html = require('./html');
 import templating = require('./interfaces');
+import ViewWidget = require('../ui/dom/ViewWidget');
 import ui = require('../ui/interfaces');
 import util = require('../util');
 
-class Processor {
-	static defaultModuleId:string = 'framework/ui/dom/ViewWidget';
+class TemplateProcessor {
 	static defaultParser:templating.IParser = <templating.IParser> html.parser;
 
 	static findDependencies(node:any /* templating.IWidgetNode */, dependencies:string[] = []):string[] {
-		var kwArgs:any = node.kwArgs,
-			children:any = node.children,
-			ctor:any = node.constructor;
+		var ctor:any = node.constructor;
 		if (typeof ctor !== 'string') {
 			throw new Error('Widget constructor must be a string');
 		}
-		if (!ctor) {
-			node['constructor'+''] = ctor = Processor.defaultModuleId;
-		}
 		// Dependency list has set semantics
 		dependencies.indexOf(ctor) === -1 && dependencies.push(ctor);
+		var children:any = node.children,
+			child:any;
 		if (children) {
 			for (var i = 0, len = children.length; i < len; ++i) {
-				typeof children[i].constructor === 'string' && Processor.findDependencies(children[i], dependencies);
+				child = children[i];
+				if (child && typeof child.constructor) {
+					this.findDependencies(child, dependencies);
+				}
 			}
 		}
+		var kwArgs:any = node.kwArgs,
+			value:any;
 		if (kwArgs) {
 			for (var key in kwArgs) {
-				typeof kwArgs[key].constructor === 'string' && Processor.findDependencies(kwArgs[key], dependencies);
+				value = kwArgs[key];
+				if (value && typeof value.constructor === 'string') {
+					this.findDependencies(value, dependencies);
+				}
 			}
 		}
 		return dependencies;
@@ -44,9 +49,9 @@ class Processor {
 		console.log('AST:', node)
 		var dfd:IDeferred<ui.IDomWidget> = new Deferred<ui.IDomWidget>(),
 			timeoutHandle:number;
-		require(Processor.findDependencies(node), ():void => {
+		require(this.findDependencies(node), ():void => {
 			clearTimeout(timeoutHandle);
-			dfd.resolve((new Processor(node).initialize()));
+			dfd.resolve((new TemplateProcessor(node).initialize()));
 		});
 		if (timeout) {
 			timeoutHandle = setTimeout(():void => {
@@ -57,8 +62,8 @@ class Processor {
 	}
 
 	static processTemplate(template:string, parser?:templating.IParser, timeout?:number):IPromise<ui.IDomWidget> {
-		parser || (parser = Processor.defaultParser);
-		return Processor.process(parser.parse(template), timeout);
+		parser || (parser = this.defaultParser);
+		return this.process(parser.parse(template), timeout);
 	}
 
 	private _bindingTemplates:{ [key:string]: any; };
@@ -70,12 +75,8 @@ class Processor {
 	private _WidgetCtor:any;
 
 	constructor(node:any /* templating.IWidgetNode */, options:any = {}) {
-		if (typeof node.constructor !== 'string') {
-			throw new Error('Widget node must have a string constructor');
-		}
-
 		this._node = node;
-		this._WidgetCtor = require(node.constructor);
+		this._WidgetCtor = options.ctor || require(node.constructor);
 		this._bindingTemplates = {};
 		this._propertyBindings = {};
 
@@ -87,7 +88,7 @@ class Processor {
 		for (key in kwArgs) {
 			value = kwArgs[key];
 			if (value && typeof value.constructor === 'string') {
-				widgetArgs[key] = new Processor(value, {
+				widgetArgs[key] = new TemplateProcessor(value, {
 					app: options.app,
 					parent: this
 				}).initialize();
@@ -110,11 +111,6 @@ class Processor {
 				// Pass non-binding values to widgetArgs unmolested
 				widgetArgs[key] = value;
 			}
-
-			// TODO: what's the right thing to do here?
-			// if (!options.app && options.parent) {
-			// 	options.app = options.parent.get('app');
-			// }
 		}
 		
 		this._widgetArgs = lang.mixin({}, { app: options.app }, widgetArgs);
@@ -131,7 +127,7 @@ class Processor {
 		return widget;
 	}
 
-	private _initializeBindings() {
+	private _initializeBindings():void {
 		var widget = this._widget,
 			observerHandles:IHandle[],
 			propertyBindings = this._propertyBindings,
@@ -164,31 +160,27 @@ class Processor {
 		};
 	}
 
-	private _initializeChildren() {
-		var children:any = this._node.children;
-		if (children) {
-			this._widget.set('children', array.map(children, (child:any):ui.IDomWidget => {
-				return new Processor(child).initialize();
-			}));
+	private _initializeChildren():void {
+		var widget:ui.IWidgetContainer = <ui.IWidgetContainer> this._widget,
+			children:any = this._node.children;
+		for (var i = 0, len = children ? children.length : 0; i < len; ++i) {
+			if (children[i]) {
+				widget.add(new TemplateProcessor(children[i]).initialize(), i);
+			}
 		}
-
-		// TODO: explicitly add children when we finish refactoring
-		// children && array.forEach(children, (child:any):ui.IDomWidget => {
-		// 	this._widget.add(new Processor(child).initialize());
-		// });
 	}
 
-	private _initializeContent() {
+	private _initializeContent():void {
 		var content:any = this._node.content;
+		// Process and create placeholders for children and text bindings
 		if (content && content instanceof Array) {
-			// Process and create placeholders for children and text bindings
 			content = array.map(content, (item:any, i:number):string => {
 				// Replace markers with comments that content widgets can process
 				return typeof item === 'string' ? item : '<!-- ⟨⟨' + JSON.stringify(item) + '⟩⟩ -->';
 			}).join('');
 		}
 		if (content) {
-			this._widget.setContent(content);
+			this._widget.set('content', content);
 		}
 	}
 
@@ -213,4 +205,4 @@ class Processor {
 	}
 }
 
-export = Processor;
+export = TemplateProcessor;

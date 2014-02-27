@@ -13,19 +13,16 @@ class PopupMenuItem extends MenuItem {
 		super(kwArgs);
 	}
 
-	_childrenSetter(children:ui.IDomWidget[]):void {
-		// We need to grab a child widget to use for popup
-		// If only child is Element use its last child, otherwise use last child
-		var elementChild:boolean = children.length === 1 && !(children[0] instanceof Dijit);
-		var widgets:ui.IDomWidget[] = elementChild && children[0].get('children') || children;
-		var target:Dijit = <Dijit> widgets.pop();
-		target && this.set('popup', target);
-		super._childrenSetter(children);
-	}
-
 	_popupSetter(popup:Dijit):void {
 		this._popup = popup;
 		this._dijit.set('popup', this._popup._dijit);
+	}
+
+	_startup():void {
+		if (!this._popup) {
+			throw new Error('Dijit popup widget requires a `popup` property');
+		}
+		super._startup()
 	}
 }
 
