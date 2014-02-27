@@ -73,7 +73,7 @@ class TemplateProcessor {
 	private _activeMediatorHandle:IHandle;
 	private _astNode:any;
 	private _bindingTemplates:{ [key:string]: any; };
-	private _childPlaceholders:Placeholder[];
+	private _childMarkerNodes:Node[];
 	private _mediated:boolean;
 	private _propertyBindings:{ [key:string]: string; };
 	private _observerHandles:IHandle[];
@@ -130,12 +130,12 @@ class TemplateProcessor {
 
 	private _addChild(child:ui.IDomWidget, i:number) {
 		var widget:ui.IWidgetContainer = <ui.IWidgetContainer> this._widget,
-			placeholder:Placeholder = this._childPlaceholders && this._childPlaceholders[i];
-		if (placeholder) {
+			markerNode:Node = this._childMarkerNodes && this._childMarkerNodes[i];
+		if (markerNode) {
 			// Child was associated with a marker comment, so place it manually
+			markerNode.parentNode.replaceChild(child.detach(), markerNode);
 			child.set('parent', widget);
-			widget.get('children')[i] = widget;
-			widget.set('content', child);
+			widget.get('children')[i] = child;
 		}
 		else {
 			widget.add(child, i);
@@ -187,14 +187,11 @@ class TemplateProcessor {
 	}
 
 	initialize():ui.IDomWidget {
-		if (this._widget) {
-			throw new Error('Cannot reinitialize widget processor');
-		}
 		var widget:ui.IDomWidget = this._widget = new this._WidgetCtor(this._widgetArgs),
-			node:any = this._astNode;
+			astNode:any = this._astNode;
 
-		this._initializeContent(node.content);
-		this._initializeChildren(node.children);
+		this._initializeContent(astNode.content);
+		this._initializeChildren(astNode.children);
 		this._initializeBindings();
 
 		// Hook widget's destroy method to tear down ourself
@@ -237,6 +234,9 @@ class TemplateProcessor {
 			}
 		}
 		if (value) {
+			this._textBindingNodes = [];
+			this._textBindingPaths = [];
+			this._childMarkerNodes = [];
 			var node:Node = domConstruct.toDom(value);
 			this._processContent(node);
 			this._widget.set('content', node);
@@ -264,10 +264,6 @@ class TemplateProcessor {
 	}
 
 	private _processContent(node:Node):void {
-		// Initialize
-		this._textBindingNodes = [];
-		this._textBindingPaths = [];
-		this._childPlaceholders = [];
 		// Recurse and handle comments standing in for child and binding placeholders
 		var next:Node;
 		while (node != null) {
@@ -300,8 +296,7 @@ class TemplateProcessor {
 			parent.replaceChild(textNode, node);
 		}
 		else if (descriptor.$child != null) {
-			var placeholder:Placeholder = this._childPlaceholders[descriptor.$child] = new Placeholder();
-			parent.replaceChild(placeholder.detach(), node);
+			this._childMarkerNodes[descriptor.$child] = node;
 		}
 		else if (descriptor.$named != null) {
 			(<ui.IWidgetContainer> this._widget).createPlaceholder(descriptor.$named, node);

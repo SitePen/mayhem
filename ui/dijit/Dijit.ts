@@ -5,6 +5,7 @@ import array = require('dojo/_base/array');
 import ContentWidget = require('../dom/ContentWidget');
 import core = require('../../interfaces');
 import domConstruct = require('dojo/dom-construct');
+import has = require('../../has');
 import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
@@ -71,7 +72,9 @@ import __WidgetBase = require('dijit/_WidgetBase');
 			this._dijit.addChild((<Dijit> widget)._dijit, position);
 			return; // TODO: IHandle
 		}
-		throw new Error('NYI');
+		if (has('debug')) {
+			throw new Error('NYI');
+		}
 	}
 
 	/* protected */ _attachedSetter(attached:boolean):void {
