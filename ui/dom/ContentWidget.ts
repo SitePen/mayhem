@@ -3,13 +3,14 @@ import core = require('../../interfaces');
 import has = require('../../has');
 import FragmentWidget = require('./FragmentWidget');
 import ObservableEvented = require('../../ObservableEvented');
+import Placeholder = require('./Placeholder');
 import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
 
 class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // ui.IContentWidget
 	/* protected */ _children:ui.IDomWidget[];
-	private _placeholders:{ [name:string]: ui.IPlaceholder; }; // TOOD: move to IPlaceholdingContainer
+	private _placeholders:{ [name:string]: ui.IPlaceholder; };
 
 	constructor(kwArgs?:Object) {
 		this._children || (this._children = []);
@@ -30,7 +31,6 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 				throw new Error('Unknown placeholder "' + position + '"');
 			}
 
-			this[position] = widget;
 			placeholder.set('content', widget);
 			handle = {
 				remove: function ():void {
@@ -82,9 +82,14 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 		return handle;
 	}
 
-	/* protected */ _addToContainer(widget:ui.IDomWidget, referenceWidget:ui.IDomWidget):void {
+	/* protected */ _addToContainer(widget:ui.IDomWidget, reference:ui.IDomWidget):void;
+	/* protected */ _addToContainer(widget:ui.IDomWidget, reference:Node):void;
+	/* protected */ _addToContainer(widget:ui.IDomWidget, reference:any):void {
 		var widgetNode:Node = widget.detach(),
-			referenceNode:Node = referenceWidget ? referenceWidget.get('firstNode') : null;
+			referenceNode:Node = reference;
+		if (reference && !(reference instanceof Node)) {
+			referenceNode = reference.get('firstNode');
+		}
 
 		// TODO: Allow users to specify a placeholder widget for use as the actual container for objects added to the
 		// widget, a la Dijit `containerNode`?
@@ -95,6 +100,17 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 		else {
 			this._firstNode.parentNode.insertBefore(widgetNode, referenceNode || this._lastNode);
 		}
+	}
+
+	createPlaceholder(name:string, node:Node):Placeholder {
+		if (this._placeholders[name]) {
+			throw new Error('Placeholder ' + name + ' already created');
+		}
+		var placeholder:Placeholder = this._placeholders[name] = new Placeholder(),
+			parent:Node = node.parentNode;
+		placeholder.set('parent', this);
+		parent.replaceChild(placeholder.detach(), node);
+		return placeholder;
 	}
 
 	empty():void {

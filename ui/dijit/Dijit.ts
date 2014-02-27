@@ -13,7 +13,6 @@ import __WidgetBase = require('dijit/_WidgetBase');
 
 /* abstract */ class Dijit extends ViewWidget { // TODO: extend a content-aware ElementWidget instead
 	/* protected */ _children:Dijit[];
-	/* protected */ _content:DocumentFragment;
 	/* protected */ _dijit:__WidgetBase;
 	/* protected */ _dijitActions:string[];
 	/* protected */ _dijitArgs:any;
@@ -65,23 +64,12 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		if (!(widget instanceof Dijit)) {
 			throw new Error('Only Dijit instances can be added to DijitContainer');
 		}
-		var handle:IHandle;
-
 		position || (position = 0);
 		if (typeof position === 'number' && position >= 0) {
 			widget.set('parent', this);
-			if (this._childPlaceholders && this._childPlaceholders[position]) {
-				// If widget has placeholder for this child let super fill it
-				handle = super.add(widget, position);
-			}
-			else {
-				// TODO: this is awkward
-				// Otherwise manually addChild
-				this.get('children')[position] = widget;
-				this._dijit.addChild((<Dijit> widget)._dijit, position);
-				// TODO: handle
-			}
-			return handle; 
+			this.get('children')[position] = widget;
+			this._dijit.addChild((<Dijit> widget)._dijit, position);
+			return; // TODO: IHandle
 		}
 		throw new Error('NYI');
 	}

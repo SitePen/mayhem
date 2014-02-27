@@ -102,7 +102,9 @@ export interface IWidget extends core.IObservableEvented {
 	// get(key:'parent'):IWidgetContainer;
 	// get(key:'previous'):IWidget;
 
-	bind(propertyName:string, binding:string, options?:{ direction:BindDirection; }):IHandle;
+	bind(targetBinding:string, binding:string, options?:{ direction?:BindDirection; }):IHandle;
+	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
+
 	destroy():void;
 
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
@@ -118,6 +120,11 @@ export interface IWidgetContainer extends IDomWidget {
 	add(widget:IWidget, position:AddPosition):IHandle;
 	add(widget:IWidget, position:number):IHandle;
 	add(widget:IWidget, placeholder:string):IHandle;
+
+	/* protected */ _addToContainer(widget:IDomWidget, reference:IDomWidget):void;
+	/* protected */ _addToContainer(widget:IDomWidget, reference:Node):void;
+
+	createPlaceholder(name:string, node:Node):IPlaceholder;
 
 	get(key:string):any;
 
