@@ -1,7 +1,6 @@
 import Dijit = require('./Dijit');
+import _DijitCtor = require('dijit/PopupMenuItem');
 import MenuItem = require('./MenuItem');
-import __PopupMenuItem = require('dijit/PopupMenuItem');
-import ui = require('../interfaces');
 import util = require('../../util');
 
 class PopupMenuItem extends MenuItem {
@@ -9,7 +8,6 @@ class PopupMenuItem extends MenuItem {
 
 	constructor(kwArgs:Object = {}) {
 		util.deferSetters(this, [ 'popup' ], '_render');
-		this._setDijitCtor(__PopupMenuItem);
 		super(kwArgs);
 	}
 
@@ -17,13 +15,10 @@ class PopupMenuItem extends MenuItem {
 		this._popup = popup;
 		this._dijit.set('popup', this._popup._dijit);
 	}
-
-	_startup():void {
-		if (!this._popup) {
-			throw new Error('Dijit popup widget requires a `popup` property');
-		}
-		super._startup()
-	}
 }
+
+PopupMenuItem.prototype._DijitCtor = _DijitCtor;
+PopupMenuItem.prototype._dijitWidgetFields = [ 'popup' ];
+PopupMenuItem.prototype._dijitRequiredFields = [ 'popup' ];
 
 export = PopupMenuItem;

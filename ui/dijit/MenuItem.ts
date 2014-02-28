@@ -1,12 +1,10 @@
 import Dijit = require('./Dijit');
-import __MenuItem = require('dijit/MenuItem');
+import _DijitCtor = require('dijit/MenuItem');
 
 class MenuItem extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__MenuItem);
-		this._setDijitActions('onClick');
-		super(kwArgs);
-	}
 }
+
+MenuItem.prototype._DijitCtor = _DijitCtor;
+MenuItem.prototype._dijitActions = [ 'onClick' ];
 
 export = MenuItem;

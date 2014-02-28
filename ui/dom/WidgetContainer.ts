@@ -8,7 +8,7 @@ import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
 
-class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // ui.IContentWidget
+class WidgetContainer extends FragmentWidget implements ui.IWidgetContainer {
 	/* protected */ _children:ui.IDomWidget[];
 	private _placeholders:{ [name:string]: ui.IPlaceholder; };
 
@@ -25,7 +25,7 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 		var handle:IHandle;
 
 		if (typeof position === 'string') {
-			var placeholder = this._placeholders[position];
+			var placeholder:ui.IPlaceholder = this._placeholders[position];
 
 			if (has('debug') && !placeholder) {
 				throw new Error('Unknown placeholder "' + position + '"');
@@ -102,7 +102,7 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 		}
 	}
 
-	createPlaceholder(name:string, node:Node):Placeholder {
+	_createPlaceholder(name:string, node:Node):Placeholder {
 		if (this._placeholders[name]) {
 			throw new Error('Placeholder ' + name + ' already created');
 		}
@@ -148,4 +148,4 @@ class ContentWidget extends FragmentWidget implements ui.IWidgetContainer { // u
 	}
 }
 
-export = ContentWidget;
+export = WidgetContainer;

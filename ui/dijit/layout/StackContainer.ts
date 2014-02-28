@@ -1,11 +1,9 @@
 import Dijit = require('../Dijit')
-import __StackContainer = require('dijit/layout/StackContainer');
+import _DijitCtor = require('dijit/layout/StackContainer');
 
 class StackContainer extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__StackContainer);
-		super(kwArgs);
-	}
 }
+
+StackContainer.prototype._DijitCtor = _DijitCtor;
 
 export = StackContainer;

@@ -1,11 +1,9 @@
 import PopupMenuItem = require('./PopupMenuItem');
-import __PopupMenuBarItem = require('dijit/PopupMenuBarItem');
+import _DijitCtor = require('dijit/PopupMenuBarItem');
 
 class PopupMenuBarItem extends PopupMenuItem {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__PopupMenuBarItem);
-		super(kwArgs);
-	}
 }
+
+PopupMenuBarItem.prototype._DijitCtor = _DijitCtor;
 
 export = PopupMenuBarItem;

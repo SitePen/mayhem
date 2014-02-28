@@ -1,12 +1,10 @@
 import Button = require('./Button');
-import __ToggleButton = require('dijit/form/ToggleButton');
+import _DijitCtor = require('dijit/form/ToggleButton');
 
 class ToggleButton extends Button {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__ToggleButton);
-		this._setDijitFields('checked');
-		super(kwArgs);
-	}
 }
+
+ToggleButton.prototype._DijitCtor = _DijitCtor;
+ToggleButton.prototype._dijitFields = [ 'checked' ];
 
 export = ToggleButton;

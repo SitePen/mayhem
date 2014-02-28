@@ -1,11 +1,9 @@
-import __Calendar = require('dijit/Calendar');
+import _DijitCtor = require('dijit/Calendar');
 import Dijit = require('./Dijit');
 
 class Calendar extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__Calendar);
-		super(kwArgs);
-	}
 }
+
+Calendar.prototype._DijitCtor = _DijitCtor;
 
 export = Calendar;

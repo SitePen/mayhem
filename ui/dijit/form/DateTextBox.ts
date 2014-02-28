@@ -1,11 +1,9 @@
-import __DateTextBox = require('dijit/form/DateTextBox');
+import _DijitCtor = require('dijit/form/DateTextBox');
 import RangeBoundTextBox = require('./RangeBoundTextBox');
 
 class DateTextBox extends RangeBoundTextBox {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__DateTextBox);
-		super(kwArgs);
-	}
 }
+
+DateTextBox.prototype._DijitCtor = _DijitCtor;
 
 export = DateTextBox;

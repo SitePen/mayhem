@@ -1,11 +1,9 @@
 import Dijit = require('./Dijit');
-import __DropDownMenu = require('dijit/DropDownMenu');
+import _DijitCtor = require('dijit/DropDownMenu');
 
 class DropDownMenu extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__DropDownMenu);
-		super(kwArgs);
-	}
 }
+
+DropDownMenu.prototype._DijitCtor = _DijitCtor;
 
 export = DropDownMenu;

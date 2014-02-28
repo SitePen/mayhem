@@ -1,13 +1,11 @@
-import __RadioButton = require('dijit/form/RadioButton');
 import Dijit = require('../Dijit');
+import _DijitCtor = require('dijit/form/RadioButton');
 
 class RadioButton extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__RadioButton);
-		this._setDijitFields('checked', 'value');
-		this._setDijitActions('onClick');
-		super(kwArgs);
-	}
 }
+
+RadioButton.prototype._DijitCtor = _DijitCtor;
+RadioButton.prototype._dijitFields = [ 'checked', 'value' ];
+RadioButton.prototype._dijitActions = [ 'onClick' ];
 
 export = RadioButton;

@@ -1,12 +1,10 @@
+import _DijitCtor = require('dijit/Menu');
 import DropDownMenu = require('./DropDownMenu');
-import __Menu = require('dijit/Menu');
 
 class Menu extends DropDownMenu {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__Menu);
-		this._setDijitFields('refocus');
-		super(kwArgs);
-	}
 }
+
+Menu.prototype._DijitCtor = _DijitCtor;
+Menu.prototype._dijitFields = [ 'refocus' ];
 
 export = Menu;

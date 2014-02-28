@@ -82,7 +82,7 @@ class TemplateProcessor {
 	private _textBindingPaths:string[];
 	private _widget:ui.IDomWidget;
 	private _widgetArgs:any;
-	private _WidgetCtor:any;
+	private _WidgetCtor:{ new (kwArgs?:any):ui.IDomWidget; };
 
 	constructor(astNode:any /* templating.IWidgetNode */, options:any = {}) {
 		this._astNode = astNode;
@@ -299,7 +299,7 @@ class TemplateProcessor {
 			this._childMarkerNodes[descriptor.$child] = node;
 		}
 		else if (descriptor.$named != null) {
-			(<ui.IWidgetContainer> this._widget).createPlaceholder(descriptor.$named, node);
+			(<ui.IWidgetContainer> this._widget)._createPlaceholder(descriptor.$named, node);
 		}
 		else {
 			if (has('debug')) {

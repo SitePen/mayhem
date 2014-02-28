@@ -1,12 +1,10 @@
-import StackContainer = require('./StackContainer')
-import __TabContainer = require('dijit/layout/TabContainer');
+import _DijitCtor = require('dijit/layout/TabContainer');
+import StackContainer = require('./StackContainer');
 
 class TabContainer extends StackContainer {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__TabContainer);
-		this._setDijitFields('tabPosition', 'tabStrip');
-		super(kwArgs);
-	}
 }
+
+TabContainer.prototype._DijitCtor = _DijitCtor;
+TabContainer.prototype._dijitFields = [ 'tabPosition', 'tabStrip' ];
 
 export = TabContainer;

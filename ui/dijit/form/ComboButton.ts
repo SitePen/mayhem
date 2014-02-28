@@ -1,13 +1,9 @@
-import __ComboButton = require('dijit/form/ComboButton');
-import Dijit = require('../Dijit');
+import _DijitCtor = require('dijit/form/ComboButton');
 import DropDownButton = require('./DropDownButton');
-import util = require('../../../util');
 
 class ComboButton extends DropDownButton {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__ComboButton);
-		super(kwArgs);
-	}
 }
+
+ComboButton.prototype._DijitCtor = _DijitCtor;
 
 export = ComboButton;

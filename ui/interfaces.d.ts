@@ -13,21 +13,10 @@ export interface IClassList extends core.IProxty<string> {
 	toggle(className:string, forceState?:boolean):void;
 }
 
-export interface IComponentWidget extends IElementWidget, IContentWidget {
-}
-
-export interface IChildContainer extends IContentContainer, IWidgetContainer {
-	// _childPlaceholders:IPlaceholder[];
-}
-
 export interface IContentContainer extends IDomWidget {
 	_content:DocumentFragment;
 
 	clear():void;
-}
-
-export interface IContentWidget extends ITextBindingContainer, IChildContainer, IPlaceholdingContainer {
-
 }
 
 export interface IDomWidget extends IWidget, core.IApplicationComponent {
@@ -68,28 +57,10 @@ export interface IFragmentWidget extends IDomWidget {
 	detach():Node; // DocumentFragment
 }
 
-export interface IPlaceholdingContainer extends IContentContainer, IWidgetContainer {
-	// placeholders:{ [key:string]: IPlaceholder };
-}
-
-// export interface IPaneWidget extends IViewWidget {
-// 	_selected:boolean;
-// 	_keepScrollPosition:boolean;
-// }
-
 export interface IPlaceholder extends IFragmentWidget {
 	// _content:IDomWidget;
 
 	// get(key:'content'):IDomWidget;
-}
-
-export interface ITextBindingContainer extends IContentContainer {
-	// _textBindingNodes:Node[];
-	// _textBindingHandles:IHandle[];
-	// _textBindingPaths:string[];
-}
-
-export interface IViewWidget extends IFragmentWidget, IContentWidget {
 }
 
 export interface IWidget extends core.IObservableEvented {
@@ -124,7 +95,7 @@ export interface IWidgetContainer extends IDomWidget {
 	/* protected */ _addToContainer(widget:IDomWidget, reference:IDomWidget):void;
 	/* protected */ _addToContainer(widget:IDomWidget, reference:Node):void;
 
-	createPlaceholder(name:string, node:Node):IPlaceholder;
+	/* protected */ _createPlaceholder(name:string, node:Node):IPlaceholder;
 
 	get(key:string):any;
 

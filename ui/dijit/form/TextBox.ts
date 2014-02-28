@@ -1,5 +1,5 @@
 import Dijit = require('../Dijit');
-import __TextBox = require('dijit/form/TextBox');
+import _DijitCtor = require('dijit/form/TextBox');
 import util = require('../../../util');
 
 class TextBox extends Dijit {
@@ -13,9 +13,6 @@ class TextBox extends Dijit {
 	// set(key:'value', value:string):void;
 
 	constructor(kwArgs?:Object) {
-		this._setDijitCtor(__TextBox);
-		this._setDijitFields('checked', 'placeHolder', 'value');
-		util.deferMethods(this, [ '_listen' ], '_render');
 		this._debounceRate = 100;
 		super(kwArgs);
 	}
@@ -44,5 +41,8 @@ class TextBox extends Dijit {
 		this._listen();
 	}
 }
+
+TextBox.prototype._DijitCtor = _DijitCtor;
+TextBox.prototype._dijitFields = [ 'checked', 'placeHolder', 'value' ];
 
 export = TextBox;

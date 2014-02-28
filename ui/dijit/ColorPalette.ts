@@ -1,12 +1,10 @@
-import __ColorPalette = require('dijit/ColorPalette');
+import _DijitCtor = require('dijit/ColorPalette');
 import Dijit = require('./Dijit');
 
 class ColorPalette extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__ColorPalette);
-		this._setDijitFields('palette');
-		super(kwArgs);
-	}
 }
+
+ColorPalette.prototype._DijitCtor = _DijitCtor;
+ColorPalette.prototype._dijitFields = [ 'palette' ];
 
 export = ColorPalette;

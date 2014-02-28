@@ -1,12 +1,10 @@
 import CheckedMenuItem = require('./CheckedMenuItem');
-import __RadioMenuItem = require('dijit/RadioMenuItem');
+import _DijitCtor = require('dijit/RadioMenuItem');
 
 class RadioMenuItem extends CheckedMenuItem {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__RadioMenuItem);
-		this._setDijitFields('group');
-		super(kwArgs);
-	}
 }
+
+RadioMenuItem.prototype._DijitCtor = _DijitCtor;
+RadioMenuItem.prototype._dijitFields = [ 'group' ];
 
 export = RadioMenuItem;

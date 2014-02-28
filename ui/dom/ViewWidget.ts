@@ -1,8 +1,8 @@
-import ContentWidget = require('./ContentWidget');
 import util = require('../../util');
 import ui = require('../interfaces');
+import WidgetContainer = require('./WidgetContainer');
 
-class ViewWidget extends ContentWidget implements ui.IViewWidget {
+class ViewWidget extends WidgetContainer {
 	/* protected */ _content:DocumentFragment;
 
 	constructor(kwArgs:any = {}) {

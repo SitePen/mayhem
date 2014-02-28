@@ -1,12 +1,10 @@
-import __CurrencyTextBox = require('dijit/form/CurrencyTextBox');
+import _DijitCtor = require('dijit/form/CurrencyTextBox');
 import NumberTextBox = require('./NumberTextBox');
 
 class CurrencyTextBox extends NumberTextBox {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__CurrencyTextBox);
-		this._setDijitFields('currency');
-		super(kwArgs);
-	}
 }
+
+CurrencyTextBox.prototype._DijitCtor = _DijitCtor;
+CurrencyTextBox.prototype._dijitFields = [ 'currency' ];
 
 export = CurrencyTextBox;

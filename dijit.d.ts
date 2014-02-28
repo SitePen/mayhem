@@ -281,6 +281,7 @@ declare module 'dijit/_WidgetBase' {
 	interface _WidgetBase extends Stateful, Destroyable {
 		/* readonly */ containerNode:HTMLElement;
 		/* readonly */ domNode:HTMLElement;
+		_started:boolean;
 
 		constructor(kwArgs?:Object, srcNodeRef?:HTMLElement):_WidgetBase;
 

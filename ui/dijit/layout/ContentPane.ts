@@ -1,12 +1,10 @@
-import __ContentPane = require('dijit/layout/ContentPane');
 import Dijit = require('../Dijit');
+import _DijitCtor = require('dijit/layout/ContentPane');
 
 class ContentPane extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__ContentPane);
-		this._setDijitFields('title', 'selected', 'closable');
-		super(kwArgs);
-	}
 }
+
+ContentPane.prototype._DijitCtor = _DijitCtor;
+ContentPane.prototype._dijitFields = [ 'title', 'selected', 'closable' ];
 
 export = ContentPane;

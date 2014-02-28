@@ -1,11 +1,9 @@
 import ContentPane = require('./ContentPane');
-import __TitlePane = require('dijit/TitlePane');
+import _DijitCtor = require('dijit/TitlePane');
 
 class TitlePane extends ContentPane {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__TitlePane);
-		super(kwArgs);
-	}
 }
+
+TitlePane.prototype._DijitCtor = _DijitCtor;
 
 export = TitlePane;

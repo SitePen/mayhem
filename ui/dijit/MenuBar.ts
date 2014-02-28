@@ -1,11 +1,9 @@
 import Dijit = require('./Dijit');
-import __MenuBar = require('dijit/MenuBar');
+import _DijitCtor = require('dijit/MenuBar');
 
 class MenuBar extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__MenuBar);
-		super(kwArgs);
-	}
 }
+
+MenuBar.prototype._DijitCtor = _DijitCtor;
 
 export = MenuBar;

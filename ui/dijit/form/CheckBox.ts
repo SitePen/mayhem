@@ -1,13 +1,11 @@
-import __CheckBox = require('dijit/form/CheckBox');
 import Dijit = require('../Dijit');
+import _DijitCtor = require('dijit/form/CheckBox');
 
 class CheckBox extends Dijit {
-	constructor(kwArgs:Object = {}) {
-		this._setDijitCtor(__CheckBox);
-		this._setDijitFields('checked', 'value');
-		this._setDijitActions('onClick');
-		super(kwArgs);
-	}
 }
+
+CheckBox.prototype._DijitCtor = _DijitCtor;
+CheckBox.prototype._dijitFields = [ 'checked', 'value' ];
+CheckBox.prototype._dijitActions = [ 'onClick' ];
 
 export = CheckBox;
