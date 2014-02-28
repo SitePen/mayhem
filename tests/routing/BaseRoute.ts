@@ -75,7 +75,6 @@ registerSuite({
 			'serialized route with extra arguments should match path definition'
 		);
 
-		// TODO: Fix to use assert.throws
 		assert.throws(
 			function () { route.serialize({}); },
 			Error,
