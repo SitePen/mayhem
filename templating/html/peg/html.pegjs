@@ -529,7 +529,7 @@ AttributeName
 		});
 	}
 
-// Attribute values can be JSON or single-quoted strings which are parsed for curly-quoted bindings
+// Attribute values can be strings (which are parsed for bindings), bindings, references, or json
 
 AttributeValue
 	= AttributeReferenceValue
@@ -566,8 +566,8 @@ AttributeStringValue
 // JSON parser adapted from PEG.js example
 
 JSONObject
-	= "{" S* "}" S* { return {} }
-	/ "{" S* members:JSONMembers "}" S* { return members }
+	= "{" S* "}" { return {} }
+	/ "{" S* members:JSONMembers "}" { return members }
 
 JSONMembers
 	= head:JSONPair tail:("," S* JSONPair)* {
@@ -580,14 +580,14 @@ JSONMembers
     }
 
 JSONPair
-	= name:JSONString ":" S* value:JSONValue { return [name, value] }
+	= name:JSONString ":" S* value:JSONValue S* { return [name, value] }
 
 JSONArray
-	= "[" S* "]" S* { return [] }
-	/ "[" S* elements:JSONElements "]" S* { return elements }
+	= "[" S* "]" { return [] }
+	/ "[" S* elements:JSONElements "]" { return elements }
 
 JSONElements
-	= head:JSONValue tail:("," S* JSONValue)* {
+	= head:JSONValue tail:("," S* JSONValue)* S* {
       var result = [head];
       for (var i = 0, len = tail.length; i < len; ++i) {
         result.push(tail[i][2]);
@@ -608,19 +608,19 @@ JSONLiteral
 	/ JSONNull
 
 JSONTrue "true"
-	= "true" S* { return true }
+	= "true" { return true }
 
 JSONFalse "false"
-	= "false" S* { return false }
+	= "false" { return false }
 
 JSONNull "null"
-	= "null" S* { return null }
+	= "null" { return null }
 
 // JSON lexical elements
 
 JSONString "string"
-	= '"' '"' S* { return "" }
-	/ '"' chars:JSONChars '"' S* { return chars }
+	= '"' '"' { return "" }
+	/ '"' chars:JSONChars '"' { return chars }
 
 JSONChars
 	= chars:JSONChar+ { return chars.join("") }
@@ -639,10 +639,10 @@ JSONChar
 	/ "\\u" digits:$(HexDigit HexDigit HexDigit HexDigit) { return String.fromCharCode(parseInt(digits, 16)) }
 
 JSONNumber "number"
-	= parts:$(JSONInteger JSONFraction JSONExponent) S* { return parseFloat(parts) }
-	/ parts:$(JSONInteger JSONFraction) S* { return parseFloat(parts) }
-	/ parts:$(JSONInteger JSONExponent) S* { return parseFloat(parts) }
-	/ parts:$(JSONInteger) S* { return parseFloat(parts) }
+	= parts:$(JSONInteger JSONFraction JSONExponent) { return parseFloat(parts) }
+	/ parts:$(JSONInteger JSONFraction) { return parseFloat(parts) }
+	/ parts:$(JSONInteger JSONExponent) { return parseFloat(parts) }
+	/ parts:$(JSONInteger) { return parseFloat(parts) }
 
 JSONInteger
 	= Digit19 Digits
