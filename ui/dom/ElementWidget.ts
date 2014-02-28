@@ -42,6 +42,8 @@ class ElementWidget extends Widget implements ui.IElementWidget {
 	/* protected */ _render():void {
 		this._firstNode = this._lastNode = document.createElement(this._elementType);
 		this._attachStyles();
+
+		super._render();
 	}
 }
 

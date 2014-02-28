@@ -263,10 +263,11 @@ HtmlFragment 'HTML'
 
 BoundText
 	// Curly brackets inside the actions needs to be escaped due to https://github.com/dmajda/pegjs/issues/89
-	= (
-		'{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { $bind: value.join('') } }
-		/ !'{' value:('\\{' { return '\x7b' } / [^{])+ { return value.join('') }
-	)*
+	= ( Binding / !'{' value:('\\{' { return '\x7b' } / [^{])+ { return value.join('') } )*
+
+Binding
+	= '{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { $bind: value.join('') } }
+
 
 // conditionals
 
@@ -534,7 +535,7 @@ AttributeValue
 	= AttributeReferenceValue
 	/ AttributeStringValue
 	/ JSONValue
-	/ BoundText
+	/ Binding
 
 AttributeReferenceValue
 	= '#' id:Identifier {

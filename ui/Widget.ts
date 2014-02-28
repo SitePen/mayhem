@@ -258,10 +258,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return parent.get('children')[index - 1];
 	}
 
-	/* abstract protected */ _render():void {
-		if (has('debug')) {
-			throw new Error('_render is not implemented');
-		}
+	/* protected */ _render():void {
+		setTimeout(() => {
+			this.emit('render');	
+		});
 	}
 }
 

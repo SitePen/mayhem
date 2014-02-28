@@ -76,34 +76,6 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		super._attachedSetter(attached);
 	}
 
-	private _bindDijitAction(key:string):(e:Event) => boolean {
-		var action = (e:Event):boolean => {
-			var mediator:core.IMediator = this.get('mediator');
-			var method:string = this['_' + key];
-			console.log('action called:', key, '-- mediator method:', method)
-			return mediator[method] ? mediator[method](e) : true;
-		};
-		this['_' + key + 'Setter'] = (method:any):void => {
-			this['_' + key] = method;
-			this._dijit && this._dijit.set(key, action);
-		};
-		return action;
-	}
-
-	private _bindDijitChild(key:string):void {
-		this['_' + key + 'Setter'] = (value:any):void => {
-			this['_' + key] = value;
-			this._dijit && this._dijit.set(key, value._dijit);
-		};
-	}
-
-	private _bindDijitProperty(key:string):void {
-		this['_' + key + 'Setter'] = (value:any):void => {
-			this['_' + key] = value;
-			this._dijit && this._dijit.set(key, value);
-		};
-	}
-
 	clear():void {
 		this._dijit.containerNode.innerHTML = '';
 	}
@@ -117,25 +89,58 @@ import __WidgetBase = require('dijit/_WidgetBase');
 			this._dijitRequiredFields.push(field);
 		}
 		if (descriptor.action) {
-			var action:(e:Event) => boolean = this._bindDijitAction(field);
+			var action:(e:Event) => boolean = this._createDijitAction(field);
 			if (field in kwArgs) {
 				this._dijitArgs[field] = action;
 			}
 		}
 		else if (descriptor.child) {
-			this._bindDijitChild(field);
+			this._createDijitChild(field);
 			if (field in kwArgs) {
 				this._dijitArgs[field] = kwArgs[field]._dijit;
 			}
-			// TODO: check if rendered
-			util.deferSetters(this, [ field ], '_render');
 		}
 		else {
-			this._bindDijitProperty(field);
+			this._createDijitProperty(field);
 			if (field in kwArgs) {
 				this._dijitArgs[field] = kwArgs[field];
 			}
 		}
+		util.deferSetters(this, [ field ], '_render');
+	}
+
+	private _createDijitAction(key:string):(e:Event) => boolean {
+		var action = (e:Event):boolean => {
+			var mediator:core.IMediator = this.get('mediator');
+			var method:string = this['_' + key];
+			console.log('action called:', key, '-- mediator method:', method)
+			return mediator[method] ? mediator[method](e) : true;
+		};
+		this['_' + key + 'Setter'] = (method:any):void => {
+			this['_' + key] = method;
+			this._dijit.set(key, action);
+		};
+		return action;
+	}
+
+	private _createDijitChild(key:string):void {
+		this['_' + key + 'Setter'] = (value:any):void => {
+			this['_' + key] = value;
+			this._dijit.set(key, value._dijit);
+		};
+	}
+
+	private _createDijitProperty(key:string):void {
+		this['_' + key + 'Setter'] = (value:any):void => {
+			this['_' + key] = value;
+			this._dijit.set(key, value);
+		};
+		// TODO: drip drip...keep handles and clean them up on destroy
+		this.on('render', () => {
+			this._dijit.watch(key, util.debounce((_:any, __:string, value:string):void => {
+				this.set(key, value);
+			}, 1)); // TODO: debounce rate should be configurable per property
+		});
 	}
 
 	destroy():void {

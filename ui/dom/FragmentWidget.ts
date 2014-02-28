@@ -33,6 +33,8 @@ class FragmentWidget extends Widget implements ui.IFragmentWidget {
 		this.on('attach', ():void => {
 			this._fragment = null;
 		});
+
+		super._render();
 	}
 }
 
