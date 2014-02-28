@@ -1,11 +1,10 @@
-import Dijit = require('../Dijit');
-import _DijitCtor = require('dijit/form/RadioButton');
+import CheckBox = require('./CheckBox');
+import _DijitWidget = require('dijit/form/RadioButton');
 
-class RadioButton extends Dijit {
+class RadioButton extends CheckBox {
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-RadioButton.prototype._DijitCtor = _DijitCtor;
-RadioButton.prototype._dijitFields = [ 'checked', 'value' ];
-RadioButton.prototype._dijitActions = [ 'onClick' ];
+RadioButton.configure(CheckBox);
 
 export = RadioButton;

@@ -1,10 +1,14 @@
-import _DijitCtor = require('dijit/form/CurrencyTextBox');
+import _DijitWidget = require('dijit/form/CurrencyTextBox');
 import NumberTextBox = require('./NumberTextBox');
 
 class CurrencyTextBox extends NumberTextBox {
+	static _dijitConfig:any = {
+		currency: 'boolean'
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-CurrencyTextBox.prototype._DijitCtor = _DijitCtor;
-CurrencyTextBox.prototype._dijitFields = [ 'currency' ];
+// TODO: catalog textboxes
+CurrencyTextBox.configure(NumberTextBox);
 
 export = CurrencyTextBox;

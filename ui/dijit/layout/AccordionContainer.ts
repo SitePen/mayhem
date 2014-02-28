@@ -1,9 +1,10 @@
-import _DijitCtor = require('dijit/layout/AccordionContainer');
+import _DijitWidget = require('dijit/layout/AccordionContainer');
 import StackContainer = require('./StackContainer')
 
 class AccordionContainer extends StackContainer {
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-AccordionContainer.prototype._DijitCtor = _DijitCtor;
+AccordionContainer.configureLayout(StackContainer);
 
 export = AccordionContainer;

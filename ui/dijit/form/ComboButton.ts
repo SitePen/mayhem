@@ -1,9 +1,10 @@
-import _DijitCtor = require('dijit/form/ComboButton');
+import _DijitWidget = require('dijit/form/ComboButton');
 import DropDownButton = require('./DropDownButton');
 
 class ComboButton extends DropDownButton {
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-ComboButton.prototype._DijitCtor = _DijitCtor;
+ComboButton.configure(DropDownButton);
 
 export = ComboButton;

@@ -1,10 +1,15 @@
-import _DijitCtor = require('dijit/layout/TabContainer');
-import StackContainer = require('./StackContainer');
+import _DijitWidget = require('dijit/layout/TabContainer');
+import _TabContainerBase = require('./_TabContainerBase');
 
-class TabContainer extends StackContainer {
+class TabContainer extends _TabContainerBase {
+	static _dijitConfig:any = {
+		useMenu: 'boolean',
+		useSlider: 'boolean',
+		// controllerWidget
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-TabContainer.prototype._DijitCtor = _DijitCtor;
-TabContainer.prototype._dijitFields = [ 'tabPosition', 'tabStrip' ];
+TabContainer.configureLayout(_TabContainerBase);
 
 export = TabContainer;

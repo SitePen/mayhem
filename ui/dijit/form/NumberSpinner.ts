@@ -1,10 +1,11 @@
-import _DijitCtor = require('dijit/form/NumberSpinner');
-import NumberTextBox = require('./NumberTextBox');
+import _DijitWidget = require('dijit/form/NumberSpinner');
+import _Spinner = require('./_Spinner');
 
-class NumberSpinner extends NumberTextBox {
+class NumberSpinner extends _Spinner {
+	// TODO: NumberTextBox.Mixin
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-NumberSpinner.prototype._DijitCtor = _DijitCtor;
-NumberSpinner.prototype._dijitFields = [ 'largeDelta', 'smallDelta' ];
+NumberSpinner.configure(_Spinner);
 
 export = NumberSpinner;

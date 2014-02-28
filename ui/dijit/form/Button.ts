@@ -1,11 +1,20 @@
-import Dijit = require('../Dijit');
-import _DijitCtor = require('dijit/form/Button');
+import _DijitWidget = require('dijit/form/Button');
+import _FormWidget = require('./_FormWidget');
 
-class Button extends Dijit {
+class Button extends _FormWidget {
+	static _dijitConfig:any = {
+		// _ButtonMixin
+		label: 'string',
+		type: 'string',
+		onClick: { action: true },
+
+		// Button
+		showLabel: 'boolean',
+		iconClass: 'string'
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-Button.prototype._DijitCtor = _DijitCtor;
-Button.prototype._dijitFields = [ 'name', 'type' ];
-Button.prototype._dijitActions = [ 'onClick' ];
+Button.configure(_FormWidget);
 
 export = Button;

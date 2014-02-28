@@ -1,10 +1,15 @@
-import _DijitCtor = require('dijit/Menu');
+import _DijitWidget = require('dijit/Menu');
 import DropDownMenu = require('./DropDownMenu');
 
 class Menu extends DropDownMenu {
+	static _dijitConfig:any = {
+		contextMenuForWindow: 'boolean',
+		leftClickToOpen: 'boolean',
+		refocus: 'boolean'
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-Menu.prototype._DijitCtor = _DijitCtor;
-Menu.prototype._dijitFields = [ 'refocus' ];
+Menu.configure(DropDownMenu);
 
 export = Menu;

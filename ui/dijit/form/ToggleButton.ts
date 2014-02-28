@@ -1,10 +1,13 @@
 import Button = require('./Button');
-import _DijitCtor = require('dijit/form/ToggleButton');
+import _DijitWidget = require('dijit/form/ToggleButton');
 
 class ToggleButton extends Button {
+	static _dijitConfig:any = {
+		checked: 'boolean'
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-ToggleButton.prototype._DijitCtor = _DijitCtor;
-ToggleButton.prototype._dijitFields = [ 'checked' ];
+ToggleButton.configure(Button);
 
 export = ToggleButton;

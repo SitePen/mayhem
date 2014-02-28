@@ -1,9 +1,10 @@
 import PopupMenuItem = require('./PopupMenuItem');
-import _DijitCtor = require('dijit/PopupMenuBarItem');
+import _DijitWidget = require('dijit/PopupMenuBarItem');
 
 class PopupMenuBarItem extends PopupMenuItem {
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-PopupMenuBarItem.prototype._DijitCtor = _DijitCtor;
+PopupMenuBarItem.configure(PopupMenuItem);
 
 export = PopupMenuBarItem;

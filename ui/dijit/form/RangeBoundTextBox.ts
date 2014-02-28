@@ -1,11 +1,11 @@
-import _DijitCtor = require('dijit/form/RangeBoundTextBox');
+import _DijitWidget = require('dijit/form/RangeBoundTextBox');
 import TextBox = require('./TextBox');
 
 class RangeBoundTextBox extends TextBox {
+	// TODO: _dijitConfig
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-RangeBoundTextBox.prototype._DijitCtor = _DijitCtor;
-RangeBoundTextBox.prototype._dijitFields = [ 'rangeMessage' ];
-// TODO: constraints -> (min, max, places, pattern)
+RangeBoundTextBox.configure(TextBox);
 
 export = RangeBoundTextBox;

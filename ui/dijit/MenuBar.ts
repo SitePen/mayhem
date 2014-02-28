@@ -1,9 +1,14 @@
-import Dijit = require('./Dijit');
-import _DijitCtor = require('dijit/MenuBar');
+import _DijitWidget = require('dijit/MenuBar');
+import _MenuBase = require('./_MenuBase');
 
-class MenuBar extends Dijit {
+class MenuBar extends _MenuBase {
+	static _dijitConfig:any = {
+		popupDelay: 'number',
+		onItemClick: { action: true }
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-MenuBar.prototype._DijitCtor = _DijitCtor;
+MenuBar.configure(_MenuBase);
 
 export = MenuBar;

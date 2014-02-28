@@ -1,14 +1,19 @@
-import Dijit = require('./Dijit');
-import _DijitCtor = require('dijit/ProgressBar');
+import _DijitWidget = require('dijit/ProgressBar');
+import _Widget = require('./_Widget');
 
-class ProgressBar extends Dijit {
-	private _indeterminate:boolean;
-	private _maximum:number;
-	private _places:number;
-	private _value:any; // string | number
+class ProgressBar extends _Widget {
+	static _dijitConfig:any = {
+		indeterminate: 'boolean',
+		label: 'string',
+		maximum: 'number',
+		places: 'string',
+		progress: 'string',
+		value: 'number',
+		onChange: { action: true }
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-ProgressBar.prototype._DijitCtor = _DijitCtor;
-ProgressBar.prototype._dijitFields = [ 'indeterminate', 'maximum', 'places', 'value' ];
+ProgressBar.configure(_Widget);
 
 export = ProgressBar;

@@ -42,8 +42,7 @@
 		// Loop over results list and inspect for binding objects
 		for (var i = 0, len = results.length; i < len; ++i) {
 			if (results[i].$bind) {
-				// Flatten binding template if only one item
-				return { $bind: len === 1 ? results[0].$bind : results };
+				return { $bind: results };
 			}
 		}
 		// If no bindings in array flatten into a string

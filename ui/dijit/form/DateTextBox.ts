@@ -1,9 +1,11 @@
-import _DijitCtor = require('dijit/form/DateTextBox');
+import _DijitWidget = require('dijit/form/DateTextBox');
 import RangeBoundTextBox = require('./RangeBoundTextBox');
 
 class DateTextBox extends RangeBoundTextBox {
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
 }
 
-DateTextBox.prototype._DijitCtor = _DijitCtor;
-
 export = DateTextBox;
+
+// TODO: catalog textboxes
+DateTextBox.configure(RangeBoundTextBox);

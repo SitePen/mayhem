@@ -38,6 +38,11 @@ class MyModel extends Model {
 				value: new ObservableArray<string>([ 'drinking', 'sportsball', 'drinking' ])
 			}),
 
+			enabled: Model.property<boolean>({
+				label: 'Enabled',
+				value: true
+			}),
+
 			//phone: Model.property<IStore<IPhoneRecord>>({
 			phone_numbers: Model.property<ObservableStore<any>>({
 				label: 'Phone Numbers',

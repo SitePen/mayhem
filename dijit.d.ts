@@ -1,10 +1,10 @@
 /// <reference path="./dojo" />
 
 declare module 'dijit/Calendar' {
-	import CalendarLight = require('dijit/CalendarLight');
+	import CalendarLite = require('dijit/CalendarLite');
 	import _Widget = require('dijit/_Widget');
 
-	interface Calendar extends CalendarLight, _Widget {
+	interface Calendar extends CalendarLite, _Widget {
 	}
 
 	var Calendar:{
@@ -14,17 +14,17 @@ declare module 'dijit/Calendar' {
 	export = Calendar;
 }
 
-declare module 'dijit/CalendarLight' {
+declare module 'dijit/CalendarLite' {
 	import _WidgetBase = require('dijit/_WidgetBase');
 
-	interface CalendarLight extends _WidgetBase {
+	interface CalendarLite extends _WidgetBase {
 	}
 
-	var CalendarLight:{
-		new (kwArgs?:Object, srcNodeRef?:HTMLElement):CalendarLight;
+	var CalendarLite:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):CalendarLite;
 	};
 
-	export = CalendarLight;
+	export = CalendarLite;
 }
 
 declare module 'dijit/CheckedMenuItem' {
@@ -185,9 +185,9 @@ declare module 'dijit/MenuItem' {
 
 declare module 'dijit/MenuSeparator' {
 	import _Contained = require('dijit/_Contained');
-	import _Widget = require('dijit/_Widget');
+	import _WidgetBase = require('dijit/_WidgetBase');
 
-	interface MenuSeparator extends _Widget, _Contained {
+	interface MenuSeparator extends _WidgetBase, _Contained {
 	}
 
 	var MenuSeparator:{
@@ -536,17 +536,9 @@ declare module 'dijit/form/Textarea' {
 }
 
 declare module 'dijit/form/TextBox' {
-	import _Widget = require('dijit/_Widget');
+	import _FormValueWidget = require('dijit/form/_FormValueWidget');
 
-	interface TextBox extends _Widget {
-		get(key:'intermediateChanges'):boolean;
-		get(key:'value'):string;
-		get(key:string):any;
-
-		set(key:'intermediateChanges', value:boolean):void;
-		set(key:'value', value:string):void;
-		set(kwArgs:{ [key:string]: any; }):void;
-		set(key:string, value:any):void;
+	interface TextBox extends _FormValueWidget {
 	}
 
 	var TextBox:{

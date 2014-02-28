@@ -1,8 +1,21 @@
-import Dijit = require('../Dijit');
-import _DijitCtor = require('dijit/form/TextBox');
+import _DijitWidget = require('dijit/form/TextBox');
+import _FormValueWidget = require('./_FormValueWidget');
 import util = require('../../../util');
 
-class TextBox extends Dijit {
+class TextBox extends _FormValueWidget {
+	static _dijitConfig:any = {
+		// _TextBoxMixin
+		trim: 'boolean',
+		uppercase: 'boolean',
+		lowercase: 'boolean',
+		propercase: 'boolean',
+		maxLength: 'string',
+		selectOnClick: 'boolean',
+		placeHolder: 'string',
+		onInput: { action: true }
+	};
+	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+
 	private _debounceRate:number;
 	private _listenHandle:IHandle;
 
@@ -42,7 +55,6 @@ class TextBox extends Dijit {
 	}
 }
 
-TextBox.prototype._DijitCtor = _DijitCtor;
-TextBox.prototype._dijitFields = [ 'checked', 'placeHolder', 'value' ];
+TextBox.configure(_FormValueWidget);
 
 export = TextBox;
