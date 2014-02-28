@@ -206,7 +206,13 @@ class TemplateProcessor {
 
 	private _initializeBindings():void {
 		this._activeMediatorHandle = this._widget.observe('activeMediator', (mediator:core.IMediator) => {
-			if (!this._mediated && mediator) {
+			if (!mediator) {
+				if (this._mediated) {
+					// TODO: clean up bindings
+				}
+				return;
+			}
+			if (!this._mediated) {
 				this._mediated = true;
 				this._bindProperties();
 				this._bindTextNodes();
