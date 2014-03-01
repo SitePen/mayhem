@@ -12,7 +12,6 @@ class FragmentWidget extends Widget implements ui.IFragmentWidget {
 		if (!this._fragment || !this._fragment.firstChild) {
 			this._fragment = domUtil.getRange(this._firstNode, this._lastNode, true).extractContents();
 		}
-
 		return this._fragment;
 	}
 

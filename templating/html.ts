@@ -1,12 +1,17 @@
 import dojoText = require('dojo/text');
-import pegParser = require('./html/peg/html');
-import Processor = require('./Processor');
+export import Template = require('./html/Template');
 import templating = require('./interfaces');
 
 export function load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
-	dojoText.load(resourceId, contextRequire, function(template:string):void {
-		Processor.processTemplate(template, parser).then(load);
+	dojoText.load(resourceId, contextRequire, function(input:string):void {
+		process(input).load().then(load);
 	});
 }
 
-export var parser:templating.IParser = pegParser;
+export function parse(source:string):templating.IParseTree {
+	return process(source).tree;
+}
+
+export function process(source:string):Template {
+	return new Template(source);
+}

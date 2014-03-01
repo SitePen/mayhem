@@ -16,6 +16,7 @@ class ViewWidget extends WidgetContainer {
 	}
 
 	/* protected */ _placeContent():void {
+		console.log(this._content.cloneNode(true))
 		this.clear();
 		this._lastNode.parentNode.insertBefore(this._content, this._lastNode);
 	}
