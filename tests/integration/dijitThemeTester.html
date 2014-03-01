@@ -128,7 +128,7 @@ require([
 	'framework/templating/html!./dijitthemeTester.tmpl.html',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dojo/resources/dojo.css'
-], function (Application, Master, MyMediator, MyModel, widget) {
+], function (Application, Master, MyMediator, MyModel, template) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -141,7 +141,7 @@ require([
 		});
 
 		var masterView = new Master({});
-		masterView.add(widget);
+		masterView.add(template.construct());
 		masterView.set('app', app);
 		masterView.set('mediator', mediator);
 		masterView.attachToWindow(document.body);

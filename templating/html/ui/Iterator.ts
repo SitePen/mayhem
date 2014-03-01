@@ -112,7 +112,7 @@ class Iterator extends ElementWidget {
 			ctor: this._templateConstructor,
 			mediator: mediator,
 			parent: this
-		})).initialize();
+		})).construct();
 	}
 
 	private _inSetter(sourceField:string):void {

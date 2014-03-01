@@ -49,13 +49,13 @@ class TemplateProcessor {
 	}
 
 	// Parses a template (if necessary), and returns a promise with an optional timeout for loader failure
-	static process(node:any /* templating.IWidgetNode */, timeout?:number):IPromise<ui.IDomWidget> {
+	static process(node:any /* templating.IWidgetNode */, timeout?:number):IPromise<TemplateProcessor> {
 		console.log('AST:', node)
-		var dfd:IDeferred<ui.IDomWidget> = new Deferred<ui.IDomWidget>(),
+		var dfd:IDeferred<TemplateProcessor> = new Deferred<TemplateProcessor>(),
 			timeoutHandle:number;
 		require(this.findDependencies(node), ():void => {
 			clearTimeout(timeoutHandle);
-			dfd.resolve((new TemplateProcessor(node).initialize()));
+			dfd.resolve((new TemplateProcessor(node)));
 		});
 		if (timeout) {
 			timeoutHandle = setTimeout(():void => {
@@ -65,7 +65,7 @@ class TemplateProcessor {
 		return dfd;
 	}
 
-	static processTemplate(template:string, parser?:templating.IParser, timeout?:number):IPromise<ui.IDomWidget> {
+	static processTemplate(template:string, parser?:templating.IParser, timeout?:number):IPromise<TemplateProcessor> {
 		parser || (parser = this.defaultParser);
 		return this.process(parser.parse(template), timeout);
 	}
@@ -101,7 +101,7 @@ class TemplateProcessor {
 				widgetArgs[key] = new TemplateProcessor(value, {
 					app: options.app,
 					parent: this
-				}).initialize();
+				}).construct();
 			}
 			else if (value && value.$bind) {
 				binding = value.$bind;
@@ -186,7 +186,7 @@ class TemplateProcessor {
 		// TODO: moar cleanup
 	}
 
-	initialize():ui.IDomWidget {
+	construct():ui.IDomWidget {
 		var widget:ui.IDomWidget = this._widget = new this._WidgetCtor(this._widgetArgs),
 			astNode:any = this._astNode;
 
@@ -224,7 +224,7 @@ class TemplateProcessor {
 	private _initializeChildren(children:any):void {
 		for (var i = 0, len = children ? children.length : 0; i < len; ++i) {
 			if (children[i]) {
-				this._addChild(new TemplateProcessor(children[i]).initialize(), i);
+				this._addChild(new TemplateProcessor(children[i]).construct(), i);
 			}
 		}
 	}

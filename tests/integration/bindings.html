@@ -34,7 +34,7 @@ require([
 	'framework/templating/html!./bindings.tmpl.html',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dijit/themes/claro/document.css'
-], function (Application, Master, MyMediator, MyModel, widget) {
+], function (Application, Master, MyMediator, MyModel, template) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -48,7 +48,7 @@ require([
 		});
 
 		var masterView = new Master({});
-		masterView.add(widget);
+		masterView.add(template.construct());
 		masterView.set('app', app);
 		masterView.set('mediator', mediator);
 		masterView.attachToWindow(document.body);
