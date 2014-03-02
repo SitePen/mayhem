@@ -34,14 +34,17 @@ import __WidgetBase = require('dijit/_WidgetBase');
 	/* protected */ _dijit:__WidgetBase;
 	/* protected */ _dijitArgs:any;
 	/* protected */ _dijitRequiredFields:string[];
+	private _dijitWatchHandles:IHandle[];
+	private _renderHandle:IHandle;
 
 	constructor(kwArgs:any = {}) {
+		this._dijitRequiredFields = [];
+		this._dijitWatchHandles = [];
+
 		var dijitArgs:any = this._dijitArgs = {};
 		if ('id' in kwArgs) {
 			dijitArgs.id = kwArgs.id;
 		}
-
-		this._dijitRequiredFields = [];
 		var config:any = (<any> this.constructor)._dijitConfig;
 		for (var field in config) {
 			if (config[field]) {
@@ -135,15 +138,17 @@ import __WidgetBase = require('dijit/_WidgetBase');
 			this['_' + key] = value;
 			this._dijit.set(key, value);
 		};
-		// TODO: drip drip...keep handles and clean them up on destroy
-		this.on('render', () => {
-			this._dijit.watch(key, util.debounce((_:any, __:string, value:string):void => {
+		this._renderHandle = this.on('render', () => {
+			this._dijitWatchHandles.push(this._dijit.watch(key, (key:any, last:any, value:any):void => {
 				this.set(key, value);
-			}, 1)); // TODO: debounce rate should be configurable per property
+			}));
 		});
 	}
 
 	destroy():void {
+		this._renderHandle && this._renderHandle.remove();
+		util.destroyHandles(this._dijitWatchHandles);
+		this._renderHandle = this._dijitWatchHandles = null;
 		if (this._dijit) {
 			this._dijit.destroyRecursive();
 			this._dijit = null;

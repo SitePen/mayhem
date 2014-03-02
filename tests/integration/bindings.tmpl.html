@@ -1,4 +1,3 @@
-{firstName}
 <widget is="framework/ui/dom/form/Input" value='{firstName} {lastName}'></widget>
 First Name: <widget is="framework/ui/dom/form/Input" value={firstName} label={firstName}></widget>
 <widget is="framework/ui/dom/form/Error" binding="firstName"></widget>
@@ -10,9 +9,16 @@ fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
 
 <p>
-Enabled: <widget is="framework/ui/dom/form/Checkbox" checked={enabled}></widget><br>
-Enabled: <widget is="framework/ui/dom/form/Checkbox" checked={enabled}></widget> (same as above)
-<p>
+<label>Enabled: <widget is="framework/ui/dom/form/Checkbox" checked={enabled}></widget></label><br>
+<label for='cb2'>Enabled:</label> <widget is="framework/ui/dom/form/Checkbox" checked={enabled} id='cb2'></widget>
+</p><p>
+Name preference: {firstName}
+<fieldset>
+	<label><widget is="framework/ui/dijit/form/RadioButton" group='name-pref'></widget> first name</label>
+	<label><widget is="framework/ui/dijit/form/RadioButton" group='name-pref'></widget> last name</label>
+	<label><widget is="framework/ui/dijit/form/RadioButton" group='name-pref' checked disabled></widget> full name</label>
+</fieldset>
+</p>
 
 <h3>Conditionals</h3>
 
