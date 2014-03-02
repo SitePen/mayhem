@@ -1,0 +1,331 @@
+{
+	"constructor": "framework/ui/dijit/layout/ContentPane",
+	"kwArgs": {
+		"title": "Basic Form Widgets",
+		"selected": true
+	},
+	"children": [
+		{
+			"constructor": "framework/ui/dijit/form/Button",
+			"kwArgs": {
+				"label": "Simple",
+				"iconClass": "dijitIconTask"
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/DropDownButton",
+			"kwArgs": {
+				"dropDown": {
+					"constructor": "framework/ui/dijit/DropDownMenu",
+					"kwArgs": {
+						"id": "dd-menu"
+					},
+					"children": [
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Cut",
+								"onClick": "cut",
+								"iconClass": "dijitIconCut"
+							}
+						},
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Copy",
+								"onClick": "copy",
+								"iconClass": "dijitIconCopy"
+							}
+						},
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Paste",
+								"onClick": "paste",
+								"iconClass": "dijitIconPaste"
+							}
+						}
+					]
+				},
+				"iconClass": "dijitIconEdit"
+			},
+			"children": [
+				null
+			],
+			"content": [
+				"\n\t\t\t\t\tDrop Down\n\t\t\t\t\t",
+				{
+					"$child": 0
+				},
+				"\n\t\t\t\t"
+			]
+		},
+		{
+			"constructor": "framework/ui/dijit/form/ComboButton",
+			"kwArgs": {
+				"dropDown": {
+					"constructor": "framework/ui/dijit/DropDownMenu",
+					"kwArgs": {
+						"id": "combo-menu"
+					},
+					"children": [
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Save",
+								"onClick": "save",
+								"iconClass": "dijitEditorIcon dijitEditorIconSave"
+							}
+						},
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Save As",
+								"onClick": "save-as"
+							}
+						}
+					]
+				},
+				"label": "Combo",
+				"iconClass": "dijitEditorIcon dijitEditorIconSave"
+			},
+			"children": [
+				null
+			],
+			"content": [
+				"\n\t\t\t\t\tCombo\n\t\t\t\t\t",
+				{
+					"$child": 0
+				},
+				"\n\t\t\t\t"
+			]
+		},
+		{
+			"constructor": "framework/ui/dijit/form/ToggleButton",
+			"kwArgs": {
+				"label": "Toggle",
+				"checked": true,
+				"iconClass": "dijitCheckBoxIcon"
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/Button",
+			"kwArgs": {
+				"disabled": true,
+				"label": "Simple",
+				"iconClass": "dijitIconTask"
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/DropDownButton",
+			"kwArgs": {
+				"disabled": true,
+				"dropDown": {
+					"constructor": "framework/ui/dijit/DropDownMenu",
+					"kwArgs": {
+						"id": "disabled-dd-menu"
+					},
+					"children": [
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Cut",
+								"iconClass": "dijitEditorIcon dijitEditorIconCut",
+								"onClick": "cut"
+							}
+						},
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Copy",
+								"iconClass": "dijitEditorIcon dijitEditorIconCopy",
+								"onClick": "copy"
+							}
+						},
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Paste",
+								"iconClass": "dijitEditorIcon dijitEditorIconPaste",
+								"onClick": "paste"
+							}
+						}
+					]
+				},
+				"iconClass": "dijitIconEdit"
+			},
+			"children": [
+				null
+			],
+			"content": [
+				"\n\t\t\t\t\t<strong>Drop</strong> Down\n\t\t\t\t\t",
+				{
+					"$child": 0
+				},
+				"\n\t\t\t\t"
+			]
+		},
+		{
+			"constructor": "framework/ui/dijit/form/ComboButton",
+			"kwArgs": {
+				"disabled": true,
+				"dropDown": {
+					"constructor": "framework/ui/dijit/DropDownMenu",
+					"kwArgs": {
+						"id": "disabled-combo-menu"
+					},
+					"children": [
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Save",
+								"onClick": "save",
+								"iconClass": "dijitEditorIcon dijitEditorIconSave"
+							}
+						},
+						{
+							"constructor": "framework/ui/dijit/MenuItem",
+							"kwArgs": {
+								"label": "Save As",
+								"onClick": "save-as"
+							}
+						}
+					]
+				},
+				"label": "Combo",
+				"iconClass": "dijitEditorIcon dijitEditorIconSave"
+			},
+			"children": [
+				null
+			],
+			"content": [
+				"\n\t\t\t\t\tCombo\n\t\t\t\t\t",
+				{
+					"$child": 0
+				},
+				"\n\t\t\t\t"
+			]
+		},
+		{
+			"constructor": "framework/ui/dijit/form/ToggleButton",
+			"kwArgs": {
+				"disabled": true,
+				"label": "Toggle",
+				"checked": true,
+				"iconClass": "dijitCheckBoxIcon"
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/CheckBox",
+			"kwArgs": {
+				"id": "check1"
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/CheckBox",
+			"kwArgs": {
+				"id": "check2",
+				"checked": true
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/CheckBox",
+			"kwArgs": {
+				"id": "check3",
+				"checked": "",
+				"disabled": true
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/CheckBox",
+			"kwArgs": {
+				"id": "check4",
+				"checked": true,
+				"disabled": true
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/RadioButton",
+			"kwArgs": {
+				"id": "g1rb1"
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/RadioButton",
+			"kwArgs": {
+				"id": "g1rb2",
+				"checked": true
+			}
+		},
+		{
+			"constructor": "framework/ui/dijit/form/RadioButton",
+			"kwArgs": {
+				"id": "g1rb3",
+				"disabled": true
+			}
+		}
+	],
+	"content": [
+		"\n\n\t\t\t<h2>Buttons</h2>\n\t\t\t<p>Buttons can do an action, display a menu, or both:</p>\n\t\t\t<div>\n\t\t\t\tEnabled:\n\t\t\t\t",
+		{
+			"$child": 0
+		},
+		"\n\t\t\t\t",
+		{
+			"$child": 1
+		},
+		"\n\t\t\t\t",
+		{
+			"$child": 2
+		},
+		"\n\t\t\t\t",
+		{
+			"$child": 3
+		},
+		"\n\t\t\t</div>\n\t\t\t<div>\n\t\t\t\tDisabled:\n\t\t\t\t",
+		{
+			"$child": 4
+		},
+		"\n\t\t\t\t",
+		{
+			"$child": 5
+		},
+		"\n\t\t\t\t",
+		{
+			"$child": 6
+		},
+		"\n\t\t\t\t",
+		{
+			"$child": 7
+		},
+		"\n\t\t\t</div>\n\n\t\t\t<hr class='spacer'></hr>\n\n\t\t\t<h2>Check Boxes</h2>\n\t\t\t<fieldset>\n\t\t\t\t",
+		{
+			"$child": 8
+		},
+		"\n\t\t\t\t<label for='check1'>unchecked</label>\n\t\t\t\t",
+		{
+			"$child": 9
+		},
+		"\n\t\t\t\t<label for='check2'>checked</label>\n\t\t\t\t",
+		{
+			"$child": 10
+		},
+		"\n\t\t\t\t<label for='check3'>disabled</label>\n\t\t\t\t",
+		{
+			"$child": 11
+		},
+		"\n\t\t\t\t<label for='check4'>disabled and checked</label>\n\t\t\t</fieldset>\n\n\t\t\t<h2>Radio Buttons</h2>\n\t\t\t<fieldset>\n\t\t\t\t",
+		{
+			"$child": 12
+		},
+		"\n\t\t\t\t<label for='g1rb1'>news</label>\n\t\t\t\t",
+		{
+			"$child": 13
+		},
+		"\n\t\t\t\t<label for='g1rb2'>talk</label>\n\t\t\t\t",
+		{
+			"$child": 14
+		},
+		"\n\t\t\t\t<label for='g1rb3'>weather (disabled)</label>\n\t\t\t</fieldset>\n\t\t"
+	]
+}

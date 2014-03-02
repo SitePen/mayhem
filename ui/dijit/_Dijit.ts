@@ -142,6 +142,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 			this._dijitWatchHandles.push(this._dijit.watch(key, (key:any, last:any, value:any):void => {
 				this.set(key, value);
 			}));
+			// TODO: allow a debounce rate to be specified
 		});
 	}
 

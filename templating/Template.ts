@@ -61,7 +61,7 @@ class Template implements templating.ITemplate {
 		if (timeout) {
 			timeoutHandle = setTimeout(():void => {
 				dfd.reject(new Error('Timed out while loading template dependencies'));
-			});
+			}, timeout);
 		}
 		return dfd;
 	}
@@ -75,7 +75,7 @@ class Template implements templating.ITemplate {
 
 	parse():templating.IParseTree {
 		// Base implementation expects source to be a parse tree
-		return this.tree;
+		return this.source;
 	}
 
 	scan():string[] {

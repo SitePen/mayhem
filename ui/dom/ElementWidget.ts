@@ -4,9 +4,9 @@ import ui = require('../interfaces');
 import Widget = require('../Widget');
 
 class ElementWidget extends Widget implements ui.IElementWidget {
+	/* protected */ _elementType:string;
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;
-	/* protected */ _elementType:string;
 
 	constructor(kwArgs:Object) {
 		this._elementType = 'div';

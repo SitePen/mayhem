@@ -25,6 +25,7 @@ class DomWidgetFactory implements templating.IWidgetFactory {
 	widgetArgs:any = {};
 
 	constructor(tree:templating.IParseTree) {
+		// TODO: for widgets with ids to be cloned multiple times we need a way to transform child ids
 		this.tree = tree;
 		this._initializeArgs();
 		this._initializeContent();
@@ -112,20 +113,21 @@ class DomWidgetFactory implements templating.IWidgetFactory {
 class _WidgetBinder {
 	private _activeMediatorHandle:IHandle;
 	private _childMarkerNodes:Node[];
+	private _childOptions:any;
 	factory:DomWidgetFactory;
 	private _observerHandles:IHandle[];
-	options:any;
 	private _textBindingNodes:Node[] = [];
 	private _textBindingPaths:string[] = [];
 	private _textBindingHandles:IHandle[];
 	widget:ui.IDomWidget;
+	private _widgetArgs:any;
 
 	constructor(factory:DomWidgetFactory, options:any = {}) {
 		this.factory = factory;
-		this.options = options;
+		this._widgetArgs = factory.widgetArgs; // lang.mixin({}, options, factory.widgetArgs);
 		this._processKwArgWidgets();
 		var WidgetCtor:any = require(factory.tree.constructor),
-			widget:ui.IDomWidget = this.widget = new WidgetCtor(factory.widgetArgs);
+			widget:ui.IDomWidget = this.widget = new WidgetCtor(this._widgetArgs);
 		this._processContent();
 		this._processChildren();
 		this._processBindings();
@@ -239,7 +241,7 @@ class _WidgetBinder {
 		for (var i = 0, len = childFactories.length; i < len; ++i) {
 			factory = childFactories[i];
 			if (factory) {
-				this._addChild(factory.create(this.options), i);
+				this._addChild(factory.create(), i); // TODO: child options?
 			}
 		}
 	}
@@ -298,9 +300,9 @@ class _WidgetBinder {
 
 	private _processKwArgWidgets():void {
 		var kwArgFactories = this.factory.kwArgFactories,
-			widgetArgs = this.factory.widgetArgs;
+			widgetArgs = this._widgetArgs;
 		for (var key in kwArgFactories) {
-			widgetArgs[key] = kwArgFactories[key].create(this.options);
+			widgetArgs[key] = kwArgFactories[key].create(); // TODO: child options?
 		}
 	}
 }
