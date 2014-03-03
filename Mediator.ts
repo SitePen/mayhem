@@ -50,7 +50,7 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 	getMetadata(key:string):core.IProxy {
 		var proxy:Proxy,
 			handle:IHandle = this.observe('model', function (newModel:data.IModel):void {
-				var newProperty = newModel.getMetadata(key);
+				var newProperty = newModel ? newModel.getMetadata(key) : null;
 				proxy.setTarget(newProperty || null);
 			});
 
