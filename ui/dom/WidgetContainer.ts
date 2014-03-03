@@ -10,7 +10,7 @@ import util = require('../../util');
 
 class WidgetContainer extends FragmentWidget implements ui.IWidgetContainer {
 	/* protected */ _children:ui.IDomWidget[];
-	private _placeholders:{ [name:string]: ui.IPlaceholder; };
+	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
 
 	constructor(kwArgs?:Object) {
 		this._children || (this._children = []);

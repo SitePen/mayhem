@@ -1,6 +1,7 @@
 /// <reference path="../../dijit" />
 /// <reference path="../../dojo" />
 
+import ContentWidget = require('../dom/ContentWidget');
 import core = require('../../interfaces');
 import domConstruct = require('dojo/dom-construct');
 import has = require('../../has');
@@ -8,10 +9,9 @@ import lang = require('dojo/_base/lang');
 import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
-import ViewWidget = require('../dom/ViewWidget');
 import __WidgetBase = require('dijit/_WidgetBase');
 
-/* abstract */ class _Dijit extends ViewWidget { // TODO: extend a content-aware ElementWidget instead
+/* abstract */ class _Dijit extends ContentWidget {
 	// TODO: finish cataloging dijit fields
 	static _dijitConfig:any = {};
 	static _dijitConfigDefault:any = {
@@ -38,19 +38,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 	private _renderHandle:IHandle;
 
 	constructor(kwArgs:any = {}) {
-		this._dijitRequiredFields = [];
-		this._dijitWatchHandles = [];
-
-		var dijitArgs:any = this._dijitArgs = {};
-		if ('id' in kwArgs) {
-			dijitArgs.id = kwArgs.id;
-		}
-		var config:any = (<any> this.constructor)._dijitConfig;
-		for (var field in config) {
-			if (config[field]) {
-				this._configureDijitField(field, config[field], kwArgs);
-			}
-		}
+		this.initialize(kwArgs);
 		super(kwArgs);
 	}
 
@@ -157,6 +145,22 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		super.destroy();
 	}
 
+	initialize(kwArgs:any):void {
+		this._dijitRequiredFields = [];
+		this._dijitWatchHandles = [];
+
+		var dijitArgs:any = this._dijitArgs = {};
+		if ('id' in kwArgs) {
+			dijitArgs.id = kwArgs.id;
+		}
+		var config:any = (<any> this.constructor)._dijitConfig;
+		for (var field in config) {
+			if (config[field]) {
+				this._configureDijitField(field, config[field], kwArgs);
+			}
+		}
+	}
+
 	/* protected */ _placeContent():void {
 		this.clear();
 		var container = this._dijit.containerNode; // TODO: or this._dijit.domNode?
@@ -167,7 +171,9 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		super._render();
 		var dijit:__WidgetBase = new (<any> this.constructor)._DijitWidget(this._dijitArgs);
 		this.get('classList').set(dijit.domNode.className);
-		this._lastNode.parentNode.insertBefore(dijit.domNode, this._lastNode);
+		//this._lastNode.parentNode.insertBefore(dijit.domNode, this._lastNode);
+
+		this._firstNode = this._lastNode = dijit.domNode;
 		this.set('dijit', dijit);
 	}
 

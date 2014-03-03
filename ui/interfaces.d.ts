@@ -1,6 +1,6 @@
 /// <reference path="../dojo" />
 
-import AddPosition = require('./AddPosition');
+export import AddPosition = require('./AddPosition');
 import BackgroundRepeat = require('./BackgroundRepeat');
 import BindDirection = require('../binding/BindDirection');
 import core = require('../interfaces');
@@ -92,8 +92,8 @@ export interface IWidgetContainer extends IDomWidget {
 	add(widget:IWidget, position:number):IHandle;
 	add(widget:IWidget, placeholder:string):IHandle;
 
-	/* protected */ _addToContainer(widget:IDomWidget, reference:IDomWidget):void;
-	/* protected */ _addToContainer(widget:IDomWidget, reference:Node):void;
+	/* protected */ _addToContainer(widget:IWidget, reference:IWidget):void;
+	/* protected */ _addToContainer(widget:IWidget, reference:Node):void;
 
 	/* protected */ _createPlaceholder(name:string, node:Node):IPlaceholder;
 

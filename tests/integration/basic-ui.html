@@ -24,10 +24,10 @@ require([
 	'framework/Application',
 	'framework/tests/integration/MyMediator',
 	'framework/ui/Widget!Master',
-	'framework/ui/Widget!form/Input',
+	'framework/ui/Widget!form/Textbox',
 	'framework/ui/Widget!form/Error',
 	'framework/ui/Widget!form/Label'
-], function (MyModel, Application, MyMediator, Master, Input, FormError, Label) {
+], function (MyModel, Application, MyMediator, Master, Textbox, FormError, Label) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -39,8 +39,8 @@ require([
 			model: model
 		});
 
-		var input = window.input = new Input({ app: app, mediator: mediator });
-		input.bind('value', 'firstName', { direction: 2 });
+		var textbox = window.textbox = new Textbox({ app: app, mediator: mediator });
+		textbox.bind('value', 'firstName', { direction: 2 });
 
 		var error = window.formError = new FormError({
 			app: app,
@@ -57,7 +57,7 @@ require([
 		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
 		masterView.add(label);
-		masterView.add(input);
+		masterView.add(textbox);
 		masterView.add(error);
 	});
 });
