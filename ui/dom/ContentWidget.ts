@@ -3,10 +3,12 @@ import ElementWidget = require('./ElementWidget');
 import ui = require('../interfaces');
 import util = require('../../util');
 
-class ContentWidget extends ElementWidget { // implements ui.IWidgetContainer
-	/* protected */ _children:ui.IDomWidget[];
-	/* protected */ _content:DocumentFragment;
-	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
+class ContentWidget extends ElementWidget { // implements ui.IContentContainer
+	// ui.IContentContainer
+	_content:DocumentFragment;
+	// ui.IWidgetContainer
+	_children:ui.IDomWidget[];
+	_placeholders:{ [name:string]: ui.IPlaceholder; };
 
 	constructor(kwArgs?:any) {
 		DomWidgetContainer.prototype._initializeContainer.call(this);
@@ -22,8 +24,14 @@ class ContentWidget extends ElementWidget { // implements ui.IWidgetContainer
 		this.clear();
 		this._lastNode.parentNode.insertBefore(this._content, this._lastNode);
 	}
+
+	// ui.IWidgetContainer
+	add(widget:ui.IDomWidget, position?:any):IHandle {
+		return DomWidgetContainer.prototype.add.apply(this, arguments);
+	}
 }
 
+// TODO: find a cleaner way to mix Container methods in
 for (var key in DomWidgetContainer.prototype) {
 	if (!ContentWidget.prototype[key]) {
 		ContentWidget.prototype[key] = DomWidgetContainer.prototype[key];

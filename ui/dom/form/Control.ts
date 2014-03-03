@@ -1,9 +1,7 @@
 import ContentWidget = require('../ContentWidget');
-import form = require('./interfaces');
 
-class Control extends ContentWidget implements form.IControl {
+/* abstract */ class Control extends ContentWidget {
 	_disabled:boolean;
-	_name:string;
 	_tabIndex:number;
 
 	constructor(kwArgs:any = {}) {

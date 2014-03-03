@@ -1,13 +1,12 @@
 import Control = require('./Control');
-import DijitButton = require('../../dijit/form/Button');
-import form = require('./interfaces');
+import _DijitWidget = require('../../dijit/form/Button');
 import util = require('../../../util');
 
-class Button extends Control implements form.IButton {
+class Button extends Control {
 	_label:string;
 	_type:string;
 }
 
-util.applyMixins(Button, [ DijitButton ]);
+util.applyMixins(Button, [ _DijitWidget ]);
 
 export = Button;

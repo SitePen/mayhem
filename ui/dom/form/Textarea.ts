@@ -1,13 +1,12 @@
-import DijitSimpleTextarea = require('../../dijit/form/SimpleTextarea');
-import form = require('./interfaces');
-import Textbox = require('./Textbox');
+import _DijitWidget = require('../../dijit/form/SimpleTextarea');
+import TextInput = require('./TextInput');
 import util = require('../../../util');
 
-class Textarea extends Textbox implements form.ITextarea {
+class Textarea extends TextInput {
 	_cols:number;
 	_rows:number;
 }
 
-util.applyMixins(Textarea, [ DijitSimpleTextarea ]);
+util.applyMixins(Textarea, [ _DijitWidget ]);
 
 export = Textarea;

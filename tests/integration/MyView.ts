@@ -1,5 +1,5 @@
 import Master = require('framework/ui/dom/Master');
-import Input = require('framework/ui/dom/form/TextBox');
+import Input = require('framework/ui/dom/form/TextInput');
 import Label = require('framework/ui/dom/form/Label');
 import FormError = require('framework/ui/dom/form/Error');
 

@@ -4,7 +4,7 @@ export import AddPosition = require('./AddPosition');
 import BackgroundRepeat = require('./BackgroundRepeat');
 import BindDirection = require('../binding/BindDirection');
 import core = require('../interfaces');
-import PlacePosition = require('./PlacePosition');
+export import PlacePosition = require('./PlacePosition');
 
 export interface IClassList extends core.IProxty<string> {
 	add(className:string):void;
@@ -13,10 +13,8 @@ export interface IClassList extends core.IProxty<string> {
 	toggle(className:string, forceState?:boolean):void;
 }
 
-export interface IContentContainer extends IDomWidget {
+export interface IContentContainer extends IWidgetContainer {
 	_content:DocumentFragment;
-
-	clear():void;
 }
 
 export interface IDomWidget extends IWidget, core.IApplicationComponent {
@@ -77,6 +75,7 @@ export interface IWidget extends core.IObservableEvented {
 // TODO: ideally this only needs to extend core.IObservable
 export interface IWidgetContainer extends IDomWidget {
 	/* protected */ _children:IDomWidget[];
+	/* protected */ _placeholders:{ [name:string]: IPlaceholder; };
 
 	add(widget:IWidget, position:AddPosition):IHandle;
 	add(widget:IWidget, position:number):IHandle;
@@ -84,6 +83,7 @@ export interface IWidgetContainer extends IDomWidget {
 
 	/* protected */ _addToContainer(widget:IWidget, reference:IWidget):void;
 	/* protected */ _addToContainer(widget:IWidget, reference:Node):void;
+	/* protected */ _addToContainer(widget:IWidget, reference:any):void;
 
 	/* protected */ _createPlaceholder(name:string, node:Node):IPlaceholder;
 
@@ -132,4 +132,3 @@ export interface IStyle extends core.IObservable {
 	observe(observer:core.IObserver<any>):IHandle;
 	observe(key:string, observer:core.IObserver<any>):IHandle;
 }
-

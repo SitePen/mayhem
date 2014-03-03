@@ -8,7 +8,7 @@ import Widget = require('../Widget');
 
 	detach():Node { return }
 
-	clear():void { return }
+	clear():void {}
 }
 
 export = DomWidget;

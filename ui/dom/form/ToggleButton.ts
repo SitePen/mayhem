@@ -1,12 +1,11 @@
-import DijitToggleButton = require('../../dijit/form/ToggleButton');
-import form = require('./interfaces');
+import _DijitWidget = require('../../dijit/form/ToggleButton');
 import Button = require('./Button');
 import util = require('../../../util');
 
-class ToggleButton extends Button implements form.IToggleButton {
+class ToggleButton extends Button {
 	_checked:boolean;
 }
 
-util.applyMixins(ToggleButton, [ DijitToggleButton ]);
+util.applyMixins(ToggleButton, [ _DijitWidget ]);
 
 export = ToggleButton;

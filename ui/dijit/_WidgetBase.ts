@@ -1,8 +1,9 @@
-import _Dijit = require('./_Dijit');
+import _DijitContainer = require('./_DijitContainer');
 
-class _Widget extends _Dijit {
+// TODO: only dijit/_Container widgets should extend _DijitContainer
+class _Widget extends _DijitContainer {
 }
 
-_Widget.configure(_Dijit);
+_Widget.configure(_DijitContainer);
 
 export = _Widget;

@@ -1,15 +1,15 @@
-/// <reference path="../../dijit" />
 /// <reference path="../../dojo" />
+/// <reference path="../../dijit" />
 
 import ContentWidget = require('../dom/ContentWidget');
 import core = require('../../interfaces');
+import dijit = require('interfaces');
 import domConstruct = require('dojo/dom-construct');
-import has = require('../../has');
 import lang = require('dojo/_base/lang');
 import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
-import __WidgetBase = require('dijit/_WidgetBase');
+import _WidgetBase = require('dijit/_WidgetBase');
 
 /* abstract */ class _Dijit extends ContentWidget {
 	// TODO: finish cataloging dijit fields
@@ -23,7 +23,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		tooltip: 'string'
 	};
 
-	static _DijitWidget:typeof __WidgetBase;
+	static _DijitWidget:typeof _WidgetBase;
 
 	static configure(BaseClass:typeof _Dijit):void {
 		lang.mixin(this._dijitConfig, BaseClass._dijitConfig);
@@ -31,7 +31,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 	}
 
 	/* protected */ _children:_Dijit[];
-	/* protected */ _dijit:__WidgetBase;
+	/* protected */ _dijit:dijit.IWidgetBase;
 	/* protected */ _dijitArgs:any;
 	/* protected */ _dijitRequiredFields:string[];
 	private _dijitWatchHandles:IHandle[];
@@ -42,24 +42,6 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		super(kwArgs);
 	}
 
-	// TODO: Container
-	add(widget:ui.IDomWidget, position:any = PlacePosition.LAST):IHandle {
-		// We only support adding children to dijits by index for now
-		if (!(widget instanceof _Dijit)) {
-			throw new Error('Only Dijit instances can be added to Dijit container');
-		}
-		position || (position = 0);
-		if (typeof position === 'number' && position >= 0) {
-			widget.set('parent', this);
-			this.get('children')[position] = widget;
-			this._dijit.addChild((<_Dijit> widget)._dijit, position);
-			return; // TODO: IHandle
-		}
-		if (has('debug')) {
-			throw new Error('NYI');
-		}
-	}
-
 	/* protected */ _attachedSetter(attached:boolean):void {
 		if (attached) {
 			this._startup();
@@ -68,7 +50,7 @@ import __WidgetBase = require('dijit/_WidgetBase');
 	}
 
 	clear():void {
-		this._dijit.containerNode.innerHTML = '';
+		this._dijit.domNode.innerHTML = '';
 	}
 
 	/* protected */ _configureDijitField(field:string, descriptor:any, kwArgs?:any):void {
@@ -161,15 +143,9 @@ import __WidgetBase = require('dijit/_WidgetBase');
 		}
 	}
 
-	/* protected */ _placeContent():void {
-		this.clear();
-		var container = this._dijit.containerNode; // TODO: or this._dijit.domNode?
-		container.appendChild(this._content);
-	}
-
 	/* protected */ _render():void {
 		super._render();
-		var dijit:__WidgetBase = new (<any> this.constructor)._DijitWidget(this._dijitArgs);
+		var dijit:dijit.IWidgetBase = new (<any> this.constructor)._DijitWidget(this._dijitArgs);
 		this.get('classList').set(dijit.domNode.className);
 		//this._lastNode.parentNode.insertBefore(dijit.domNode, this._lastNode);
 
