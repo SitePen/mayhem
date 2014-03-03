@@ -1,3 +1,4 @@
+import BindDirection = require('../../../binding/BindDirection');
 import binding = require('../../../binding/interfaces');
 import core = require('../../../interfaces');
 import data = require('../../../data/interfaces');
@@ -9,6 +10,7 @@ import ValidationError = require('../../../validation/ValidationError');
 
 class FormError extends ElementWidget {
 	private _binding:string;
+	private _errors:ValidationError[];
 	private _errorsProxty:core.IProxty<ValidationError[]>;
 	/* protected */ _firstNode:HTMLUListElement;
 	/* protected */ _lastNode:HTMLUListElement;
@@ -18,14 +20,16 @@ class FormError extends ElementWidget {
 	// set(key:'binding', value:string):void;
 
 	constructor(kwArgs?:Object) {
-		util.deferMethods(this, [ '_updateDisplay' ], '_render');
-		util.deferMethods(this, [ '_updateBinding' ], '_activeMediatorSetter');
+		util.deferMethods(this, [ '_errorsSetter' ], '_render');
 		super(kwArgs);
 	}
 
-	private _bindingSetter(value:string):void {
-		this._binding = value;
-		this._updateBinding();
+	/* protected */ _bind(target:any, targetBinding:string, binding:string, options:{ direction?:BindDirection; } = {}):binding.IBindingHandle {
+		if (targetBinding === 'binding') {
+			targetBinding = 'errors';
+			binding += '!errors';
+		}
+		return super._bind(target, targetBinding, binding, options);
 	}
 
 	destroy():void {
@@ -35,31 +39,8 @@ class FormError extends ElementWidget {
 		super.destroy();
 	}
 
-	/* protected */ _mediatorSetter(value:core.IMediator):void {
-		super._mediatorSetter(value);
-		this._updateBinding();
-	}
-
-	/* protected */ _render():void {
-		this._firstNode = this._lastNode = document.createElement('ul');
-	}
-
-	private _updateBinding():void {
-		this._errorsProxty && this._errorsProxty.destroy();
-
-		var mediator = this.get('mediator');
-		if (!mediator || !this._binding) {
-			return;
-		}
-
-		var proxty = this.get('app').get('binder').getMetadata<ValidationError[]>(mediator, this._binding, 'errors');
-		this._errorsProxty = proxty;
-		proxty.observe((errors:ValidationError[]):void => {
-			this._updateDisplay(errors);
-		});
-	}
-
-	private _updateDisplay(errors:ValidationError[]):void {
+	/* protected */ _errorsSetter(errors:ValidationError[]):void {
+		this._errors = errors;
 		this._firstNode.innerHTML = '';
 
 		if (!errors) {
@@ -70,6 +51,10 @@ class FormError extends ElementWidget {
 			var element = domConstruct.create('li', {}, this._firstNode);
 			element.appendChild(document.createTextNode(error.toString()));
 		}
+	}
+
+	/* protected */ _render():void {
+		this._firstNode = this._lastNode = document.createElement('ul');
 	}
 }
 

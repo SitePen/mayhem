@@ -5,6 +5,7 @@ import BindingError = require('./BindingError');
 import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
 import Proxty = require('../Proxty');
+import util = require('../util');
 import whenAll = require('dojo/promise/all');
 
 /**
@@ -91,11 +92,12 @@ class ProxtyBinder implements binding.IBinder {
 			var oldSet = proxty.set;
 			proxty.set = function (value:SourceT):void {
 				var self = this,
-					args = arguments;
+					args = arguments,
+					schedule = util.isArray(value) || value !== proxty.get();
 
-				app.get('scheduler').schedule(proxty.id, value === proxty.get() ? null : function ():void {
+				app.get('scheduler').schedule(proxty.id, schedule ? function ():void {
 					oldSet.apply(self, args);
-				});
+				} : null);
 			};
 			return proxty;
 		}

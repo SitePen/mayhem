@@ -23,11 +23,10 @@ require([
 	'framework/tests/integration/MyModel',
 	'framework/Application',
 	'framework/tests/integration/MyMediator',
+	'framework/tests/integration/MyView',
+	'framework/templating/html!./MyView.tmpl.html',
 	'framework/ui/Widget!Master',
-	'framework/ui/Widget!form/Textbox',
-	'framework/ui/Widget!form/Error',
-	'framework/ui/Widget!form/Label'
-], function (MyModel, Application, MyMediator, Master, Textbox, FormError, Label) {
+], function (MyModel, Application, MyMediator, MyView, MyViewTemplate, Master) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -39,26 +38,17 @@ require([
 			model: model
 		});
 
-		var textbox = window.textbox = new Textbox({ app: app, mediator: mediator });
-		textbox.bind('value', 'firstName', { direction: 2 });
-
-		var error = window.formError = new FormError({
+		var masterView = window.masterView = new Master({
 			app: app,
-			mediator: mediator,
-			binding: 'firstName'
+			mediator: mediator
 		});
 
-		var label = window.label = new Label({
-			app: app,
-			mediator: mediator,
-			binding: 'firstName'
-		});
+		var view = window.view = new MyView({});
+		var tmplView = window.tmplView = MyViewTemplate.create();
 
-		var masterView = new Master({});
+		masterView.add(view);
+		masterView.add(tmplView);
 		masterView.attachToWindow(document.body);
-		masterView.add(label);
-		masterView.add(textbox);
-		masterView.add(error);
 	});
 });
 		</script>

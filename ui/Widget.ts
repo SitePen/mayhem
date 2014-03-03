@@ -29,7 +29,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return normalize('./' + platform + resourceId);
 	}
 
-
 	private _activeMediator:core.IMediator;
 	/* private */ _app:core.IApplication;
 	/* protected */ _attached:boolean;
@@ -59,7 +58,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	set(key:'mediator', value:core.IMediator):void;
 	set(kwArgs:{ [key:string]: any; }):void;
 	set(key:string, value:any):void;
-	set(key:string, value?:any):void {
+	set(key:any, value?:any):void {
 		return super.set(key, value);
 	}
 
@@ -93,10 +92,59 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this._attached = attached;
 	}
 
+	/* protected */ _bind(target:any, targetBinding:string, binding:string, options:{ direction?:BindDirection; } = {}):binding.IBindingHandle {
+		return this.get('app').get('binder').bind({
+			source: this.get('mediator'),
+			sourceBinding: binding,
+			target: target,
+			targetBinding: targetBinding,
+			direction: options.direction || BindDirection.ONE_WAY
+		});
+	}
+
 	// TODO: support using a binding template as a sourceBinding
 	bind(targetBinding:string, binding:string, options?:{ direction?:BindDirection; }):IHandle;
 	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
 	bind(targetBinding:any, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
+		var deferBind = (propertyName:string):IHandle => {
+			// Helper to defer binding calls until a property has been set
+			var handle:IHandle;
+			if (!this.get(propertyName)) {
+				var propertyHandle:IHandle = this.observe(propertyName, (value:any):void => {
+					if (!value || !propertyHandle) {
+						// value was not actually passed or binding was removed before this happened
+					}
+					propertyHandle.remove();
+
+					var bindHandle:IHandle = this.bind(targetBinding, binding, options);
+					handle.remove = function ():void {
+						this.remove = function ():void {};
+						bindHandle.remove();
+
+						handle = propertyHandle = bindHandle = null;
+					};
+				});
+
+			}
+			handle = {
+				remove: function ():void {
+					this.remove = function ():void {};
+					propertyHandle.remove();
+					handle = propertyHandle = null;
+				}
+			};
+			return handle;
+		};
+		if (!this.get('app')) {
+			// if no app is set on the widget, delay the binding until one exists
+			return deferBind('app');
+		}
+
+		if (!this.get('activeMediator')) {
+			// if no mediator is set on the widget, delay binding as well
+			return deferBind('activeMediator');
+		}
+
 		var target:any = this,
 			bindings = this._bindings,
 			handle:binding.IBindingHandle;
@@ -105,13 +153,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			target = targetBinding;
 			targetBinding = 'nodeValue';
 		}
-		handle = this.get('app').get('binder').bind({
-			source: this.get('mediator'),
-			sourceBinding: binding,
-			target: target,
-			targetBinding: targetBinding,
-			direction: options.direction || BindDirection.ONE_WAY
-		});
+
+		handle = this._bind(
+			target,
+			targetBinding,
+			binding,
+			options
+		);
 
 		bindings.push(handle);
 		return {
@@ -173,11 +221,20 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		// Pass app down to children
 		// TODO: kill this when Bryan finishes his binding refactor
 		this._parentAppHandle && this._parentAppHandle.remove();
-		this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
-			this.set('app', parentApp);
-			// Only once
-			this._parentAppHandle.remove();
-		});
+		if (!this.get('app')) {
+			var parentApp:core.IApplication = parent.get('app');
+			if (parentApp) {
+				this.set('app', parentApp);
+			}
+			else {
+				this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
+					// Only once
+					this._parentAppHandle.remove();
+					this._parentAppHandle = null;
+					this.set('app', parentApp);
+				});
+			}
+		}
 
 		this._parent = parent;
 		// Observe parent active mediator

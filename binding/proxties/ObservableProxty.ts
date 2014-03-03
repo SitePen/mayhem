@@ -42,7 +42,7 @@ class ObservableProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 		var object = this._object = <core.IObservable> kwArgs.object;
 		this._property = kwArgs.binding;
 
-		this._handle = object.observe(kwArgs.binding, (newValue:any) => {
+		this._handle = object.observe(kwArgs.binding, (newValue:any):void => {
 			this._update(newValue);
 		});
 	}
@@ -63,8 +63,8 @@ class ObservableProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 
 		var self = this;
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				self = self._target = null;
 			}
 		};
@@ -74,7 +74,7 @@ class ObservableProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 	 * Destroys the property binding.
 	 */
 	destroy():void {
-		this.destroy = function () {};
+		this.destroy = function ():void {};
 
 		this._handle.remove();
 		this._handle = this._object = this._target = null;
@@ -92,10 +92,6 @@ class ObservableProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
 	set(value:T):void {
-		if (util.isEqual(this.get(), value)) {
-			return;
-		}
-
 		this._object && this._object.set(this._property, value);
 	}
 

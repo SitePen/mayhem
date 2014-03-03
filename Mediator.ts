@@ -1,6 +1,7 @@
 /// <reference path="./dojo" />
 
 import arrayUtil = require('dojo/_base/array');
+import aspect = require('dojo/aspect');
 import core = require('./interfaces');
 import data = require('./data/interfaces');
 import declare = require('dojo/_base/declare');
@@ -47,18 +48,20 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 	}
 
 	getMetadata(key:string):core.IProxy {
-		var proxy:Proxy;
-
-		// TODO: Leak?
-		this.observe('model', function (newModel:data.IModel):void {
-			var newProperty = newModel.getMetadata(key);
-			proxy.setTarget(newProperty || null);
-		});
+		var proxy:Proxy,
+			handle:IHandle = this.observe('model', function (newModel:data.IModel):void {
+				var newProperty = newModel.getMetadata(key);
+				proxy.setTarget(newProperty || null);
+			});
 
 		var model = this.get('model'),
 			modelProperty = model && model.getMetadata(key);
 
 		proxy = new Proxy(modelProperty);
+		aspect.after(proxy, 'destroy', ():void => {
+			handle.remove();
+			proxy = handle = model = modelProperty = null;
+		});
 
 		return proxy;
 	}

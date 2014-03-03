@@ -12,9 +12,9 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 	/* protected */ _children:ui.IDomWidget[];
 	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
 
-	add(widget:ui.IDomWidget, position:PlacePosition):IHandle;
-	add(widget:ui.IDomWidget, position:number):IHandle;
-	add(widget:ui.IDomWidget, placeholder:string):IHandle;
+	add(widget:ui.IDomWidget, position?:PlacePosition):IHandle;
+	add(widget:ui.IDomWidget, position?:number):IHandle;
+	add(widget:ui.IDomWidget, placeholder?:string):IHandle;
 	add(widget:ui.IDomWidget, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 

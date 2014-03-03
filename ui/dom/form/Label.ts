@@ -1,5 +1,7 @@
 /// <reference path="../../../dojo" />
 
+import BindDirection = require('../../../binding/BindDirection');
+import binding = require('../../../binding/interfaces');
 import core = require('../../../interfaces');
 import ElementWidget = require('../ElementWidget');
 import util = require('../../../util');
@@ -27,14 +29,12 @@ class Label extends ElementWidget {
 		super(kwArgs);
 	}
 
-	/* protected */ _bindingSetter(value:string):void {
-		this._binding = value;
-
-		// TODO: Leaks, only works once.
-		var proxty = this.get('app').get('binder').getMetadata<string>(this.get('mediator'), value, 'label');
-		proxty.observe((label:string):void => {
-			this.set('text', label);
-		});
+	/* protected */ _bind(target:any, targetBinding:string, binding:string, options:{ direction?:BindDirection; } = {}):binding.IBindingHandle {
+		if (targetBinding === 'binding') {
+			targetBinding = 'text';
+			binding += '!label';
+		}
+		return super._bind(target, targetBinding, binding, options);
 	}
 
 	destroy():void {

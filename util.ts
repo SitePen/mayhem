@@ -160,6 +160,15 @@ export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):s
 	return keys;
 };
 
+var toString = Object.prototype.toString;
+/**
+ * Determines whether a value is an Array. This is equivalent to `Array.isArray()`
+ * in ES5
+ */
+export function isArray(object:any):boolean {
+	return toString.call(object) === '[object Array]';
+}
+
 /**
  * Determines whether two values are strictly equal, also treating
  * NaN as equal to NaN.

@@ -106,7 +106,7 @@ declare module 'dojo/_base/lang' {
 
 declare module 'dojo/aspect' {
 	var aspect:{
-		after(target:Object, methodName:string, advice:(...args:any[]) => any, receiveArguments:boolean):IHandle;
+		after(target:Object, methodName:string, advice:(...args:any[]) => any, receiveArguments?:boolean):IHandle;
 		around(target:Object, methodName:string, advice:(...args:any[]) => any):IHandle;
 		before(target:Object, methodName:string, advice:(...args:any[]) => any):IHandle;
 	};
