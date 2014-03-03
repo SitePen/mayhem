@@ -29,7 +29,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return normalize('./' + platform + resourceId);
 	}
 
-	private _activeMediator:core.IMediator;
 	/* private */ _app:core.IApplication;
 	/* protected */ _attached:boolean;
 	private _bindings:binding.IBindingHandle[];
@@ -81,13 +80,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this._render();
 	}
 
-	/* protected */ _activeMediatorSetter(mediator:core.IMediator):void {
-		this._activeMediator = mediator;
-		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); ++i) {
-			binding.setSource(mediator);
-		}
-	}
-
 	/* protected */ _attachedSetter(attached:boolean):void {
 		this._attached = attached;
 	}
@@ -113,6 +105,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 				var propertyHandle:IHandle = this.observe(propertyName, (value:any):void => {
 					if (!value || !propertyHandle) {
 						// value was not actually passed or binding was removed before this happened
+						return;
 					}
 					propertyHandle.remove();
 
@@ -140,9 +133,9 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return deferBind('app');
 		}
 
-		if (!this.get('activeMediator')) {
+		if (!this.get('mediator')) {
 			// if no mediator is set on the widget, delay binding as well
-			return deferBind('activeMediator');
+			return deferBind('mediator');
 		}
 
 		var target:any = this,
@@ -200,12 +193,14 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	private _mediatorGetter():core.IMediator {
-		return this._activeMediator;
-	}
-
-	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
-		this._mediator = mediator;
-		this.set('activeMediator', mediator);
+		if (this._mediator) {
+			return this._mediator;
+		}
+		var parent = this.get('parent');
+		if (parent) {
+			return parent.get('mediator');
+		}
+		return null;
 	}
 
 	private _nextGetter():ui.IWidget {
@@ -236,18 +231,25 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			}
 		}
 
-		this._parent = parent;
-		// Observe parent active mediator
 		this._parentMediatorHandle && this._parentMediatorHandle.remove();
-		var parentMediatorHandler = (parentMediator:core.IMediator):void => {
-			if (!this._mediator) {
-				this.set('activeMediator', parentMediator);
+		this._parentMediatorHandle = null;
+
+		var mediatorHandler = (newMediator:core.IMediator, oldMediator:core.IMediator):void => {
+			// if no mediator has been explicitly set, notify of the parent's mediator change
+			if (!this._mediator && !util.isEqual(newMediator, oldMediator)) {
+				this._notify(newMediator, oldMediator, 'mediator');
 			}
 		};
-		this._parentMediatorHandle = parent.observe('activeMediator', parentMediatorHandler);
-		// Don't set activeMediator if parent hasn't had mediator set
-		var parentMediator:core.IMediator = parent.get('mediator');
-		parentMediator && parentMediatorHandler(parentMediator);
+		if (parent) {
+			this._parentMediatorHandle = parent.observe('mediator', mediatorHandler);
+		}
+
+		var oldParent:ui.IWidgetContainer = this._parent;
+		this._parent = parent;
+
+		if (!this._mediator && !util.isEqual(parent, oldParent)) {
+			mediatorHandler(parent && parent.get('mediator'), oldParent && oldParent.get('mediator'));
+		}
 
 		// Observe parent's attached state
 		this._parentAttachedHandle && this._parentAttachedHandle.remove();
@@ -316,8 +318,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	/* protected */ _render():void {
-		setTimeout(() => {
-			this.emit('render');	
+		setTimeout(():void => {
+			this.emit('render');
 		});
 	}
 }
