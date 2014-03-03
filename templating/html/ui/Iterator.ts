@@ -34,9 +34,11 @@ class Iterator extends ElementWidget {
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
 		this._elementIndex = {};
-		util.deferSetters(this, [ 'each', 'in' ], '_activeMediatorSetter');
+		util.deferSetters(this, [ 'each', 'in' ], '_mediatorSetter');
 		this._renderList();
 		super(kwArgs);
+
+		// TODO this.observe('mediator') and update bindings
 	}
 
 	private _createScopedMediator(key:string, mediator?:core.IMediator):core.IMediator {
@@ -122,11 +124,6 @@ class Iterator extends ElementWidget {
 		this._sourceFieldObserver = mediator.observe(sourceField, (newValue:any):void => {
 			this.set('source', newValue);
 		});
-	}
-
-	/* protected */ _mediatorSetter(mediator:core.IMediator):void {
-		super._mediatorSetter(mediator);
-		// TODO: update bindings
 	}
 
 	/* protected */ _render():void {

@@ -111,7 +111,7 @@ class DomWidgetFactory implements templating.IWidgetFactory {
 }
 
 class _WidgetBinder {
-	private _activeMediatorHandle:IHandle;
+	private _mediatorHandle:IHandle;
 	private _childMarkerNodes:Node[];
 	private _childOptions:any;
 	factory:DomWidgetFactory;
@@ -135,8 +135,8 @@ class _WidgetBinder {
 		// Hook widget's destroy method to tear down the template
 		var _destroy:() => void = widget.destroy;
 		widget.destroy = ():void => {
-			this._activeMediatorHandle && this._activeMediatorHandle.remove();
-			this._activeMediatorHandle = null;
+			this._mediatorHandle && this._mediatorHandle.remove();
+			this._mediatorHandle = null;
 			this.destroy();
 			_destroy.call(widget);
 		};
@@ -219,7 +219,7 @@ class _WidgetBinder {
 
 	private _processBindings():void {
 		var mediated:boolean;
-		this._activeMediatorHandle = this.widget.observe('activeMediator', (mediator:core.IMediator) => {
+		this._mediatorHandle = this.widget.observe('mediator', (mediator:core.IMediator) => {
 			if (!mediator) {
 				if (mediated) {
 					// TODO: clean up bindings
