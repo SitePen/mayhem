@@ -1,22 +1,16 @@
 import binding = require('../../binding/interfaces');
 import core = require('../../interfaces');
+import DomWidget = require('./DomWidget');
 import has = require('../../has');
-import FragmentWidget = require('./FragmentWidget');
 import ObservableEvented = require('../../ObservableEvented');
 import Placeholder = require('./Placeholder');
 import PlacePosition = require('../PlacePosition');
 import ui = require('../interfaces');
 import util = require('../../util');
 
-class WidgetContainer extends FragmentWidget implements ui.IWidgetContainer {
+class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 	/* protected */ _children:ui.IDomWidget[];
 	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
-
-	constructor(kwArgs?:Object) {
-		this._children || (this._children = []);
-		this._placeholders || (this._placeholders = {});
-		super(kwArgs);
-	}
 
 	add(widget:ui.IDomWidget, position:PlacePosition):IHandle;
 	add(widget:ui.IDomWidget, position:number):IHandle;
@@ -124,6 +118,12 @@ class WidgetContainer extends FragmentWidget implements ui.IWidgetContainer {
 		}
 	}
 
+	/* protected */ _initializeContainer():void {
+		this._children || (this._children = []);
+		this._placeholders || (this._placeholders = {});
+		util.deferMethods(this, [ '_placeContent' ], '_render');
+	}
+
 	remove(index:number):void;
 	remove(widget:ui.IDomWidget):void;
 	remove(index:any):void {
@@ -148,4 +148,4 @@ class WidgetContainer extends FragmentWidget implements ui.IWidgetContainer {
 	}
 }
 
-export = WidgetContainer;
+export = DomWidgetContainer;

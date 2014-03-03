@@ -1,8 +1,8 @@
 import domUtil = require('./util');
+import DomWidget = require('./DomWidget');
 import ui = require('../interfaces');
-import Widget = require('../Widget');
 
-class FragmentWidget extends Widget implements ui.IFragmentWidget {
+class FragmentWidget extends DomWidget implements ui.IFragmentWidget {
 	/* protected */ _firstNode:Comment;
 	/* protected */ _fragment:DocumentFragment;
 	/* protected */ _lastNode:Comment;

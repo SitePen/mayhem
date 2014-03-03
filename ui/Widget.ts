@@ -127,7 +127,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	clear():void {}
 
 	destroy():void {
-		this.detach();
+		this.extract();
 
 		var binding:binding.IBindingHandle;
 		for (var i = 0; (binding = this._bindings[i]); ++i) {
@@ -138,7 +138,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		super.destroy();
 	}
 
-	detach():void {
+	extract():void {
 		var parent = this.get('parent');
 		parent.remove && parent.remove(this);
 	}
@@ -237,7 +237,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 			var index:number = destination.get('index'),
 				parent:ui.IWidgetContainer = destinationParent;
-			destination.detach();
+			destination.extract();
 			handle = parent.add(this, index);
 		}
 		else {

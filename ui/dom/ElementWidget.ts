@@ -1,9 +1,9 @@
 import domUtil = require('./util');
+import DomWidget = require('./DomWidget');
 import has = require('../../has');
 import ui = require('../interfaces');
-import Widget = require('../Widget');
 
-class ElementWidget extends Widget implements ui.IElementWidget {
+class ElementWidget extends DomWidget implements ui.IElementWidget {
 	/* protected */ _elementType:string;
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;

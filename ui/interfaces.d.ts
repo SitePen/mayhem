@@ -20,17 +20,11 @@ export interface IContentContainer extends IDomWidget {
 }
 
 export interface IDomWidget extends IWidget, core.IApplicationComponent {
-	_classList:IClassList;
 	_firstNode:Node;
 	_lastNode:Node;
-	_style:IStyle;
-
-	// get(key:'classList'):IClassList;
-	// get(key:'firstNode'):Node;
-	// get(key:'lastNode'):Node;
-	// get(key:'style'):IStyle;
 
 	detach():Node;
+	clear():void;
 }
 
 export interface IElementWidget extends IDomWidget {
@@ -38,11 +32,8 @@ export interface IElementWidget extends IDomWidget {
 	_firstNode:Node; // HTMLElement
 	_lastNode:Node; // HTMLElement
 
-	// get(key:'elementType'):string;
-	// get(key:'firstNode'):Node;
-	// get(key:'lastNode'):Node;
-
-	detach():Node; // HTMLElement
+	detach():HTMLElement;
+	clear():void;
 }
 
 export interface IFragmentWidget extends IDomWidget {
@@ -50,11 +41,7 @@ export interface IFragmentWidget extends IDomWidget {
 	_fragment:DocumentFragment;
 	_lastNode:Node; // Comment
 
-	// get(key:'firstNode'):Comment;
-	// get(key:'fragment'):DocumentFragment;
-	// get(key:'lastNode'):Comment;
-
-	detach():Node; // DocumentFragment
+	detach():DocumentFragment;
 }
 
 export interface IPlaceholder extends IFragmentWidget {
@@ -64,10 +51,12 @@ export interface IPlaceholder extends IFragmentWidget {
 }
 
 export interface IWidget extends core.IObservableEvented {
+	_classList:IClassList;
+	_style:IStyle;
+
 	// get(key:'id'):string;
 	// get(key:'index'):number;
 	// get(key:'mediator'):core.IMediator;
-	// get(key:'activeMediator'):core.IMediator; // represents the actual, active mediator being used by widget
 	// set(key:'mediator', value:core.IMediator):void;
 	// get(key:'next'):IWidget;
 	// get(key:'parent'):IWidgetContainer;
@@ -77,6 +66,7 @@ export interface IWidget extends core.IObservableEvented {
 	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
 
 	destroy():void;
+	extract():void;
 
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IWidgetContainer, position:number):IHandle;
@@ -96,8 +86,6 @@ export interface IWidgetContainer extends IDomWidget {
 	/* protected */ _addToContainer(widget:IWidget, reference:Node):void;
 
 	/* protected */ _createPlaceholder(name:string, node:Node):IPlaceholder;
-
-	get(key:string):any;
 
 	empty():void;
 

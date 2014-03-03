@@ -1,21 +1,15 @@
-/// <reference path="../../dojo" />
-
-import domUtil = require('./util');
+import DomWidgetContainer = require('./DomWidgetContainer');
 import ElementWidget = require('./ElementWidget');
-import has = require('../../has');
 import ui = require('../interfaces');
 import util = require('../../util');
-import WidgetContainer = require('./WidgetContainer');
 
-class ContentWidget extends ElementWidget {
+class ContentWidget extends ElementWidget { // implements ui.IWidgetContainer
 	/* protected */ _children:ui.IDomWidget[];
 	/* protected */ _content:DocumentFragment;
 	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
 
-	constructor(kwArgs:any = {}) {
-		this._children || (this._children = []);
-		this._placeholders || (this._placeholders = {});
-		util.deferMethods(this, [ '_placeContent' ], '_render');
+	constructor(kwArgs?:any) {
+		DomWidgetContainer.prototype._initializeContainer.call(this);
 		super(kwArgs);
 	}
 
@@ -30,9 +24,9 @@ class ContentWidget extends ElementWidget {
 	}
 }
 
-for (var key in WidgetContainer.prototype) {
+for (var key in DomWidgetContainer.prototype) {
 	if (!ContentWidget.prototype[key]) {
-		ContentWidget.prototype[key] = WidgetContainer.prototype[key];
+		ContentWidget.prototype[key] = DomWidgetContainer.prototype[key];
 	}
 }
 

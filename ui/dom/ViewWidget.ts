@@ -1,12 +1,15 @@
-import util = require('../../util');
+import DomWidgetContainer = require('./DomWidgetContainer');
+import FragmentWidget = require('./FragmentWidget');
 import ui = require('../interfaces');
-import WidgetContainer = require('./WidgetContainer');
+import util = require('../../util');
 
-class ViewWidget extends WidgetContainer {
+class ViewWidget extends FragmentWidget { // implements ui.IWidgetContainer
+	/* protected */ _children:ui.IDomWidget[];
 	/* protected */ _content:DocumentFragment;
+	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
 
-	constructor(kwArgs:any = {}) {
-		util.deferMethods(this, [ '_placeContent' ], '_render');
+	constructor(kwArgs?:any) {
+		DomWidgetContainer.prototype._initializeContainer.call(this);
 		super(kwArgs);
 	}
 
@@ -18,6 +21,12 @@ class ViewWidget extends WidgetContainer {
 	/* protected */ _placeContent():void {
 		this.clear();
 		this._lastNode.parentNode.insertBefore(this._content, this._lastNode);
+	}
+}
+
+for (var key in DomWidgetContainer.prototype) {
+	if (!ViewWidget.prototype[key]) {
+		ViewWidget.prototype[key] = DomWidgetContainer.prototype[key];
 	}
 }
 
