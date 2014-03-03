@@ -1,5 +1,5 @@
 import Control = require('./Control');
-import _DijitWidget = require('../../dijit/form/Button');
+import _Dijit = require('../../dijit/form/Button');
 import util = require('../../../util');
 
 class Button extends Control {
@@ -7,6 +7,6 @@ class Button extends Control {
 	_type:string;
 }
 
-util.applyMixins(Button, [ _DijitWidget ]);
+util.applyMixins(Button, [ _Dijit ]);
 
 export = Button;

@@ -1,4 +1,4 @@
-import _DijitWidget = require('../../dijit/form/SimpleTextarea');
+import _Dijit = require('../../dijit/form/SimpleTextarea');
 import TextInput = require('./TextInput');
 import util = require('../../../util');
 
@@ -7,6 +7,6 @@ class Textarea extends TextInput {
 	_rows:number;
 }
 
-util.applyMixins(Textarea, [ _DijitWidget ]);
+util.applyMixins(Textarea, [ _Dijit ]);
 
 export = Textarea;

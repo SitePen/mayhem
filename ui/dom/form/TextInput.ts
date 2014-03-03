@@ -1,4 +1,4 @@
-import _DijitWidget = require('../../dijit/form/TextBox');
+import _Dijit = require('../../dijit/form/TextBox');
 import Input = require('./Input');
 import util = require('../../../util');
 
@@ -9,6 +9,6 @@ class TextInput extends Input {
 	_value:string;
 }
 
-util.applyMixins(TextInput, [ _DijitWidget ]);
+util.applyMixins(TextInput, [ _Dijit ]);
 
 export = TextInput;
