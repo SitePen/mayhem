@@ -12,6 +12,12 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 	/* protected */ _children:ui.IDomWidget[];
 	/* protected */ _placeholders:{ [name:string]: ui.IPlaceholder; };
 
+	constructor(kwArgs?:any) {
+		this._children || (this._children = []);
+		this._placeholders || (this._placeholders = {});
+		super(kwArgs);
+	}
+
 	add(widget:ui.IDomWidget, position?:PlacePosition):IHandle;
 	add(widget:ui.IDomWidget, position?:number):IHandle;
 	add(widget:ui.IDomWidget, placeholder?:string):IHandle;
@@ -116,12 +122,6 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 		for (var k in this._placeholders) {
 			this._placeholders[k].set('content', null);
 		}
-	}
-
-	/* protected */ _initializeContainer():void {
-		this._children || (this._children = []);
-		this._placeholders || (this._placeholders = {});
-		util.deferMethods(this, [ '_placeContent' ], '_render');
 	}
 
 	remove(index:number):void;

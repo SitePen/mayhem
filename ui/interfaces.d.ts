@@ -27,19 +27,18 @@ export interface IDomWidget extends IWidget, core.IApplicationComponent {
 
 export interface IElementWidget extends IDomWidget {
 	_elementType:string;
-	_firstNode:Node; // HTMLElement
-	_lastNode:Node; // HTMLElement
+	_firstNode:HTMLElement;
+	_lastNode:HTMLElement;
 
-	detach():HTMLElement;
-	clear():void;
+	detach():Node; // HTMLElement
 }
 
 export interface IFragmentWidget extends IDomWidget {
-	_firstNode:Node; // Comment
+	_firstNode:Comment;
 	_fragment:DocumentFragment;
-	_lastNode:Node; // Comment
+	_lastNode:Comment;
 
-	detach():DocumentFragment;
+	detach():Node; // DocumentFragment
 }
 
 export interface IPlaceholder extends IFragmentWidget {
