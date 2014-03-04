@@ -197,12 +197,7 @@ Element 'HTML'
 		}
 
 		if (!hasContent) {
-			// Set content to empty if it's just whitespace and/or children
-			return element;
-		}
-		if (content.length === 1 && typeof content[0] === 'string') {
-			// Flatten to string if there's no complex content
-			element.content = content[0];
+			// Return with content undefined it's just whitespace and/or children
 			return element;
 		}
 
@@ -214,9 +209,8 @@ Element 'HTML'
 			item = content[i];
 			if (typeof item === 'string') {
 				parsed = parseBoundText(item);
-				// TODO: clean this up
 				if (parsed.$bind) {
-					results = results.concat(parsed.$bind);
+					Array.prototype.push.apply(results, parsed.$bind);
 				}
 				else {
 					results.push(parsed);
@@ -226,7 +220,19 @@ Element 'HTML'
 				results.push(item);
 			}
 		}
+
+		if (results.length === 1 && typeof results[0] === 'string') {
+			// Flatten to string if there's no complex content
+			element.content = results[0];
+			return element;
+		}
+
 		element.content = results;
+		return element;
+	}
+
+NonBlankElement 'HTML'
+	= element:Element & { return element.content || element.children } {
 		return element;
 	}
 
@@ -273,15 +279,15 @@ Binding
 
 If '<if/>'
 	= kwArgs:IfTagOpen
-	body:Any
+	body:NonBlankElement
 	alternates:(
-		kwArgs:ElseIfTagOpen body:Any (ElseIfTagClose S*)? {
+		kwArgs:ElseIfTagOpen body:NonBlankElement (ElseIfTagClose S*)? {
 			body.constructor = 'framework/templating/html/ui/Conditional';
 			body.kwArgs = kwArgs;
 			return body;
 		}
 	)*
-	finalAlternate:(kwArgs:ElseTagOpen body:Any (ElseTagClose S*)? {
+	finalAlternate:(kwArgs:ElseTagOpen body:NonBlankElement (ElseTagClose S*)? {
 		body.constructor = 'framework/templating/html/ui/View';
 		body.kwArgs = kwArgs;
 		return body;
