@@ -1,5 +1,5 @@
 import Checkbox = require('./Checkbox');
-import _Dijit = require('../../dijit/form/CheckBox');
+import _Dijit = require('../../dijit/form/RadioButton');
 import util = require('../../../util');
 
 class RadioButton extends Checkbox {
