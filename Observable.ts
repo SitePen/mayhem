@@ -2,7 +2,9 @@ import core = require('./interfaces');
 import util = require('./util');
 
 class Observable implements core.IObservable {
+	get:core.IObservableGet;
 	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; } = {};
+	set:core.IObservableSet;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
 		kwArgs && this.set(kwArgs);
@@ -11,21 +13,6 @@ class Observable implements core.IObservable {
 	destroy():void {
 		this.destroy = function ():void {};
 		this._observers = null;
-	}
-
-	get(key:string):any {
-		var privateKey = '_' + key,
-			getter = privateKey + 'Getter',
-			value:any;
-
-		if (getter in this) {
-			value = this[getter]();
-		}
-		else {
-			value = this[privateKey];
-		}
-
-		return value;
 	}
 
 	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {
@@ -64,36 +51,48 @@ class Observable implements core.IObservable {
 			}
 		};
 	}
-
-	set(kwArgs:{ [key:string]: any; }):void;
-	set(key:string, value:any):void;
-	set(key:any, value?:any):void {
-		if (util.isObject(key)) {
-			var kwArgs:{ [key:string]: any; } = key;
-			for (key in kwArgs) {
-				this.set(key, kwArgs[key]);
-			}
-
-			return;
-		}
-
-		var oldValue = this.get(key),
-			privateKey = '_' + key,
-			setter = privateKey + 'Setter';
-
-		if (setter in this) {
-			this[setter](value);
-		}
-		else {
-			this[privateKey] = value;
-		}
-
-		var newValue = this.get(key);
-
-		if (!util.isEqual(oldValue, newValue)) {
-			this._notify(newValue, oldValue, key);
-		}
-	}
 }
+
+Observable.prototype.get = function (key:string):any {
+	var privateKey = '_' + key,
+		getter = privateKey + 'Getter',
+		value:any;
+
+	if (getter in this) {
+		value = this[getter]();
+	}
+	else {
+		value = this[privateKey];
+	}
+
+	return value;
+};
+Observable.prototype.set = function (key:any, value?:any):void {
+	if (util.isObject(key)) {
+		var kwArgs:{ [key:string]: any; } = key;
+		for (key in kwArgs) {
+			this.set(key, kwArgs[key]);
+		}
+
+		return;
+	}
+
+	var oldValue = this.get(key),
+		privateKey = '_' + key,
+		setter = privateKey + 'Setter';
+
+	if (setter in this) {
+		this[setter](value);
+	}
+	else {
+		this[privateKey] = value;
+	}
+
+	var newValue = this.get(key);
+
+	if (!util.isEqual(oldValue, newValue)) {
+		this._notify(newValue, oldValue, key);
+	}
+};
 
 export = Observable;

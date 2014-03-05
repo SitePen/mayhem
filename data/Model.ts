@@ -28,6 +28,9 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	/* protected */ _schema:{ [key:string]: data.IProperty<any>; };
 	private _validatorInProgress:IPromise<void>;
 
+	get:data.IModelGet;
+	set:data.IModelSet;
+
 	constructor(kwArgs?:Object) {
 		super(kwArgs);
 
@@ -51,16 +54,6 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	// TODO: Destroy?
-
-	get(key:'collection'):any /*dstore.Collection*/;
-	get(key:'isExtensible'):boolean;
-	get(key:'scenario'):string;
-	get(key:string):void;
-	get(key:string):any {
-		var property:data.IProperty<any> = this._schema[key];
-		return property ? property.get('value') : super.get(key);
-	}
-
 	// TODO: _errorsGetter?
 	// TODO: ObservableArray?
 	getErrors(key?:string):ValidationError[] {
@@ -123,29 +116,6 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		return;
 	}
 
-	set(key:'isExtensible', value:boolean):void;
-	set(key:'scenario', value:string):void;
-	set(kwArgs:{ [key:string]: any; }):void;
-	set(key:string, value:any):void;
-	set(key:any, value?:any):void {
-		if (util.isObject(key)) {
-			var kwArgs:{ [key:string]: any; } = key;
-			for (key in kwArgs) {
-				this.set(key, kwArgs[key]);
-			}
-
-			return;
-		}
-
-		var property:data.IProperty<any> = this._getProperty(key);
-		if (property) {
-			property.set('value', value);
-		}
-		else if (key in this) {
-			super.set(key, value);
-		}
-	}
-
 	validate(keysToValidate?:string[]):IPromise<boolean> {
 		if (this._validatorInProgress) {
 			this._validatorInProgress.cancel('Validation restarted');
@@ -181,5 +151,29 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		return dfd.promise;
 	}
 }
+
+Model.prototype.get = function (key:string):any {
+	var property:data.IProperty<any> = this._schema[key];
+	return property ? property.get('value') : Observable.prototype.get.call(this, key);
+};
+
+Model.prototype.set = function (key:any, value?:any):void {
+	if (util.isObject(key)) {
+		var kwArgs:{ [key:string]: any; } = key;
+		for (key in kwArgs) {
+			this.set(key, kwArgs[key]);
+		}
+
+		return;
+	}
+
+	var property:data.IProperty<any> = this._getProperty(key);
+	if (property) {
+		property.set('value', value);
+	}
+	else if (key in this) {
+		Observable.prototype.set.call(this, key, value);
+	}
+};
 
 export = Model;

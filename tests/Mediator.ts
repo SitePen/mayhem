@@ -30,7 +30,7 @@ class ComputedTestMediator extends Mediator {
 registerSuite({
 	name: 'Mediator',
 
-	'basic tests': function () {
+	'basic tests': function ():void {
 		var model:Stateful = new Stateful({
 				bar: 'hi'
 			}),
@@ -65,14 +65,14 @@ registerSuite({
 			'defined on the mediator object');
 	},
 
-	'watch single property': function () {
+	'watch single property': function ():void {
 		var mediator:Mediator = new Mediator({
 				foo: 'hello'
 			}),
 			dfd:IInternDeferred<void> = this.async(500),
 			numCallbacks = 0;
 
-		var handle = mediator.observe('foo', dfd.rejectOnError(function (newValue:string, oldValue:string, key:string) {
+		var handle = mediator.observe('foo', function (newValue:string, oldValue:string, key?:string):void {
 			++numCallbacks;
 
 			assert.strictEqual(numCallbacks, 1, 'Watch function should only be called once per event loop, even ' +
@@ -89,7 +89,7 @@ registerSuite({
 			// a callback is scheduled in future and retrieving a promise that resolves when the next notification
 			// fires. For the moment we set a timeout that resolves the promise
 			setTimeout(dfd.resolve, 50);
-		}));
+		});
 
 		mediator.set('foo', 'world');
 		mediator.set('foo', 'universe');
@@ -134,12 +134,12 @@ registerSuite({
 	// 	});
 	// },
 
-	'computed property': function () {
+	'computed property': function ():void {
 		var mediator:ComputedTestMediator = new ComputedTestMediator(),
 			dfd = this.async(250),
 			numCallbacks = 0;
 
-		mediator.observe('fullName', dfd.rejectOnError(function (newValue:string, oldValue:string, key:string) {
+		mediator.observe('fullName', dfd.rejectOnError(function (newValue:string, oldValue:string, key:string):void {
 			++numCallbacks;
 
 			assert.strictEqual(newValue, 'Joe Bloggs', 'Computed property callback should fire when its dependent ' +
@@ -148,7 +148,7 @@ registerSuite({
 			// TODO: When the scheduler is exposed publicly, it should expose a mechanism for telling whether or not
 			// a callback is scheduled in future and retrieving a promise that resolves when the next notification
 			// fires. For the moment we set a timeout that resolves the promise
-			setTimeout(dfd.callback(function () {
+			setTimeout(dfd.callback(function ():void {
 				assert.strictEqual(numCallbacks, 1, 'Callback should only be called once on a computed property, ' +
 					'just like a regular property with multiple updates per event loop');
 			}), 50);

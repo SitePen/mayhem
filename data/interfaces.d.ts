@@ -1,18 +1,19 @@
 import core = require('../interfaces');
 import ValidationError = require('../validation/ValidationError');
+import ObservableArray = require('../ObservableArray');
 
 /**
  * The IModel interface should be implemented by any object that is intended to be used as a data model within the
  * framework.
  */
+
 export interface IModel extends core.IApplicationComponent, core.IObservable {
 	addError(key:string, error:ValidationError):void;
 
 	/**
 	 * Retrieves the value of a property on the model.
 	 */
-	get(key:'scenario'):string;
-	get(key:string):any;
+	get:IModelGet;
 
 	/**
 	 * Retrieves the proxty for a property on the model.
@@ -45,9 +46,7 @@ export interface IModel extends core.IApplicationComponent, core.IObservable {
 	/**
 	 * Sets the value of a property on the model.
 	 */
-	set(value:{ [key:string]: any; }):void;
-	set(key:'scenario', value:string):void;
-	set(key:string, value:any):void;
+	set:IModelSet;
 
 	/**
 	 * Validates the data model.
@@ -66,34 +65,55 @@ export interface IModel extends core.IApplicationComponent, core.IObservable {
 	validate(keys?:string[]):IPromise<boolean>;
 }
 
+export interface IModelGet extends core.IApplicationComponentGet {
+	(key:'collection'):any;
+	(key:'scenario'):string;
+	(key:'isExtensible'):boolean;
+}
+
+export interface IModelSet extends core.IObservableSet {
+	(key:'scenario', value:string):void;
+}
+
+export interface IModelConstructor {
+	new (kwArgs?:{ [key:string]: any; }):IModel;
+	create(schema:any):IModelConstructor;
+	property<T>(kwArgs:IPropertyArguments<T>):IProperty<T>;
+}
+
 /**
  * The IModelProxty interface extends a standard proxty with additional methods for data validation.
  */
 export interface IProperty<T> extends core.IObservable {
-	get(key:'default'):T;
-	get(key:'dependencies'):string[];
-	// TODO: Make into ObservableArray?
-	get(key:'errors'):ValidationError[];
-	get(key:'key'):string;
-	get(key:'model'):IModel;
-	get(key:'label'):string;
-	get(key:'validateOnSet'):boolean;
-	get(key:'validators'):core.IValidator[];
-	get(key:'value'):T;
-	get(key:string):void;
-	get():Object;
-	set(key:'default', value:T):void;
-	set(key:'dependencies', value:string[]):void;
-	set(key:'errors', value:ValidationError[]):void;
-	set(key:'key', value:string):void;
-	set(key:'model', value:IModel):void;
-	set(key:'label', value:string):void;
-	set(key:'validateOnSet', value:boolean):void;
-	set(key:'validators', value:core.IValidator[]):void;
-	set(key:'value', value:T):void;
-	set(kwArgs:{ [key:string]: any; }):void;
-	set(key:string, value:any):void;
+	get:IPropertyGet<T>;
+	set:IPropertySet<T>;
 	validate():IPromise<boolean>;
+}
+
+export interface IPropertyGet<T> extends core.IObservableGet {
+	(key:'default'):T;
+	(key:'dependencies'):string[];
+	// TODO: Make into ObservableArray?
+	(key:'errors'):ObservableArray<ValidationError>;
+	(key:'key'):string;
+	(key:'model'):IModel;
+	(key:'label'):string;
+	(key:'validateOnSet'):boolean;
+	(key:'validators'):core.IValidator[];
+	(key:'value'):T;
+	():Object;
+}
+
+export interface IPropertySet<T> extends core.IObservableSet {
+	(key:'default', value:T):void;
+	(key:'dependencies', value:string[]):void;
+	(key:'errors', value:ObservableArray<ValidationError>):void;
+	(key:'key', value:string):void;
+	(key:'model', value:IModel):void;
+	(key:'label', value:string):void;
+	(key:'validateOnSet', value:boolean):void;
+	(key:'validators', value:core.IValidator[]):void;
+	(key:'value', value:T):void;
 }
 
 export interface IPropertyArguments<T> {

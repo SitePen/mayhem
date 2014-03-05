@@ -17,7 +17,7 @@ export interface IContentContainer extends IWidgetContainer {
 	_content:DocumentFragment;
 }
 
-export interface IDomWidget extends IWidget, core.IApplicationComponent {
+export interface IDomWidget extends IWidget {
 	_firstNode:Node;
 	_lastNode:Node;
 
@@ -51,13 +51,8 @@ export interface IWidget extends core.IObservableEvented {
 	_classList:IClassList;
 	_style:IStyle;
 
-	// get(key:'id'):string;
-	// get(key:'index'):number;
-	// get(key:'mediator'):core.IMediator;
-	// set(key:'mediator', value:core.IMediator):void;
-	// get(key:'next'):IWidget;
-	// get(key:'parent'):IWidgetContainer;
-	// get(key:'previous'):IWidget;
+	get:IWidgetGet;
+	set:IWidgetSet;
 
 	bind(targetBinding:string, binding:string, options?:{ direction?:BindDirection; }):IHandle;
 	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
@@ -69,6 +64,21 @@ export interface IWidget extends core.IObservableEvented {
 	placeAt(destination:IWidgetContainer, position:number):IHandle;
 	placeAt(destination:IWidgetContainer, placeholder:string):IHandle;
 	resize?(bounds?:{ width:number; height:number; }):void;
+}
+
+export interface IWidgetGet extends core.IApplicationComponentGet {
+	(key:'classList'):IClassList;
+	(key:'id'):string;
+	(key:'index'):number;
+	(key:'mediator'):core.IMediator;
+	(key:'next'):IWidget;
+	(key:'parent'):IWidgetContainer;
+	(key:'previous'):IWidget;
+	(key:'style'):IStyle;
+}
+
+export interface IWidgetSet extends core.IObservableSet {
+	(key:'mediator', value:core.IMediator):void;
 }
 
 // TODO: ideally this only needs to extend core.IObservable

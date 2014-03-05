@@ -41,25 +41,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	private _parentMediatorHandle:IHandle;
 	/* private */ _style:ui.IStyle;
 
-	get(key:'app'):core.IApplication;
-	get(key:'classList'):ui.IClassList;
-	get(key:'id'):string;
-	get(key:'index'):number;
-	// TODO: Not sure if mediator belongs here. Should go to IView?
-	get(key:'mediator'):core.IMediator;
-	get(key:'parent'):ui.IWidgetContainer;
-	get(key:'style'):ui.IStyle;
-	get(key:string):void;
-	get(key:string):any {
-		return super.get(key);
-	}
-
-	set(key:'mediator', value:core.IMediator):void;
-	set(kwArgs:{ [key:string]: any; }):void;
-	set(key:string, value:any):void;
-	set(key:any, value?:any):void {
-		return super.set(key, value);
-	}
+	get:ui.IWidgetGet;
+	set:ui.IWidgetSet;
 
 	constructor(kwArgs:Object = {}) {
 		// Set ID as early as possible so that any setters that might require it can use it

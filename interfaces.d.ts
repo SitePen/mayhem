@@ -7,10 +7,13 @@ import ObservableArray = require('./ObservableArray');
 import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication extends IObservable {
-	get(key:'binder'):binding.IBinder;
-	get(key:'scheduler'):IScheduler;
+	get:IApplicationGet;
+}
 
-	get(key:any):void;
+export interface IApplicationGet extends IObservableGet {
+	(key:'binder'):binding.IBinder;
+	(key:'router'):IRouter;
+	(key:'scheduler'):IScheduler;
 }
 
 export interface IArrayObserver<T> {
@@ -19,32 +22,41 @@ export interface IArrayObserver<T> {
 
 export interface IApplicationComponent {
 	/* private */ _app:IApplication;
+	get:IApplicationComponentGet;
+}
 
-	// get(key:'app'):IApplication;
-
-	get(key:string):any;
+export interface IApplicationComponentGet extends IObservableGet {
+	(key:'app'):IApplication;
 }
 
 export interface IMediator extends IApplicationComponent, IObservable {
+	get:IMediatorGet;
 	/* protected */ _observers:{ [key:string]: IObserver<any>[]; };
+	set:IMediatorSet;
+}
 
-	get(key:'model'):data.IModel;
-	set(key:'model', value:data.IModel):void;
-	get(key:'routeState'):Object;
-	set(key:'routeState', value:Object):void;
+export interface IMediatorGet extends IObservableGet {
+	(key:'model'):data.IModel;
+	(key:'routeState'):Object;
+}
 
-	get(key:string):any;
-
-	set(kwArgs:Object):void;
-	set(key:string, value:any):void;
+export interface IMediatorSet extends IObservableSet {
+	(key:'model', value:data.IModel):void;
+	(key:'routeState', value:Object):void;
 }
 
 export interface IObservable {
-	get(key:string):any;
+	get:IObservableGet;
 	// TODO: invokeImmediately?
 	observe<T>(key:string, observer:IObserver<T>):IHandle;
-	set(kwArgs:{ [key:string]: any; }):void;
-	set(key:string, value:any):void;
+	set:IObservableSet;
+}
+export interface IObservableGet {
+	(key:string):any;
+}
+export interface IObservableSet {
+	(kwArgs:{ [key:string]: any; }):void;
+	(key:string, value:any):void;
 }
 
 export interface IObservableEvented extends IObservable, IEvented {

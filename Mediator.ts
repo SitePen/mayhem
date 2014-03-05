@@ -18,34 +18,8 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 	/* private */ _app:core.IApplication;
 	private _model:data.IModel;
 
-	get(key:'model'):data.IModel;
-	get(key:string):any;
-	get(key:string):any {
-		var privateKey = '_' + key,
-			getter = privateKey + 'Getter',
-			value:any;
-
-		if (getter in this) {
-			value = this[getter]();
-		}
-		else if (privateKey in this) {
-			value = this[privateKey];
-
-			// Might be for a computed property
-			// TODO: Does this make sense?
-			if (value instanceof Property) {
-				value = (<Property<any>> value).get('value');
-			}
-		}
-		else {
-			var model = this.get('model');
-			if (model) {
-				value = model.get(key);
-			}
-		}
-
-		return value;
-	}
+	get:core.IMediatorGet;
+	set:core.IMediatorSet;
 
 	getMetadata(key:string):core.IProxy {
 		var proxy:Proxy,
@@ -104,11 +78,43 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 
 		return handle;
 	}
+}
 
-	set(key:'model', value:data.IModel):void;
-	set(kwArgs:{ [key:string]: Object; }):void;
-	set(key:string, value:any):void;
-	set(key:any, value?:any):void {
+// TypeScript does not create default properties on the prototype, but they are necessary to allow these fields to be
+// set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
+// to allow accessor overrides)
+lang.mixin(Mediator.prototype, {
+	_app: null,
+	_model: null,
+
+	get: function (key:string):any {
+		var privateKey = '_' + key,
+			getter = privateKey + 'Getter',
+			value:any;
+
+		if (getter in this) {
+			value = this[getter]();
+		}
+		else if (privateKey in this) {
+			value = this[privateKey];
+
+			// Might be for a computed property
+			// TODO: Does this make sense?
+			if (value instanceof Property) {
+				value = (<Property<any>> value).get('value');
+			}
+		}
+		else {
+			var model = this.get('model');
+			if (model) {
+				value = model.get(key);
+			}
+		}
+
+		return value;
+	},
+
+	set: function (key:any, value?:any):void {
 		if (util.isObject(key)) {
 			var kwArgs:{ [key:string]: any; } = key;
 			for (key in kwArgs) {
@@ -155,14 +161,6 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 			}
 		}
 	}
-}
-
-// TypeScript does not create default properties on the prototype, but they are necessary to allow these fields to be
-// set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
-// to allow accessor overrides)
-lang.mixin(Mediator.prototype, {
-	_app: null,
-	_model: null
 });
 
 export = Mediator;

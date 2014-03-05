@@ -17,10 +17,6 @@ class Proxy extends Observable implements core.IProxy {
 		this.setTarget(null);
 	}
 
-	get(key:string):any {
-		return this._target ? this._target.get(key) : undefined;
-	}
-
 	observe(key:any, observer:core.IObserver<any>):IHandle {
 		var observers:core.IObserver<any>[] = this._observers['*' + key];
 
@@ -37,12 +33,6 @@ class Proxy extends Observable implements core.IProxy {
 		}
 
 		return super.observe(key, observer);
-	}
-
-	set(key:any, value?:any):void {
-		if (this._target) {
-			this._target.set(key, value);
-		}
 	}
 
 	setTarget(observable:core.IObservable):void {
@@ -66,5 +56,15 @@ class Proxy extends Observable implements core.IProxy {
 		}
 	}
 }
+
+Proxy.prototype.get = function (key:string):any {
+	return this._target ? this._target.get(key) : undefined;
+};
+
+Proxy.prototype.set = function (key:any, value?:any):void {
+	if (this._target) {
+		this._target.set(key, value);
+	}
+};
 
 export = Proxy;

@@ -21,37 +21,15 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	private _valueGetter:() => T;
 	private _validatorInProgress:IPromise<void>;
 
+	get:data.IPropertyGet<T>;
+	set:data.IPropertySet<T>;
+
 	constructor(kwArgs?:data.IPropertyArguments<T>) {
 		this._errors = new ObservableArray<ValidationError>();
 		this._validators = [];
 		this._validateOnSet = true;
 
 		super(kwArgs);
-	}
-
-	get(key:'errors'):ObservableArray<ValidationError>;
-	get(key:'key'):string;
-	get(key:'model'):data.IModel;
-	get(key:'label'):string;
-	get(key:'validators'):core.IValidator[];
-	get(key:'validateOnSet'):boolean;
-	get(key:'value'):T;
-	get(key:string):any;
-	get():Object;
-	get(key?:string):any {
-		if (key == null) {
-			var serialized:Object = {};
-			for (var key in this) {
-				if (key.charAt(0) !== '_' || typeof this[key] === 'function') {
-					continue;
-				}
-
-				serialized[key.slice(1)] = this[key];
-			}
-			return serialized;
-		}
-
-		return super.get(key);
 	}
 
 	observe<T>(key:string, observer:core.IObserver<T>):IHandle {
@@ -66,19 +44,6 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		}
 
 		return handle;
-	}
-
-	set(key:'errors'):ObservableArray<ValidationError>;
-	set(key:'key'):string;
-	set(key:'model'):data.IModel;
-	set(key:'label'):string;
-	set(key:'validators'):core.IValidator[];
-	set(key:'validateOnSet'):boolean;
-	set(key:'value'):T;
-	set(kwArgs:{ [key:string]: any; }):void;
-	set(key:string, value:any):void;
-	set(key:string, value?:any):void {
-		super.set(key, value);
 	}
 
 	validate():IPromise<boolean> {
@@ -156,5 +121,31 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		};
 	}
 }
+
+Property.prototype.get = function (key?:string):any {
+	if (key == null) {
+		var serialized:Object = {};
+		for (var property in this) {
+			if (property.charAt(0) !== '_' || typeof this[property] === 'function') {
+				continue;
+			}
+
+			serialized[property.slice(1)] = this[property];
+		}
+		return serialized;
+	}
+
+	return Observable.prototype.get.call(this, key);
+};
+
+Property.prototype.set = function (key:any, value?:any):void {
+	if (key === 'get') {
+		key = 'valueGetter';
+	}
+	else if (key === 'set') {
+		key = 'valueSetter';
+	}
+	Observable.prototype.set.call(this, key, value);
+};
 
 export = Property;

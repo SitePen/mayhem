@@ -9,15 +9,8 @@ import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends ObservableEvented implements core.IApplication {
+	get:core.IApplicationGet;
 	private _modules:Object;
-
-	get(key:'binder'):binding.IBinder;
-	get(key:'router'):core.IRouter;
-	get(key:'scheduler'):core.IScheduler;
-	get(key:string):void;
-	get(key:string):void {
-		return super.get(key);
-	}
 
 	/**
 	 * Replaces the configuration kwArgs object that gets passed to the constructor with one that
