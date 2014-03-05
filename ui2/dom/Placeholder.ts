@@ -1,9 +1,9 @@
 import dom = require('./interfaces');
 import domUtil = require('../../ui/dom/util');
-import DomRenderer = require('./Renderer');
+import Base = require('./Base');
 import ui = require('../interfaces');
 
-class FragmentRenderer extends DomRenderer {
+class Placeholder extends Base {
 	destroy(widget:dom.IWidget):void {
 		widget.set({
 			firstNode: null,
@@ -30,4 +30,4 @@ class FragmentRenderer extends DomRenderer {
 	}
 }
 
-export = FragmentRenderer;
+export = Placeholder;

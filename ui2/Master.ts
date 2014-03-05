@@ -1,11 +1,15 @@
-import DomView = require('./View');
-import FragmentRenderer = require('./FragmentRenderer');
+/// <amd-dependency path="./renderer!Placeholder" />
+declare var require:any;
 
-class DomMaster extends DomView {
-	attachToWindow(node:Node):IHandle {
+import dom = require('./interfaces');
+var Renderer = require('./renderer!Placeholder');
+import View = require('./View');
+
+class Master extends View {
+	attachToWindow(window:any):IHandle {
 		this.detach();
 
-		node.appendChild(this.get('fragment') || this.get('firstNode'));
+		this._renderer.attachToWindow(this, window);
 		this.set('attached', true);
 
 		var self = this;
@@ -20,6 +24,6 @@ class DomMaster extends DomView {
 	}
 }
 
-DomMaster.prototype._renderer = new FragmentRenderer();
+Master.prototype._renderer = new Renderer();
 
-export = DomMaster;
+export = Master;

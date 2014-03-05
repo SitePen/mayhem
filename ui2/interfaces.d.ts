@@ -50,6 +50,7 @@ export interface IContainerSet extends IWidgetSet {
 
 export interface IRenderer {
 	add(widget:IContainer, item:IWidget, position:any):void;
+	attachToWindow(widget:IContainer, window:any):void;
 	destroy(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget):void;

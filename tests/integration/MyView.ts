@@ -1,4 +1,4 @@
-import View = require('framework/ui2/dom/View');
+import View = require('framework/ui2/View');
 
 class MyView extends View {
 	/*private _input:Input;

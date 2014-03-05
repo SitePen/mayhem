@@ -1,6 +1,10 @@
+/// <amd-dependency path="./renderer!Base" />
+declare var require:any;
+
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('../ui/PlacePosition');
+var Renderer = require('./renderer!Base');
 import ui = require('./interfaces');
 
 var uid = 0,
@@ -146,5 +150,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this._renderer.render(this);
 	}
 }
+
+Widget.prototype._renderer = new Renderer();
 
 export = Widget;
