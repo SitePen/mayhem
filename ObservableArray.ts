@@ -122,7 +122,7 @@ class ObservableArray<T> /* implements Array<T> */ {
 	}
 
 	map<U>(callbackfn:(value:T, index:number, array:ObservableArray<T>) => U, thisArg?:any):ObservableArray<U> {
-		var results:T[];
+		var results:U[];
 		if (has('es5')) {
 			results = Array.prototype.map.apply(this, arguments);
 		}
@@ -135,7 +135,7 @@ class ObservableArray<T> /* implements Array<T> */ {
 			}
 		}
 
-		return new ObservableArray<T>(results);
+		return new ObservableArray<U>(results);
 	}
 
 	private _notify(index:number, removals:T[], additions:T[]):void {

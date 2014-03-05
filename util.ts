@@ -80,7 +80,7 @@ export function createTimer(callback:(...args:any[]) => void, delay:number = 0):
 export function debounce<T extends (...args:any[]) => void>(callback:T, delay:number = 0):T {
 	var timer:IHandle;
 
-	return function ():void {
+	return <any>function ():void {
 		timer && timer.remove();
 
 		var self:any = this,
