@@ -1,14 +1,11 @@
-import Master = require('framework/ui/dom/Master');
-import Input = require('framework/ui/dom/form/TextInput');
-import Label = require('framework/ui/dom/form/Label');
-import FormError = require('framework/ui/dom/form/Error');
+import View = require('framework/ui2/dom/View');
 
-class MyView extends Master {
-	private _input:Input;
+class MyView extends View {
+	/*private _input:Input;
 	private _label:Label;
-	private _error:FormError;
+	private _error:FormError;*/
 
-	_render():void {
+	/*_render():void {
 		super._render();
 
 		this._label = new Label({});
@@ -23,7 +20,7 @@ class MyView extends Master {
 		this.add(this._label);
 		this.add(this._input);
 		this.add(this._error);
-	}
+	}*/
 }
 
 export = MyView;

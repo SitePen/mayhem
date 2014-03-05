@@ -21,12 +21,11 @@ var dojoConfig = {
 		<script>
 require([
 	'framework/tests/integration/MyModel',
-	'framework/Application',
 	'framework/tests/integration/MyMediator',
-	'framework/tests/integration/MyView',
-	'framework/templating/html!./MyView.tmpl.html',
-	'framework/ui/Widget!Master',
-], function (MyModel, Application, MyMediator, MyView, MyViewTemplate, Master) {
+	'framework/Application',
+	'framework/ui2/dom/Master',
+	'framework/tests/integration/MyView'
+], function (MyModel, MyMediator, Application, Master, MyView) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -43,11 +42,16 @@ require([
 			mediator: mediator
 		});
 
-		var view = window.view = new MyView({});
+		var view = window.view = new MyView({
+			app: app,
+			mediator: mediator
+		});
+
+		/*var view = window.view = new MyView({});
 		var tmplView = window.tmplView = MyViewTemplate.create();
 
+		masterView.add(tmplView);*/
 		masterView.add(view);
-		masterView.add(tmplView);
 		masterView.attachToWindow(document.body);
 	});
 });
