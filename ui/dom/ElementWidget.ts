@@ -8,11 +8,6 @@ class ElementWidget extends DomWidget implements ui.IElementWidget {
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;
 
-	constructor(kwArgs:Object) {
-		this._elementType = 'div';
-		super(kwArgs);
-	}
-
 	_attachStyles():void {
 		// TODO: Leak
 		this.get('classList').observe((className:string):void => {
@@ -40,11 +35,14 @@ class ElementWidget extends DomWidget implements ui.IElementWidget {
 	}
 
 	/* protected */ _render():void {
+		// TODO: find a clean way to default _elementType when using ElementWidget as a mixin
 		this._firstNode = this._lastNode = document.createElement(this._elementType);
 		this._attachStyles();
 
 		super._render();
 	}
 }
+
+//ElementWidget.prototype._elementType = 'div';
 
 export = ElementWidget;

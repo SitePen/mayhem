@@ -164,7 +164,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	extract():void {
 		var parent = this.get('parent');
-		parent.remove && parent.remove(this);
+		parent && parent.remove && parent.remove(this);
 	}
 
 	private _indexGetter():ui.IWidget {

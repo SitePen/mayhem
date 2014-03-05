@@ -10,7 +10,7 @@ class FragmentWidget extends DomWidget implements ui.IFragmentWidget {
 	detach():DocumentFragment {
 		// TODO: attach event isn't being propagated properly, so fragment isn't always nulled out
 		if (!this._fragment || !this._fragment.firstChild) {
-			this._fragment = domUtil.getRange(this._firstNode, this._lastNode, true).extractContents();
+			this._fragment = domUtil.getRange(this._firstNode, this._lastNode).extractContents();
 		}
 		return this._fragment;
 	}

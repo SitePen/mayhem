@@ -1,3 +1,5 @@
+/// <reference path="../../dojo" />
+
 import binding = require('../../binding/interfaces');
 import core = require('../../interfaces');
 import DomWidget = require('./DomWidget');
@@ -31,11 +33,11 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 				throw new Error('Unknown placeholder "' + position + '"');
 			}
 
-			placeholder.set('content', widget);
+			placeholder.set('body', widget);
 			handle = {
 				remove: function ():void {
 					this.remove = function ():void {};
-					placeholder.set('content', null);
+					placeholder.set('body', null);
 					placeholder = null;
 				}
 			};
@@ -120,7 +122,7 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 		}
 
 		for (var k in this._placeholders) {
-			this._placeholders[k].set('content', null);
+			this._placeholders[k].set('body', null);
 		}
 	}
 

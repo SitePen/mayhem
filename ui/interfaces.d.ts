@@ -14,7 +14,9 @@ export interface IClassList extends core.IProxty<string> {
 }
 
 export interface IContentContainer extends IWidgetContainer {
-	_content:DocumentFragment;
+	_content:Node;
+
+	add(widget:IWidget, placeholder?:any, referenceNode?:Node):IHandle;
 }
 
 export interface IDomWidget extends IWidget {
@@ -42,9 +44,9 @@ export interface IFragmentWidget extends IDomWidget {
 }
 
 export interface IPlaceholder extends IFragmentWidget {
-	// _content:IDomWidget;
+	// _widget:IDomWidget;
 
-	// get(key:'content'):IDomWidget;
+	// get(key:'widget'):IDomWidget;
 }
 
 export interface IWidget extends core.IObservableEvented {

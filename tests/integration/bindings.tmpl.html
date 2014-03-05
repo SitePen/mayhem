@@ -23,12 +23,17 @@ Name preference: {firstName}
 <h3>Conditionals</h3>
 
 <!-- conditionals are pretty much useless until observables respect dependencies -->
-<if condition="firstNameIsJoey">
-	(1) firstName is Joey.<br>
+<if condition="enabled">
+	(1) `enabled` is true<br>
+<elseif condition="firstNameIsJoey">
+	(2) firstName should be Joey (is: {firstName}).<br>
 <elseif condition="lastNameIsBloggs">
-	(2) lastName is Bloggs.<br>
+	(3) lastName should be Bloggs (is: {lastName}).<br>
 <elseif condition="fullNameIsBoeBlogger">
-	(3) transformed fullName is Boe Blogger (actual name: {firstName}).<br>
+	(4) transformed fullName should be Boe Blogger (is: {fullName}).<br>
+<elseif condition="firstName">
+	<widget is="framework/ui/dom/form/TextInput" value={firstName}></widget>
+	<widget is="framework/ui/dom/form/TextInput" value={lastName}></widget>
 <else>
 	(X) No match... here's a read-only widget binding for fun:
 	<widget is="framework/ui/dom/form/TextInput" value='{firstName} {lastName}'></widget>

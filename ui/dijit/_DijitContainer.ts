@@ -10,8 +10,10 @@ import ui = require('../interfaces');
 /* abstract */ class _DijitContainer extends _Dijit {
 	/* protected */ _dijit:dijit.IContainerWidget;
 
-	add(widget:ui.IDomWidget, position:any):IHandle {
-		// We only support adding children to dijits by index for now
+	add(widget:ui.IDomWidget, position:any, referenceNode?:Node):IHandle {
+		if (referenceNode) {
+			return super.add(widget, position, referenceNode);
+		}
 		if (!(widget instanceof _Dijit)) {
 			throw new Error('Only Dijit instances can be added to Dijit container');
 		}
@@ -31,7 +33,7 @@ import ui = require('../interfaces');
 		this._dijit.containerNode.innerHTML = '';
 	}
 
-	/* protected */ _placeContent():void {
+	/* protected */ _renderContent():void {
 		this.clear();
 		this._dijit.containerNode.appendChild(this._content);
 	}

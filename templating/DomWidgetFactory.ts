@@ -4,6 +4,7 @@ import array = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
+import DomWidget = require('../ui/dom/DomWidget');
 import domConstruct = require('dojo/dom-construct');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
@@ -113,6 +114,7 @@ class DomWidgetFactory implements templating.IWidgetFactory {
 class _WidgetBinder {
 	private _mediatorHandle:IHandle;
 	private _childMarkerNodes:Node[];
+	private _childHandles:IHandle[];
 	private _childOptions:any;
 	factory:DomWidgetFactory;
 	private _observerHandles:IHandle[];
@@ -126,8 +128,8 @@ class _WidgetBinder {
 		this.factory = factory;
 		this._widgetArgs = factory.widgetArgs; // lang.mixin({}, options, factory.widgetArgs);
 		this._processKwArgWidgets();
-		var WidgetCtor:any = require(factory.tree.constructor),
-			widget:ui.IDomWidget = this.widget = new WidgetCtor(this._widgetArgs);
+		var WidgetCtor = <typeof DomWidget> require(factory.tree.constructor),
+			widget = this.widget = new WidgetCtor(this._widgetArgs);
 		this._processContent();
 		this._processChildren();
 		this._processBindings();
@@ -142,23 +144,8 @@ class _WidgetBinder {
 		};
 	}
 
-	private _addChild(child:ui.IDomWidget, i:number) {
-		var widget:ui.IDomWidget = this.widget,
-			markerNodes:Node[] = this._childMarkerNodes,
-			markerNode:Node = markerNodes && markerNodes[i];
-		if (markerNode) {
-			// Child was associated with a marker comment, so place it manually
-			markerNode.parentNode.replaceChild(child.detach(), markerNode);
-			child.set('parent', widget);
-			widget.get('children')[i] = child;
-		}
-		else {
-			(<ui.IWidgetContainer> widget).add(child, i);
-		}
-	}
-
 	private _bindProperties():void {
-		var widget:ui.IDomWidget = this.widget,
+		var widget = this.widget,
 			propertyBindings = this.factory.propertyBindings;
 		for (var key in propertyBindings) {
 			widget.bind(key, propertyBindings[key], { direction: BindDirection.TWO_WAY });
@@ -166,13 +153,13 @@ class _WidgetBinder {
 	}
 
 	private _bindTemplates(mediator:core.IMediator):void {
-		var widget:ui.IDomWidget = this.widget,
+		var widget = this.widget,
 			bindingTemplates = this.factory.bindingTemplates;
 		util.destroyHandles(this._observerHandles);
 		this._observerHandles = [];
 		// Observe bindings and accumulate binding handles
 		array.forEach(util.getObjectKeys(bindingTemplates), (property:string) => {
-			var template:any[] = bindingTemplates[property];
+			var template = bindingTemplates[property];
 			this._observeBindingTemplate(mediator, template, () => {
 				widget.set(property, this._evaluateBindingTemplate(mediator, template));
 			});
@@ -195,7 +182,10 @@ class _WidgetBinder {
 	}
 
 	destroy():void {
-		// TODO
+		util.destroyHandles(this._childHandles);
+		util.destroyHandles(this._observerHandles);
+		this._childHandles = this._observerHandles = null;
+		// TODO: moar
 	}
 
 	private _evaluateBindingTemplate(mediator:core.IMediator, template:any[]):string {
@@ -205,7 +195,7 @@ class _WidgetBinder {
 	}
 
 	private _observeBindingTemplate(mediator:core.IMediator, template:any[], handler:() => void):void {
-		var observerHandles:IHandle[] = this._observerHandles;
+		var observerHandles = this._observerHandles;
 		for (var i = 0, l = template.length; i < l; ++i) {
 			var binding:string = template[i] && template[i].$bind;
 			if (!binding) {
@@ -237,18 +227,21 @@ class _WidgetBinder {
 
 	private _processChildren():void {
 		var factory:DomWidgetFactory,
-			childFactories = this.factory.childFactories;
+			childFactories = this.factory.childFactories,
+			widget = <ui.IContentContainer> this.widget,
+			markerNodes = this._childMarkerNodes || [];
+		this._childHandles = [];
 		for (var i = 0, len = childFactories.length; i < len; ++i) {
 			factory = childFactories[i];
 			if (factory) {
-				this._addChild(factory.create(), i); // TODO: child options?
+				this._childHandles[i] = widget.add(factory.create(), i, markerNodes[i]); // TODO: child options?
 			}
 		}
 	}
 
 	private _processContent():void {
 		if (this.factory.content) {
-			var content:Node = this.factory.content.cloneNode(true);
+			var content = this.factory.content.cloneNode(true);
 			this._textBindingNodes = [];
 			this._textBindingPaths = [];
 			this._childMarkerNodes = [];

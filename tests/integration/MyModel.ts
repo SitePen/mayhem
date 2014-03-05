@@ -75,8 +75,8 @@ class MyModel extends Model {
 			}),
 
 			firstNameIsJoey: Model.property<boolean>({
-				_valueGetter: function ():boolean {
-					return this.get('firstName') === 'Joey';
+				valueGetter: function ():boolean {
+					return this.get('model').get('firstName') === 'Joey';
 				},
 				dependencies: [ 'firstName' ]
 			})

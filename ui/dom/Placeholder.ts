@@ -3,25 +3,26 @@ import FragmentWidget = require('./FragmentWidget');
 import ui = require('../interfaces');
 
 class Placeholder extends FragmentWidget implements ui.IPlaceholder {
-	private _content:ui.IDomWidget;
+	private _widget:ui.IDomWidget;
 
-	private _contentSetter(widget:ui.IDomWidget):void {
-		if (this._content === widget) {
+	private _widgetSetter(widget:ui.IDomWidget):void {
+		if (this._widget === widget) {
 			return;
 		}
-		this._content && this._content.detach();
-		this._content = widget;
+		this._widget && this._widget.detach();
+		this._widget = widget;
 
 		if (widget) {
 			var node:Node = widget.detach();
 			this._lastNode.parentNode.insertBefore(node, this._lastNode);
+			widget.set('attached', true);
 		}
 	}
 
 	remove():void {
-		if (this._content) {
-			this._content.detach();
-			this._content = null;
+		if (this._widget) {
+			this._widget.detach();
+			this._widget = null;
 		}
 	}
 }
