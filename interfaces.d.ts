@@ -4,6 +4,7 @@ import binding = require('./binding/interfaces');
 import data = require('./data/interfaces');
 import IEvented = require('dojo/Evented');
 import ObservableArray = require('./ObservableArray');
+import routing = require('./routing/interfaces');
 import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication extends IObservable {
@@ -12,7 +13,7 @@ export interface IApplication extends IObservable {
 
 export interface IApplicationGet extends IObservableGet {
 	(key:'binder'):binding.IBinder;
-	(key:'router'):IRouter;
+	(key:'router'):routing.IRouter;
 	(key:'scheduler'):IScheduler;
 }
 

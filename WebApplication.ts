@@ -1,10 +1,10 @@
 import Application = require('./Application');
-import core = require('./interfaces');
+import routing = require('./routing/interfaces');
 import ui = require('./ui/interfaces');
 import util = require('dojo/request/util');
 
 class WebApplication extends Application {
-	router:core.IRouter;
+	router:routing.IRouter;
 	ui:any; // TODO ui.IView
 
 	/* protected */ _getDefaultConfig():Object {
@@ -21,17 +21,17 @@ class WebApplication extends Application {
 		});
 	}
 
-	place(view:any/* ui.IView */, placeholder?:string) {
+	place(view:any/* ui.IView */, placeholder?:string):IHandle {
 		return this.ui.add(view, placeholder);
 	}
 
 	startup():IPromise<WebApplication> {
-		var promise = super.startup().then(() => {
+		var promise = super.startup().then(():WebApplication => {
 			this.ui.placeAt(document.body);
 			return this;
 		});
 
-		this.startup = function () {
+		this.startup = function ():IPromise<WebApplication> {
 			return promise;
 		};
 
