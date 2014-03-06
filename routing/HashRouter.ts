@@ -9,7 +9,9 @@ import when = require('dojo/when');
  * A router implementation that operates using the window's location hash.
  */
 class HashRouter extends Router {
-	/** A prefix that is expected to exist on all URLs loaded through this router. */
+	/**
+	 * A prefix that is expected to exist on all URLs loaded through this router.
+	 */
 	pathPrefix:string;
 
 	private _changeHandle:{ remove:() => void };
@@ -19,7 +21,7 @@ class HashRouter extends Router {
 	 * will be set as the hash and loaded.
 	 */
 	startup():IPromise<void> {
-		return when(super.startup()).then(function () {
+		return when(super.startup()).then(function ():void {
 			var initialRoute = hash();
 			if (initialRoute) {
 				this._handlePathChange(this.normalizeId(initialRoute));

@@ -46,10 +46,14 @@ class BaseRoute extends Observable {
 	 * using a standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 	 */
 
-	/** The path for this route. */
+	/**
+	 * The path for this route.
+	 */
 	private _path:string;
 
-	/** Whether or not the path should be case-sensitive. */
+	/**
+	 * Whether or not the path should be case-sensitive.
+	 */
 	private _isCaseSensitive:boolean;
 	
 	_pathPattern:RegExp;
@@ -176,7 +180,7 @@ class BaseRoute extends Observable {
 				// parsed kwArgs object instead of clobbering them
 				for (key in extraArguments) {
 					if (key in kwArgs) {
-						kwArgs[key] = [].concat(kwArgs[key], extraArguments[key]);
+						kwArgs[key] = (<string[]>[]).concat(kwArgs[key], extraArguments[key]);
 					}
 					else {
 						kwArgs[key] = extraArguments[key];
