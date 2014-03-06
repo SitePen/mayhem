@@ -13,8 +13,7 @@ class Placeholder extends FragmentWidget implements ui.IPlaceholder {
 		this._widget = widget;
 
 		if (widget) {
-			var node:Node = widget.detach();
-			this._lastNode.parentNode.insertBefore(node, this._lastNode);
+			this._lastNode.parentNode.insertBefore(widget.getNode(), this._lastNode);
 			widget.set('attached', true);
 		}
 	}

@@ -6,7 +6,7 @@ import ui = require('../interfaces');
 import util = require('../../util');
 
 class ContentContainer extends DomWidgetContainer implements ui.IContentContainer {
-	_content:Node;
+	/* protected */ _content:Node;
 
 	constructor(kwArgs:any) {
 		util.deferMethods(this, [ '_renderContent' ], '_render');
@@ -16,9 +16,11 @@ class ContentContainer extends DomWidgetContainer implements ui.IContentContaine
 	add(widget:ui.IDomWidget, position?:any, referenceNode?:Node):IHandle {
 		if (referenceNode) {
 			var handle:IHandle;
-			referenceNode.parentNode.replaceChild(widget.detach(), referenceNode);
-			widget.set('parent', this);
-			this.get('children')[position] = widget;
+			referenceNode.parentNode.replaceChild(widget.getNode(), referenceNode);
+			this.attach(widget);
+			if (position >= 0) {
+				this.get('children')[position] = widget;	
+			}
 			return handle; // TODO
 		}
 		return super.add(widget, position);

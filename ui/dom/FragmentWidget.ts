@@ -7,12 +7,12 @@ class FragmentWidget extends DomWidget implements ui.IFragmentWidget {
 	/* protected */ _fragment:DocumentFragment;
 	/* protected */ _lastNode:Comment;
 
-	detach():DocumentFragment {
+	detach():void {
 		// TODO: attach event isn't being propagated properly, so fragment isn't always nulled out
 		if (!this._fragment || !this._fragment.firstChild) {
 			this._fragment = domUtil.getRange(this._firstNode, this._lastNode).extractContents();
 		}
-		return this._fragment;
+		super.detach();
 	}
 
 	clear():void {
@@ -28,12 +28,15 @@ class FragmentWidget extends DomWidget implements ui.IFragmentWidget {
 		fragment.appendChild(this._firstNode);
 		fragment.appendChild(this._lastNode);
 
-		// TODO: Figure out a better way to declaratively apply event handlers to self.
-		this.on('attach', ():void => {
-			this._fragment = null;
-		});
-
 		super._render();
+	}
+
+	_attachedSetter(attached:boolean) {
+		super._attachedSetter(attached);
+		if (attached) {
+			// TODO: timing issues around detach/reattach?
+			this._fragment = null;
+		}
 	}
 }
 

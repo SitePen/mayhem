@@ -30,7 +30,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	/* private */ _app:core.IApplication;
-	/* protected */ _attached:boolean;
+	private _attached:boolean;
 	private _bindings:binding.IBindingHandle[];
 	/* private */ _classList:ui.IClassList;
 	/* protected */ _id:string;
@@ -151,7 +151,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	clear():void {}
 
 	destroy():void {
-		this.extract();
+		this.detach();
 
 		var binding:binding.IBindingHandle;
 		for (var i = 0; (binding = this._bindings[i]); ++i) {
@@ -162,9 +162,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		super.destroy();
 	}
 
-	extract():void {
+	detach():void {
 		var parent = this.get('parent');
 		parent && parent.remove && parent.remove(this);
+		this.set('attached', false);
 	}
 
 	private _indexGetter():ui.IWidget {
@@ -233,17 +234,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		if (!this._mediator && !util.isEqual(parent, oldParent)) {
 			mediatorHandler(parent && parent.get('mediator'), oldParent && oldParent.get('mediator'));
 		}
-
-		// Observe parent's attached state
-		this._parentAttachedHandle && this._parentAttachedHandle.remove();
-		this._parentAttachedHandle = parent.observe('attached', (parentAttached:boolean):void => {
-			if (this._attached !== parentAttached) {
-				this.set('attached', parentAttached);
-			}
-		});
-		if (parent.get('attached')) {
-			this.set('attached', true);
-		}
 	}
 
 	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
@@ -279,7 +269,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 			var index:number = destination.get('index'),
 				parent:ui.IWidgetContainer = destinationParent;
-			destination.extract();
+			destination.detach();
 			handle = parent.add(this, index);
 		}
 		else {

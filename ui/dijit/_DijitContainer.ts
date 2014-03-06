@@ -19,8 +19,10 @@ import ui = require('../interfaces');
 		}
 		position || (position = 0);
 		if (typeof position === 'number' && position >= 0) {
-			widget.set('parent', this);
-			this.get('children')[position] = widget;
+			this.attach(widget);
+			if (position >= 0) {
+				this.get('children')[position] = widget;	
+			}
 			this._dijit.addChild((<_Dijit> widget)._dijit, position);
 			return; // TODO: IHandle
 		}

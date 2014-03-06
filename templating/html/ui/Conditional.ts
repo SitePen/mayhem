@@ -9,23 +9,12 @@ import util = require('../../../util');
 import ViewWidget = require('../../../ui/dom/ViewWidget');
 
 class Conditional extends ViewWidget {
-	private _active:boolean;
 	private _alternate:ui.IDomWidget;
+	private _bindHandle:IHandle;
 	private _boundaryNode:Node;
 	private _condition:string;
 	private _consequentNode:Node;
-	private _debounceRate:number = 1;
-	private _listenHandle:IHandle;
-	private _mediatorHandle:IHandle;
-
-	constructor(kwArgs:any) {
-		super(kwArgs);
-		this._mediatorHandle = this.observe('mediator', this._listen);
-	}
-
-	private _activeSetter(active:boolean) {
-		this._selectContent(active);
-	}
+	private _result:boolean;
 
 	add(widget:ui.IDomWidget, position?:any, referenceNode?:Node):IHandle {
 		var handle:IHandle;
@@ -55,11 +44,18 @@ class Conditional extends ViewWidget {
 		alternate.set('parent', this);
 	}
 
+	/* protected */ _attachedSetter(attached:boolean):void {
+		super._attachedSetter(attached);
+		if (attached) {
+			this._selectContent(this._result);
+		}
+	}
+
 	private _attachAlternate():void {
 		var alternate:Conditional = <Conditional> this._alternate;
 		if (alternate) {
-			this._firstNode.parentNode.insertBefore(alternate.detach(), this._lastNode);
-			alternate._evaluate && alternate._evaluate();
+			this._firstNode.parentNode.insertBefore(alternate.getNode(), this._lastNode);
+			alternate.set('attached', this.get('attached'));
 		}
 	}
 
@@ -70,30 +66,21 @@ class Conditional extends ViewWidget {
 		}
 	}
 
-	private _debounceRateSetter(value:number):void {
-		this._debounceRate = value;
-		this._listen();
-	}
-
-	private _listen():void {
-		var mediator = this.get('mediator');
-		if (mediator) {
-			this._listenHandle && this._listenHandle.remove();
-			this._listenHandle = mediator.observe(this._condition, util.debounce((value:boolean):void => {
-				this._evaluate();
-			}, this._debounceRate));
-			this._evaluate();
-		}
+	/* protected */ _conditionSetter(condition:string) {
+		this._condition = condition;
+		this._bindHandle && this._bindHandle.remove();
+		this._bindHandle = this.bind('result', condition);
 	}
 
 	destroy():void {
-		this._listenHandle && this._listenHandle.remove();
-		this._mediatorHandle && this._mediatorHandle.remove();
+		this._bindHandle && this._bindHandle.remove();
+		this._alternate.destroy();
+		this._bindHandle = this._alternate = this._boundaryNode = this._consequentNode = null
 	}
 
-	detach():Node {
+	detach():void {
 		this._detachAlternate();
-		return super.detach();
+		super.detach();
 	}
 
 	private _detachAlternate():void {
@@ -109,13 +96,6 @@ class Conditional extends ViewWidget {
 		this._consequentNode = domUtil.getRange(this._firstNode, this._boundaryNode, true).extractContents();
 	}
 
-	/* protected */ _evaluate():void {
-		var mediator = this.get('mediator');
-		if (mediator) {
-			this.set('active', !!this.get('mediator').get(this._condition));
-		}
-	}
-
 	/* protected */ _render():void {
 		super._render();
 		this._boundaryNode = document.createComment('alternate boundary - ' + this.get('id'));
@@ -127,9 +107,16 @@ class Conditional extends ViewWidget {
 		this._content = null;
 	}
 
-	private _selectContent(active:boolean):void {
+	private _resultSetter(result:boolean) {
+		this._result = result;
+		if (this.get('attached')) {
+			this._selectContent(result);
+		}
+	}
+
+	private _selectContent(consequent:boolean):void {
 		this._detachAlternate();
-		if (active) {
+		if (consequent) {
 			this._attachConsequent();
 		}
 		else {

@@ -91,7 +91,8 @@ class Iterator extends ElementWidget {
 		}
 		var widget = this._getWidgetByKey(key);
 		var element:HTMLElement = document.createElement(this._rowElementType);
-		element.appendChild(widget.detach());
+		element.appendChild(widget.getNode());
+		widget.set('attached', true);
 		return this._elementIndex[key] = element;
 	}
 

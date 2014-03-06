@@ -45,6 +45,14 @@ Name preference: {firstName}
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
 	<widget is="framework/ui/dom/form/TextInput" value={phone.value}></widget>
 </for>
+Edit phone numbers: <widget is="framework/ui/dom/form/TextInput" value='{phone_numbers}' style="width:20em"></widget>
+
+<h4>Colors (array): {colors}</h4>
+<for id='color-iter' each='color' in="colors">
+	<widget is="framework/ui/dom/form/TextInput" value={firstName}></widget> {firstName} likes color:
+	<widget is="framework/ui/dom/form/TextInput" value={color}></widget>
+</for>
+Edit colors: <widget is="framework/ui/dom/form/TextInput" value='{colors}' style="width:20em"></widget>
 
 <placeholder name="interstitial">
 List of hobbies: {hobbies}<br>

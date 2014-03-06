@@ -23,24 +23,20 @@ export interface IDomWidget extends IWidget {
 	_firstNode:Node;
 	_lastNode:Node;
 
-	detach():Node;
 	clear():void;
+	getNode():Node;
 }
 
 export interface IElementWidget extends IDomWidget {
 	_elementType:string;
 	_firstNode:HTMLElement;
 	_lastNode:HTMLElement;
-
-	detach():Node; // HTMLElement
 }
 
 export interface IFragmentWidget extends IDomWidget {
 	_firstNode:Comment;
 	_fragment:DocumentFragment;
 	_lastNode:Comment;
-
-	detach():Node; // DocumentFragment
 }
 
 export interface IPlaceholder extends IFragmentWidget {
@@ -60,7 +56,7 @@ export interface IWidget extends core.IObservableEvented {
 	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
 
 	destroy():void;
-	extract():void;
+	detach():void;
 
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IWidgetContainer, position:number):IHandle;
@@ -91,10 +87,6 @@ export interface IWidgetContainer extends IDomWidget {
 	add(widget:IWidget, position:AddPosition):IHandle;
 	add(widget:IWidget, position:number):IHandle;
 	add(widget:IWidget, placeholder:string):IHandle;
-
-	/* protected */ _addToContainer(widget:IWidget, reference:IWidget):void;
-	/* protected */ _addToContainer(widget:IWidget, reference:Node):void;
-	/* protected */ _addToContainer(widget:IWidget, reference:any):void;
 
 	/* protected */ _createPlaceholder(name:string, node:Node):IPlaceholder;
 

@@ -68,7 +68,7 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 			this._children.splice(position, 0, widget);
 			this._addToContainer(widget, referenceWidget);
 
-			widget.set('parent', this);
+			this.attach(widget);
 
 			var self = this;
 			handle = {
@@ -87,10 +87,13 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 	/* protected */ _addToContainer(widget:ui.IDomWidget, reference:ui.IDomWidget):void;
 	/* protected */ _addToContainer(widget:ui.IDomWidget, reference:Node):void;
 	/* protected */ _addToContainer(widget:ui.IDomWidget, reference:any):void {
-		var widgetNode:Node = widget.detach(),
-			referenceNode:Node = reference;
+		var widgetNode:Node = widget.getNode(),
+			referenceNode:Node;
 		if (reference && !(reference instanceof Node)) {
 			referenceNode = reference.get('firstNode');
+		}
+		else {
+			referenceNode = reference;
 		}
 
 		// TODO: Allow users to specify a placeholder widget for use as the actual container for objects added to the
@@ -111,7 +114,8 @@ class DomWidgetContainer extends DomWidget implements ui.IWidgetContainer {
 		var placeholder:Placeholder = this._placeholders[name] = new Placeholder(),
 			parent:Node = node.parentNode;
 		placeholder.set('parent', this);
-		parent.replaceChild(placeholder.detach(), node);
+		parent.replaceChild(placeholder.getNode(), node);
+		placeholder.set('attached', true);
 		return placeholder;
 	}
 
