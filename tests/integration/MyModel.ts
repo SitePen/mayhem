@@ -33,14 +33,19 @@ class MyModel extends Model {
 				value: 'Bloggs'
 			}),
 
-			hobbies: Model.property<ObservableArray<string>>({
-				label: 'Hobbies',
-				value: new ObservableArray<string>([ 'drinking', 'sportsball', 'drinking' ])
-			}),
-
 			enabled: Model.property<boolean>({
 				label: 'Enabled',
 				value: true
+			}),
+
+			colors: Model.property<string[]>({
+				label: 'Favorite Colors',
+				value: [ 'orange', 'green' ]
+			}),
+
+			hobbies: Model.property<ObservableArray<string>>({
+				label: 'Hobbies',
+				value: new ObservableArray<string>([ 'drinking', 'sportsball', 'drinking' ])
 			}),
 
 			//phone: Model.property<IStore<IPhoneRecord>>({

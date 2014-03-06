@@ -14,6 +14,14 @@ class MyMediator extends Mediator {
 		return this.get('model').get('lastName') === 'Bloggs';
 	}
 
+	_colors_stringGetter():string {
+		return this.get('colors').toString();
+	}
+
+	_colors_stringSetter(value:string):void {
+		this.set('colors', value.split(','));
+	}
+
 	_remoteErrorGetter():IPromise<void> {
 		var dfd:IDeferred<void> = new Deferred<void>();
 		setTimeout(():void => {

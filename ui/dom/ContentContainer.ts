@@ -34,7 +34,12 @@ class ContentContainer extends DomWidgetContainer implements ui.IContentContaine
 	/* protected */ _renderContent():void {
 		this.clear();
 		if (this._content) {
-			this._lastNode.parentNode.insertBefore(this._content, this._lastNode);
+			if (this._firstNode === this._lastNode) {
+				this._firstNode.appendChild(this._content);
+			}
+			else {
+				this._lastNode.parentNode.insertBefore(this._content, this._lastNode);
+			}
 			this._content = null;
 		}
 	}

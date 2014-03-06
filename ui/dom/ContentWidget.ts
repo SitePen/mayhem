@@ -7,6 +7,10 @@ class ContentWidget extends ContentContainer implements ui.IElementWidget {
 	/* protected */ _elementType:string;
 	/* protected */ _firstNode:HTMLElement;
 	/* protected */ _lastNode:HTMLElement;
+
+	// ElementWidget
+	_replaceRoot:{ (node:HTMLElement):HTMLElement; };
+	_attachStyles:{ ():void; };
 }
 
 for (var key in ElementWidget.prototype) {

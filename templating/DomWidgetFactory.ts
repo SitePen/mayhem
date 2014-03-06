@@ -24,9 +24,14 @@ class DomWidgetFactory implements templating.IWidgetFactory {
 	propertyBindings:{ [key:string]: string; } = {};
 	tree:templating.IParseTree;
 	widgetArgs:any = {};
+	WidgetCtor:typeof DomWidget;
 
-	constructor(tree:templating.IParseTree) {
+	constructor(tree:templating.IParseTree, WidgetCtor?:typeof DomWidget) {
 		// TODO: for widgets with ids to be cloned multiple times we need a way to transform child ids
+		this.WidgetCtor = WidgetCtor || <typeof DomWidget> require(tree.constructor);
+		if (!((<any> this.WidgetCtor).prototype instanceof DomWidget)) {
+			throw new Error('Factory can only construct DomWidget instances');
+		}
 		this.tree = tree;
 		this._initializeArgs();
 		this._initializeContent();
@@ -128,8 +133,7 @@ class _WidgetBinder {
 		this.factory = factory;
 		this._widgetArgs = factory.widgetArgs; // lang.mixin({}, options, factory.widgetArgs);
 		this._processKwArgWidgets();
-		var WidgetCtor = <typeof DomWidget> require(factory.tree.constructor),
-			widget = this.widget = new WidgetCtor(this._widgetArgs);
+		var widget = this.widget = new factory.WidgetCtor(this._widgetArgs);
 		this._processContent();
 		this._processChildren();
 		this._processBindings();

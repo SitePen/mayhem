@@ -41,26 +41,26 @@ Name preference: {firstName}
 
 <h3>Iterators</h3>
 
+<h4>Hobbies (observable array): {hobbies}</h4>
+<for id='hobby-iter' each='hobby' in="hobbies">
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/TextInput" value={hobby}></widget></span>
+</for>
+
+<h4>Phone numbers (store): {phone_numbers}</h4>
 <for id='phone-iter' each='phone' in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
 	<widget is="framework/ui/dom/form/TextInput" value={phone.value}></widget>
 </for>
-Edit phone numbers: <widget is="framework/ui/dom/form/TextInput" value='{phone_numbers}' style="width:20em"></widget>
 
 <h4>Colors (array): {colors}</h4>
 <for id='color-iter' each='color' in="colors">
-	<widget is="framework/ui/dom/form/TextInput" value={firstName}></widget> {firstName} likes color:
+	<widget is="framework/ui/dom/form/TextInput" value={firstName}></widget> likes color:
 	<widget is="framework/ui/dom/form/TextInput" value={color}></widget>
 </for>
-Edit colors: <widget is="framework/ui/dom/form/TextInput" value='{colors}' style="width:20em"></widget>
+Edit colors: <widget is="framework/ui/dom/form/TextInput" value={colors_string} style="width:20em"></widget>
 
 <placeholder name="interstitial">
-List of hobbies: {hobbies}<br>
 
-<for id='hobby-iter' each='hobby' in="hobbies">
-	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/dom/form/TextInput" value={hobby}></widget></span>
-</for>
-Original hobbies: <widget is="framework/ui/dom/form/TextInput" value={hobbies} style="width:20em"></widget>
 <br>
 <br>
 <when id='when' promise='remoteString' value='stringValue'>

@@ -23,6 +23,15 @@ class ElementWidget extends DomWidget implements ui.IElementWidget {
 		});
 	}
 
+	_replaceRoot(node:HTMLElement):HTMLElement {
+		if (node !== this._firstNode) {
+			var previous:HTMLElement = <HTMLElement> this._firstNode.parentNode.replaceChild(node, this._firstNode);
+			this._firstNode = this._lastNode = node;
+			this.get('classList').set(node.className);
+			return previous;
+		}
+	}
+
 	clear():void {
 		this._firstNode.innerHTML = '';
 	}
@@ -43,6 +52,6 @@ class ElementWidget extends DomWidget implements ui.IElementWidget {
 	}
 }
 
-//ElementWidget.prototype._elementType = 'div';
+ElementWidget.prototype._elementType = 'div';
 
 export = ElementWidget;

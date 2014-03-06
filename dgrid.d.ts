@@ -3,7 +3,7 @@
 declare module 'dgrid/List' {
 	class List {
 		/* readonly */ domNode:HTMLElement;
-		constructor(kwArgs:Object);
+		constructor(kwArgs?:Object);
 
 		get(key:string):any;
 
@@ -11,7 +11,13 @@ declare module 'dgrid/List' {
 		set(key:string, value:any):void;
 
 		destroy():void;
+
+		insertRow(object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement;
+
 		refresh(options?:Object):IPromise<any>;
+
+		renderArray(results:any, beforeNode?:Node, options?:any):HTMLElement;
+
 		renderRow(value:any, options?:Object):HTMLElement;
 	}
 

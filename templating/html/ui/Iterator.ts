@@ -3,100 +3,89 @@
 
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
-import ElementWidget = require('../../../ui/dom/ElementWidget');
-import MemoryStore = require('dojo/store/Memory');
-import OnDemandList = require('dgrid/OnDemandList');
-import ObservableArray = require('../../../ObservableArray');
+import ContentWidget = require('../../../ui/dom/ContentWidget');
 import DomWidgetFactory = require('../../DomWidgetFactory');
-import ui = require('../../../ui/interfaces');
+import ElementWidget = require('../../../ui/dom/ElementWidget');
+import lang = require('dojo/_base/lang');
+import List = require('dgrid/List');
+import Mediator = require('../../../Mediator');
+import OnDemandList = require('dgrid/OnDemandList');
 import util = require('../../../util');
-import View = require('./View');
 
 class Iterator extends ElementWidget {
-	private _list:OnDemandList;
-	private _elementIndex:{ [key:string]: HTMLElement; };
-	private _mediatorIndex:{ [key:string]: core.IMediator; };
-	private _rowElementType:string;
-	private _sourceField:string;
-	private _sourceFieldObserver:IHandle;
-	private _store:MemoryStore<any>;
-	private _template:any;
 	private _factory:DomWidgetFactory;
+	private _list:List;
+	private _listLength:number;
+	private _mediatorIndex:{ [key:string]: Mediator; };
 	private _scopedField:string;
-	private _silent:boolean;
+	private _sourceField:string;
+	private _sourceFieldHandle:IHandle;
+	private _sourceObserverHandle:IHandle;
 	private _source:any; // Array | ObservableArray | IStore<any>
-	private _sourceObserver:IHandle;
-	private _arraySource:boolean;
-	private _widgetIndex:{ [key:string]: ui.IDomWidget; };
+	private _template:any;
+	private _WidgetCtor:typeof ElementWidget;
+	private _widgetIndex:{ [key:string]: ElementWidget; };
 
 	constructor(kwArgs:Object) {
-		this._rowElementType = 'div';
+		util.deferSetters(this, [ 'source' ], '_render');
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
-		this._elementIndex = {};
-		util.deferSetters(this, [ 'each', 'in' ], '_mediatorSetter');
-		this._renderList();
+		this._WidgetCtor = ContentWidget;
 		super(kwArgs);
-
-		// TODO this.observe('mediator') and update bindings
 	}
 
-	private _createScopedMediator(key:string, mediator?:core.IMediator):core.IMediator {
+	_createScopedMediator(key:string, mediator?:core.IMediator):Mediator {
 		mediator || (mediator = this.get('mediator'));
-		// Create a new mediator that delegates to the old one
-		return util.createScopedMediator(mediator, this._scopedField, ():any => {
-			var record = this._store.get(key);
-			if (this._arraySource) {
-				return record.value;
+		var scoped:Mediator = new Mediator({ model: mediator }),
+			scopedField = this._scopedField,
+			sourceField = this._sourceField,
+			_get = scoped.get,
+			_set = scoped.set;
+		scoped.get = (field:string):any => {
+			if (field !== scopedField) {
+				return _get.call(scoped, field);
 			}
-			return record;
-		}, (value:any):void => {
-			if (this._arraySource) {
-				// Signal a silent update to ignore repaint
-				this._silent = true;
-				this._source.set(key, value);
-				this._silent = false;
+			return this._getSourceKey(key);
+		}
+		scoped.set = (field:string, value:any):void => {
+			if (field !== scopedField) {
+				return _set.call(scoped, field, value);
 			}
-			else {
-				this._store.put(key, value);
-			}
-		});
+			var oldValue:any = this._getSourceKey(key);
+			this._setSourceKey(key, value);
+			scoped._notify(value, oldValue, scopedField);
+		};
+		return scoped;
 	}
 
 	destroy():void {
 		this._list.destroy();
-		this._list = this._store = null;
-		this._source = this._sourceField = this._scopedField = null;
-
-		this._sourceFieldObserver && this._sourceFieldObserver.remove();
-		this._sourceObserver && this._sourceObserver.remove();
-		this._sourceFieldObserver = this._sourceObserver = null;
-
+		this._list = this._source = null;
+		this._sourceFieldHandle && this._sourceFieldHandle.remove();
+		this._sourceObserverHandle && this._sourceObserverHandle.remove();
+		this._sourceFieldHandle = this._sourceObserverHandle = null;
 		super.destroy();
 	}
 
-	private _eachSetter(field:string):void {
-		this._scopedField = field;
+	private _eachSetter(scopedField:string):void {
+		this._scopedField = scopedField;
+		var mediator = this.get('mediator');
+		if (!mediator) {
+			return;
+		}
 		// Recreate our scoped mediators since the name of our value field changed
-		var mediator:core.IMediator = this.get('mediator');
 		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string) => {
-			var scopedMediator:core.IMediator = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
-			this._widgetIndex[key].set('mediator', scopedMediator);
+			var scoped:Mediator = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
+			this._widgetIndex[key].set('mediator', scoped);
 		});
 	}
 
-	private _getElementByKey(key:string):HTMLElement {
-		if (this._elementIndex[key]) {
-			return this._elementIndex[key];
-		}
-		var widget = this._getWidgetByKey(key);
-		var element:HTMLElement = document.createElement(this._rowElementType);
-		element.appendChild(widget.getNode());
-		widget.set('attached', true);
-		return this._elementIndex[key] = element;
+	private _getSourceKey(key:any):any {
+		var source:any = this._source;
+		return source instanceof Array ? source[key] : source.get(key);
 	}
 
-	private _getMediatorByKey(key:string):core.IMediator {
+	private _getMediatorByKey(key:any):Mediator {
 		if (this._mediatorIndex[key]) {
 			return this._mediatorIndex[key];
 		}
@@ -104,109 +93,135 @@ class Iterator extends ElementWidget {
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
 	}
 
-	private _getWidgetByKey(key:string):ui.IDomWidget {
-		var widget:ui.IDomWidget = this._widgetIndex[key];
+	private _getWidgetByKey(key:any):ElementWidget {
+		var widget = this._widgetIndex[key];
 		if (widget) {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		return this._widgetIndex[key] = this._factory.create({
-			mediator: mediator,
-			parent: this
-		});
+		widget = this._widgetIndex[key] = <ElementWidget> this._factory.create();
+		widget.set('mediator', mediator);
+		this.attach(widget);
+		return widget;
 	}
 
 	private _inSetter(sourceField:string):void {
 		// Tells us which field to use to get our source
-		this._sourceFieldObserver && this._sourceFieldObserver.remove();
 		this._sourceField = sourceField;
-		var mediator = this.get('mediator');
-		this.set('source', mediator.get(sourceField));
-		this._sourceFieldObserver = mediator.observe(sourceField, (newValue:any):void => {
-			this.set('source', newValue);
-		});
-	}
-
-	/* protected */ _render():void {
-		super._render();
-		this._firstNode = this._lastNode = this._list.domNode;
+		this._sourceFieldHandle && this._sourceFieldHandle.remove();
+		this._sourceFieldHandle = this.bind('source', sourceField);
 	}
 
 	private _renderList():void {
-		this._list = new OnDemandList({
-			renderRow: (record:any, options:any):HTMLElement => {
-				return this._getElementByKey(record[this._store.idProperty]);
-			}
+		var list = this._list,
+			source = this._source;
+
+		// Clean up list and detach all widgets
+		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string) => {
+			this._widgetIndex[key].detach();
 		});
+		list && list.destroy();
+		if (source instanceof Array) {
+			list = this._list = new List();
+			var _insertRow:any = list.insertRow;
+			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
+				var widget = this._getWidgetByKey(i);
+				return _insertRow.call(list, widget.getNode(), parent, beforeNode, i, options);
+			};
+			list.renderRow = (element) => element;
+		}
+		else {
+			list = this._list = new OnDemandList();
+			list.renderRow = (record:any):HTMLElement => {
+				return <HTMLElement> this._getWidgetByKey(record[source.idProperty]).getNode();
+			};
+		}
+		list.set('showHeader', false);
+		this._replaceRoot(list.domNode);
+		// TODO: parameterize
+		source instanceof Array && this.get('classList').add('autoheight');
+	}
+
+	private _setSourceKey(key:string, value:any):void {
+		var source:any = this._source,
+			oldValue:any = this._getSourceKey(key);
+		if (source instanceof Array) {
+			if (typeof source.set === 'function') {
+				source.set(key, value);
+			}
+			else {
+				source[key] = value;
+				this.get('mediator').set(this._sourceField, (<any[]> []).concat(source));
+			}
+		}
+		else {
+			// should be a dojo Store
+			source.put(value[source.idProperty], value);
+		}
+	}
+
+	private _updateList(change:number):void {
+		var source = this._source,
+			sourceLength = source.length,
+			scopedField = this._scopedField;
+		if (change > 0) {
+			// If array is larger than before add the necessary rows to our list
+			this._list.renderArray(source.toArray ? source.toArray() : source);
+		}
+		else if (change < 0) {
+			// If it's smaller, we need to detach any extra widgets
+			change = -change;
+			for (var i = 0; i < change; ++i) {
+				this._widgetIndex[sourceLength + i].detach();
+			}
+		}
+		// Notify all scoped mediators of their current values
+		for (var i = 0, len = sourceLength; i < len; ++i) {
+			this._mediatorIndex[i]._notify(source[i], null, scopedField);
+		}
 	}
 
 	private _sourceSetter(source:any):void {
-		// TODO: tear down old store
+		if (!source) {
+			// TODO: teardown
+		}
+		var list = this._list;
+		// Set up observer for new ObservableArray
+		if (source !== this._source) {
+			this._sourceObserverHandle && this._sourceObserverHandle.remove();
+		}
 		this._source = source;
-		this._sourceObserver && this._sourceObserver.remove();
-		this._arraySource = source instanceof Array || source instanceof ObservableArray;
-		if (this._arraySource) {
-			// Build a MemoryStore mirroring values array, observing where possible
-			// TODO: tear down old store
-			var store = this._store = new MemoryStore({
-				idProperty: 'i',
-				data: array.map(source, (value:any, i:number) => ({ i: i, value: value }))
-			});
-
-			if (source.observe) {
-				// Splice and dice store on observable array changes
-				this._sourceObserver = source.observe((startIndex:number, removals:any[], additions:any[]):void => {
-					// Shortcut all this nasty MemoryStore muning for simple set calls
-					if (removals.length === 1 && additions.length === 1) {
-						store.put({ i: startIndex, value: additions[0] });
-					}
-					else {
-						var storeData:any = store.data,
-							removed:any[] = storeData.splice(startIndex, removals.length);
-
-						// Transform additions values to records and splice them into our store data
-						var added:any[] = array.map(additions, (value:any, i:number):any => {
-							return { i: startIndex + i, value: value };
-						});
-
-						// TODO: fix when typescript gets splats...
-						// storeData.splice(i, 0, ...added);
-						storeData.splice.apply(storeData, [ startIndex, 0 ].concat(added));
-						// Fix up the remaining ids and rebuild index
-						for (var i = startIndex, end = storeData.length; i < end; ++i) {
-							storeData[i].i = i;
-						}
-						store.setData(storeData);
-					}
-
-					if (!this._silent) {
-						// We need to call refresh before notifying affected mediators to ensure they exist
-						this._list.refresh();
-						// TODO: this is terrible...we need to somethign like a BindingProxty for ObservableArrays to handle binding to elements
-						// Fire a notification on affected mediators (just from startIndex)
-						for (var i = startIndex, l = storeData.length; i < l; ++i) {
-							this._mediatorIndex[i]._notify(storeData[i].value, null, this._scopedField);
-						}
-					}
-					// TODO: if removals.length > additions.length clean up objects associated with discarded trailing keys
+		if (source instanceof Array) {
+			// Force list render if it doesn't exist or is the wrong kind
+			if (!list || list instanceof OnDemandList) {
+				this._renderList();
+			}
+			// Resize and refresh the list
+			var lastLength = this._listLength || 0,
+				listLength = this._listLength = source.length;
+			this._updateList(listLength - lastLength);
+			// Add an observer if possible
+			if (typeof source.observe === 'function') {
+				this._sourceObserverHandle = source.observe((index:number, removals:any[], additions:any[]) => {
+					this._updateList(additions.length - removals.length);
 				});
 			}
 		}
 		else {
-			this._store = source;
-			// TODO: observe store for updates, destroy removed widgets
+			// Force list render if it doesn't exist or is the wrong kind
+			if (!(list instanceof OnDemandList)) {
+				this._renderList();
+			}
+			this._list.set('store', source);
 		}
-
-		this._list.set('store', this._store);
 	}
 
 	private _templateSetter(template:any):void {
 		// Set constructor since it comes in without one (to avoid being constructed during processing)
 		// TODO: pass reference to constructor in options
-		template.constructor = 'framework/templating/html/ui/View';
 		this._template = template;
 		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
-		this._factory = new DomWidgetFactory(template);
+		this._factory = new DomWidgetFactory(template, this._WidgetCtor);
 	}
 }
 
