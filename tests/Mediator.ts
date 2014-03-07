@@ -1,7 +1,7 @@
 /// <reference path="./intern" />
 
 import assert = require('intern/chai!assert');
-import Mediator = require('../Mediator');
+import Mediator = require('../data/Mediator');
 import registerSuite = require('intern!object');
 import Stateful = require('dojo/Stateful');
 

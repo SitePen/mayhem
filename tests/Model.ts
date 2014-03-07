@@ -5,53 +5,51 @@ import core = require('../interfaces');
 import data = require('../data/interfaces');
 import array = require('dojo/_base/array');
 import Deferred = require('dojo/Deferred');
+import lang = require('dojo/_base/lang');
 import when = require('dojo/when');
 import util = require('../util');
 import Model = require('../data/Model');
-import Mediator = require('../Mediator');
+import Mediator = require('../data/Mediator');
 import registerSuite = require('intern!object');
 import RequiredValidator = require('../validation/RequiredValidator');
 import ValidationError = require('../validation/ValidationError');
 
-class PopulatedModel extends Model {
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._schema = {
-			string: Model.property<string>({
-				default: 'foo'
-			}),
-			number: Model.property<number>({
-				default: 1234
-			}),
-			boolean: Model.property<boolean>({
-				default: true
-			}),
-			object: Model.property<{ [key:string]: any; }>({
-				default: { foo: 'foo' }
-			}),
-			array: Model.property<any[]>({
-				default: [ 'foo', 'bar' ]
-			}),
-			any: Model.property<any>({
-				default: 'foo'
-			}),
+class PopulatedModel extends Model {}
+Model.schema(PopulatedModel, ():any => {
+	return {
+		string: Model.property<string>({
+			default: 'foo'
+		}),
+		number: Model.property<number>({
+			default: 1234
+		}),
+		boolean: Model.property<boolean>({
+			default: true
+		}),
+		object: Model.property<{ [key:string]: any; }>({
+			default: { foo: 'foo' }
+		}),
+		array: Model.property<any[]>({
+			default: [ 'foo', 'bar' ]
+		}),
+		any: Model.property<any>({
+			default: 'foo'
+		}),
 
-			// accessor: Model.property<string>({
-			// 	_valueGetter: function ():string {
-			// 		return this.model.get('firstName') + ' ' + this.model.get('lastName');
-			// 	},
-			// 	_valueSetter: function (value:string):void {
-			// 		var names:string[] = value.split(' ');
-			// 		this.model.set({
-			// 			firstName: names[0],
-			// 			lastName: names.slice(1).join(' ')
-			// 		});
-			// 	}
-			// })
-		};
-
-		super(kwArgs);
-	}
-}
+		// accessor: Model.property<string>({
+		// 	_valueGetter: function ():string {
+		// 		return this.model.get('firstName') + ' ' + this.model.get('lastName');
+		// 	},
+		// 	_valueSetter: function (value:string):void {
+		// 		var names:string[] = value.split(' ');
+		// 		this.model.set({
+		// 			firstName: names[0],
+		// 			lastName: names.slice(1).join(' ')
+		// 		});
+		// 	}
+		// })
+	};
+});
 
 // class PopulatedMediator extends Mediator {
 // 	accessor:core.IModelProxty<string> = new ModelProxty<string>({
@@ -61,7 +59,6 @@ class PopulatedModel extends Model {
 // 		dependencies: [ 'firstName', 'lastName' ]
 // 	});
 // }
-
 
 var syncStringIsAValidator = {
 	validate: function (model:data.IModel, key:string, value:string):void {
@@ -78,7 +75,7 @@ var syncStringIsAValidator = {
 var asyncStringIsBValidator = {
 	validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
 		var dfd:IDeferred<void> = new Deferred<void>();
-		setTimeout(function () {
+		setTimeout(function ():void {
 			if (value !== 'B') {
 				model.addError(key, new ValidationError(value + ' is not B'));
 			}
@@ -88,72 +85,60 @@ var asyncStringIsBValidator = {
 	}
 };
 
-class TestValidationModel extends Model {
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._schema = {
-			syncA: Model.property<string>({
-				default: 'A',
-				validators: [ syncStringIsAValidator ]
-			}),
-			syncB: Model.property<string>({
-				default: 'B',
-				validators: [ syncStringIsAValidator ]
-			}),
-			asyncA: Model.property<string>({
-				default: 'A',
-				validators: [ asyncStringIsBValidator ]
-			}),
-			asyncB: Model.property<string>({
-				default: 'B',
-				validators: [ asyncStringIsBValidator ]
-			})
-		};
+class TestValidationModel extends Model {}
+Model.schema(TestValidationModel, ():any => {
+	return {
+		syncA: Model.property<string>({
+			default: 'A',
+			validators: [ syncStringIsAValidator ]
+		}),
+		syncB: Model.property<string>({
+			default: 'B',
+			validators: [ syncStringIsAValidator ]
+		}),
+		asyncA: Model.property<string>({
+			default: 'A',
+			validators: [ asyncStringIsBValidator ]
+		}),
+		asyncB: Model.property<string>({
+			default: 'B',
+			validators: [ asyncStringIsBValidator ]
+		})
+	};
+});
 
-		super(kwArgs);
-	}
-}
+class TestRequiredValidationModel extends TestValidationModel {}
+Model.schema(TestRequiredValidationModel, (parentSchema:any):any => {
+	return lang.delegate(parentSchema, {
+		required: Model.property<string>({
+			validators: [ new RequiredValidator() ]
+		})
+	});
+});
 
-
-class TestRequiredValidationModel extends TestValidationModel {
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._schema = {
-			required: Model.property<string>({
-				validators: [ new RequiredValidator() ]
-			})
-		};
-
-		super(kwArgs);
-	}
-}
-
-
-class TestValidationExceptionsModel extends Model {
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._schema = {
-			sync: Model.property<string>({
-				validators: [ {
-					validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
-						throw new Error('Boom');
-					}
-				} ]
-			}),
-			async: Model.property<string>({
-				validators: [ {
-					validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
-						var dfd:IDeferred<void> = new Deferred<void>();
-						setTimeout(function () {
-							dfd.reject(new Error('BOOM'));
-						}, 0);
-						return dfd.promise;
-					}
-				} ]
-			})
-		};
-
-		super(kwArgs);
-	}
-}
-
+class TestValidationExceptionsModel extends Model {}
+Model.schema(TestValidationExceptionsModel, ():any => {
+	return {
+		sync: Model.property<string>({
+			validators: [ {
+				validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
+					throw new Error('Boom');
+				}
+			} ]
+		}),
+		async: Model.property<string>({
+			validators: [ {
+				validate: function (model:data.IModel, key:string, value:string):IPromise<void> {
+					var dfd:IDeferred<void> = new Deferred<void>();
+					setTimeout(function ():void {
+						dfd.reject(new Error('BOOM'));
+					}, 0);
+					return dfd.promise;
+				}
+			} ]
+		})
+	};
+});
 
 var startsWithA = function (model:data.IModel, key:string, value:string):void {
 	if (!value || value[0] !== 'A') {
@@ -176,30 +161,26 @@ var lengthOf2 = function (model:data.IModel, key:string, value:string):void {
 	return undefined;
 };
 
-class TestValidationScenarioModel extends Model {
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._schema = {
-			prop: Model.property<string>({
-				validators: [ {
-					validate: lengthOf2
-				}, {
-					validate: startsWithA,
-					options: {
-						scenarios: [ 'insert' ]
-					}
-				}, {
-					validate: endsWithB,
-					options: {
-						scenarios: [ 'insert', 'remove' ]
-					}
-				} ]
-			})
-		};
-
-		super(kwArgs);
-	}
-}
-
+class TestValidationScenarioModel extends Model {}
+Model.schema(TestValidationScenarioModel, ():any => {
+	return {
+		prop: Model.property<string>({
+			validators: [ {
+				validate: lengthOf2
+			}, {
+				validate: startsWithA,
+				options: {
+					scenarios: [ 'insert' ]
+				}
+			}, {
+				validate: endsWithB,
+				options: {
+					scenarios: [ 'insert', 'remove' ]
+				}
+			} ]
+		})
+	};
+});
 
 // function createPopulatedModel() {
 
@@ -238,11 +219,10 @@ class TestValidationScenarioModel extends Model {
 // 	return model;
 // }
 
-
 registerSuite({
 	name: 'Model',
 
-	'#get and #set': function () {
+	'#get and #set': function ():void {
 		var model = new PopulatedModel();
 
 		assert.strictEqual(model.get('string'), 'foo', 'string schema properties should be mutable as strings from an object');
@@ -252,7 +232,7 @@ registerSuite({
 		assert.deepEqual(model.get('array'), [ 'foo', 'bar' ], 'Array schema properties should be mutable as arrays from an object');
 		assert.strictEqual(model.get('any'), 'foo', 'null schema properties should be mutable as any value from an object');
 		assert.strictEqual(model.get('invalid'), undefined, 'non-existant schema properties should not be mutable from an object');
-		//assert.strictEqual(model.get('accessor'), 'foo', 'accessors and mutators should work normally');
+		// assert.strictEqual(model.get('accessor'), 'foo', 'accessors and mutators should work normally');
 
 		// model.set('number', 'not-a-number');
 		// assert.typeOf(model.get('number'), 'number', 'number schema properties should still be numbers even if passed a non-number value');
@@ -310,17 +290,17 @@ registerSuite({
 	// 	assert.strictEqual(model.get('number'), 1234, 'Reverted data should not be unset once values are committed');
 	// },
 
-	'#save async': function () {
+	'#save async': function ():IPromise<void> {
 		var model = new Model();
 
 		// If there is an exception in the basic save logic, it will be used to fail the test
 		return model.save();
 	},
 
-	'#validate': function () {
+	'#validate': function ():IPromise<void> {
 		var model = new TestValidationModel();
 
-		return model.validate().then(function () {
+		return model.validate().then(function ():void {
 			assert.isFalse(model.isValid(), 'Invalid model `isValid` check should return false');
 			assert.strictEqual(model.getErrors().length, 2, 'Model should have exactly 2 errors');
 
@@ -340,10 +320,10 @@ registerSuite({
 		});
 	},
 
-	'#validate specific fields': function () {
+	'#validate specific fields': function ():IPromise<void> {
 		var model = new TestValidationModel();
 
-		return model.validate([ 'syncA', 'asyncB' ]).then(function () {
+		return model.validate([ 'syncA', 'asyncB' ]).then(function ():void {
 			assert.isTrue(model.isValid(), 'Validating only known-valid fields should validate to true');
 			assert.strictEqual(model.getErrors().length, 0, 'Model should have no errors');
 
@@ -355,27 +335,27 @@ registerSuite({
 		});
 	},
 
-	'#validate required fields': function () {
+	'#validate required fields': function ():IPromise<void> {
 		var model = new TestRequiredValidationModel();
 
 		// Set inherited model fields to be valid
 		model.set('syncB', 'A');
 		model.set('asyncA', 'B');
-		return model.validate().then(function () {
+		return model.validate().then(function ():IPromise<void> {
 			assert.isFalse(model.isValid(), 'Invalid model should validate to false');
 			var errors = model.getErrors();
 			assert.strictEqual(errors.length, 1, 'Model should have exactly 1 error');
 			assert.match(errors[0].toString(), /field required/, 'The error message should include the reason');
 
 			model.set('required', 'foo');
-			return model.validate().then(function () {
+			return model.validate().then(function ():void {
 				assert.isTrue(model.isValid(), 'Required field set so should validate to true');
 				assert.strictEqual(model.getErrors().length, 0, 'Model should have no errors');
 			});
 		});
 	},
 
-	'#validate with allowEmpty': function () {
+	'#validate with allowEmpty': function ():IPromise<void> {
 		var model = new TestValidationModel();
 
 		// Set inherited model fields to be valid
@@ -383,7 +363,7 @@ registerSuite({
 		model.set('syncB', '');
 		model.set('asyncA', '');
 		model.set('asyncB', '');
-		return model.validate().then(function () {
+		return model.validate().then(function ():void {
 			assert.isFalse(model.isValid(), 'Invalid model should validate to false');
 			var errors = model.getErrors();
 			assert.strictEqual(errors.length, 2, 'Model should have exactly 2 errors');
@@ -395,27 +375,27 @@ registerSuite({
 		});
 	},
 
-	'#validate throws synchronously': function () {
+	'#validate throws synchronously': function ():IPromise<void> {
 		var model = new TestValidationExceptionsModel();
 
-		return model.validate([ 'sync' ]).then(function () {
+		return model.validate([ 'sync' ]).then(function ():void {
 			assert(false, 'Validation should not succeed');
-		}, function(error) {
+		}, function(error:Error):void {
 			assert.match(error.message, /boom/i, 'Validator for field should throw');
 		});
 	},
 
-	'#validate throws asynchronously': function () {
+	'#validate throws asynchronously': function ():IPromise<void> {
 		var model = new TestValidationExceptionsModel();
 
-		return model.validate([ 'async' ]).then(function () {
+		return model.validate([ 'async' ]).then(function ():void {
 			assert(false, 'Validation should not succeed');
-		}, function(error) {
+		}, function(error:Error):void {
 			assert.match(error.message, /boom/i, 'Validator for field should throw');
 		});
 	},
 
-	'#validate using scenarios': function () {
+	'#validate using scenarios': function ():IPromise<void> {
 		var scenarios = {
 			insert: { // lengthOf2, startsWithA, endsWithB
 				ABC: 2,
@@ -481,10 +461,10 @@ registerSuite({
 		}
 		var lastPromise:IPromise<void>;
 
-		array.forEach(util.getObjectKeys(scenarios), function (scenario:string) {
+		array.forEach(util.getObjectKeys(scenarios), function (scenario:string):void {
 			var counts = scenarios[scenario];
-			array.forEach(util.getObjectKeys(counts), function (value:string) {
-				lastPromise = when(lastPromise, function () {
+			array.forEach(util.getObjectKeys(counts), function (value:string):void {
+				lastPromise = when(lastPromise, function ():IPromise<void> {
 					return revalidate(scenario, value, counts[value]);
 				});
 			});

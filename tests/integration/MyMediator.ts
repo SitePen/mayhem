@@ -1,7 +1,11 @@
 import Deferred = require('dojo/Deferred');
-import Mediator = require('../../Mediator');
+import Mediator = require('../../data/Mediator');
+import MemoryStore = require('dojo/store/Memory');
+import ObservableStore = require('dojo/store/Observable');
 
 class MyMediator extends Mediator {
+	_phone_numbers:ObservableStore<any>;
+
 	_fullNameGetter():string {
 		return this.get('model').get('fullName').replace(/J/g, 'B');
 	}
@@ -20,6 +24,24 @@ class MyMediator extends Mediator {
 
 	_colors_stringSetter(value:string):void {
 		this.set('colors', value.split(','));
+	}
+
+	_phone_numbersGetter():ObservableStore<any> {
+		if (!this._phone_numbers) {
+			this._phone_numbers = new ObservableStore(new MemoryStore({ data: [
+				{
+					id: 'primary',
+					type: 'mobile',
+					value: '555-555-5555'
+				},
+				{
+					id: 'secondary',
+					type: 'mobile',
+					value: '555-555-1234'
+				}
+			]}));
+		}
+		return this._phone_numbers;
 	}
 
 	_remoteErrorGetter():IPromise<void> {
