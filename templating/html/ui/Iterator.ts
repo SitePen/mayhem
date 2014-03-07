@@ -34,28 +34,26 @@ class Iterator extends ElementWidget {
 		super(kwArgs);
 	}
 
-	_createScopedMediator(key:string, mediator?:core.IMediator):Mediator {
+	private _createScopedMediator(key:string, mediator?:core.IMediator):Mediator {
 		mediator || (mediator = this.get('mediator'));
-		var scoped:Mediator = new Mediator({ model: mediator }),
-			scopedField = this._scopedField,
-			sourceField = this._sourceField,
-			_get = scoped.get,
-			_set = scoped.set;
-		scoped.get = (field:string):any => {
-			if (field !== scopedField) {
-				return _get.call(scoped, field);
+		var scopedMediator:Mediator = new Mediator({ model: mediator }),
+			_get = scopedMediator.get,
+			_set = scopedMediator.set;
+		scopedMediator.get = (field:string):any => {
+			if (field !== this._scopedField) {
+				return _get.call(scopedMediator, field);
 			}
 			return this._getSourceKey(key);
 		}
-		scoped.set = (field:string, value:any):void => {
-			if (field !== scopedField) {
-				return _set.call(scoped, field, value);
+		scopedMediator.set = (field:string, value:any):void => {
+			if (field !== this._scopedField) {
+				return _set.call(scopedMediator, field, value);
 			}
 			var oldValue:any = this._getSourceKey(key);
 			this._setSourceKey(key, value);
-			scoped._notify(value, oldValue, scopedField);
+			scopedMediator._notify(value, oldValue, this._scopedField);
 		};
-		return scoped;
+		return scopedMediator;
 	}
 
 	destroy():void {

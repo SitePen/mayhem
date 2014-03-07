@@ -30,11 +30,19 @@ class MyMediator extends Mediator {
 		return dfd.promise;
 	}
 
+	_remoteObjectGetter():IPromise<any> {
+		var dfd:IDeferred<any> = new Deferred<any>();
+		setTimeout(():void => {
+			dfd.resolve({ foo: 'hello', bar: [ 3, 2, 1 ] });
+		}, 4000);
+		return dfd.promise;
+	}
+
 	_remoteStringGetter():IPromise<string> {
 		var dfd:IDeferred<string> = new Deferred<string>();
 		setTimeout(():void => {
 			dfd.resolve('remote string');
-		}, 3000);
+		}, 2000);
 		return dfd.promise;
 	}
 
