@@ -1,5 +1,6 @@
 *.js.map
 *.js
+html-report/
 node_modules/
 !tests/intern.js
 !tests/support/lcovhtml.js
