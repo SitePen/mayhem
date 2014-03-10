@@ -83,10 +83,11 @@ module.exports = function (grunt) {
 		},
 
 		intern: {
-			clientRouting: {
+			clientAuth: {
 				options: {
 					config: 'tests/intern',
-					suites: [ 'mayhem/tests/routing' ]
+					suites: [ 'mayhem/tests/auth' ],
+					reporters: [ 'console', 'lcovhtml' ]
 				}
 			},
 			client: {

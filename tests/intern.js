@@ -56,18 +56,17 @@ define({
 	suites: [
 		'mayhem/tests/util',
 		'mayhem/tests/Scheduler',
-		'mayhem/tests/binding'
+		'mayhem/tests/binding',
 //		'mayhem/tests/Mediator',
 //		'mayhem/tests/integration'
-//		'mayhem/tests/routing',
+		'mayhem/tests/routing',
 //		'mayhem/tests/Model',
-//		'mayhem/tests/auth'
+		'mayhem/tests/auth'
 	],
 
 	// Functional test suite(s) to run in each browser once non-functional tests are completed
 	functionalSuites: [ ],
 
 	// A regular expression matching URLs to files that should not be included in code coverage analysis
-	//excludeInstrumentation: /^(?:dojo|framework\/tests|framework\/node_modules)\//
-	excludeInstrumentation: /.*/
+	excludeInstrumentation: /^(?:dojo|framework\/tests|framework\/node_modules)\//
 });
