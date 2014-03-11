@@ -1,27 +1,21 @@
-import _DijitWidget = require('dijit/form/TextBox');
+import configure = require('../configure');
+import Dijit = require('dijit/form/TextBox');
+import form = require('./interfaces');
 import _FormValueWidget = require('./_FormValueWidget');
-import util = require('../../../util');
+import _TextBoxMixin = require('./_TextBoxMixin');
 
-class TextBox extends _FormValueWidget {
-	static _dijitConfig:any = {
-		// _TextBoxMixin
-		trim: 'boolean',
-		uppercase: 'boolean',
-		lowercase: 'boolean',
-		propercase: 'boolean',
-		maxLength: 'string',
-		selectOnClick: 'boolean',
-		placeHolder: 'string',
-		onInput: { action: true }
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
-
-	/* protected */ _render():void {
-		this._dijitArgs.intermediateChanges = true;
-		super._render();
-	}
+class TextBox extends _FormValueWidget implements form.ITextBox {
+	get:form.ITextBoxGet;
+	set:form.ITextBoxSet;
 }
 
-TextBox.configure(_FormValueWidget);
+configure(TextBox, {
+	Base: _FormValueWidget,
+	Dijit: Dijit,
+	mixins: [ _TextBoxMixin ],
+	schema: {
+		intermediateChanges: { type: Boolean, value: true }
+	}
+});
 
 export = TextBox;

@@ -3,6 +3,28 @@
 	<head>
 		<link rel="stylesheet" href="../../../dojo/resources/dojo.css">
 		<link rel="stylesheet" href="../../../dijit/themes/claro/claro.css">
+		<style>
+			body {
+				margin: 1em !important;
+			}
+			.dgrid.dgrid-list {
+				height: 12em;
+			}
+
+			/* styles for autoheight */
+			.dgrid.dgrid-list.autoheight {
+				border: none;
+				height: auto;
+			}
+			.dgrid.dgrid-list.autoheight .dgrid-scroller {
+				position: relative;
+				overflow-y: hidden;
+			}
+			.has-ie-6 .dgrid.dgrid-list.autoheight .dgrid-scroller {
+				/* IE6 doesn't react properly to hidden on this page for some reason */
+				overflow-y: visible;
+			}
+		</style>
 	</head>
 	<body class="claro">
 		<script>
@@ -23,9 +45,11 @@ require([
 	'framework/tests/integration/MyModel',
 	'framework/tests/integration/MyMediator',
 	'framework/Application',
-	'framework/ui2/Master',
-	'framework/tests/integration/MyView'
-], function (MyModel, MyMediator, Application, Master, MyView) {
+	'framework/ui/Master',
+	'framework/tests/integration/MyView',
+	'framework/templating/html!./MyView.tmpl.html',
+	'framework/templating/html!./MyAltView.tmpl.html'
+], function (MyModel, MyMediator, Application, Master, MyView, MyViewTemplate, MyAltViewTemplate) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -43,15 +67,17 @@ require([
 		});
 
 		var view = window.view = new MyView({
+			// TODO: reimplement deferred bind
 			app: app,
 			mediator: mediator
 		});
 
-		/*var view = window.view = new MyView({});
 		var tmplView = window.tmplView = MyViewTemplate.create();
+		var altTmplView = window.tmplView = MyAltViewTemplate.create();
 
-		masterView.add(tmplView);*/
 		masterView.add(view);
+		masterView.add(tmplView);
+		masterView.add(altTmplView);
 		masterView.attachToWindow(document.body);
 	});
 });

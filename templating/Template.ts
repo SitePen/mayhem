@@ -1,5 +1,5 @@
 import Deferred = require('dojo/Deferred');
-import DomWidgetFactory = require('./DomWidgetFactory');
+import WidgetFactory = require('./WidgetFactory');
 import templating = require('./interfaces');
 import when = require('dojo/when');
 
@@ -41,7 +41,7 @@ class Template implements templating.ITemplate {
 	}
 
 	dependencies:string[];
-	factory:DomWidgetFactory;
+	factory:WidgetFactory;
 	source:any;
 	tree:templating.IParseTree;
 
@@ -69,7 +69,7 @@ class Template implements templating.ITemplate {
 	load(timeout?:number):IPromise<templating.IWidgetFactory> {
 		console.log('AST: ', this.tree)
 		return this._fetch(timeout).then(():templating.IWidgetFactory => {
-			return this.factory = new DomWidgetFactory(this.tree);
+			return this.factory = new WidgetFactory(this.tree);
 		});
 	}
 

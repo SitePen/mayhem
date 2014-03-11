@@ -1,17 +1,22 @@
-import _DijitWidget = require('dijit/MenuItem');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/MenuItem');
 import _Widget = require('./_Widget');
 
 class MenuItem extends _Widget {
-	static _dijitConfig:any = {
-		label: 'string',
-		iconClass: 'string',
-		accelKey: 'string',
-		disabled: 'boolean',
-		onClick: { action: true }
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-MenuItem.configure(_Widget);
+configure(MenuItem, {
+	Base: _Widget,
+	Dijit: Dijit,
+	schema: {
+		label: String,
+		iconClass: String,
+		accelKey: String,
+		disabled: Boolean,
+		onClick: Function
+	}
+});
 
 export = MenuItem;

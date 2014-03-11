@@ -1,11 +1,19 @@
+import configure = require('./configure');
 import ContentPane = require('./layout/ContentPane');
-import _DijitWidget = require('dijit/TitlePane');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/TitlePane');
 
-class TitlePane extends ContentPane {
-	// TODO: _dijitConfig
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class TitlePane extends ContentPane implements dijit.ITitlePane {
+	get:dijit.ITitlePaneGet;
+	set:dijit.ITitlePaneSet;
 }
 
-TitlePane.configure(ContentPane);
+configure(TitlePane, {
+	Base: ContentPane,
+	Dijit: Dijit,
+	schema: {
+		// TODO
+	}
+});
 
 export = TitlePane;

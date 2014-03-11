@@ -1,11 +1,19 @@
-import _DijitWidget = require('dijit/form/NumberSpinner');
+import configure = require('../configure');
+import Dijit = require('dijit/form/NumberSpinner');
+import form = require('./interfaces');
 import _Spinner = require('./_Spinner');
 
 class NumberSpinner extends _Spinner {
-	// TODO: NumberTextBox.Mixin
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-NumberSpinner.configure(_Spinner);
+configure(NumberSpinner, {
+	Base: _Spinner,
+	Dijit: Dijit,
+	schema: {
+		// TODO
+	}
+	// TODO: NumberTextBox.Mixin
+});
 
 export = NumberSpinner;

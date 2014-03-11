@@ -1,9 +1,26 @@
-import _DijitContainer = require('./_DijitContainer');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import DijitRenderer = require('./_Renderer');
+import Element = require('../Element');
 
-// TODO: only dijit/_Container widgets should extend _DijitContainer
-class _Widget extends _DijitContainer {
+class _WidgetBase extends Element implements dijit.IWidgetBase {
+	/* protected */ __dijitConfig:any;
+
+	get:dijit.IWidgetBaseGet;
+	set:dijit.IWidgetBaseSet;
 }
 
-_Widget.configure(_DijitContainer);
+configure(_WidgetBase, {
+	schema: {
+		lang: String,
+		dir: String,
+		'class': String,
+		style: String,
+		title: String,
+		tooltip: String
+	}
+});
 
-export = _Widget;
+_WidgetBase.prototype._renderer = new DijitRenderer();
+
+export = _WidgetBase;

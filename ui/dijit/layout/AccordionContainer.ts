@@ -1,10 +1,16 @@
-import _DijitWidget = require('dijit/layout/AccordionContainer');
+import configure = require('../configure');
+import layout = require('./interfaces');
+import Dijit = require('dijit/layout/AccordionContainer');
 import StackContainer = require('./StackContainer')
 
-class AccordionContainer extends StackContainer {
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class AccordionContainer extends StackContainer implements layout.IAccordionContainer {
+	get:layout.IAccordionContainerGet;
+	set:layout.IAccordionContainerSet;
 }
 
-AccordionContainer.configureLayout(StackContainer);
+configure(AccordionContainer, {
+	Base: StackContainer,
+	Dijit: Dijit
+});
 
 export = AccordionContainer;

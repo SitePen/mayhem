@@ -3,17 +3,16 @@
 
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
-import ContentWidget = require('../../../ui/dom/ContentWidget');
-import DomWidgetFactory = require('../../DomWidgetFactory');
-import ElementWidget = require('../../../ui/dom/ElementWidget');
+import WidgetFactory = require('../../WidgetFactory');
+import Element = require('../../../ui/Element');
 import lang = require('dojo/_base/lang');
 import List = require('dgrid/List');
 import Mediator = require('../../../Mediator');
 import OnDemandList = require('dgrid/OnDemandList');
 import util = require('../../../util');
 
-class Iterator extends ElementWidget {
-	private _factory:DomWidgetFactory;
+class Iterator extends Element {
+	private _factory:WidgetFactory;
 	private _list:List;
 	private _listLength:number;
 	private _mediatorIndex:{ [key:string]: Mediator; };
@@ -23,14 +22,14 @@ class Iterator extends ElementWidget {
 	private _sourceObserverHandle:IHandle;
 	private _source:any; // Array | ObservableArray | IStore<any>
 	private _template:any;
-	private _WidgetCtor:typeof ElementWidget;
-	private _widgetIndex:{ [key:string]: ElementWidget; };
+	private _WidgetCtor:typeof Element;
+	private _widgetIndex:{ [key:string]: Element; };
 
 	constructor(kwArgs:Object) {
 		util.deferSetters(this, [ 'source' ], '_render');
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
-		this._WidgetCtor = ContentWidget;
+		this._WidgetCtor = Element;
 		super(kwArgs);
 	}
 
@@ -91,13 +90,13 @@ class Iterator extends ElementWidget {
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
 	}
 
-	private _getWidgetByKey(key:any):ElementWidget {
+	private _getWidgetByKey(key:any):Element {
 		var widget = this._widgetIndex[key];
 		if (widget) {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		widget = this._widgetIndex[key] = <ElementWidget> this._factory.create();
+		widget = this._widgetIndex[key] = <Element> this._factory.create();
 		widget.set('mediator', mediator);
 		this.attach(widget);
 		return widget;
@@ -107,7 +106,10 @@ class Iterator extends ElementWidget {
 		// Tells us which field to use to get our source
 		this._sourceField = sourceField;
 		this._sourceFieldHandle && this._sourceFieldHandle.remove();
-		this._sourceFieldHandle = this.bind('source', sourceField);
+		this._sourceFieldHandle = this.bind({
+			sourceBinding: sourceField,
+			targetBinding: 'source'
+		});
 	}
 
 	private _renderList():void {
@@ -124,18 +126,20 @@ class Iterator extends ElementWidget {
 			var _insertRow:any = list.insertRow;
 			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
 				var widget = this._getWidgetByKey(i);
-				return _insertRow.call(list, widget.getNode(), parent, beforeNode, i, options);
+				widget.detach();
+				return _insertRow.call(list, widget.get('fragment'), parent, beforeNode, i, options);
 			};
 			list.renderRow = (element) => element;
 		}
 		else {
 			list = this._list = new OnDemandList();
 			list.renderRow = (record:any):HTMLElement => {
-				return <HTMLElement> this._getWidgetByKey(record[source.idProperty]).getNode();
+				var widget:Element = this._getWidgetByKey(record[source.idProperty]);
+				return <HTMLElement> widget.get('fragment');
 			};
 		}
 		list.set('showHeader', false);
-		this._replaceRoot(list.domNode);
+		this._renderer.render(this, { fragment: list.domNode });
 		// TODO: parameterize
 		source instanceof Array && this.get('classList').add('autoheight');
 	}
@@ -153,7 +157,7 @@ class Iterator extends ElementWidget {
 			}
 		}
 		else {
-			// should be a dojo Store
+			// source should be a dojo Store
 			source.put(value[source.idProperty], value);
 		}
 	}
@@ -219,7 +223,7 @@ class Iterator extends ElementWidget {
 		// TODO: pass reference to constructor in options
 		this._template = template;
 		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
-		this._factory = new DomWidgetFactory(template, this._WidgetCtor);
+		this._factory = new WidgetFactory(template, this._WidgetCtor);
 	}
 }
 

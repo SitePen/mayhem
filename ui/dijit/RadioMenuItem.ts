@@ -1,15 +1,20 @@
 import CheckedMenuItem = require('./CheckedMenuItem');
-import _DijitWidget = require('dijit/RadioMenuItem');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/RadioMenuItem');
 
 class RadioMenuItem extends CheckedMenuItem {
-	static _dijitConfig:any = {
-		checkedChar: 'string',
-		group: 'string',
-		onClick: { action: true }
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-RadioMenuItem.configure(CheckedMenuItem);
+configure(RadioMenuItem, {
+	Base: CheckedMenuItem,
+	Dijit: Dijit,
+	schema: {
+		checkedChar: String,
+		group: String,
+		onClick: Function
+	}
+});
 
 export = RadioMenuItem;

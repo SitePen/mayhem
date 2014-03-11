@@ -1,14 +1,19 @@
-import _DijitWidget = require('dijit/CheckedMenuItem');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/CheckedMenuItem');
 import MenuItem = require('./MenuItem');
 
 class CheckedMenuItem extends MenuItem {
-	static _dijitConfig:any = {
-		checked: 'boolean',
-		checkedChar: 'string'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: intefaces
 }
 
-CheckedMenuItem.configure(MenuItem);
+configure(CheckedMenuItem, {
+	Base: MenuItem,
+	Dijit: Dijit,
+	schema: {
+		checked: Boolean,
+		checkedChar: String
+	}
+});
 
 export = CheckedMenuItem;

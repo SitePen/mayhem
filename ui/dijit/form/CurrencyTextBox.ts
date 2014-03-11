@@ -1,14 +1,18 @@
-import _DijitWidget = require('dijit/form/CurrencyTextBox');
+import configure = require('../configure');
+import Dijit = require('dijit/form/CurrencyTextBox');
+import form = require('./interfaces');
 import NumberTextBox = require('./NumberTextBox');
 
 class CurrencyTextBox extends NumberTextBox {
-	static _dijitConfig:any = {
-		currency: 'boolean'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-// TODO: catalog textboxes
-CurrencyTextBox.configure(NumberTextBox);
+configure(CurrencyTextBox, {
+	Base: NumberTextBox,
+	Dijit: Dijit,
+	schema: {
+		currency: Boolean
+	}
+});
 
 export = CurrencyTextBox;

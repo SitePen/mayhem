@@ -1,17 +1,23 @@
-import _DijitWidget = require('dijit/layout/LayoutContainer');
+import configure = require('../configure');
+import layout = require('./interfaces');
+import Dijit = require('dijit/layout/LayoutContainer');
 import _LayoutWidget = require('./_LayoutWidget');
 
-class LayoutContainer extends _LayoutWidget {
-	static _childDijitConfig:any = {
-		region: 'string',
-		layoutPriority: 'number'
-	};
-	static _dijitConfig:any = {
-		design: 'string' // TODO enum: headline, sidebar
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class LayoutContainer extends _LayoutWidget implements layout.ILayoutContainer {
+	get:layout.ILayoutWidgetGet;
+	set:layout.ILayoutWidgetSet;
 }
 
-LayoutContainer.configureLayout(_LayoutWidget);
+configure(LayoutContainer, {
+	Base: _LayoutWidget,
+	Dijit: Dijit,
+	schema: {
+		design: String
+	},
+	childSchema: {
+		region: String,
+		layoutPriority: Number
+	}
+});
 
 export = LayoutContainer;

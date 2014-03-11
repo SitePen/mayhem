@@ -1,15 +1,21 @@
-import _DijitWidget = require('dijit/layout/TabContainer');
+import configure = require('../configure');
+import layout = require('./interfaces');
+import Dijit = require('dijit/layout/TabContainer');
 import _TabContainerBase = require('./_TabContainerBase');
 
-class TabContainer extends _TabContainerBase {
-	static _dijitConfig:any = {
-		useMenu: 'boolean',
-		useSlider: 'boolean',
-		// controllerWidget
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class TabContainer extends _TabContainerBase implements layout.ITabContainer {
+	get:layout.ITabContainerGet;
+	set:layout.ITabContainerSet;
 }
 
-TabContainer.configureLayout(_TabContainerBase);
+configure(TabContainer, {
+	Base: _TabContainerBase,
+	Dijit: Dijit,
+	schema: {
+		useMenu: Boolean,
+		useSlider: Boolean
+		// controllerWidget
+	}
+});
 
 export = TabContainer;

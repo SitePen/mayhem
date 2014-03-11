@@ -1,6 +1,6 @@
-import ViewWidget = require('../../../ui/dom/ViewWidget');
+import View = require('../../../ui/View');
 
-class View extends ViewWidget {
+class TemplatedView extends View {
 }
 
-export = View;
+export = TemplatedView;

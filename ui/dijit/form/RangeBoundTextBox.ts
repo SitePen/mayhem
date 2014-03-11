@@ -1,11 +1,18 @@
-import _DijitWidget = require('dijit/form/RangeBoundTextBox');
+import configure = require('../configure');
+import Dijit = require('dijit/form/RangeBoundTextBox');
+import form = require('./interfaces');
 import TextBox = require('./TextBox');
 
 class RangeBoundTextBox extends TextBox {
-	// TODO: _dijitConfig
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-RangeBoundTextBox.configure(TextBox);
+configure(RangeBoundTextBox, {
+	Base: TextBox,
+	Dijit: Dijit,
+	schema: {
+		// TODO
+	}
+});
 
 export = RangeBoundTextBox;

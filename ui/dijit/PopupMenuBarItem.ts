@@ -1,10 +1,15 @@
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/PopupMenuBarItem');
 import PopupMenuItem = require('./PopupMenuItem');
-import _DijitWidget = require('dijit/PopupMenuBarItem');
 
 class PopupMenuBarItem extends PopupMenuItem {
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-PopupMenuBarItem.configure(PopupMenuItem);
+configure(PopupMenuBarItem, {
+	Base: PopupMenuItem,
+	Dijit: Dijit
+});
 
 export = PopupMenuBarItem;

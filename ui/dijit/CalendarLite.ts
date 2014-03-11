@@ -1,11 +1,18 @@
-import _DijitWidget = require('dijit/CalendarLite');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/CalendarLite');
 import _WidgetBase = require('./_WidgetBase');
 
 class CalendarLight extends _WidgetBase {
-	// TODO: _dijitConfig
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-CalendarLight.configure(_WidgetBase);
+configure(CalendarLight, {
+	Base: _WidgetBase,
+	Dijit: Dijit,
+	schema: {
+		// TODO
+	}
+});
 
 export = CalendarLight;

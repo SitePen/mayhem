@@ -1,13 +1,19 @@
+import configure = require('../configure');
+import layout = require('./interfaces');
 import StackContainer = require('./StackContainer');
 
-class _TabContainerBase extends StackContainer {
-	static _dijitConfig:any = {
-		tabPosition: 'string',
-		tabStrip: 'boolean',
-		nested: 'boolean'
-	};
+class _TabContainerBase extends StackContainer implements layout.ITabContainerBase {
+	get:layout.ITabContainerBaseGet;
+	set:layout.ITabContainerBaseSet;
 }
 
-_TabContainerBase.configureLayout(StackContainer);
+configure(_TabContainerBase, {
+	Base: StackContainer,
+	schema: {
+		tabPosition: String,
+		tabStrip: Boolean,
+		nested: Boolean
+	}
+});
 
 export = _TabContainerBase;

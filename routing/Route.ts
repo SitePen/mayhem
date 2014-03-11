@@ -6,7 +6,6 @@ import has = require('../has');
 import lang = require('dojo/_base/lang');
 import routing = require('./interfaces');
 import when = require('dojo/when');
-import widgets = require('../ui/interfaces');
 
 /**
  * A Route is a BaseRoute that binds a Controller and View to a particular route.

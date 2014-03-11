@@ -122,14 +122,15 @@ var dojoConfig = {
 	<script>
 require([
 	'framework/Application',
-	'framework/ui/dom/Master',
+	'framework/ui/Master',
 	'framework/tests/integration/MyMediator',
 	'framework/tests/integration/MyModel',
 	'framework/templating/Template',
 	'dojo/text!./parse-tree.tmpl.json',
+	'./parse-tree.tmpl.js',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dojo/resources/dojo.css'
-], function (Application, Master, MyMediator, MyModel, Template, tmpl) {
+], function (Application, Master, MyMediator, MyModel, Template, jsonTmpl, jsTmpl) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -141,15 +142,17 @@ require([
 			model: model
 		});
 
-		var masterView = new Master({});
-		// Build up a vew from json template representing a raw parse tree
-		var template = new Template(JSON.parse(tmpl));
+		var masterView = new Master({}),
+			template;
+		masterView.attachToWindow(document.body);
+		// Build up a view from json template representing a raw parse tree
+		template = new Template(JSON.parse(jsonTmpl));
 		template.load(5000).then(function(factory) {
-			masterView.add(factory.create({
-				app: app,
-				mediator: mediator
-			}));
-			masterView.attachToWindow(document.body);
+			masterView.add(factory.create());
+		});
+		template = new Template(jsTmpl);
+		template.load().then(function(factory) {
+
 		});
 	});
 });

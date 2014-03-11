@@ -1,10 +1,15 @@
-import _DijitWidget = require('dijit/DropDownMenu');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/DropDownMenu');
 import _MenuBase = require('./_MenuBase');
 
 class DropDownMenu extends _MenuBase {
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-DropDownMenu.configure(_MenuBase);
+configure(DropDownMenu, {
+	Base: _MenuBase,
+	Dijit: Dijit
+});
 
 export = DropDownMenu;

@@ -1,10 +1,15 @@
-import _DijitWidget = require('dijit/MenuSeparator');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/MenuSeparator');
 import _WidgetBase = require('./_WidgetBase');
 
 class MenuSeparator extends _WidgetBase {
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-MenuSeparator.configure(_WidgetBase);
+configure(MenuSeparator, {
+	Base: _WidgetBase,
+	Dijit: Dijit
+});
 
 export = MenuSeparator;

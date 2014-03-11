@@ -72,8 +72,6 @@ declare module 'dijit/_Container' {
 	import _WidgetBase = require('dijit/_WidgetBase');
 
 	interface _Container {
-		containerNode:HTMLElement;
-
 		addChild(widget:_WidgetBase, insertIndex?:number):_WidgetBase;
 		hasChildren():boolean;
 		removeChild(widget:_WidgetBase):void;
@@ -281,8 +279,8 @@ declare module 'dijit/_WidgetBase' {
 	import Stateful = require('dojo/Stateful');
 
 	interface _WidgetBase extends Stateful, Destroyable {
+		/* readonly */ containerNode?:HTMLElement;
 		/* readonly */ domNode:HTMLElement;
-		_started:boolean;
 
 		constructor(kwArgs?:Object, srcNodeRef?:HTMLElement):_WidgetBase;
 

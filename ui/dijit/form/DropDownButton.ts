@@ -1,13 +1,18 @@
 import Button = require('./Button');
-import _DijitWidget = require('dijit/form/DropDownButton');
+import configure = require('../configure');
+import Dijit = require('dijit/form/DropDownButton');
+import form = require('./interfaces');
 
 class DropDownButton extends Button {
-	static _dijitConfig:any = {
-		dropDown: { child: '_dijit', required: true }
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-DropDownButton.configure(Button);
+configure(DropDownButton, {
+	Base: Button,
+	Dijit: Dijit,
+	schema: {
+		dropDown: { child: '_dijit', required: true }
+	}
+});
 
 export = DropDownButton;

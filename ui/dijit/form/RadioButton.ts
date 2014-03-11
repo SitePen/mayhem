@@ -1,10 +1,16 @@
 import CheckBox = require('./CheckBox');
-import _DijitWidget = require('dijit/form/RadioButton');
+import configure = require('../configure');
+import form = require('./interfaces');
+import Dijit = require('dijit/form/RadioButton');
 
-class RadioButton extends CheckBox {
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class RadioButton extends CheckBox implements form.IRadioButton {
+	get:form.IRadioButtonGet;
+	set:form.IRadioButtonSet;
 }
 
-RadioButton.configure(CheckBox);
+configure(RadioButton, {
+	Base: CheckBox,
+	Dijit: Dijit
+});
 
 export = RadioButton;

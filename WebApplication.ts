@@ -5,7 +5,7 @@ import util = require('dojo/request/util');
 
 class WebApplication extends Application {
 	router:routing.IRouter;
-	ui:any; // TODO ui.IView
+	ui:ui.IMaster;
 
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepCopy(super._getDefaultConfig(), {
@@ -21,13 +21,13 @@ class WebApplication extends Application {
 		});
 	}
 
-	place(view:any/* ui.IView */, placeholder?:string):IHandle {
-		return this.ui.add(view, placeholder);
+	place(widget:ui.IWidget, placeholder?:string):IHandle {
+		return this.ui.add(widget, placeholder);
 	}
 
 	startup():IPromise<WebApplication> {
 		var promise = super.startup().then(():WebApplication => {
-			this.ui.placeAt(document.body);
+			this.ui.attachToWindow(document.body);
 			return this;
 		});
 

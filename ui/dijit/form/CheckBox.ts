@@ -1,14 +1,18 @@
-import _DijitWidget = require('dijit/form/CheckBox');
+import _CheckBoxMixin = require('./_CheckBoxMixin');
+import configure = require('../configure');
+import Dijit = require('dijit/form/CheckBox');
+import form = require('./interfaces');
 import ToggleButton = require('./ToggleButton');
 
-class CheckBox extends ToggleButton {
-	static _dijitConfig:any = {
-		// _CheckBoxMixin
-		readOnly: 'boolean'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class CheckBox extends ToggleButton implements form.ICheckBox {
+	get:form.ICheckBoxGet;
+	set:form.ICheckBoxSet;
 }
 
-CheckBox.configure(ToggleButton);
+configure(CheckBox, {
+	Base: ToggleButton,
+	Dijit: Dijit,
+	mixins: [ _CheckBoxMixin ]
+});
 
 export = CheckBox;

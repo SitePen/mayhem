@@ -1,244 +1,103 @@
-/// <reference path="../dojo" />
+/// <amd-dependency path="./renderer!Base" />
+declare var require:any;
 
-import array = require('dojo/_base/array');
-import BindDirection = require('../binding/BindDirection');
-import binding = require('../binding/interfaces');
-import ClassList = require('./ClassList');
-import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
-import Style = require('./Style');
+var Renderer = require('./renderer!Base');
 import ui = require('./interfaces');
 import util = require('../util');
 
 var uid = 0,
-	platform = has('host-browser') ? 'dom/' : '',
-	registry = {};
+	registry:{ [id:string]:ui.IWidget } = {};
 
 class Widget extends ObservableEvented implements ui.IWidget {
 	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
 
-	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
-		require([ resourceId ], load);
-	}
-
-	static normalize(resourceId:string, normalize:(id:string) => string):string {
-		return normalize('./' + platform + resourceId);
-	}
-
-	/* private */ _app:core.IApplication;
 	private _attached:boolean;
-	private _bindings:binding.IBindingHandle[];
-	/* private */ _classList:ui.IClassList;
+	private _eventHandles:IHandle[];
 	/* protected */ _id:string;
-	/* protected */ _mediator:core.IMediator;
-	/* protected */ _parent:ui.IWidgetContainer;
-	private _parentAppHandle:IHandle;
-	private _parentAttachedHandle:IHandle;
-	private _parentMediatorHandle:IHandle;
-	/* private */ _style:ui.IStyle;
-
-	get:ui.IWidgetGet;
-	set:ui.IWidgetSet;
+	/* protected */ _parent:ui.IContainer;
+	/* protected */ _renderer:ui.IRenderer;
+	/* protected */ _renderOptions:ui.IRenderOptions;
 
 	constructor(kwArgs:Object = {}) {
-		// Set ID as early as possible so that any setters that might require it can use it
+		this._eventHandles = [];
+
 		var id:string = kwArgs['id'];
 		if (!id) {
 			id = this._id = 'Widget' + (++uid);
 		}
+
 		// TDOO: check registry for duplicate id and throw?
 		// Helpful for debugging
 		registry[id] = this;
 
-		this._bindings = [];
-		this._classList = new ClassList();
-		this._style = new Style();
-
 		super(kwArgs);
-
 		this._render();
 	}
 
 	/* protected */ _attachedSetter(attached:boolean):void {
-		this._attached = attached;
-	}
-
-	/* protected */ _bind(target:any, targetBinding:string, binding:string, options:{ direction?:BindDirection; } = {}):binding.IBindingHandle {
-		return this.get('app').get('binder').bind({
-			source: this.get('mediator'),
-			sourceBinding: binding,
-			target: target,
-			targetBinding: targetBinding,
-			direction: options.direction || BindDirection.ONE_WAY
-		});
-	}
-
-	// TODO: support using a binding template as a sourceBinding
-	bind(targetBinding:string, binding:string, options?:{ direction?:BindDirection; }):IHandle;
-	bind(targetBinding:Node, binding:string, options?:{ direction?:BindDirection; }):IHandle;
-	bind(targetBinding:any, binding:string, options:{ direction?:BindDirection; } = {}):IHandle {
-		var deferBind = (propertyName:string):IHandle => {
-			// Helper to defer binding calls until a property has been set
-			var handle:IHandle;
-			if (!this.get(propertyName)) {
-				var propertyHandle:IHandle = this.observe(propertyName, (value:any):void => {
-					if (!value || !propertyHandle) {
-						// value was not actually passed or binding was removed before this happened
-						return;
-					}
-					propertyHandle.remove();
-
-					var bindHandle:IHandle = this.bind(targetBinding, binding, options);
-					handle.remove = function ():void {
-						this.remove = function ():void {};
-						bindHandle.remove();
-
-						handle = propertyHandle = bindHandle = null;
-					};
-				});
-
-			}
-			handle = {
-				remove: function ():void {
-					this.remove = function ():void {};
-					propertyHandle.remove();
-					handle = propertyHandle = null;
-				}
-			};
-			return handle;
-		};
-		if (!this.get('app')) {
-			// if no app is set on the widget, delay the binding until one exists
-			return deferBind('app');
+		if (attached != this._attached) {
+			this._attached = !!attached;
+			this.emit(attached ? 'attached' : 'detached');
 		}
-
-		if (!this.get('mediator')) {
-			// if no mediator is set on the widget, delay binding as well
-			return deferBind('mediator');
-		}
-
-		var target:any = this,
-			bindings = this._bindings,
-			handle:binding.IBindingHandle;
-		// Special handling for binding node targets
-		if (targetBinding instanceof Node) {
-			target = targetBinding;
-			targetBinding = 'nodeValue';
-		}
-
-		handle = this._bind(
-			target,
-			targetBinding,
-			binding,
-			options
-		);
-
-		bindings.push(handle);
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				handle.remove();
-				util.spliceMatch(bindings, handle);
-				bindings = handle = null;
-			}
-		};
 	}
-
-	clear():void {}
 
 	destroy():void {
 		this.detach();
+		this._renderer.destroy(this);
+		util.destroyHandles(this._eventHandles);
+		this._eventHandles = null;
 
-		var binding:binding.IBindingHandle;
-		for (var i = 0; (binding = this._bindings[i]); ++i) {
-			binding.remove();
-		}
-
-		this._bindings = null;
+		registry[this.get('id')] = null;
 		super.destroy();
+		this.emit('destroyed');
 	}
 
 	detach():void {
-		var parent = this.get('parent');
-		parent && parent.remove && parent.remove(this);
+		this._renderer.detach(this);
+		// var parent:ui.IContainer = this.get('parent');
+		// parent && parent.remove(this);
 		this.set('attached', false);
 	}
 
-	private _indexGetter():ui.IWidget {
+	get:ui.IWidgetGet;
+
+	private _indexGetter():number {
 		var parent = this.get('parent');
+
 		if (!parent) {
-			return null;
+			return -1;
 		}
+
 		return parent.get('children').indexOf(this);
 	}
 
-	private _mediatorGetter():core.IMediator {
-		if (this._mediator) {
-			return this._mediator;
-		}
-		var parent = this.get('parent');
-		if (parent) {
-			return parent.get('mediator');
-		}
-		return null;
-	}
-
 	private _nextGetter():ui.IWidget {
-		var parent = this.get('parent');
-		if (!parent) {
+		var index = this.get('index');
+
+		if (index === -1) {
 			return null;
 		}
-		var index:number = this.get('index');
-		return parent.get('children')[index + 1];
+
+		return this.get('parent').get('children')[index + 1] || null;
 	}
 
-	/* protected */ _parentSetter(parent:ui.IWidgetContainer):void {
-		// Pass app down to children
-		// TODO: kill this when Bryan finishes his binding refactor
-		this._parentAppHandle && this._parentAppHandle.remove();
-		if (!this.get('app')) {
-			var parentApp:core.IApplication = parent.get('app');
-			if (parentApp) {
-				this.set('app', parentApp);
-			}
-			else {
-				this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
-					// Only once
-					this._parentAppHandle.remove();
-					this._parentAppHandle = null;
-					this.set('app', parentApp);
-				});
-			}
-		}
 
-		this._parentMediatorHandle && this._parentMediatorHandle.remove();
-		this._parentMediatorHandle = null;
-
-		var mediatorHandler = (newMediator:core.IMediator, oldMediator:core.IMediator):void => {
-			// if no mediator has been explicitly set, notify of the parent's mediator change
-			if (!this._mediator && !util.isEqual(newMediator, oldMediator)) {
-				this._notify(newMediator, oldMediator, 'mediator');
-			}
-		};
-		if (parent) {
-			this._parentMediatorHandle = parent.observe('mediator', mediatorHandler);
-		}
-
-		var oldParent:ui.IWidgetContainer = this._parent;
-		this._parent = parent;
-
-		if (!this._mediator && !util.isEqual(parent, oldParent)) {
-			mediatorHandler(parent && parent.get('mediator'), oldParent && oldParent.get('mediator'));
-		}
+	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
+	on(type:string, listener:(event:Event) => void):IHandle;
+	on(type:any, listener:(event:Event) => void):IHandle {
+		var handle = super.on.apply(this, arguments);
+		this._eventHandles.push(handle);
+		return handle;
 	}
 
 	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
-	placeAt(destination:ui.IWidgetContainer, position:number):IHandle;
-	placeAt(destination:ui.IWidgetContainer, placeholder:string):IHandle;
+	placeAt(destination:ui.IContainer, position:number):IHandle;
+	placeAt(destination:ui.IContainer, placeholder:string):IHandle;
 	placeAt(destination:any, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
@@ -246,7 +105,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			throw new Error('Cannot place widget at undefined destination');
 		}
 
-		var destinationParent:ui.IWidgetContainer = destination.get('parent');
+		var destinationParent:ui.IContainer = destination.get('parent');
 
 		if (position === PlacePosition.BEFORE) {
 			if (has('debug') && !destinationParent) {
@@ -267,10 +126,9 @@ class Widget extends ObservableEvented implements ui.IWidget {
 				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to replace it');
 			}
 
-			var index:number = destination.get('index'),
-				parent:ui.IWidgetContainer = destinationParent;
+			var index:number = destination.get('index');
 			destination.detach();
-			handle = parent.add(this, index);
+			handle = destinationParent.add(this, index);
 		}
 		else {
 			handle = destination.add(this, position);
@@ -279,22 +137,31 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return handle;
 	}
 
-	private _previousGetter():ui.IWidget {
-		var parent = this.get('parent');
+	/* protected */ _parentSetter(parent:ui.IContainer):void {
+		if (parent !== this._parent) {
+			this._parent = parent;
+			this.emit('parented');
+		}
+	}
 
-		if (!parent) {
+	private _previousGetter():ui.IWidget {
+		var index:number = this.get('index');
+
+		if (index === -1) {
 			return null;
 		}
 
-		var index:number = parent.get('children').indexOf(this);
-		return parent.get('children')[index - 1];
+		return this.get('parent').get('children')[index - 1] || null;
 	}
 
 	/* protected */ _render():void {
-		setTimeout(():void => {
-			this.emit('render');
-		});
+		this._renderer.render(this, this._renderOptions);
+		this.emit('rendered');
 	}
+
+	set:ui.IWidgetSet;
 }
+
+Widget.prototype._renderer = new Renderer();
 
 export = Widget;

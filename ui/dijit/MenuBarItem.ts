@@ -1,15 +1,20 @@
-import _DijitWidget = require('dijit/MenuBarItem');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/MenuBarItem');
 import MenuItem = require('./MenuItem');
 
 class MenuBarItem extends MenuItem {
-	static _dijitConfig:any = {
-		contextMenuForWindow: 'boolean',
-		leftClickToOpen: 'boolean',
-		refocus: 'boolean'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-MenuBarItem.configure(MenuItem);
+configure(MenuBarItem, {
+	Base: MenuItem,
+	Dijit: Dijit,
+	schema: {
+		contextMenuForWindow: Boolean,
+		leftClickToOpen: Boolean,
+		refocus: Boolean
+	}
+});
 
 export = MenuBarItem;

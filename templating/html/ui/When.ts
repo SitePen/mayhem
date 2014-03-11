@@ -2,18 +2,19 @@
 
 import core = require('../../../interfaces');
 import domUtil = require('../../../ui/dom/util');
-import DomWidgetFactory = require('../../DomWidgetFactory');
+import WidgetFactory = require('../../WidgetFactory');
 import Mediator = require('../../../Mediator');
 import ui = require('../../../ui/interfaces');
 import util = require('../../../util');
-import ViewWidget = require('../../../ui/dom/ViewWidget');
+import View = require('../../../ui/View');
 import when = require('dojo/when');
 
-class When extends ViewWidget {
+// TODO: move all this render noise to _renderer
+class When extends View {
 	private _duringTemplate:any;
-	private _duringWidget:ui.IDomWidget;
+	private _duringWidget:ui.IWidget;
 	private _errorTemplate:any;
-	private _errorWidget:ui.IDomWidget;
+	private _errorWidget:ui.IWidget;
 	private _hasProgress:boolean;
 	private _inFlight:boolean;
 	/* protected */ _mediator:Mediator;
@@ -26,6 +27,11 @@ class When extends ViewWidget {
 	private _success:boolean;
 	private _targetPromise:any;
 	private _valueField:string;
+
+	// Just shut up, typescript
+	private _content:Node;
+	private _firstNode:Comment;
+	private _lastNode:Comment;
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'content' ], '_targetPromiseSetter');
@@ -40,7 +46,7 @@ class When extends ViewWidget {
 		this._content = content;
 		// Defer content render unless we've already resolved succesfully
 		if (this._success) {
-			this._renderContent();
+			this._renderSuccess();
 		}
 	}
 
@@ -64,9 +70,9 @@ class When extends ViewWidget {
 		return scopedMediator;
 	}
 
-	private _createWidget(template:any):ui.IDomWidget {
+	private _createWidget(template:any):ui.IWidget {
 		if (template) {
-			var widget = new DomWidgetFactory(template, ViewWidget).create();
+			var widget = new WidgetFactory(template, View).create();
 			this.attach(widget);
 			return widget;
 		}
@@ -123,8 +129,12 @@ class When extends ViewWidget {
 
 	private _renderDuring():void {
 		this._errorWidget && this._errorWidget.detach();
+		var node:Node;
+		if (this._duringWidget) {
+			this._duringWidget.detach();
+			node = this._duringWidget.get('fragment');
+		}
 		// Preserve content if previously rendered
-		var node:Node = this._duringWidget && this._duringWidget.getNode()
 		if (!this._content) {
 			this._content = domUtil.getRange(this._firstNode, this._lastNode, true).extractContents();
 		}
@@ -133,13 +143,18 @@ class When extends ViewWidget {
 
 	private _renderError():void {
 		this._duringWidget && this._duringWidget.detach();
-		var node:Node = this._errorWidget && this._errorWidget.getNode();
-		node && this._lastNode.parentNode.insertBefore(node, this._lastNode);
+		if (this._errorWidget) {
+			this._errorWidget.detach();
+			// TODO: move to _renderer
+			var lastNode = this.get('lastNode');
+			lastNode.parentNode.insertBefore(this._errorWidget.get('fragment'), lastNode);
+		}
 	}
 
 	private _renderSuccess():void {
 		this._duringWidget && this._duringWidget.detach();
-		this._renderContent();
+		//this._renderContent();
+		// this._renderer.setBody...
 	}
 
 	private _targetPromiseSetter(value:any):void {

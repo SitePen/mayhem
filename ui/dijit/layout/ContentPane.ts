@@ -1,24 +1,30 @@
-import _DijitWidget = require('dijit/layout/ContentPane');
+import configure = require('../configure');
+import layout = require('./interfaces');
+import Dijit = require('dijit/layout/ContentPane');
 import _Widget = require('../_Widget');
 
-class ContentPane extends _Widget { // _Container
-	static _dijitConfig:any = {
-		href: 'string',
-		content: 'string',
-		extractContent: 'boolean',
-		parseOnLoad: 'boolean',
-		parserScope: 'string',
-		preventCache: 'boolean',
-		preload: 'boolean',
-		refreshOnShow: 'boolean',
-		loadingMessage: 'string',
-		errorMessage: 'string'
-
-		// TODO: actions from dijit/_Widget
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class ContentPane extends _Widget implements layout.IContentPane {
+	get:layout.IContentPaneGet;
+	set:layout.IContentPaneSet;
 }
 
-ContentPane.configure(_Widget);
+configure(ContentPane, {
+	Base: _Widget,
+	Dijit: Dijit,
+	schema: {
+		href: String,
+		content: String,
+		extractContent: Boolean,
+		parseOnLoad: Boolean,
+		parserScope: String,
+		preventCache: Boolean,
+		preload: Boolean,
+		refreshOnShow: Boolean,
+		loadingMessage: String,
+		errorMessage: String
+
+		// TODO: actions from dijit/_Widget
+	}
+});
 
 export = ContentPane;

@@ -1,11 +1,18 @@
-import _DijitWidget = require('dijit/form/NumberTextBox');
+import configure = require('../configure');
+import Dijit = require('dijit/form/NumberTextBox');
+import form = require('./interfaces');
 import RangeBoundTextBox = require('./RangeBoundTextBox');
 
 class NumberTextBox extends RangeBoundTextBox {
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-// TODO: catalog textboxes
-NumberTextBox.configure(RangeBoundTextBox);
+configure(NumberTextBox, {
+	Base: RangeBoundTextBox,
+	Dijit: Dijit,
+	schema: {
+		// TODO
+	}
+});
 
 export = NumberTextBox;

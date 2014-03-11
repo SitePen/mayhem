@@ -1,13 +1,19 @@
 import Button = require('./Button');
-import _DijitWidget = require('dijit/form/ToggleButton');
+import configure = require('../configure');
+import Dijit = require('dijit/form/ToggleButton');
+import form = require('./interfaces');
 
-class ToggleButton extends Button {
-	static _dijitConfig:any = {
-		checked: 'boolean'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class ToggleButton extends Button implements form.IToggleButton {
+	get:form.IToggleButtonGet;
+	set:form.IToggleButtonSet;
 }
 
-ToggleButton.configure(Button);
+configure(ToggleButton, {
+	Base: Button,
+	Dijit: Dijit,
+	schema: {
+		checked: Boolean
+	}
+});
 
 export = ToggleButton;

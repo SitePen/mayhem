@@ -1,3 +1,9 @@
+import domConstruct = require('dojo/dom-construct');
+
+export function toDom(value:any /* string | Node */):Node {
+	return domConstruct.toDom(value)
+}
+
 export function getRange(start:Node, end:Node, exclusive:boolean = false):Range {
 	var range = document.createRange();
 

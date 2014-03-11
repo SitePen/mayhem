@@ -1,17 +1,23 @@
-import _DijitWidget = require('dijit/layout/StackContainer');
+import configure = require('../configure');
+import layout = require('./interfaces');
+import Dijit = require('dijit/layout/StackContainer');
 import _LayoutWidget = require('./_LayoutWidget');
 
-class StackContainer extends _LayoutWidget {
-	static _childDijitConfig:any = {
-		selected: 'boolean',
-		disabled: 'boolean',
-		closable: 'boolean',
-		iconClass: 'string',
-		showTitle: 'boolean'
-	}
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class StackContainer extends _LayoutWidget implements layout.IStackContainer {
+	get:layout.IStackContainerGet;
+	set:layout.IStackContainerSet;
 }
 
-StackContainer.configureLayout(_LayoutWidget);
+configure(StackContainer, {
+	Base: _LayoutWidget,
+	Dijit: Dijit,
+	schema: {
+		selected: Boolean,
+		disabled: Boolean,
+		closable: Boolean,
+		iconClass: String,
+		showTitle: Boolean
+	}
+});
 
 export = StackContainer;

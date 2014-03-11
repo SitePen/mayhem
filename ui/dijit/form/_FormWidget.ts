@@ -1,20 +1,16 @@
+import configure = require('../configure');
+import form = require('./interfaces');
+import _FormWidgetMixin = require('./_FormWidgetMixin');
 import _Widget = require('../_Widget');
 
-class _FormWidget extends _Widget {
-	static _dijitConfig:any = {
-		// _FormWidgetMixin
-		name: 'string',
-		alt: 'string',
-		value: 'string',
-		type: 'string',
-		'aria-label': 'string',
-		tabIndex: 'string',
-		disabled: 'boolean',
-		intermediateChanges: 'string',
-		scrollOnFocus: 'string'	
-	};
+class _FormWidget extends _Widget implements form.IFormWidget {
+	get:form.IFormWidgetGet;
+	set:form.IFormWidgetSet;
 }
 
-_FormWidget.configure(_Widget);
+configure(_FormWidget, {
+	Base: _Widget,
+	mixins: [ _FormWidgetMixin ]
+});
 
 export = _FormWidget;

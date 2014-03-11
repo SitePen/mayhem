@@ -1,19 +1,24 @@
-import _DijitWidget = require('dijit/ProgressBar');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/ProgressBar');
 import _Widget = require('./_Widget');
 
 class ProgressBar extends _Widget {
-	static _dijitConfig:any = {
-		indeterminate: 'boolean',
-		label: 'string',
-		maximum: 'number',
-		places: 'string',
-		progress: 'string',
-		value: 'number',
-		onChange: { action: true }
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: interfaces
 }
 
-ProgressBar.configure(_Widget);
+configure(ProgressBar, {
+	Base: _Widget,
+	Dijit: Dijit,
+	schema: {
+		indeterminate: Boolean,
+		label: String,
+		maximum: Number,
+		places: String,
+		progress: String,
+		value: Number,
+		onChange: Function
+	}
+});
 
 export = ProgressBar;

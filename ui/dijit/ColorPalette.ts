@@ -1,13 +1,18 @@
-import _DijitWidget = require('dijit/ColorPalette');
+import configure = require('./configure');
+import dijit = require('./interfaces');
+import Dijit = require('dijit/ColorPalette');
 import _Widget = require('./_Widget');
 
 class ColorPalette extends _Widget {
-	static _dijitConfig:any = {
-		palette: 'string'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+	// TODO: intefaces
 }
 
-ColorPalette.configure(_Widget);
+configure(ColorPalette, {
+	Base: _Widget,
+	Dijit: Dijit,
+	schema: {
+		palette: String
+	}
+});
 
 export = ColorPalette;

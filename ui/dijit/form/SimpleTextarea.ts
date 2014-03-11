@@ -1,15 +1,20 @@
-import _DijitWidget = require('dijit/form/SimpleTextarea');
+import configure = require('../configure');
+import Dijit = require('dijit/form/SimpleTextarea');
+import form = require('./interfaces');
 import TextBox = require('./TextBox');
-import util = require('../../../util');
 
-class SimpleTextarea extends TextBox {
-	static _dijitConfig:any = {
-		rows: 'number',
-		cols: 'number'
-	};
-	static _DijitWidget:typeof _DijitWidget = _DijitWidget;
+class SimpleTextarea extends TextBox implements form.ITextarea {
+	get:form.ITextareaGet;
+	set:form.ITextareaSet;
 }
 
-SimpleTextarea.configure(TextBox);
+configure(SimpleTextarea, {
+	Base: TextBox,
+	Dijit: Dijit,
+	schema: {
+		cols: Number,
+		rows: Number
+	}
+});
 
 export = SimpleTextarea;

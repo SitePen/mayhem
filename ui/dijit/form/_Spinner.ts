@@ -1,15 +1,20 @@
+import configure = require('../configure');
+import form = require('./interfaces');
 import RangeBoundTextBox = require('./RangeBoundTextBox');
 
 class _Spinner extends RangeBoundTextBox {
-	static _dijitConfig:any = {
-		defaultTimeout: 'number',
-		minimumTimeout: 'number',
-		timeoutChangeRate: 'number',
-		largeDelta: 'boolean',
-		smallDelta: 'boolean'
-	};
+	// TODO: interfaces
 }
 
-_Spinner.configure(RangeBoundTextBox);
+configure(_Spinner, {
+	Base: RangeBoundTextBox,
+	schema: {
+		defaultTimeout: Number,
+		minimumTimeout: Number,
+		timeoutChangeRate: Number,
+		largeDelta: Boolean,
+		smallDelta: Boolean
+	}
+});
 
 export = _Spinner;
