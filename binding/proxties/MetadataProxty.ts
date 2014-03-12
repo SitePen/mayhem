@@ -6,6 +6,9 @@ import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
 import util = require('../../util');
 
+/**
+ * This property binder adds the ability to bind to metadata properties on instances of classes such as data/Model.
+ */
 class MetadataProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
 		var object = <core.IHasMetadata> kwArgs.object;
@@ -73,19 +76,24 @@ class MetadataProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	destroy():void {
 		super.destroy();
 
-		this._handle.remove();
+		this._handle && this._handle.remove();
 		this._parent && this._parent.destroy();
 		this._handle = this._parent = null;
 	}
 
 	private _swapMetadataObject(newObject:core.IHasMetadata):void {
+		console.log('_swapMetadata with key ' + this._key + ' on', newObject);
 		var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(this._key) : null;
+		console.log('newMetadata =', newMetadata);
 
 		this._handle && this._handle.remove();
+		console.log('removed handle for', this);
+
 		if (newMetadata) {
 			this._handle = newMetadata.observe(this._field, (newValue:any):void => {
 				this._update(newValue);
 			});
+			console.log('set handle for', this);
 
 			this.set(newMetadata.get(this._field));
 		}

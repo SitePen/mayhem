@@ -104,6 +104,8 @@ class ProxtyBinder implements binding.IBinder {
 			return proxty;
 		}
 
+		console.log('checking ' + proxties.length + ' registered constructors against ' + binding);
+
 		var proxty:binding.IProxty<SourceT, TargetT>;
 		for (var i = 0, Proxty:binding.IProxtyConstructor; (Proxty = proxties[i]); ++i) {
 			if (Proxty.test({ object: object, binding: binding, binder: this })) {

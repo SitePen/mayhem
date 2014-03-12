@@ -97,7 +97,8 @@ registerSuite({
 			assert.fail(error, null, 'Removing handle a second time should be a no-op');
 		}
 
-		source.bindTo(target);
+		// pass a value for options with a false setValue property to cover additional bindTo cases
+		source.bindTo(target, { setValue: false });
 		sourceObject.foo = 'eee';
 		assert.strictEqual(target.get(), 'EEE', 'Setting source property value should update target property');
 

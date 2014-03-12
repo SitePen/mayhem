@@ -105,6 +105,28 @@ module.exports = function (grunt) {
 					reporters: [ 'lcovhtml' ]
 				}
 			},
+			binding: {
+				options: {
+					config: 'tests/intern',
+					suites: [ 'mayhem/tests/binding' ],
+					reporters: [ 'console', 'lcovhtml' ]
+				}
+			},
+			object: {
+				options: {
+					config: 'tests/intern',
+					suites: [ 'mayhem/tests/binding/proxties/ObjectTargetProxty' ],
+					reporters: [ 'console', 'lcovhtml' ]
+				}
+			},
+			bindingRunner: {
+				options: {
+					runType: 'runner',
+					config: 'tests/intern',
+					suites: [ 'mayhem/tests/binding' ],
+					reporters: [ 'console', 'lcovhtml' ]
+				}
+			},
 			client: {
 				options: {
 					config: 'tests/intern'
