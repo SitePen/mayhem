@@ -14,7 +14,6 @@ export interface IButtonGet extends IFormWidgetGet {
 }
 
 export interface IButtonSet extends IFormWidgetSet {
-	(name:'cols', value:number):void;
 	(name:'label', value:string):void;
 	(name:'type', value:string):void;
 	(name:'onClick', value:Function):void;
