@@ -168,11 +168,13 @@ export interface IView extends IContainer {
 export interface IViewGet extends IContainerGet {
 	(name:'app'):core.IApplication;
 	(name:'content'):Node;
+	(name:'placeholders'):{ [name:string]: IPlaceholder; };
 }
 
 export interface IViewSet extends IContainerSet {
 	(name:'app', value:core.IApplication):void;
 	(name:'content', value:Node):void;
+	(name:'placeholders', value:{ [name:string]: IPlaceholder; }):void;
 }
 
 export interface IWidget extends core.IObservableEvented {

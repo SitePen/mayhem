@@ -249,7 +249,7 @@ define([], function() {
 			{ $child: 7 },
 			"</div><hr class='spacer'></hr><h2>Check Boxes</h2><fieldset>",
 			{ $child: 8 },
-			" <label for='check1'>unchecked</label>",
+			" <label for='check1'>unchecked</label> ",
 			{ $child: 9 },
 			" <label for='check2'>checked</label> ",
 			{ $child: 10 },

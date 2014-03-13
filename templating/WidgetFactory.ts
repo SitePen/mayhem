@@ -306,7 +306,7 @@ class _WidgetBinder {
 	}
 
 	private _processContentComment(node:Node):void {
-		var widget = this.widget,
+		var widget = <ui.IView> this.widget,
 			match:string[] = node.nodeValue.match(this.factory.MARKER_PATTERN),
 			descriptor:any = match && JSON.parse(match[1]);
 		if (descriptor) {

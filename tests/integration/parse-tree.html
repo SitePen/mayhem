@@ -126,11 +126,14 @@ require([
 	'framework/tests/integration/MyMediator',
 	'framework/tests/integration/MyModel',
 	'framework/templating/Template',
-	'dojo/text!./parse-tree.tmpl.json',
-	'./parse-tree.tmpl.js',
+	'./parse-tree.js',
+	'dojo/text!./parse-tree-tmpl.js',
+	'framework/templating/Template!./parse-tree-tmpl.js',
+	'framework/templating/Template!./parse-tree-tmpl.json',
+	'framework/templating/json!./parse-tree-tmpl.json',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dojo/resources/dojo.css'
-], function (Application, Master, MyMediator, MyModel, Template, jsonTmpl, jsTmpl) {
+], function (Application, Master, MyMediator, MyModel, Template, rawTree, rawTreeString, rawTmpl, jsonTmpl, jsonTmpl2) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -142,18 +145,31 @@ require([
 			model: model
 		});
 
-		var masterView = new Master({}),
-			template;
+		var masterView = new Master({});
 		masterView.attachToWindow(document.body);
-		// Build up a view from json template representing a raw parse tree
-		template = new Template(JSON.parse(jsonTmpl));
-		template.load(5000).then(function(factory) {
-			masterView.add(factory.create());
-		});
-		template = new Template(jsTmpl);
-		template.load().then(function(factory) {
 
+		// masterView.add(jsonTmpl.create());
+		// masterView.add(jsonTmpl2.create());
+		// masterView.add(rawTmpl.create());
+
+		var rawTmpl2 = new Template(rawTree);
+		rawTmpl2.load().then(function(factory) {
+			// masterView.add(factory.create())
 		});
+
+		var rawTmpl3 = new Template(rawTreeString);
+		rawTmpl3.load(5000).then(function(factory) {
+			// masterView.add(factory.create())
+		});
+
+		var rawTmpl4 = Template.process(rawTreeString).then(function(factory) {
+			masterView.add(factory.create())
+		});
+
+		// var template = new Template(moduleTmpl);
+		// template.load(5000).then(function(factory) {
+		// 	masterView.add(factory.create());
+		// });
 	});
 });
 		</script>
