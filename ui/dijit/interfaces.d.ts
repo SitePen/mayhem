@@ -4,12 +4,7 @@ import core = require('../../interfaces');
 import layout = require('./layout/interfaces');
 import ui = require('../interfaces');
 
-export import _IContainer = require('dijit/_Container');
-export import _IWidget = require('dijit/_Widget');
 export import _IWidgetBase = require('dijit/_WidgetBase');
-
-export interface _IContainerWidget extends _IWidget, _IContainer {
-}
 
 export interface IDijit extends core.IObservable {
 	get:IDijitGet;
@@ -18,12 +13,31 @@ export interface IDijit extends core.IObservable {
 
 export interface IDijitGet extends core.IObservableGet {
 	(name:'_dijit'):_IWidgetBase;
-	(name:'_dijitConfig'):any;
+	(name:'_dijitConfig'):IDijitConfiguration;
 }
 
 export interface IDijitSet extends core.IObservableSet {
 	(name:'_dijit', value:_IWidgetBase):void;
-	(name:'_dijitConfig', value:any):void;
+	(name:'_dijitConfig', value:IDijitConfiguration):void;
+}
+
+export interface IDijitConfiguration {
+	Base:any/*typeof ui.IWidget*/;
+	Dijit:typeof _IWidgetBase;
+	schema:any;
+	mixins:any/*Array<typeof ui.IWidget>*/;
+	rename:any;
+}
+
+export interface IMenuItem extends IWidget {
+	get:IMenuItemGet;
+	set:IMenuItemSet;
+}
+
+export interface IMenuItemGet extends IWidgetGet {
+}
+
+export interface IMenuItemSet extends IWidgetSet {
 }
 
 export interface IMixin extends IDijit {
@@ -35,6 +49,17 @@ export interface IMixinGet extends IDijitGet {
 }
 
 export interface IMixinSet extends IDijitSet {
+}
+
+export interface IPopupMenuItem extends IMenuItem {
+	get:IPopupMenuItemGet;
+	set:IPopupMenuItemSet;
+}
+
+export interface IPopupMenuItemGet extends IMenuItemGet {
+}
+
+export interface IPopupMenuItemSet extends IMenuItemSet {
 }
 
 export interface ITitlePane extends layout.IContentPane {

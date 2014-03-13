@@ -1,12 +1,10 @@
-import configure = require('../dijit/configure');
+import configure = require('../dijit/util/configure');
+import DijitRenderer = require('../dijit/util/Renderer');
 import Element = require('../Element');
 import form = require('./interfaces');
 import lang = require('dojo/_base/lang');
-import _Renderer = require('../dijit/_Renderer');
 
 /* abstract */ class Control extends Element implements form.IControl {
-	/* protected */ __dijitConfig:any;
-
 	get:form.IControlGet;
 	set:form.IControlSet;
 }
@@ -17,6 +15,6 @@ configure(Control, {
 	}
 });
 
-Control.prototype._renderer = new _Renderer();
+Control.prototype._renderer = new DijitRenderer();
 
 export = Control;

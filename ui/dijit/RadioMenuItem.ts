@@ -1,5 +1,5 @@
 import CheckedMenuItem = require('./CheckedMenuItem');
-import configure = require('./configure');
+import configure = require('./util/configure');
 import dijit = require('./interfaces');
 import Dijit = require('dijit/RadioMenuItem');
 

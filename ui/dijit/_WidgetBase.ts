@@ -1,11 +1,9 @@
-import configure = require('./configure');
+import configure = require('./util/configure');
 import dijit = require('./interfaces');
-import DijitRenderer = require('./_Renderer');
+import DijitRenderer = require('./util/Renderer');
 import Element = require('../Element');
 
-class _WidgetBase extends Element implements dijit.IWidgetBase {
-	/* protected */ __dijitConfig:any;
-
+/* abstract */ class _WidgetBase extends Element implements dijit.IWidgetBase {
 	get:dijit.IWidgetBaseGet;
 	set:dijit.IWidgetBaseSet;
 }

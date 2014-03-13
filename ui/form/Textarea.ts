@@ -1,4 +1,4 @@
-import configure = require('../dijit/configure');
+import configure = require('../dijit/util/configure');
 import DijitBase = require('../dijit/form/SimpleTextarea');
 import TextInput = require('./TextInput');
 import form = require('./interfaces');

@@ -1,5 +1,5 @@
 import CheckBox = require('./CheckBox');
-import configure = require('../dijit/configure');
+import configure = require('../dijit/util/configure');
 import DijitBase = require('../dijit/form/RadioButton');
 import form = require('./interfaces');
 import util = require('../../util');

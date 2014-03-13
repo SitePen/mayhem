@@ -1,4 +1,4 @@
-import configure = require('../dijit/configure');
+import configure = require('../dijit/util/configure');
 import Control = require('./Control');
 import form = require('./interfaces');
 

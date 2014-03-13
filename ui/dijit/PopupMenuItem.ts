@@ -1,17 +1,19 @@
-import configure = require('./configure');
+import configure = require('./util/configure');
 import dijit = require('./interfaces');
 import Dijit = require('dijit/PopupMenuItem');
 import MenuItem = require('./MenuItem');
+import _WidgetBase = require('./_WidgetBase');
 
-class PopupMenuItem extends MenuItem {
-	// TODO: interfaces
+class PopupMenuItem extends MenuItem implements dijit.IPopupMenuItem {
+	get:dijit.IPopupMenuItemGet;
+	set:dijit.IPopupMenuItemSet;
 }
 
 configure(PopupMenuItem, {
 	Base: MenuItem,
 	Dijit: Dijit,
 	schema: {
-		popup: { child: '_dijit', required: true }
+		popup: { type: _WidgetBase, required: true }
 	}
 });
 

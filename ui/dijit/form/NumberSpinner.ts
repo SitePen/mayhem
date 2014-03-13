@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import Dijit = require('dijit/form/NumberSpinner');
 import form = require('./interfaces');
 import _Spinner = require('./_Spinner');

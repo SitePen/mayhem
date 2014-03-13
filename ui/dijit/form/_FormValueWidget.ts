@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import form = require('./interfaces');
 import _FormWidget = require('./_FormWidget');
 

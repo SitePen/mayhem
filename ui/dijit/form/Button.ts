@@ -1,5 +1,5 @@
 import _ButtonMixin = require('./_ButtonMixin');
-import configure = require('../configure');
+import configure = require('../util/configure');
 import Dijit = require('dijit/form/Button');
 import form = require('./interfaces');
 import _FormWidget = require('./_FormWidget');

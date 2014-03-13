@@ -1,10 +1,11 @@
-import configure = require('./configure');
+import configure = require('./util/configure');
 import dijit = require('./interfaces');
 import Dijit = require('dijit/MenuItem');
 import _Widget = require('./_Widget');
 
-class MenuItem extends _Widget {
-	// TODO: interfaces
+class MenuItem extends _Widget implements dijit.IMenuItem {
+	get:dijit.IMenuItemGet;
+	set:dijit.IMenuItemSet;
 }
 
 configure(MenuItem, {

@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import Dijit = require('dijit/form/TimeTextBox');
 import form = require('./interfaces');
 import RangeBoundTextBox = require('./RangeBoundTextBox');

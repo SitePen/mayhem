@@ -1,5 +1,5 @@
 import _CheckBoxMixin = require('./_CheckBoxMixin');
-import configure = require('../configure');
+import configure = require('../util/configure');
 import Dijit = require('dijit/form/CheckBox');
 import form = require('./interfaces');
 import ToggleButton = require('./ToggleButton');

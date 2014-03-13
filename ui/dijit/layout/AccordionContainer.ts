@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import layout = require('./interfaces');
 import Dijit = require('dijit/layout/AccordionContainer');
 import StackContainer = require('./StackContainer')

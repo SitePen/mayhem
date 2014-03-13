@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import layout = require('./interfaces');
 import Dijit = require('dijit/layout/LayoutContainer');
 import _LayoutWidget = require('./_LayoutWidget');
@@ -11,12 +11,12 @@ class LayoutContainer extends _LayoutWidget implements layout.ILayoutContainer {
 configure(LayoutContainer, {
 	Base: _LayoutWidget,
 	Dijit: Dijit,
-	schema: {
-		design: String
-	},
-	childSchema: {
+	layoutSchema: {
 		region: String,
 		layoutPriority: Number
+	},
+	schema: {
+		design: String
 	}
 });
 

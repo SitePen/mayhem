@@ -64,6 +64,19 @@ export interface ICheckBoxMixinSet extends dijit.IMixinSet {
 	(name:'readOnly', value:boolean):void;
 }
 
+export interface IDropDownButton extends IButton {
+	get:IDropDownButtonGet;
+	set:IDropDownButtonSet;
+}
+
+export interface IDropDownButtonGet extends IButtonGet {
+	(name:'readOnly'):boolean;
+}
+
+export interface IDropDownButtonSet extends IButtonSet {
+	(name:'readOnly', value:boolean):void;
+}
+
 export interface IFormValueWidget extends IFormWidget, IFormValueMixin {
 	get:IFormValueWidgetGet;
 	set:IFormValueWidgetSet;

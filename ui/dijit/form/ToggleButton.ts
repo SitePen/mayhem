@@ -1,5 +1,5 @@
 import Button = require('./Button');
-import configure = require('../configure');
+import configure = require('../util/configure');
 import Dijit = require('dijit/form/ToggleButton');
 import form = require('./interfaces');
 

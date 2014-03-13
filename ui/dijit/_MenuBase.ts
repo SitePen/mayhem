@@ -1,4 +1,4 @@
-import configure = require('./configure');
+import configure = require('./util/configure');
 import dijit = require('./interfaces');
 import _MenuItem = require('dijit/MenuItem');
 import _Widget = require('./_Widget');

@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import layout = require('./interfaces');
 import Dijit = require('dijit/layout/BorderContainer');
 import LayoutContainer = require('./LayoutContainer');
@@ -11,15 +11,15 @@ class BorderContainer extends LayoutContainer implements layout.IBorderContainer
 configure(BorderContainer, {
 	Base: LayoutContainer,
 	Dijit: Dijit,
+	layoutSchema: {
+		splitter: Boolean,
+		minSize: Number,
+		maxSize: Number
+	},
 	schema: {
 		gutter: Boolean,
 		liveSplitters: Boolean,
 		persist: Boolean
-	},
-	childSchema: {
-		splitter: Boolean,
-		minSize: Number,
-		maxSize: Number
 	}
 });
 

@@ -1,4 +1,4 @@
-import configure = require('../configure');
+import configure = require('../util/configure');
 import Dijit = require('dijit/form/TextBox');
 import form = require('./interfaces');
 import _FormValueWidget = require('./_FormValueWidget');
