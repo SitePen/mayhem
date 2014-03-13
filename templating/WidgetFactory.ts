@@ -8,6 +8,7 @@ import lang = require('dojo/_base/lang');
 import html = require('./html');
 import Observable = require('../Observable');
 import Placeholder = require('../ui/Placeholder');
+import PlacePosition = require('../ui/PlacePosition');
 import Template = require('./Template');
 import templating = require('./interfaces');
 import ui = require('../ui/interfaces');
@@ -257,12 +258,22 @@ class _WidgetBinder {
 	private _processChildren():void {
 		var childFactories = this.factory.childFactories,
 			factory:WidgetFactory,
-			widget:ui.IComposite = <ui.IComposite> this.widget, // TODO just ui.IContainer if no markerNodes
-			markerNodes = this._childMarkerNodes || [];
+			widget:ui.IContainer = <ui.IContainer> this.widget,
+			children = widget.get('children'),
+			markerNodes = this._childMarkerNodes || [],
+			item:ui.IWidget;
 		for (var i = 0, len = childFactories.length; i < len; ++i) {
 			factory = childFactories[i];
 			if (factory) {
-				widget.add(factory.create(), markerNodes[i]); // TODO: child options? 
+				item = factory.create(); // TODO: child options?
+				if (markerNodes[i]) {
+					domUtil.place(item.get('fragment'), markerNodes[i], PlacePosition.REPLACE);
+					widget.attach(item);
+					children[i] = item;
+				}
+				else {
+					widget.add(item);
+				}
 			}
 		}
 	}
@@ -295,7 +306,8 @@ class _WidgetBinder {
 	}
 
 	private _processContentComment(node:Node):void {
-		var match:string[] = node.nodeValue.match(this.factory.MARKER_PATTERN),
+		var widget = this.widget,
+			match:string[] = node.nodeValue.match(this.factory.MARKER_PATTERN),
 			descriptor:any = match && JSON.parse(match[1]);
 		if (descriptor) {
 			var parent:Node = node.parentNode;
@@ -309,7 +321,10 @@ class _WidgetBinder {
 				this._childMarkerNodes[descriptor.$child] = node;
 			}
 			else if (descriptor.$named != null) {
-				(<ui.IView> this.widget).createPlaceholder(descriptor.$named, node);
+				var name:string = descriptor.$named,
+					placeholder = widget.get('placeholders')[name] = new Placeholder();
+				domUtil.place(placeholder.get('fragment'), node, PlacePosition.REPLACE);
+				widget.attach(placeholder);
 			}
 			else {
 				if (has('debug')) {

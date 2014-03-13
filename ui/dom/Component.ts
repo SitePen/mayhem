@@ -2,7 +2,7 @@ import BaseRenderer = require('./Base');
 import dom = require('./interfaces');
 
 class ComponentRenderer extends BaseRenderer {
-	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget):void {
+	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget, position:any):void {
 		var firstNode:Node = widget.get('firstNode'),
 			referenceNode:Node = referenceItem && referenceItem.get('firstNode'),
 			itemNode:Node = item.get('fragment');

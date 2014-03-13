@@ -136,14 +136,13 @@ export interface IPlaceholderSet extends IMediatedSet {
 }
 
 export interface IRenderer {
-	add(widget:IContainer, item:IWidget, position:any):void;
+	add(widget:IContainer, item:IWidget, referenceItem:IWidget, position:any):void;
 	attachToWindow(widget:IMediated, window:any):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
 	getContent(widget:IComposite):Node;
 	getTextContent(widget:IComposite):string;
-	insertAt(widget:IContainer, item:IWidget, node:Node):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget, options?:any):void;
 	setAttribute(widget:IComponent, name:string, value:string):void;
@@ -162,7 +161,6 @@ export interface IView extends IContainer {
 	add(item:IWidget, position?:any):IHandle;
 	bind(kwArgs:IBindArguments):IHandle;
 	clear():void;
-	createPlaceholder(name:string, position:Node):IPlaceholder;
 	get:IViewGet;
 	set:IViewSet;
 }

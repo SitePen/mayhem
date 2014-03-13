@@ -1,11 +1,10 @@
 import dom = require('./interfaces');
-import domConstruct = require('dojo/dom-construct');
 import domUtil = require('./util');
 import ui = require('../interfaces');
 import util = require('../../util');
 
 class BaseRenderer implements ui.IRenderer {
-	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget):void {
+	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget, position:any):void {
 		var firstNode:Node = widget.get('firstNode'),
 			lastNode:Node = widget.get('lastNode'),
 			referenceNode:Node = referenceItem && referenceItem.get('firstNode'),
@@ -43,11 +42,6 @@ class BaseRenderer implements ui.IRenderer {
 
 	getTextContent(widget:dom.IComposite):string {
 		return // TODO
-	}
-
-	insertAt(widget:dom.IContainer, item:dom.IWidget, node:Node):void {
-		item.detach();
-		node.parentNode.replaceChild(item.get('fragment'), node);
 	}
 
 	remove(widget:dom.IContainer, item:dom.IWidget):void {

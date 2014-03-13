@@ -11,7 +11,7 @@ class StackContainer extends _LayoutWidget implements layout.IStackContainer {
 configure(StackContainer, {
 	Base: _LayoutWidget,
 	Dijit: Dijit,
-	schema: {
+	layoutSchema: {
 		selected: Boolean,
 		disabled: Boolean,
 		closable: Boolean,

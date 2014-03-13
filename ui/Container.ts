@@ -45,8 +45,9 @@ class Container extends Mediated implements ui.IContainer {
 
 			var referenceWidget:ui.IWidget = this._children[position];
 			this._children.splice(position, 0, item);
-			this._renderer.add(this, item, referenceWidget);
-			item.set('parent', this);
+			this._renderer.add(this, item, referenceWidget, position);
+			//item.set('parent', this);
+			this.attach(item);
 
 			var self = this;
 			handle = {
@@ -95,7 +96,6 @@ class Container extends Mediated implements ui.IContainer {
 		this._renderer.remove(this, widget);
 		this._children.splice(index, 1);
 		widget.set('parent', null);
-		// TODO: reset index on other children?
 	}
 
 	set:ui.IContainerSet;

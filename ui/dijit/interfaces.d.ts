@@ -4,7 +4,11 @@ import core = require('../../interfaces');
 import layout = require('./layout/interfaces');
 import ui = require('../interfaces');
 
+import _IContainer = require('dijit/_Container');
+import _IWidget = require('dijit/_Widget');
 export import _IWidgetBase = require('dijit/_WidgetBase');
+export interface _IWidgetContainer extends _IContainer, _IWidget {
+}
 
 export interface IDijit extends core.IObservable {
 	get:IDijitGet;

@@ -4,7 +4,6 @@ import Container = require('./Container');
 import core = require('../interfaces');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
-import Placeholder = require('./Placeholder');
 import ui = require('./interfaces');
 import util = require('../util');
 
@@ -31,7 +30,6 @@ class View extends Container implements ui.IView {
 	}
 
 	add(item:ui.IWidget, placeholder:string):IHandle;
-	add(item:ui.IWidget, referenceNode:Node):IHandle;
 	add(item:ui.IWidget, position?:any):IHandle;
 	add(item:ui.IWidget, position?:any):IHandle {
 		if (typeof position === 'string') {
@@ -47,20 +45,6 @@ class View extends Container implements ui.IView {
 					this.remove = function ():void {};
 					placeholder.set('widget', null);
 					placeholder = null;
-				}
-			};
-		}
-		else if (position instanceof Node) {
-			this._renderer.insertAt(this, item, position);
-			this.attach(item);
-			this.get('children').push(item);
-			
-			var self = this;
-			return {
-				remove: function ():void {
-					this.remove = function ():void {};
-					self.remove(item);
-					item = self = null;
 				}
 			};
 		}
@@ -142,16 +126,6 @@ class View extends Container implements ui.IView {
 
 	/* protected */ _contentSetter(content:Node):void {
 		this._renderer.setBody(this, content);
-	}
-
-	createPlaceholder(name:string, position:Node):ui.IPlaceholder {
-		if (has('debug') && this._placeholders[name]) {
-			throw new Error('Widget already has a placeholder named "' + name + '"');
-		}
-		var placeholder = this._placeholders[name] = new Placeholder();
-		this._renderer.insertAt(this, placeholder, position);
-		this.attach(placeholder);
-		return placeholder;
 	}
 
 	destroy():void {

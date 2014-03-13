@@ -90,17 +90,17 @@ export interface ILayoutContainerSet extends ILayoutWidgetSet {
 	(name:'design', value:string):void;
 }
 
-export interface ILayoutContainerChild extends core.IObservable {
+export interface ILayoutContainerChild extends ILayoutWidgetChild {
 	get:ILayoutContainerChildGet;
 	set:ILayoutContainerChildSet;
 }
 
-export interface ILayoutContainerChildGet extends core.IObservableGet {
+export interface ILayoutContainerChildGet extends ILayoutWidgetChildGet {
 	(name:'region'):string;
 	(name:'layoutPriority'):number;
 }
 
-export interface ILayoutContainerChildSet extends core.IObservableSet {
+export interface ILayoutContainerChildSet extends ILayoutWidgetChildSet {
 	(name:'region', value:string):void;
 	(name:'layoutPriority', value:number):void;
 }
@@ -114,6 +114,17 @@ export interface ILayoutWidgetGet extends dijit.IWidgetGet {
 }
 
 export interface ILayoutWidgetSet extends dijit.IWidgetSet {
+}
+
+export interface ILayoutWidgetChild extends core.IObservable {
+	get:ILayoutWidgetGet;
+	set:ILayoutWidgetSet;
+}
+
+export interface ILayoutWidgetChildGet extends core.IObservableGet {
+}
+
+export interface ILayoutWidgetChildSet extends core.IObservableSet {
 }
 
 export interface IStackContainer extends ILayoutWidget {
@@ -130,6 +141,27 @@ export interface IStackContainerGet extends ILayoutWidgetGet {
 }
 
 export interface IStackContainerSet extends ILayoutWidgetSet {
+	(name:'selected', value:boolean):void;
+	(name:'design', value:boolean):void;
+	(name:'closable', value:boolean):void;
+	(name:'iconClass', value:string):void;
+	(name:'showTitle', value:boolean):void;
+}
+
+export interface IStackContainerChild extends ILayoutWidgetChild {
+	get:IStackContainerChildGet;
+	set:IStackContainerChildSet;
+}
+
+export interface IStackContainerChildGet extends ILayoutWidgetChildGet {
+	(name:'selected'):boolean;
+	(name:'disabled'):boolean;
+	(name:'closable'):boolean;
+	(name:'iconClass'):string;
+	(name:'showTitle'):boolean;
+}
+
+export interface IStackContainerChildSet extends ILayoutWidgetChildSet {
 	(name:'selected', value:boolean):void;
 	(name:'design', value:boolean):void;
 	(name:'closable', value:boolean):void;

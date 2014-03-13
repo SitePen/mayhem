@@ -16,14 +16,13 @@ export interface IMediated extends ui.IMediated {
 }
 
 export interface IRenderer extends ui.IRenderer {
-	add(widget:IContainer, item:IWidget, referenceItem:IWidget):void;
+	add(widget:IContainer, item:IWidget, referenceItem:IWidget, position:any):void;
 	attachToWindow(widget:IMediated, node:Node):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
 	getContent(widget:IComposite):Node;
 	getTextContent(widget:IComposite):string;
-	insertAt(widget:IContainer, item:IWidget, node:Node):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget, options?:any):void;
 	setAttribute(widget:IComponent, name:string, value:string):void;
