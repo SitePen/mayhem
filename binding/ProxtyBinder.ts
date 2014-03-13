@@ -13,7 +13,7 @@ import whenAll = require('dojo/promise/all');
 /**
  * A data binder that uses Proxty objects to enable binding between arbitrary properties of two different objects.
  */
-class ProxtyBinder implements binding.IBinder {
+class ProxtyBinder implements binding.IProxtyBinder {
 	// For now _app has to be exposed for testing purposes
 	/* private */ _app:core.IApplication;
 	private _proxties:binding.IProxtyConstructor[];
@@ -103,8 +103,6 @@ class ProxtyBinder implements binding.IBinder {
 			};
 			return proxty;
 		}
-
-		console.log('checking ' + proxties.length + ' registered constructors against ' + binding);
 
 		var proxty:binding.IProxty<SourceT, TargetT>;
 		for (var i = 0, Proxty:binding.IProxtyConstructor; (Proxty = proxties[i]); ++i) {

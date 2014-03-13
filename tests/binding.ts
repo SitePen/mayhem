@@ -1,5 +1,7 @@
 /// <reference path="../dojo" />
 define([
+	'./binding/BindingError',
+	'./binding/BindingProxty',
 	'./binding/ProxtyBinder',
 	'./binding/proxties/Es5Proxty',
 	'./binding/proxties/MetadataProxty',

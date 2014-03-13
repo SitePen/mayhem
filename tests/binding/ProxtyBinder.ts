@@ -54,7 +54,7 @@ registerSuite({
 			};
 
 		var handles:IHandle[] = [
-			// TODO: <any> casting is needed due to TS#1983
+			// TODO: <any> casting is needed due to TS#2087
 			binder.add(<any> SecondProxty),
 			binder.add(<any> FirstProxty, 0),
 			binder.add(<any> ThirdProxty)
@@ -88,13 +88,13 @@ registerSuite({
 			binder.bind(emptyBinding);
 		}, /No registered proxty constructors understand the requested binding/, 'Attempting an impossible bind should throw');
 
-		// TODO: <any> casting is needed due to TS#1983
+		// TODO: <any> casting is needed due to TS#2087
 		binder.add(<any> MockProxty);
 
 		var sourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
 			targetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
 			dfd:IInternDeferred<any> = this.async(1000),
-			handle:IHandle = binder.bind({
+			handle:binding.IBindingHandle = binder.bind({
 				source: sourceObject,
 				sourceBinding: '',
 				target: targetObject,
@@ -127,6 +127,55 @@ registerSuite({
 				handle.remove();
 			}));
 		}));
+	},
+
+	'#bind bidirectional': function () {
+		// TODO: <any> casting is needed due to TS#2087
+		binder.add(<any> MockProxty);
+
+		var sourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			targetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			dfd:IInternDeferred<any> = this.async(1000),
+			handle:binding.IBindingHandle = binder.bind({
+				source: sourceObject,
+				sourceBinding: '',
+				target: targetObject,
+				targetBinding: ''
+			});
+			//newSourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			//newTargetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null };
+
+		sourceObject.mockProxty.emulateUpdate(1);
+		targetObject.mockProxty.emulateUpdate(2);
+		binder._app.get('scheduler').afterNext(dfd.rejectOnError(function () {
+			console.log('running scheduled update');
+			dfd.resolve(true);
+		}));
+	},
+
+	'update binding': function () {
+		// TODO: <any> casting is needed due to TS#2087
+		binder.add(<any> MockProxty);
+
+		var sourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			targetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			handle:binding.IBindingHandle = binder.bind({
+				source: sourceObject,
+				sourceBinding: '',
+				target: targetObject,
+				targetBinding: '',
+				direction: 2
+			}),
+			newSourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
+			newTargetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null };
+
+		//console.log('source value:', sourceObject.get());
+
+		handle.setSource(newSourceObject);
+
+		handle.setTarget(newTargetObject);
+
+		handle.setDirection(0);
 	},
 
 	'#createProxty': function () {

@@ -85,13 +85,6 @@ class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 			this._object[this._property] = value;
 		}
 	}
-
-	/**
-	 * Updates the bound target property with the given value.
-	 */
-	private _update(value:T):void {
-		this._target && this._target.set(value);
-	}
 }
 
 export = NodeTargetProxty;

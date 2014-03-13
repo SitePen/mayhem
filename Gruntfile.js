@@ -112,10 +112,10 @@ module.exports = function (grunt) {
 					reporters: [ 'console', 'lcovhtml' ]
 				}
 			},
-			object: {
+			pb: {
 				options: {
 					config: 'tests/intern',
-					suites: [ 'mayhem/tests/binding/proxties/ObjectTargetProxty' ],
+					suites: [ 'mayhem/tests/binding/ProxtyBinder' ],
 					reporters: [ 'console', 'lcovhtml' ]
 				}
 			},

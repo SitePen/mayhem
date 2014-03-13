@@ -161,7 +161,7 @@ declare module 'dojo/Evented' {
 declare module 'dojo/has' {
 	var has:{
 		(feature:string):any;
-		add(feature:string, value:any):void;
+		add(feature:string, value:any, now?:boolean, force?:boolean):void;
 	};
 	export = has;
 }

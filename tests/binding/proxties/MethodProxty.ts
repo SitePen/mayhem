@@ -21,7 +21,7 @@ registerSuite({
 		};
 
 		binder = util.createProxtyBinder();
-		// TODO: <any> casting is needed due to TS#1983
+		// TODO: <any> cast needed for TS2087
 		binder.add(<any> MethodProxty);
 		binder.add(<any> Es5Proxty);
 	},

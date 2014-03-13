@@ -16,8 +16,7 @@ registerSuite({
 
 	setup: function () {
 		binder = util.createProxtyBinder();
-
-		// TODO: <any> casting is needed due to TS#1983
+		// TODO: <any> cast needed for TS2087
 		binder.add(<any> StatefulProxty);
 	},
 
@@ -82,16 +81,18 @@ registerSuite({
 		assert.strictEqual(source.get(), '4', 'Bound source property should match value of source property object');
 		assert.strictEqual(target.get(), '3', 'Removing binding should stop old target property from updating');
 
-		try {
+		assert.doesNotThrow(function () {
 			handle.remove();
-		}
-		catch (error) {
-			assert.fail(error, null, 'Removing handle a second time should be a no-op');
-		}
+		}, 'Removing handle a second time should be a no-op');
 
-		source.bindTo(target);
+		handle = source.bindTo(target);
 		sourceObject.set('foo', '5');
 		assert.strictEqual(target.get(), '5', 'Setting source property value should update target property');
+		handle.remove();
+
+		sourceObject.set('foo', '6');
+		source.bindTo(target, { setValue: false });
+		assert.strictEqual(target.get(), '5', 'Target should not be updated when bound with setValue=false');
 
 		source.bindTo(null);
 		sourceObject.set('foo', '6');
@@ -101,12 +102,9 @@ registerSuite({
 		sourceObject.set('foo', '7');
 		assert.isUndefined(source.get(), 'Destroyed source property should no longer have a value from the source property object');
 
-		try {
+		assert.doesNotThrow(function () {
 			source.destroy();
-		}
-		catch (error) {
-			assert.fail(error, null, 'Destroying property a second time should be a no-op');
-		}
+		}, 'Destroying property a second time should be a no-op');
 	},
 
 	'setting same value': function () {
