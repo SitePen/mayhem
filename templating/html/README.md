@@ -280,11 +280,11 @@ The top level, or root, of a template may not contain just a single widget -- it
 <widget is="foo"></widget><br><widget is="bar"></widget>
 ```
 
-The root widget that's created gets an empty string as a constructor to signal to the AST processor to use its default widget for arbitrary content, which happens to be "framework/ui/dom/ViewWidget". We use an empty string since there's no reason to hardcode this into the template system -- we should allow users to override this widget and have the processor use a subclass instead.
+If the root isn't a single widget it uses the `View` templating widget for its constructor.
 
 ```javascript
 {
-	constructor: '',
+	constructor: 'framework/templating/html/ui/View',
 	children: [{ constructor: 'foo' }, { constructor: 'bar' }],
 	content: [ { $child: 0 }, '<br>', { $child: 1 } ]
 }
@@ -300,7 +300,7 @@ In this case we don't need to track the locations of children with placeholders 
 
 ```javascript
 {
-	constructor: '',
+	constructor: 'framework/templating/html/ui/View',
 	children: [{ constructor: 'foo' }, { constructor: 'bar' }]
 }
 ```
@@ -317,19 +317,19 @@ Foo <em>bar.
 }
 ```
 
-In this case the constructor is defaulted to the View templating widget. This content may also include bindings or named placeholders:
+In this case the constructor is again defaulted to the `View` templating widget. This content can still include text bindings or named placeholders:
 
 ```html
 Foo <em>{bar}.<placeholder name="trailer">
 ```
 ```javascript
 {
-	constructor: '',
+	constructor: 'framework/templating/html/ui/View',
 	content: [ 'Foo <em>', { $bind: 'bar' }, '.', { $named: 'trailer' } ]
 }
 ```
 
-When there's just whitespace in a template, or no content at all:
+When there's just whitespace in a template, or no content at all, we still get a `View` widget, but there's not much to it:
 
 ```javascript
 {
@@ -500,8 +500,7 @@ The parser transforms action nodes into functions and evaluates them before sett
 	kwArgs: {
 		onClick: function () { console.log('clicked') },
 		label: 'Click Me'
-	},
-	content: ''
+	}
 }
 ```
 
@@ -514,6 +513,8 @@ The templating language has a few widgets baked in to make it easier to express 
 
 ## Iterator
 
+(TODO: this doesn't align with the code)
+
 ```html
 <for each="fieldValue" in="iterable">
 	This is a template for each item in the iterable, including its value: {fieldValue}.
@@ -521,7 +522,7 @@ The templating language has a few widgets baked in to make it easier to express 
 ```
 ```javascript
 {
-	constructor: 'framework/templating/html/Iteration',
+	constructor: 'framework/templating/html/ui/Iteration',
 	kwArgs: {
 		each: 'fieldValue',
 		in: 'iterable'
@@ -533,10 +534,10 @@ The templating language has a few widgets baked in to make it easier to express 
 }
 ```
 
-The `<for>` tag is just a convenience -- you could also build up an iterator just from `<widget>` tags. This template yields an equivalent AST to the one above:
+The `<for>` tag is just a convenience -- you could also build up an iterator just from `<widget>` tags. This template yields a parse tree that's essentially equivalent to the one above:
 
 ```html
-<widget is="framework/templating/html/Iteration" each="fieldValue" in="iterable">
+<widget is="framework/templating/html/ui/Iteration" each="fieldValue" in="iterable" >
 	This is a template for each item in the iterable, including its value: {fieldValue}.
 </widget>
 ```
@@ -546,6 +547,7 @@ The `in` attribute of Iteration widgets is required, and it must reference an it
 The optional `each` attribute defines a new property for the mediator of the content widget that will yield the value of the current item in the iterator. This scoped mediator only cares about the property named defined by the `each` attribute and otherwise defers to the Iterator widget's mediator for all other properties.
 
 The optional `index` attribute surfaces the index or key of the iterator's current item in the scoped mediator created for the content widget.
+
 
 
 ## Conditional
@@ -564,24 +566,24 @@ The optional `index` attribute surfaces the index or key of the iterator's curre
 
 The `<elseif>` clauses, as well as the `<else>`, are completely optional. If not provided, the content of the `<if>` widget will be emptied when its `condition` is false. Closing tags `</elseif>` and `</else>` are optional.
 
-The `<elseif>` and `<else>` elements are represented in the AST nested Conditional templates. The `Conditional` just toggles between its content (if its condition is `true`) or its `alternative` widget, if provided.
+The `<elseif>` and `<else>` elements are represented in the parse tree as nested Conditional templates. The `Conditional` just toggles between its content (if its condition is `true`) or its `alternative` widget, if provided.
 
 ```javascript
 {
-	constructor: 'framework/templating/html/Conditional',
+	constructor: 'framework/templating/html/ui/Conditional',
 	kwArgs: {
 		condition: 'firstCondition',
 		alternate: {
-			constructor: 'framework/templating/html/Conditional',
+			constructor: 'framework/templating/html/ui/Conditional',
 			kwArgs: {
 				condition: 'secondCondition',
 				id: 'first-alternative',
 				alternate: {
-					constructor: 'framework/templating/html/Conditional',
+					constructor: 'framework/templating/html/ui/Conditional',
 					kwArgs: {
 						condition: 'thirdCondition',
 						alternate: {
-							constructor: '',
+							constructor: 'framework/templating/html/ui/View',
 							content: 'Fallback content...'
 						}
 					},
@@ -601,13 +603,13 @@ If a statement has a `condition` an `alternative` is optional -- no `condition` 
 Here's a nearly-equivalent template done manually (the only difference is that we had to create ids for all alternative widgets to be able to reference them):
 
 ```html
-<widget is="framework/templating/html/Conditional" condition="firstCondition" alternate=#first-alternative>
+<widget is="framework/templating/html/ui/Conditional" condition="firstCondition" alternate=#first-alternative>
 	Content for when first condition matches...
-	<widget is="framework/templating/html/Conditional" condition="secondCondition" id="first-alternative" alternate=#alt2>
+	<widget is="framework/templating/html/ui/Conditional" condition="secondCondition" id="first-alternative" alternate=#alt2>
 		Content for when second condition matches...
-		<widget is="framework/templating/html/Conditional" condition="thirdCondition" id="alt3" alternate=#alt4>
+		<widget is="framework/templating/html/ui/Conditional" condition="thirdCondition" id="alt3" alternate=#alt4>
 			Content for when third condition matches...
-			<widget is="framework/ui/dom/ViewWidget" id="alt4">
+			<widget is="framework/templating/html/ui/View" id="alt4">
 				Fallback content...
 			</widget>
 		</widget>
@@ -634,16 +636,16 @@ The closing tags `</during>` and `</error>` are optional.
 
 ```javascript
 {
-	constructor: 'framework/templating/html/When',
+	constructor: 'framework/templating/html/ui/When',
 	kwArgs: {
 		promise: 'remoteField',
 		value: 'resolvedValue',
 		during: {
-			constructor: '',
+			constructor: 'framework/templating/html/ui/View',
 			content: 'Content for promise progress...'
 		},
 		error: {
-			constructor: '',
+			constructor: 'framework/templating/html/ui/View',
 			kwArgs: { id: 'custom-id' },
 			content: 'Content for promise rejection...'
 		}
@@ -655,10 +657,10 @@ The closing tags `</during>` and `</error>` are optional.
 We could build this template purely from `<widget>` composition too:
 
 ```html
-<widget is="framework/templating/html/When" promise="remoteField" value="resolvedValue" during=#dur error=#custom-id>
+<widget is="framework/templating/html/ui/When" promise="remoteField" value="resolvedValue" during=#dur error=#custom-id>
 	Content for when promise resolves...
-	<widget is="framework/ui/dom/ViewWidget" id="dur">Content for promise promise...</widget>
-	<widget is="framework/ui/dom/ViewWidget" id="custom-id">Content for promise rejection...</widget>
+	<widget is="framework/templating/html/ui/View" id="dur">Content for promise promise...</widget>
+	<widget is="framework/templating/html/ui/View" id="custom-id">Content for promise rejection...</widget>
 </widget>
 ```
 
@@ -682,7 +684,7 @@ Here's an example of a tab container with a few children and some bindings:
 </widget>
 ```
 
-The AST we should expect this to generate isn't much more complex:
+The parse tree we should expect this to generate isn't much more complex:
 
 ```javascript
 {
@@ -705,8 +707,7 @@ The AST we should expect this to generate isn't much more complex:
 			selected: true
 		},
 		content: [ 'Content of Tab 2, with ', { $bind: 'someBinding' }, '...' ]
-	}],
-	content: ''
+	}]
 }
 ```
 
