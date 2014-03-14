@@ -11,7 +11,7 @@ import when = require('dojo/when');
 
 class Template implements templating.ITemplate {
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
-		var Loader:templating.ITemplateConstructor = (<any> this).result;
+		var Loader:templating.ITemplateConstructor = (<any> this).result || this;
 		dojoText.load(resourceId, contextRequire, (input:string):void => {
 			Loader.process(input).then(load);
 		});

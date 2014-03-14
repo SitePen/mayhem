@@ -1,0 +1,10 @@
+{
+	"constructor": "mayhem/ui/form/RadioButton",
+	"kwArgs": {
+		"region": { "$bind": "region" },
+		"name": { "$bind": [ { "$bind": "first" }, " ", { "$bind": "last" } ] }
+	},
+	"content": [
+		"<div>", { "$bind": "title" }, "</div>"
+	]
+}

@@ -83,11 +83,26 @@ module.exports = function (grunt) {
 		},
 
 		intern: {
-			clientAuth: {
+			runner: {
 				options: {
-					config: 'tests/intern',
-					suites: [ 'mayhem/tests/auth' ],
-					reporters: [ 'console', 'lcovhtml' ]
+					runType: 'runner',
+					config: 'tests/intern-local'
+				}
+			},
+			templating: {
+				options: {
+					runType: 'runner',
+					config: 'tests/intern-local',
+					suites: [ 'mayhem/tests/templating' ],
+					reporters: [ 'console' ]
+				}
+			},
+			templatingCoverage: {
+				options: {
+					runType: 'runner',
+					config: 'tests/intern-local',
+					suites: [ 'mayhem/tests/templating' ],
+					reporters: [ 'lcovhtml' ]
 				}
 			},
 			client: {

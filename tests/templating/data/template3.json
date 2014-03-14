@@ -1,0 +1,29 @@
+{
+	"constructor": "mayhem/ui/View",
+	"kwArgs": {
+		"region": { "$bind": "region" },
+		"name": { "$bind": [ { "$bind": "first" }, " ", { "$bind": "last" } ] }
+	},
+	"children": [
+		{
+			"constructor": "mayhem/ui/View",
+			"kwArgs": {
+				"region": "top",
+				"anInput": {
+					"constructor": "mayhem/ui/form/Input"
+				}
+			},
+			"children": [
+				{
+					"constructor": "mayhem/ui/form/Button",
+					"kwArgs": {
+						"label": "Click me"
+					}
+				}
+			]
+		}
+	],
+	"content": [
+		"<div>", { "$bind": "title" }, "</div>"
+	]
+}
