@@ -17,6 +17,14 @@ class MockUser extends User {
 
 		return dfd.promise;
 	}
+
+	_idGetter():string {
+		return this._state['id'];
+	}
+
+	_usernameGetter():string {
+		return this._state['username'];
+	}
 }
 
 var user = new MockUser();
@@ -24,9 +32,10 @@ var user = new MockUser();
 registerSuite({
 	name: 'User',
 
-	'#login default': function () {
+	'#login base': function () {
 		var user = new User();
-		assert.throws(function() { user.login({}) });
+		assert.throws(function() { user.login({}) }, /Abstract method "authenticate" not implemented/,
+			'Base User authentication should throw');
 	},
 
 	'#login invalid': function () {
@@ -39,7 +48,6 @@ registerSuite({
 
 	'#login valid': function () {
 		return user.login({ username: 'foo', password: 'bar' }).then(function (userData) {
-			console.log('userData:', userData);
 			assert.isTrue(user.get('isAuthenticated'), 'Valid login should set user to authenticated state');
 			assert.deepEqual(userData, { id: 1, username: 'foo' }, 'Valid login should return authenticated state data');
 			assert.deepEqual(user.get('state'), userData, 'Valid login should set user "state" property to authenticated state data');

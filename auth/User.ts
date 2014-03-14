@@ -19,16 +19,16 @@ class User extends Observable {
 	 *
 	 * @param kwArgs Parameters used to login this User.
 	 *
-	 * @returns a Promise
+	 * @returns a Promise that resolves with an object containing the user information.
 	 */ 
 	login(kwArgs:Object):IPromise<void> {
 		var self = this;
 
 		return this.authenticate.apply(this, arguments).then(function (userData:Object) {
-			self.set(lang.mixin({}, userData, {
+			self.set({
 				isAuthenticated: true,
 				state: userData
-			}));
+			});
 			return userData;
 		});
 	}
@@ -36,10 +36,10 @@ class User extends Observable {
 	/**
 	 * An abstract method that should be implemented by subclasses.
 	 *
-	 * @param kwArgs Paramters used to authenticate this User.
+	 * @param kwArgs Parameters used to authenticate this User.
 	 *
 	 * @returns a Promise that resolves with an object containing user information when authentication is successful, or
-	 * rejects wiht an approproate error message when authentication is unsuccessful.
+	 * rejects with an appropriate error message when authentication is unsuccessful.
 	 */
 	authenticate(kwArgs:Object):IPromise<Object> {
 		if (has('debug')) {
