@@ -107,22 +107,15 @@ module.exports = function (grunt) {
 			},
 			binding: {
 				options: {
-					config: 'tests/intern',
+					config: 'tests/intern-local',
 					suites: [ 'mayhem/tests/binding' ],
-					reporters: [ 'console', 'lcovhtml' ]
-				}
-			},
-			pb: {
-				options: {
-					config: 'tests/intern',
-					suites: [ 'mayhem/tests/binding/ProxtyBinder' ],
 					reporters: [ 'console', 'lcovhtml' ]
 				}
 			},
 			bindingRunner: {
 				options: {
 					runType: 'runner',
-					config: 'tests/intern',
+					config: 'tests/intern-local',
 					suites: [ 'mayhem/tests/binding' ],
 					reporters: [ 'console', 'lcovhtml' ]
 				}
