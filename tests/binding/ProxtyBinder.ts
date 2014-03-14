@@ -5,6 +5,8 @@ import BindDirection = require('../../binding/BindDirection');
 import binding = require('../../binding/interfaces');
 import lang = require('dojo/_base/lang');
 import MockProxty = require('./support/MockProxty');
+import Observable = require('../../Observable');
+import Proxty = require('../../Proxty');
 import ProxtyBinder = require('../../binding/ProxtyBinder');
 import registerSuite = require('intern!object');
 import util = require('./support/util');
@@ -101,8 +103,11 @@ registerSuite({
 				targetBinding: ''
 			});
 
+		// updates will be scheduled by calls to mockProxty#set
 		sourceObject.mockProxty.emulateUpdate(1);
 		targetObject.mockProxty.emulateUpdate(2);
+
+		// tests are scheduled to run after the updates are processed
 		binder._app.get('scheduler').afterNext(dfd.rejectOnError(function () {
 			assert.strictEqual(targetObject.mockProxty.get(), 1, 'Binder should actually bind the two properties together');
 			assert.strictEqual(sourceObject.mockProxty.get(), 1, 'Binder should use one-way binding by default');
@@ -129,7 +134,7 @@ registerSuite({
 		}));
 	},
 
-	'#bind bidirectional': function () {
+	'update binding': function () {
 		// TODO: <any> casting is needed due to TS#2087
 		binder.add(<any> MockProxty);
 
@@ -140,45 +145,74 @@ registerSuite({
 				source: sourceObject,
 				sourceBinding: '',
 				target: targetObject,
-				targetBinding: ''
-			});
-			//newSourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
-			//newTargetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null };
-
-		sourceObject.mockProxty.emulateUpdate(1);
-		targetObject.mockProxty.emulateUpdate(2);
-		binder._app.get('scheduler').afterNext(dfd.rejectOnError(function () {
-			console.log('running scheduled update');
-			dfd.resolve(true);
-		}));
-	},
-
-	'update binding': function () {
-		// TODO: <any> casting is needed due to TS#2087
-		binder.add(<any> MockProxty);
-
-		var sourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
-			targetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
-			handle:binding.IBindingHandle = binder.bind({
-				source: sourceObject,
-				sourceBinding: '',
-				target: targetObject,
 				targetBinding: '',
-				direction: 2
+				direction: BindDirection.TWO_WAY
 			}),
 			newSourceObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null },
 			newTargetObject:{ mockProxty:MockProxty<number>; } = { mockProxty: null };
 
-		//console.log('source value:', sourceObject.get());
-
 		handle.setSource(newSourceObject);
+		assert.isUndefined(sourceObject.mockProxty, 'Original source proxty should have been destroyed');
 
-		handle.setTarget(newTargetObject);
+		newSourceObject.mockProxty.emulateUpdate(1);
+		binder._app.get('scheduler').afterNext(dfd.rejectOnError(function () {
+			assert.strictEqual(targetObject.mockProxty.get(), 1, 'Target should be bound to new source');
 
-		handle.setDirection(0);
+			handle.setTarget(newTargetObject);
+			newTargetObject.mockProxty.emulateUpdate(2);
+			binder._app.get('scheduler').afterNext(dfd.callback(function () {
+				assert.strictEqual(newSourceObject.mockProxty.get(), 2, 'Source should be bound to new target');
+
+				handle.setDirection(BindDirection.ONE_WAY);
+				assert.isNull(newTargetObject.mockProxty.target, 'Target binding should be null');
+			}));
+		}));
 	},
 
 	'#createProxty': function () {
-		// TODO: confirm Proxty objects are returned, test immediate option
+		binder.add(<any> MockProxty);
+
+		var sourceObject = { foo: 1 },
+			proxty = binder.createProxty(sourceObject, 'foo', { scheduled: false });
+
+		assert.instanceOf(proxty, MockProxty, 'Returned object should be a Proxty');
+
+		proxty.set(2);
+		assert.strictEqual(proxty.get(), 2, 'Proxty value should be updated immediately');
+	},
+
+	'#getMetadata': function () {
+		binder.add(<any> MockProxty);
+
+		var retrievedKey:string,
+			metadataObjects = {},
+			sourceObject = {
+				getMetadata: function (key:string) {
+					retrievedKey = key;
+					if (!metadataObjects[key]) {
+						// metadata should be an IObservable
+						var obj = metadataObjects[key] = new Observable();
+						obj.set('baz', new Observable());
+					}
+					return metadataObjects[key];
+				}
+			},
+			metadata = binder.getMetadata(sourceObject, 'foo');
+
+		assert.instanceOf(metadata, Proxty, 'Metadata should be a Proxty');
+		assert.strictEqual(retrievedKey, 'foo', 'Metadata should have been retrieved from source object');
+
+		metadata = <any> binder.getMetadata(sourceObject, 'bar', 'baz');
+		assert.strictEqual(retrievedKey, 'bar', 'Metadata should have been retrieved');
+
+		// TODO: need to actually verify that good things are happening here
+		metadata.get().set('baz', 1);
+
+		metadata.destroy();
+		assert.doesNotThrow(function () {
+			metadata.destroy()
+		}, 'Calling destroy multiple times should not throw');
+
+		metadata = <any> binder.getMetadata(sourceObject, 'aParent.aKey', 'aField');
 	}
 });

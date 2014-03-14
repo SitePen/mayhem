@@ -18,14 +18,16 @@ class MockProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T>
 		this.kwArgs.object && (this.kwArgs.object['mockProxty'] = this);
 	}
 
-	bindTo(target:core.IProxty<T>):IHandle {
+	bindTo(target:core.IProxty<T>, options:binding.IBindToOptions = {}):IHandle {
 		this.target = target;
 
 		if (!target) {
 			return;
 		}
 
-		target.set(<T> <any> this.value);
+		if (options.setValue !== false) {
+			target.set(<T> <any> this.value);
+		}
 
 		var self = this;
 		return {

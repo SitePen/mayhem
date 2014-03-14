@@ -82,18 +82,14 @@ class MetadataProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	}
 
 	private _swapMetadataObject(newObject:core.IHasMetadata):void {
-		console.log('_swapMetadata with key ' + this._key + ' on', newObject);
 		var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(this._key) : null;
-		console.log('newMetadata =', newMetadata);
 
 		this._handle && this._handle.remove();
-		console.log('removed handle for', this);
 
 		if (newMetadata) {
 			this._handle = newMetadata.observe(this._field, (newValue:any):void => {
 				this._update(newValue);
 			});
-			console.log('set handle for', this);
 
 			this.set(newMetadata.get(this._field));
 		}

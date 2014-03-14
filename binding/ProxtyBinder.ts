@@ -126,12 +126,19 @@ class ProxtyBinder implements binding.IProxtyBinder {
 		);
 	}
 
+	/**
+	 * Return a Proxty that is bound to a particular metadata key on an object.
+	 *
+	 * @param object Object with metadata
+	 * @param binding Metadata key, or hierarchical key specifier, to bind to
+	 * @param field Specific field in metadata object to observe
+	 */
 	getMetadata<T>(object:Object, binding:string, field:string):core.IProxty<T>;
 	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
 	getMetadata(object:Object, binding:string, field?:string):core.IProxty<any> {
-		var metadata:core.IProxty<any> = new Proxty(null);
+		var metadata:core.IProxty<any> = new Proxty(null),
+			metadataHandle:IHandle;
 
-		var metadataHandle:IHandle;
 		function swapMetadataObject(newObject:core.IHasMetadata):void {
 			var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(key) : null;
 
@@ -170,6 +177,7 @@ class ProxtyBinder implements binding.IProxtyBinder {
 
 		if (binding) {
 			var parentProxty = this.createProxty(object, binding);
+			// TODO: should we be keeping track of this observer handle?
 			parentProxty.observe(swapMetadataObject);
 		}
 		else {
