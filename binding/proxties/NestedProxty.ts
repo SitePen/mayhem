@@ -19,7 +19,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 	/**
 	 * The binder to bind sub-properties with.
 	 */
-	private _binder:binding.IBinder;
+	//private _binder:binding.IBinder;
 
 	/**
 	 * The string that identifies the sub-property to be bound.
@@ -44,7 +44,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 	constructor(kwArgs:binding.IProxtyArguments) {
 		super(kwArgs);
 
-		this._binder = kwArgs.binder;
+		this._values.binder = kwArgs.binder;
 		this._binding = kwArgs.binding.split('.');
 		this._rebind(kwArgs.object, 0);
 	}
@@ -123,7 +123,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 		// change, we need to rebind the entire object chain starting from the changed object
 		for (; index < this._binding.length - 1 && object; ++index) {
 			binding = this._binding[index];
-			proxty = this._binder.createProxty(object, binding, { scheduled: false });
+			proxty = this._values.binder.createProxty(object, binding, { scheduled: false });
 			proxty.bindTo(<core.IProxty<Object>> {
 				set: lang.hitch(this, function (index:number, value:Object):void {
 					// The `set` method of this fake target will be immediately called by the source `property` if
@@ -150,7 +150,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 		if (object) {
 			// If the values on this final object change we only need to update the value, not rebind
 			// any intermediate objects
-			proxty = this._binder.createProxty(object, this._binding[index], { scheduled: false });
+			proxty = this._values.binder.createProxty(object, this._binding[index], { scheduled: false });
 			proxty.bindTo(<core.IProxty<TargetT>> {
 				set: (value:TargetT):void => {
 					this._update(value);

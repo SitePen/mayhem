@@ -15,7 +15,6 @@ class When extends View {
 	private _errorWidget:ui.IWidget;
 	private _hasProgress:boolean;
 	private _inFlight:boolean;
-	/* protected */ _mediator:Mediator;
 	private _mediatorHandle:IHandle;
 	private _originalMediator:data.IMediator;
 	private _promiseField:string;
@@ -81,8 +80,8 @@ class When extends View {
 		this._errorWidget = this._duringWidget = this._promiseValue = null;
 		this._mediatorHandle && this._mediatorHandle.remove();
 		this._mediatorHandle = null;
-		this._mediator && this._mediator.destroy();
-		this._mediator = this._originalMediator = null;
+		this._values.mediator && this._values.mediator.destroy();
+		this._values.mediator = this._originalMediator = null;
 		super.destroy();
 	}
 
@@ -99,24 +98,24 @@ class When extends View {
 	private _promiseSetter(field:string):void {
 		this._promiseField = field;
 		this._promiseFieldHandle && this._promiseFieldHandle.remove();
-		if (this._mediator) {
-			this._promiseFieldHandle = this._mediator.observe(field, (promise:any) => {
+		if (this._values.mediator) {
+			this._promiseFieldHandle = this._values.mediator.observe(field, (promise:any) => {
 				this._targetPromiseSetter(promise);
 			});
-			this._targetPromiseSetter(this._mediator.get(field));
+			this._targetPromiseSetter(this._values.mediator.get(field));
 		}
 	}
 
 	private _promiseValueSetter(value:any):void {
 		var oldValue = this._promiseValue;
 		this._promiseValue = value;
-		this._mediator._notify(value, oldValue, this._valueField);
+		this._values.mediator._notify(value, oldValue, this._valueField);
 	}
 
 	private _scopeMediator(mediator:data.IMediator):void {
 		this._originalMediator = mediator;
-		this._mediator && this._mediator.destroy();
-		this._mediator = this._createScopedMediator(mediator);
+		this._values.mediator && this._values.mediator.destroy();
+		this._values.mediator = this._createScopedMediator(mediator);
 		// Call promise setter again to get a new promise field observer
 		this._promiseSetter(this._promiseField);
 	}

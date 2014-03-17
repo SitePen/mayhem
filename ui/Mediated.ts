@@ -8,7 +8,6 @@ import util = require('../util');
 import Widget = require('./Widget');
 
 class Mediated extends Widget implements ui.IMediated {
-	/*private*/ _mediator:data.IMediator;
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
 	private _attachedWidgets:ui.IWidget[];
@@ -51,8 +50,8 @@ class Mediated extends Widget implements ui.IMediated {
 	get:ui.IMediatedGet;
 
 	private _mediatorGetter():data.IMediator {
-		if (this._mediator) {
-			return this._mediator;
+		if (this._values.mediator) {
+			return this._values.mediator;
 		}
 		var parent = this.get('parent');
 		if (parent) {
@@ -87,14 +86,14 @@ class Mediated extends Widget implements ui.IMediated {
 		this._parentMediatorHandle = null;
 		var mediatorHandler = (newMediator:data.IMediator, oldMediator:data.IMediator):void => {
 			// if no mediator has been explicitly set, notify of the parent's mediator change
-			if (!this._mediator && !util.isEqual(newMediator, oldMediator)) {
+			if (!this._values.mediator && !util.isEqual(newMediator, oldMediator)) {
 				this._notify(newMediator, oldMediator, 'mediator');
 			}
 		};
 		if (parent) {
 			this._parentMediatorHandle = parent.observe('mediator', mediatorHandler);
 		}
-		if (!this._mediator && !util.isEqual(parent, oldParent)) {
+		if (!this._values.mediator && !util.isEqual(parent, oldParent)) {
 			mediatorHandler(parent && parent.get('mediator'), oldParent && oldParent.get('mediator'));
 		}
 	}

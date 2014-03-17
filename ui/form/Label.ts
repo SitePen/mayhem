@@ -34,17 +34,17 @@ class Label extends Element implements form.ILabel {
 
 	/* protected */ _contentSetter(value:any/* string | Node */):void {
 		super._contentSetter(value);
-		this._text = this._renderer.getTextContent(this);
+		this._values.text = this._renderer.getTextContent(this);
 	}
 
 	/* protected */ _forSetter(id:string):void {
-		this._for = id;
+		this._values.for = id;
 		this._renderer.setAttribute(this, 'for', id);
 	}
 
 	/* protected */ _textSetter(value:string):void {
-		this._text = value;
-		this._formattedText = this._renderer.setBodyText(this, value);
+		this._values.text = value;
+		this._values.formattedText = this._renderer.setBodyText(this, value);
 	}
 }
 

@@ -94,14 +94,14 @@ class DijitRenderer extends StyledRenderer {
 		dijitArgs.id = widget.get('id');
 		var Dijit = widget._dijitConfig.Dijit,
 			_dijit:dijit._WidgetBase = new Dijit(dijitArgs);
+		widget._dijit = _dijit;
 		widget.set({
-			_dijit: _dijit,
 			// TODO: Component-based renderers should only require setting one of these
 			firstNode: _dijit.domNode,
 			fragment: _dijit.domNode,
 			lastNode: _dijit.domNode
 		});
-		widget.get('classList').set(_dijit.domNode.className);
+		widget.classList.set(_dijit.domNode.className);
 
 		// Walk dijit schema again to set up bindings
 		for (var dijitKey in schema) {

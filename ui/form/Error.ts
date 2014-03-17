@@ -24,15 +24,15 @@ class FormError extends Element implements form.IError {
 	}
 
 	/* protected */ _errorsSetter(errors:form.ValidationError[]):void {
-		this._errors = errors;
-		this._firstNode.innerHTML = '';
+		this._values.errors = errors;
+		this.get('firstNode').innerHTML = '';
 
 		if (!errors) {
 			return;
 		}
 
 		for (var i = 0, error:form.ValidationError; (error = errors[i]); i++) {
-			var element = domConstruct.create('li', {}, this._firstNode);
+			var element = domConstruct.create('li', {}, this.get('firstNode'));
 			element.appendChild(document.createTextNode(error.toString()));
 		}
 	}

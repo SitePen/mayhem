@@ -16,7 +16,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return registry[id];
 	}
 
-	private _attached:boolean;
 	private _eventHandles:IHandle[];
 	/* protected */ _parent:ui.IContainer;
 	/* protected */ _renderer:ui.IRenderer;
@@ -42,7 +41,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	/* protected */ _attachedSetter(attached:boolean):void {
 		if (attached != this._attached) {
-			this._attached = !!attached;
+			this._values.attached = !!attached;
 			this.emit(attached ? 'attached' : 'detached');
 		}
 	}
