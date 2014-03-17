@@ -80,7 +80,6 @@ class MetadataProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 		var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(this._key) : null;
 
 		this._handle && this._handle.remove();
-		debugger
 		if (newMetadata) {
 			this._handle = newMetadata.observe(this._field, (newValue:any):void => {
 				this._update(newValue);
