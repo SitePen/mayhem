@@ -188,11 +188,11 @@ registerSuite({
 			metadataObjects = {},
 			sourceObject = {
 				getMetadata: function (key:string) {
-					retrievedKey = key;
 					if (!metadataObjects[key]) {
 						// metadata should be an IObservable
 						var obj = metadataObjects[key] = new Observable();
-						obj.set('baz', new Observable());
+						obj.set('value', 'someValue');
+						obj.set('label', key);
 					}
 					return metadataObjects[key];
 				}
@@ -200,13 +200,14 @@ registerSuite({
 			metadata = binder.getMetadata(sourceObject, 'foo');
 
 		assert.instanceOf(metadata, Proxty, 'Metadata should be a Proxty');
-		assert.strictEqual(retrievedKey, 'foo', 'Metadata should have been retrieved from source object');
+		assert.strictEqual(metadata.get().get('label'), 'foo', 'Correct metadata should have been retrieved from source object');
+		assert.strictEqual(metadata.get().get('value'), 'someValue', 'Metadata should have expected value');
 
-		metadata = <any> binder.getMetadata(sourceObject, 'bar', 'baz');
-		assert.strictEqual(retrievedKey, 'bar', 'Metadata should have been retrieved');
+		metadata = <any> binder.getMetadata(sourceObject, 'bar', 'label');
+		assert.strictEqual(metadata.get(), 'bar', 'Proxty should have metadata label value');
 
-		// TODO: need to actually verify that good things are happening here
-		metadata.get().set('baz', 1);
+		metadataObjects['bar'].set('label', 'baz');
+		assert.strictEqual(metadata.get(), 'baz', 'Proxty value should have been updated');
 
 		metadata.destroy();
 		assert.doesNotThrow(function () {
