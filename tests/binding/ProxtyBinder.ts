@@ -189,7 +189,7 @@ registerSuite({
 			sourceObject = {
 				getMetadata: function (key:string) {
 					if (!metadataObjects[key]) {
-						// metadata should be an IObservable
+						// metadata should emulate an IProperty
 						var obj = metadataObjects[key] = new Observable();
 						obj.set('value', 'someValue');
 						obj.set('label', key);
