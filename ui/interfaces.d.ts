@@ -98,6 +98,10 @@ export interface IMediated extends IWidget {
 	set:IMediatedSet;
 }
 
+export interface IMediatedArgs extends IWidgetArgs {
+	mediator?:data.IMediator;
+}
+
 export interface IMediatedGet extends IWidgetGet {
 	(name:'mediator'):data.IMediator;
 }
@@ -170,6 +174,18 @@ export interface IWidget extends core.IApplicationComponent, core.IEvented {
 	placeAt(destination:IContainer, position:number):IHandle;
 	placeAt(destination:IContainer, placeholder:string):IHandle;
 	set:IWidgetSet;
+}
+
+export interface IWidgetArgs /*extends core.IApplicationComponentArgs*/ {
+	attached?:boolean;
+	firstNode?:Node;
+	fragment?:DocumentFragment;
+	id?:string;
+	lastNode?:Node;
+	parent?:IContainer;
+	index?:number;
+	next?:IWidget;
+	previous?:IWidget;
 }
 
 export interface IWidgetGet extends core.IApplicationComponentGet {

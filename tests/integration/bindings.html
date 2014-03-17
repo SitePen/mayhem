@@ -46,7 +46,7 @@ require([
 			model: model
 		});
 
-		var masterView = new Master({});
+		var masterView = window.view = new Master({});
 		masterView.add(factory.create());
 		masterView.set('app', app);
 		masterView.set('mediator', mediator);

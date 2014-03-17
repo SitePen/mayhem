@@ -51,6 +51,10 @@ export interface IError extends ui.IElement {
 	set:IErrorSet;
 }
 
+export interface IErrorArgs /* extends ui.IElementArgs */ {
+	errors?:ValidationError[];
+}
+
 export interface IErrorGet extends ui.IElementGet {
 	(name:'errors'):ValidationError[];
 }
@@ -79,13 +83,21 @@ export interface ILabel extends ui.IElement {
 	set:ILabelSet;
 }
 
+export interface ILabelArgs /* extends ui.IElementArgs */ {
+	for?:string;
+	formattedText?:string;
+	text?:string;
+}
+
 export interface ILabelGet extends ui.IElementGet {
 	(name:'for'):string;
+	(name:'formattedText'):string;
 	(name:'text'):string;
 }
 
 export interface ILabelSet extends ui.IElementSet {
 	(name:'for', value:string):void;
+	(name:'formattedText', value:string):void;
 	(name:'text', value:string):void;
 }
 

@@ -20,14 +20,12 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _parent:ui.IContainer;
 	/* protected */ _renderer:ui.IRenderer;
 	/* protected */ _renderOptions:ui.IRenderOptions;
+	/* protected */ _values:ui.IWidgetArgs;
 
-	constructor(kwArgs:Object = {}) {
+	constructor(kwArgs:ui.IWidgetArgs = {}) {
 		this._eventHandles = [];
 
-		var id:string = kwArgs['id'];
-		if (!id) {
-			id = kwArgs['id'] = 'Widget' + (++uid);
-		}
+		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
 
 		// TDOO: check registry for duplicate id and throw?
 		// Helpful for debugging
@@ -40,7 +38,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	/* protected */ _attachedSetter(attached:boolean):void {
-		if (attached != this._attached) {
+		if (attached != this._values.attached) {
 			this._values.attached = !!attached;
 			this.emit(attached ? 'attached' : 'detached');
 		}

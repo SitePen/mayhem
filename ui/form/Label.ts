@@ -7,22 +7,9 @@ import ui = require('../interfaces');
 import util = require('../../util');
 
 class Label extends Element implements form.ILabel {
-	private _formattedText:string;
-	private _for:string;
-	private _text:string;
+	/* protected */ _values:form.ILabelArgs;
 
-	// private _firstNode:HTMLLabelElement;
-	// private _lastNode:HTMLLabelElement;
-
-	// TODO: TS#2153
-	// get(key:'formattedText'):string;
-	// get(key:'for'):string;
-	// get(key:'text'):string;
-	// set(key:'formattedText', value:string):void;
-	// set(key:'for', value:string):void;
-	// set(key:'text', value:'string'):void;
-
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs?:form.ILabelArgs) {
 		util.deferSetters(this, [ 'for', 'text' ], '_render');
 		this._renderOptions = { elementType: 'label' };
 		super(kwArgs);
@@ -37,9 +24,9 @@ class Label extends Element implements form.ILabel {
 		this._values.text = this._renderer.getTextContent(this);
 	}
 
-	/* protected */ _forSetter(id:string):void {
-		this._values.for = id;
-		this._renderer.setAttribute(this, 'for', id);
+	/* protected */ _forSetter(value:string):void {
+		this._values.for = value;
+		this._renderer.setAttribute(this, 'for', value);
 	}
 
 	/* protected */ _textSetter(value:string):void {

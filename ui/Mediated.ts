@@ -8,11 +8,12 @@ import util = require('../util');
 import Widget = require('./Widget');
 
 class Mediated extends Widget implements ui.IMediated {
+	private _attachedWidgets:ui.IWidget[];
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
-	private _attachedWidgets:ui.IWidget[];
+	/* protected */ _values:ui.IMediatedArgs;
 
-	constructor(kwArgs?:any) {
+	constructor(kwArgs?:ui.IMediatedArgs) {
 		this._attachedWidgets = [];
 		super(kwArgs);
 	}

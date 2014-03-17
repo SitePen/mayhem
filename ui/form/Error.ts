@@ -4,23 +4,11 @@ import Element = require('../Element');
 import form = require('./interfaces');
 
 class FormError extends Element implements form.IError {
-	private _errors:form.ValidationError[];
-	private _errorsProxty:core.IProxty<form.ValidationError[]>;
+	/* protected */ _values:form.IErrorArgs;
 
-	// Please shut up, typescript
-	private _firstNode:HTMLUListElement;
-
-	constructor(kwArgs?:Object) {
-		//util.deferMethods(this, [ '_errorsSetter' ], '_render');
+	constructor(kwArgs?:form.IErrorArgs) {
 		this._renderOptions = { elementType: 'ul' };
 		super(kwArgs);
-	}
-
-	destroy():void {
-		this._errorsProxty && this._errorsProxty.destroy();
-		this._errorsProxty = null;
-
-		super.destroy();
 	}
 
 	/* protected */ _errorsSetter(errors:form.ValidationError[]):void {
