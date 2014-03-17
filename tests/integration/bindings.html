@@ -5,23 +5,6 @@
 			body {
 				margin: 1em !important;
 			}
-			.dgrid.dgrid-list {
-				height: 12em;
-			}
-
-			/* styles for autoheight */
-			.dgrid.dgrid-list.autoheight {
-				border: none;
-				height: auto;
-			}
-			.dgrid.dgrid-list.autoheight .dgrid-scroller {
-				position: relative;
-				overflow-y: hidden;
-			}
-			.has-ie-6 .dgrid.dgrid-list.autoheight .dgrid-scroller {
-				/* IE6 doesn't react properly to hidden on this page for some reason */
-				overflow-y: visible;
-			}
 		</style>
 	</head>
 	<body class="claro">
@@ -33,7 +16,8 @@ var dojoConfig = {
 		'dojo',
 		'dijit',
 		'dstore',
-		'framework'
+		'framework',
+		'xstyle'
 	]
 };
 	</script>

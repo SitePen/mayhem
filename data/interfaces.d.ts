@@ -1,5 +1,4 @@
 import core = require('../interfaces');
-import ValidationError = require('../validation/ValidationError');
 import ObservableArray = require('../ObservableArray');
 
 /**
@@ -8,7 +7,7 @@ import ObservableArray = require('../ObservableArray');
  */
 
 export interface IModel extends core.IApplicationComponent, core.IObservable {
-	addError(key:string, error:ValidationError):void;
+	addError(key:string, error:core.ValidationError):void;
 
 	/**
 	 * Retrieves the value of a property on the model.
@@ -94,7 +93,7 @@ export interface IPropertyGet<T> extends core.IObservableGet {
 	(key:'default'):T;
 	(key:'dependencies'):string[];
 	// TODO: Make into ObservableArray?
-	(key:'errors'):ObservableArray<ValidationError>;
+	(key:'errors'):ObservableArray<core.ValidationError>;
 	(key:'key'):string;
 	(key:'model'):IModel;
 	(key:'label'):string;
@@ -107,7 +106,7 @@ export interface IPropertyGet<T> extends core.IObservableGet {
 export interface IPropertySet<T> extends core.IObservableSet {
 	(key:'default', value:T):void;
 	(key:'dependencies', value:string[]):void;
-	(key:'errors', value:ObservableArray<ValidationError>):void;
+	(key:'errors', value:ObservableArray<core.ValidationError>):void;
 	(key:'key', value:string):void;
 	(key:'model', value:IModel):void;
 	(key:'label', value:string):void;

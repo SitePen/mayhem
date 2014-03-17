@@ -23,6 +23,7 @@ export interface IRenderer extends ui.IRenderer {
 	detach(widget:IWidget):void;
 	getContent(widget:IComposite):Node;
 	getTextContent(widget:IComposite):string;
+	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget, options?:any):void;
 	setAttribute(widget:IComponent, name:string, value:string):void;

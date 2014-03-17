@@ -11,6 +11,10 @@ import ui = require('./interfaces');
 		// this.detach();
 		return this.get('firstNode');
 	}
+
+	get:ui.IElementGet;
+
+	set:ui.IElementSet;
 }
 
 Element.prototype._renderer = new Renderer();

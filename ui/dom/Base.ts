@@ -44,6 +44,9 @@ class BaseRenderer implements ui.IRenderer {
 		return // TODO
 	}
 
+	initialize(widget:dom.IWidget):void {
+	}
+
 	remove(widget:dom.IContainer, item:dom.IWidget):void {
 		var firstNode:Node = <any>item.get('firstNode'),
 			lastNode:Node = <any>item.get('lastNode');

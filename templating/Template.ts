@@ -7,7 +7,7 @@ import when = require('dojo/when');
 // The base Template class has a noop parse method so it expects source to be a parse tree object
 class Template implements templating.ITemplate {
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
-		var Loader:templating.ITemplateLoader = (<any> this).result;
+		var Loader:templating.ITemplateConstructor = (<any> this).result;
 		dojoText.load(resourceId, contextRequire, (input:string):void => {
 			Loader.process(input).then(load);
 		});

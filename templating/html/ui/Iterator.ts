@@ -1,6 +1,3 @@
-/// <reference path="../../../dgrid" />
-/// <reference path="../../../dojo" />
-
 import array = require('dojo/_base/array');
 import core = require('../../../interfaces');
 import WidgetFactory = require('../../WidgetFactory');
@@ -9,9 +6,10 @@ import lang = require('dojo/_base/lang');
 import List = require('dgrid/List');
 import Mediator = require('../../../Mediator');
 import OnDemandList = require('dgrid/OnDemandList');
+import ui = require('./interfaces');
 import util = require('../../../util');
 
-class Iterator extends Element {
+class Iterator extends Element implements ui.IIterator {
 	private _factory:WidgetFactory;
 	private _list:List;
 	private _listLength:number;
@@ -20,13 +18,14 @@ class Iterator extends Element {
 	private _sourceField:string;
 	private _sourceFieldHandle:IHandle;
 	private _sourceObserverHandle:IHandle;
-	private _source:any; // Array | ObservableArray | IStore<any>
+	private _source:any;
 	private _template:any;
 	private _WidgetCtor:typeof Element;
 	private _widgetIndex:{ [key:string]: Element; };
 
-	constructor(kwArgs:Object) {
+	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'source' ], '_render');
+		kwArgs.height || (kwArgs.height = '');
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
 		this._WidgetCtor = Element;
@@ -66,16 +65,18 @@ class Iterator extends Element {
 
 	private _eachSetter(scopedField:string):void {
 		this._scopedField = scopedField;
-		var mediator = this.get('mediator');
+		var mediator:core.IMediator = this.get('mediator');
 		if (!mediator) {
 			return;
 		}
 		// Recreate our scoped mediators since the name of our value field changed
 		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string) => {
-			var scoped:Mediator = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
+			var scoped = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
 			this._widgetIndex[key].set('mediator', scoped);
 		});
 	}
+
+	get:ui.IIteratorGet;
 
 	private _getSourceKey(key:any):any {
 		var source:any = this._source;
@@ -112,6 +113,17 @@ class Iterator extends Element {
 		});
 	}
 
+	private _styleSetter(value:string):void {
+		// TODO: observe style changes and reset scroll node styles depending on if height is set
+		// Could we move this into renderer? Perhpas a mayhem default stylesheet?
+		// var listNode = this._list.domNode,
+		// 	bodyNode = this._list.bodyNode;
+		// listNode.style.height = style.height || 'auto';
+		// listNode.style.border = auto ? 'none' : '';
+		// bodyNode.style.position = auto ? 'relative' : '';
+		// bodyNode.style.overflowY = auto ? 'hidden' : '';
+	}
+
 	private _renderList():void {
 		var list = this._list,
 			source = this._source;
@@ -139,10 +151,12 @@ class Iterator extends Element {
 			};
 		}
 		list.set('showHeader', false);
+		var className:string = list.domNode.className;
 		this._renderer.render(this, { fragment: list.domNode });
-		// TODO: parameterize
-		source instanceof Array && this.get('classList').add('autoheight');
+		this.get('classList').add(className);
 	}
+
+	set:ui.IIteratorSet;
 
 	private _setSourceKey(key:string, value:any):void {
 		var source:any = this._source,
@@ -159,27 +173,6 @@ class Iterator extends Element {
 		else {
 			// source should be a dojo Store
 			source.put(value[source.idProperty], value);
-		}
-	}
-
-	private _updateList(change:number):void {
-		var source = this._source,
-			sourceLength = source.length,
-			scopedField = this._scopedField;
-		if (change > 0) {
-			// If array is larger than before add the necessary rows to our list
-			this._list.renderArray(source.toArray ? source.toArray() : source);
-		}
-		else if (change < 0) {
-			// If it's smaller, we need to detach any extra widgets
-			change = -change;
-			for (var i = 0; i < change; ++i) {
-				this._widgetIndex[sourceLength + i].detach();
-			}
-		}
-		// Notify all scoped mediators of their current values
-		for (var i = 0, len = sourceLength; i < len; ++i) {
-			this._mediatorIndex[i]._notify(source[i], null, scopedField);
 		}
 	}
 
@@ -224,6 +217,27 @@ class Iterator extends Element {
 		this._template = template;
 		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
 		this._factory = new WidgetFactory(template, this._WidgetCtor);
+	}
+
+	private _updateList(change:number):void {
+		var source = this._source,
+			sourceLength = source.length,
+			scopedField = this._scopedField;
+		if (change > 0) {
+			// If array is larger than before add the necessary rows to our list
+			this._list.renderArray(source.toArray ? source.toArray() : source);
+		}
+		else if (change < 0) {
+			// If it's smaller, we need to detach any extra widgets
+			change = -change;
+			for (var i = 0; i < change; ++i) {
+				this._widgetIndex[sourceLength + i].detach();
+			}
+		}
+		// Notify all scoped mediators of their current values
+		for (var i = 0, len = sourceLength; i < len; ++i) {
+			this._mediatorIndex[i]._notify(source[i], null, scopedField);
+		}
 	}
 }
 

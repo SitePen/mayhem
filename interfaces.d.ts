@@ -1,11 +1,11 @@
 /// <reference path="./dojo" />
 
-import binding = require('./binding/interfaces');
-import data = require('./data/interfaces');
+export import binding = require('./binding/interfaces');
+export import data = require('./data/interfaces');
 import IEvented = require('dojo/Evented');
-import ObservableArray = require('./ObservableArray');
-import routing = require('./routing/interfaces');
-import ValidationError = require('./validation/ValidationError');
+export import ObservableArray = require('./ObservableArray');
+export import routing = require('./routing/interfaces');
+export import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication extends IObservable {
 	get:IApplicationGet;

@@ -35,6 +35,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		// Helpful for debugging
 		registry[id] = this;
 
+		// Note: _initialize is called before widget becomes Observable or Evented
+		this._initialize();
 		super(kwArgs);
 		this._render();
 	}
@@ -74,6 +76,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 
 		return parent.get('children').indexOf(this);
+	}
+
+	/* protected */ _initialize():void {
+		this._renderer.initialize(this);
 	}
 
 	private _nextGetter():ui.IWidget {

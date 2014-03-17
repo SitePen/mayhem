@@ -47,9 +47,9 @@ require([
 	'framework/Application',
 	'framework/ui/Master',
 	'framework/tests/integration/MyView',
-	'framework/templating/html!./MyView.tmpl.html',
-	'framework/templating/html!./MyAltView.tmpl.html'
-], function (MyModel, MyMediator, Application, Master, MyView, MyViewTemplate, MyAltViewTemplate) {
+	'framework/templating/html!./MyView-tmpl.html',
+	'framework/templating/html!./MyView-alt-tmpl'
+], function (MyModel, MyMediator, Application, Master, MyView, MyViewTemplate, MyViewAltTemplate) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -73,7 +73,7 @@ require([
 		});
 
 		var tmplView = window.tmplView = MyViewTemplate.create();
-		var altTmplView = window.tmplView = MyAltViewTemplate.create();
+		var altTmplView = window.tmplView = MyViewAltTemplate.create();
 
 		masterView.add(view);
 		masterView.add(tmplView);

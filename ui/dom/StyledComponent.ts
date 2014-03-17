@@ -40,15 +40,26 @@ class StyledComponentRenderer extends ComponentRenderer {
 		styleHandle && styleHandle.remove();
 	}
 
+	initialize(widget:dom.IElement):void {
+		super.initialize(widget);
+		// TODO: build a renderer per instance to keep these objects?
+		var classList = widget._classList = new ClassList(),
+			_styleSetter = widget._styleSetter;
+		widget._classListSetter = (value:any) => {
+			_classListSetter && _classListSetter.apply(this, arguments);
+			classList.set(value);
+		};
+		var style = widget._style = new Style(),
+			_styleSetter = widget._styleSetter;
+		widget._styleSetter = (value:any) => {
+			_styleSetter && _styleSetter.apply(this, arguments);
+			// TODO: parse style string?
+			style.set(value);
+		};
+	}
+
 	render(widget:dom.IElement, options:dom.IRenderOptions = {}):void {
 		super.render(widget, options);
-		var classList = new ClassList();
-		var fragment = <HTMLElement> options.fragment;
-		if (fragment) {
-			classList.set(fragment.className);
-		}
-		widget.set('classList', classList);
-		widget.set('style', new Style());
 		this.attachStyles(widget);
 	}
 }

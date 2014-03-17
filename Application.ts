@@ -10,6 +10,15 @@ import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends ObservableEvented implements core.IApplication {
+	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
+		Application.start().then(load);
+	}
+
+	static start(config:any = {}):IPromise<Application> {
+		config.modules || (config.modules = { router: null });
+		return new Application(config).startup();
+	}
+
 	get:core.IApplicationGet;
 	private _modules:Object;
 

@@ -17,7 +17,7 @@ export interface IScanner {
 	scan(tree:IParseTree, seedList?:string[]):string[];
 }
 
-export interface ITemplateLoader {
+export interface ITemplateConstructor extends ILoaderPlugin {
     new(source:any):ITemplate;
     load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void;
     parse(source:string):IParseTree;

@@ -763,6 +763,7 @@ The following are all equivalent:
 <af-input value={field}/>
 <af-input value={field}>
 <widget is="framework/ui/form/TextInput" value={field}></widget>
+```
 
 Ideally we could limit the scope of widget registrations to the enclosing widget, which would make it possible to support redeclaring tag registrations in child scopes.
 
