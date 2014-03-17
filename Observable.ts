@@ -1,22 +1,37 @@
 import core = require('./interfaces');
+import has = require('./has');
 import util = require('./util');
 
 class Observable implements core.IObservable {
 	get:core.IObservableGet;
-	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; } = {};
+	has:(key:string) => boolean;
 	set:core.IObservableSet;
+	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
+	/* protected */ _values:Object;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
+		if (has('es5')) {
+			this._observers = Object.create(null);
+			this._values = Object.create(null);
+		}
+		else {
+			this._observers = {};
+			this._values = {};
+		}
+		this._initialize();
 		kwArgs && this.set(kwArgs);
+	}
+
+	/* protected */ _initialize():void {
 	}
 
 	destroy():void {
 		this.destroy = function ():void {};
-		this._observers = null;
+		this._observers = this._values = null;
 	}
 
 	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {
-		var observers:core.IObserver<any>[] = this._observers['*' + key];
+		var observers:core.IObserver<any>[] = has('es5') ? this._observers[key] : (this._observers.hasOwnProperty(key) && this._observers[key]);
 
 		if (observers) {
 			// Prevent mutation of the observers list from affecting this loop
@@ -36,11 +51,11 @@ class Observable implements core.IObservable {
 		// `Object.prototype`
 		// TODO: In ES5 we can just use `Object.create(null)` instead
 
-		if (!this._observers['*' + key]) {
-			this._observers['*' + key] = [];
+		if (has('es5') ? !this._observers[key] : !this._observers.hasOwnProperty(key)) {
+			this._observers[key] = [];
 		}
 
-		var observers:core.IObserver<any>[] = this._observers['*' + key];
+		var observers:core.IObserver<any>[] = this._observers[key];
 		observers.push(observer);
 
 		return {
@@ -54,19 +69,19 @@ class Observable implements core.IObservable {
 }
 
 Observable.prototype.get = function (key:string):any {
-	var privateKey = '_' + key,
-		getter = privateKey + 'Getter',
+	var getter = '_' + key + 'Getter',
 		value:any;
 
 	if (getter in this) {
 		value = this[getter]();
 	}
-	else {
-		value = this[privateKey];
+	else if (this.has(key)) {
+		value = this._values[key];
 	}
 
 	return value;
 };
+
 Observable.prototype.set = function (key:any, value?:any):void {
 	if (util.isObject(key)) {
 		var kwArgs:{ [key:string]: any; } = key;
@@ -78,14 +93,13 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	}
 
 	var oldValue = this.get(key),
-		privateKey = '_' + key,
-		setter = privateKey + 'Setter';
+		setter = '_' + key + 'Setter';
 
 	if (setter in this) {
 		this[setter](value);
 	}
 	else {
-		this[privateKey] = value;
+		this._values[key] = value;
 	}
 
 	var newValue = this.get(key);
@@ -94,5 +108,16 @@ Observable.prototype.set = function (key:any, value?:any):void {
 		this._notify(newValue, oldValue, key);
 	}
 };
+
+if (has('es5')) {
+	Observable.prototype.has = function (key:string):boolean {
+		return key in this._values;
+	};
+}
+else {
+	Observable.prototype.has = function (key:string):boolean {
+		return this._values.hasOwnProperty(key);
+	};
+}
 
 export = Observable;
