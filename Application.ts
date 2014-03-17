@@ -69,7 +69,7 @@ class Application extends ObservableEvented implements core.IApplication {
 		var dfd:IDeferred<void> = new Deferred<void>(),
 			lazyConstructors:{ [key:string]: number; } = {},
 			moduleIdsToLoad:string[] = [],
-			modules:Object = this._values.modules;
+			modules:Object = this.get('modules');
 
 		for (var key in modules) {
 			if (modules[key] && typeof modules[key].constructor === 'string') {
@@ -124,7 +124,7 @@ class Application extends ObservableEvented implements core.IApplication {
 		this._loadModules().then(():void => {
 			var promises:IPromise<any>[] = [],
 				promise:IPromise<Application>,
-				modules:Object = this._values.modules,
+				modules:Object = this.get('modules'),
 				module:{ startup?:Function; };
 
 			for (var key in modules) {

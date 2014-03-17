@@ -153,7 +153,7 @@ class Iterator extends Element implements ui.IIterator {
 		list.set('showHeader', false);
 		var className:string = list.domNode.className;
 		this._renderer.render(this, { fragment: list.domNode });
-		this.get('classList').add(className);
+		this.classList.add(className);
 	}
 
 	set:ui.IIteratorSet;

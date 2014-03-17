@@ -91,7 +91,7 @@ class DijitRenderer extends StyledRenderer {
 		}
 
 		// Build dijit
-		dijitArgs.id = widget.get('id');
+		//dijitArgs.id = widget.get('id');
 		var Dijit = widget._dijitConfig.Dijit,
 			_dijit:dijit._WidgetBase = new Dijit(dijitArgs);
 		widget._dijit = _dijit;

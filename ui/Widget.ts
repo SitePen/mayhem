@@ -17,7 +17,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	private _eventHandles:IHandle[];
-	/* protected */ _parent:ui.IContainer;
 	/* protected */ _renderer:ui.IRenderer;
 	/* protected */ _renderOptions:ui.IRenderOptions;
 	/* protected */ _values:ui.IWidgetArgs;
@@ -140,8 +139,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	/* protected */ _parentSetter(parent:ui.IContainer):void {
-		if (parent !== this._parent) {
-			this._parent = parent;
+		if (parent !== this._values.parent) {
+			this._values.parent = parent;
 			this.emit('parented');
 		}
 	}

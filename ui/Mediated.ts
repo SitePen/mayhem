@@ -80,7 +80,7 @@ class Mediated extends Widget implements ui.IMediated {
 			}
 		}
 
-		var oldParent = this._parent;
+		var oldParent = this._values.parent;
 		super._parentSetter(parent);
 
 		this._parentMediatorHandle && this._parentMediatorHandle.remove();

@@ -15,7 +15,7 @@ class MyMediator extends Mediator {
 	}
 
 	_colors_stringGetter():string {
-		return this.get('colors').toString();
+		return (this.get('colors') || '').toString();
 	}
 
 	_colors_stringSetter(value:string):void {
