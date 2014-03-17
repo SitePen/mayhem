@@ -49,8 +49,10 @@ require([
 	'framework/tests/integration/MyMediator',
 	'framework/Application',
 	'framework/ui/Master',
-	'framework/tests/integration/MyView'
-], function (MyModel, MyMediator, Application, Master, MyView) {
+	'framework/tests/integration/MyView',
+	'framework/templating/html!./MyView-tmpl.html',
+	'framework/templating/html!./MyView-alt-tmpl'
+], function (MyModel, MyMediator, Application, Master, MyView, MyViewTemplate, MyViewAltTemplate) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -73,7 +75,12 @@ require([
 			mediator: mediator
 		});
 
+		var tmplView = window.tmplView = MyViewTemplate.create();
+		var altTmplView = window.tmplView = MyViewAltTemplate.create();
+
 		masterView.add(view);
+		masterView.add(tmplView);
+		masterView.add(altTmplView);
 		masterView.attachToWindow(document.body);
 	});
 });
