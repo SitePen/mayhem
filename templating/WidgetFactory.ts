@@ -1,7 +1,6 @@
 /// <reference path="../dojo" />
 
 import array = require('dojo/_base/array');
-import core = require('../interfaces');
 import data = require('../data/interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
@@ -166,7 +165,6 @@ class _WidgetBinder {
 		}
 	}
 
-<<<<<<< HEAD:templating/WidgetFactory.ts
 	private _bindPropertyTemplates():void {
 		var widget = <ui.IView> this.widget,
 			bindingTemplates = this.factory.bindingTemplates,
@@ -193,17 +191,12 @@ class _WidgetBinder {
 
 		// Create an observable as a binding target and set up observers to reprocess templates
 		var target = this._templateObservable = new Observable();
-=======
-	private _bindTemplates(mediator:data.IMediator):void {
-		var widget = this.widget,
-			bindingTemplates = this.factory.bindingTemplates;
->>>>>>> Observable changes and Mediator now extends Model.:templating/DomWidgetFactory.ts
 		util.destroyHandles(this._observerHandles);
 		this._observerHandles = [];
 		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
 			var templates:any[] = sourceMap[property];
 			this._observerHandles.push(target.observe(property, () => {
-				var mediator:core.IMediator = widget.get('mediator');
+				var mediator:data.IMediator = widget.get('mediator');
 				for (var i = 0, len = templates.length; i < len; ++i) {
 					widget.set(getProperty(template), this._evaluateBindingTemplate(mediator, templates[i]));	
 				}
@@ -266,7 +259,7 @@ class _WidgetBinder {
 		var childFactories = this.factory.childFactories,
 			factory:WidgetFactory,
 			widget:ui.IContainer = <ui.IContainer> this.widget,
-			children = widget.get('children'),
+			children = widget.children,
 			markerNodes = this._childMarkerNodes || [],
 			item:ui.IWidget;
 		for (var i = 0, len = childFactories.length; i < len; ++i) {
@@ -329,7 +322,7 @@ class _WidgetBinder {
 			}
 			else if (descriptor.$named != null) {
 				var name:string = descriptor.$named,
-					placeholder = widget.get('placeholders')[name] = new Placeholder();
+					placeholder = widget.placeholders[name] = new Placeholder();
 				domUtil.place(placeholder.get('fragment'), node, PlacePosition.REPLACE);
 				widget.attach(placeholder);
 			}

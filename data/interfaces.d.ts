@@ -22,7 +22,7 @@ export interface IMediatorSet extends IModelSet {
  * framework.
  */
 
-export interface IModel extends core.IApplicationComponent, core.IObservable {
+export interface IModel extends core.IApplicationComponent {
 	addError(key:string, error:core.ValidationError):void;
 
 	/**
@@ -86,7 +86,7 @@ export interface IModelGet extends core.IApplicationComponentGet {
 	(key:'isExtensible'):boolean;
 }
 
-export interface IModelSet extends core.IObservableSet {
+export interface IModelSet extends core.IApplicationComponentSet {
 	(key:'scenario', value:string):void;
 }
 

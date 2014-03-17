@@ -18,7 +18,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	private _attached:boolean;
 	private _eventHandles:IHandle[];
-	/* protected */ _id:string;
 	/* protected */ _parent:ui.IContainer;
 	/* protected */ _renderer:ui.IRenderer;
 	/* protected */ _renderOptions:ui.IRenderOptions;
@@ -28,7 +27,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 		var id:string = kwArgs['id'];
 		if (!id) {
-			id = this._id = 'Widget' + (++uid);
+			id = kwArgs['id'] = 'Widget' + (++uid);
 		}
 
 		// TDOO: check registry for duplicate id and throw?
@@ -75,7 +74,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return -1;
 		}
 
-		return parent.get('children').indexOf(this);
+		return parent.children.indexOf(this);
 	}
 
 	/* protected */ _initialize():void {
@@ -89,7 +88,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return null;
 		}
 
-		return this.get('parent').get('children')[index + 1] || null;
+		return this.get('parent').children[index + 1] || null;
 	}
 
 
@@ -157,7 +156,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return null;
 		}
 
-		return this.get('parent').get('children')[index - 1] || null;
+		return this.get('parent').children[index - 1] || null;
 	}
 
 	/* protected */ _render():void {

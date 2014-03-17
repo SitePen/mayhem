@@ -21,7 +21,7 @@ interface IExtensionEvent {
 }
 
 interface IHandle {
-	remove: () => void;
+	remove:() => void;
 }
 
 interface ILoaderPlugin {

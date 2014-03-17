@@ -4,33 +4,32 @@ import core = require('../../interfaces');
 import layout = require('./layout/interfaces');
 import ui = require('../interfaces');
 
-import _IContainer = require('dijit/_Container');
-import _IWidget = require('dijit/_Widget');
-export import _IWidgetBase = require('dijit/_WidgetBase');
-export interface _IWidgetContainer extends _IContainer, _IWidget {
+import _Container = require('dijit/_Container');
+import _Widget = require('dijit/_Widget');
+export import _WidgetBase = require('dijit/_WidgetBase');
+export interface _WidgetContainer extends _Container, _Widget {
 }
 
 export interface IDijit extends core.IObservable {
+	/* protected */ _dijitConfig:IDijitConfiguration;
+
 	get:IDijitGet;
 	set:IDijitSet;
 }
 
 export interface IDijitGet extends core.IObservableGet {
-	(name:'_dijit'):_IWidgetBase;
-	(name:'_dijitConfig'):IDijitConfiguration;
 }
 
 export interface IDijitSet extends core.IObservableSet {
-	(name:'_dijit', value:_IWidgetBase):void;
-	(name:'_dijitConfig', value:IDijitConfiguration):void;
 }
 
 export interface IDijitConfiguration {
 	Base:any/*typeof ui.IWidget*/;
-	Dijit:typeof _IWidgetBase;
+	Dijit:any/*typeof _WidgetBase*/;
 	schema:any;
 	mixins:any/*Array<typeof ui.IWidget>*/;
 	rename:any;
+	//Root
 }
 
 export interface IMenuItem extends IWidget {
@@ -78,6 +77,8 @@ export interface ITitlePaneSet extends layout.IContentPaneSet {
 }
 
 export interface IWidget extends IWidgetBase {
+	_dijit:_WidgetBase;
+
 	get:IWidgetGet;
 	set:IWidgetSet;
 }
@@ -89,6 +90,8 @@ export interface IWidgetSet extends IWidgetBaseSet {
 }
 
 export interface IWidgetBase extends IDijit, ui.IElement {
+	/* protected */ _dijit:_WidgetBase;
+
 	get:IWidgetBaseGet;
 	set:IWidgetBaseSet;
 }

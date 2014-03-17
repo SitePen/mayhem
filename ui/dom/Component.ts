@@ -10,7 +10,7 @@ class ComponentRenderer extends BaseRenderer {
 		firstNode.insertBefore(itemNode, referenceNode);
 	}
 
-	clear(widget:dom.IComponent):void {
+	clear(widget:dom.IElement):void {
 		widget.get('firstNode').innerHTML = '';
 	}
 
@@ -48,11 +48,11 @@ class ComponentRenderer extends BaseRenderer {
 		});
 	}
 
-	setAttribute(widget:dom.IComponent, name:string, value:string):void {
+	setAttribute(widget:dom.IElement, name:string, value:string):void {
 		widget.get('firstNode').setAttribute(name, value);
 	}
 
-	setBody(widget:dom.IComponent, body?:any /* string | Node */):void {
+	setBody(widget:dom.IElement, body?:any /* string | Node */):void {
 		if (typeof body === 'string') {
 			widget.get('firstNode').innerHTML = body;
 		}

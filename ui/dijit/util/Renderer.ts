@@ -7,16 +7,16 @@ import _WidgetBase = require('../_WidgetBase');
 
 class DijitRenderer extends StyledRenderer {
 	add(widget:dijit.IWidgetBase, item:dijit.IWidgetBase, referenceItem:dijit.IWidgetBase, position:any):void {
-		var _dijit = <dijit._IWidgetContainer> widget.get('_dijit');
+		var _dijit = <dijit._WidgetContainer> widget._dijit;
 		if (_dijit.addChild) {
 			if (position in PlacePosition) {
 				position = domUtil.PLACE_POSITION_KEYS[position];
 			}
-			_dijit.addChild(item.get('_dijit'), position);
+			_dijit.addChild(item._dijit, position);
 		}
 	}
 
-	private _bindDijitProperty(widget:dijit.IWidgetBase, _dijit:dijit._IWidgetBase, widgetKey:string, dijitKey:string, property:any):void {
+	private _bindDijitProperty(widget:dijit.IWidgetBase, _dijit:dijit._WidgetBase, widgetKey:string, dijitKey:string, property:any):void {
 		// TODO: use widget._bind (requires monkeypatching dijit/_WidgetBase to implement IObservable)
 		// In the meantime, find a clean way to keep our handles for teardown
 		widget.observe(widgetKey, (value:any):void => {
@@ -34,7 +34,7 @@ class DijitRenderer extends StyledRenderer {
 	}
 
 	destroy(widget:dijit.IWidgetBase):void {
-		var _dijit = widget.get('_dijit');
+		var _dijit = widget._dijit;
 		if (_dijit) {
 			_dijit.destroyRecursive();
 			_dijit = null;
@@ -43,7 +43,7 @@ class DijitRenderer extends StyledRenderer {
 	}
 
 	private _getBodyNode(widget:dijit.IWidgetBase):HTMLElement {
-		var _dijit = widget.get('_dijit');
+		var _dijit = widget._dijit;
 		return _dijit.containerNode || _dijit.domNode;
 	}
 
@@ -54,7 +54,7 @@ class DijitRenderer extends StyledRenderer {
 		// If property is a child dijit return _dijit
 		// TODO: fix circular dep issues so we can use `property.type === _WidgetBase`
 		if (property.type.name === '_WidgetBase') {
-			return value.get('_dijit');
+			return value._dijit;
 		}
 		// If property is an action return wrapped mediator method
 		if (property.type === Function && value) {
@@ -75,7 +75,7 @@ class DijitRenderer extends StyledRenderer {
 		super.render(widget, options);
 
 		// Walk dijit schema and get initial properties to pass to constructor
-		var config:any = widget.get('_dijitConfig'),
+		var config:any = widget._dijitConfig,
 			schema:any = config.schema,
 			renameMap:any = config.rename,
 			dijitArgs:any = {},
@@ -92,8 +92,8 @@ class DijitRenderer extends StyledRenderer {
 
 		// Build dijit
 		dijitArgs.id = widget.get('id');
-		var Dijit = widget.get('_dijitConfig').Dijit,
-			_dijit:dijit._IWidgetBase = new Dijit(dijitArgs);
+		var Dijit = widget._dijitConfig.Dijit,
+			_dijit:dijit._WidgetBase = new Dijit(dijitArgs);
 		widget.set({
 			_dijit: _dijit,
 			// TODO: Component-based renderers should only require setting one of these
@@ -134,7 +134,7 @@ class DijitRenderer extends StyledRenderer {
 	private _startup(widget:dijit.IWidgetBase):void {
 		// Verify required fields before starting up
 		// TODO: dijitConfig.getRequiredFields()
-		var config:any = widget.get('_dijitConfig'),
+		var config:any = widget._dijitConfig,
 			requiredFields:string[] = config.getRequiredFields(),
 			field:string;
 		for (var i = 0; (field = requiredFields[i]); ++i) {
@@ -143,7 +143,7 @@ class DijitRenderer extends StyledRenderer {
 				throw new Error('Dijit widget requires `' + field + '` property');
 			}
 		}
-		widget.get('_dijit').startup();
+		widget._dijit.startup();
 	}
 }
 

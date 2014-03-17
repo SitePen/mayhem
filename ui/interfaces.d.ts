@@ -30,20 +30,6 @@ export interface IBindArguments {
 	twoWay?:boolean;
 }
 
-export interface IComponent extends IWidget {
-	get:IComponentGet;
-	set:IComponentSet;
-}
-
-export interface IComponentGet extends IWidgetGet {
-	(name:'firstNode'):HTMLElement;
-	(name:'lastNode'):HTMLElement;
-	(name:'fragment'):HTMLElement;
-}
-
-export interface IComponentSet extends IWidgetSet {
-}
-
 export interface IComposite extends IView {
 	get:ICompositeGet;
 	set:ICompositeSet;
@@ -56,6 +42,8 @@ export interface ICompositeSet extends IViewSet {
 }
 
 export interface IContainer extends IMediated {
+	children:IWidget[];
+
 	add(item:IWidget, position:AddPosition):IHandle;
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, placeholder?:any):IHandle;
@@ -67,33 +55,29 @@ export interface IContainer extends IMediated {
 }
 
 export interface IContainerGet extends IMediatedGet {
-	(name:'children'):IWidget[];
 }
 
 export interface IContainerSet extends IMediatedSet {
 }
 
-export interface IElement extends IComponent {
+export interface IElement extends IComposite {
+	classList:style.IClassList;
+	style:style.IStyle;
+	// TODO: stash on renderer instance
+	_classListHandle:IHandle;
+	_styleHandle:IHandle;
+
 	get:IElementGet;
 	set:IElementSet;
 }
 
-export interface IElementGet extends IComponentGet {
-	(name:'classList'):style.IClassList;
-	(name:'style'):style.IStyle;
-
-	// TODO: hide privates
-	(name:'_classListHandle'):IHandle;
-	(name:'_styleHandle'):IHandle;
+export interface IElementGet extends ICompositeGet {
+	(name:'firstNode'):HTMLElement;
+	(name:'lastNode'):HTMLElement;
+	(name:'fragment'):HTMLElement;
 }
 
-export interface IElementSet extends IComponentSet {
-	(name:'classList', value:style.IClassList):void;
-	(name:'style', value:style.IStyle):void;
-
-	// TODO: hide privates
-	(name:'_classListHandle', value:IHandle):void;
-	(name:'_styleHandle', value:IHandle):void;
+export interface IElementSet extends ICompositeSet {
 }
 
 export interface IMaster extends IView {
@@ -115,11 +99,11 @@ export interface IMediated extends IWidget {
 }
 
 export interface IMediatedGet extends IWidgetGet {
-	(name:'mediator'):core.IMediator;
+	(name:'mediator'):data.IMediator;
 }
 
 export interface IMediatedSet extends IWidgetSet {
-	(name:'mediator', value:core.IMediator):void;
+	(name:'mediator', value:data.IMediator):void;
 }
 
 export interface IPlaceholder extends IMediated {
@@ -147,7 +131,7 @@ export interface IRenderer {
 	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget, options?:any):void;
-	setAttribute(widget:IComponent, name:string, value:string):void;
+	setAttribute(widget:IElement, name:string, value:string):void;
 	setBody(widget:IWidget, content:Node):void;
 	setBodyText(widget:IWidget, text:string):string;
 }
@@ -158,6 +142,8 @@ export interface IRenderOptions {
 }
 
 export interface IView extends IContainer {
+	placeholders:{ [name:string]: IPlaceholder; };
+
 	add(item:IWidget, placeholder:string):IHandle;
 	add(item:IWidget, referenceNode:Node):IHandle;
 	add(item:IWidget, position?:any):IHandle;
@@ -168,18 +154,15 @@ export interface IView extends IContainer {
 }
 
 export interface IViewGet extends IContainerGet {
-	(name:'app'):core.IApplication;
 	(name:'content'):Node;
-	(name:'placeholders'):{ [name:string]: IPlaceholder; };
+	
 }
 
 export interface IViewSet extends IContainerSet {
-	(name:'app', value:core.IApplication):void;
 	(name:'content', value:Node):void;
-	(name:'placeholders', value:{ [name:string]: IPlaceholder; }):void;
 }
 
-export interface IWidget extends core.IApplicationComponent {
+export interface IWidget extends core.IApplicationComponent, core.IEvented {
 	destroy():void;
 	detach():void;
 	get:IWidgetGet;

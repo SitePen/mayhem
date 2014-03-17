@@ -1,9 +1,7 @@
-/// <reference path="../../../dojo" />
-
-import core = require('../../../interfaces');
+import data = require('../../../data/interfaces');
 import domUtil = require('../../../ui/dom/util');
 import WidgetFactory = require('../../WidgetFactory');
-import Mediator = require('../../../Mediator');
+import Mediator = require('../../../data/Mediator');
 import ui = require('../../../ui/interfaces');
 import util = require('../../../util');
 import View = require('../../../ui/View');
@@ -19,38 +17,34 @@ class When extends View {
 	private _inFlight:boolean;
 	/* protected */ _mediator:Mediator;
 	private _mediatorHandle:IHandle;
-	private _originalMediator:core.IMediator;
+	private _originalMediator:data.IMediator;
 	private _promiseField:string;
 	private _promiseFieldHandle:IHandle;
 	private _promiseValue:any;
 	private _scopedMediator:Mediator;
 	private _success:boolean;
 	private _targetPromise:any;
+	/* protected */ _values:any;
 	private _valueField:string;
-
-	// Just shut up, typescript
-	private _content:Node;
-	private _firstNode:Comment;
-	private _lastNode:Comment;
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'content' ], '_targetPromiseSetter');
 		super(kwArgs);
-		this._mediatorHandle = this.observe('mediator', (mediator:core.IMediator) => {
+		this._mediatorHandle = this.observe('mediator', (mediator:data.IMediator) => {
 			mediator && this._scopeMediator(mediator);
 		});
 		kwArgs.mediator && this._scopeMediator(kwArgs.mediator);
 	}
 
 	/* protected */ _contentSetter(content:Node):void {
-		this._content = content;
+		this._values.content = content;
 		// Defer content render unless we've already resolved succesfully
 		if (this._success) {
 			this._renderSuccess();
 		}
 	}
 
-	private _createScopedMediator(mediator:core.IMediator):Mediator {
+	private _createScopedMediator(mediator:data.IMediator):Mediator {
 		var scopedMediator:Mediator = new Mediator({ model: mediator }),
 			_get = scopedMediator.get,
 			_set = scopedMediator.set;
@@ -119,7 +113,7 @@ class When extends View {
 		this._mediator._notify(value, oldValue, this._valueField);
 	}
 
-	private _scopeMediator(mediator:core.IMediator):void {
+	private _scopeMediator(mediator:data.IMediator):void {
 		this._originalMediator = mediator;
 		this._mediator && this._mediator.destroy();
 		this._mediator = this._createScopedMediator(mediator);
@@ -135,10 +129,10 @@ class When extends View {
 			node = this._duringWidget.get('fragment');
 		}
 		// Preserve content if previously rendered
-		if (!this._content) {
-			this._content = domUtil.getRange(this._firstNode, this._lastNode, true).extractContents();
+		if (!this._values.content) {
+			this._values.content = domUtil.getRange(this._values.firstNode, this._values.lastNode, true).extractContents();
 		}
-		node && this._lastNode.parentNode.insertBefore(node, this._lastNode);
+		node && this._values.lastNode.parentNode.insertBefore(node, this._values.lastNode);
 	}
 
 	private _renderError():void {

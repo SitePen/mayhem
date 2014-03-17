@@ -17,8 +17,6 @@ class Conditional extends Composite {
 	// Typescript, wut?
 	private _boundaryNode:Comment;
 	private _consequentNode:Node;
-	private _firstNode:Comment;
-	private _lastNode:Comment;
 
 	add(item:ui.IWidget, position?:any):IHandle {
 		var handle:IHandle;
@@ -31,7 +29,7 @@ class Conditional extends Composite {
 			}
 			// Create a reference node just before alternate boundary and place child there
 			var referenceNode:Comment = document.createComment('child marker');
-			this._firstNode.parentNode.insertBefore(referenceNode, this._boundaryNode);
+			this.get('firstNode').parentNode.insertBefore(referenceNode, this._boundaryNode);
 			handle = super.add(item, referenceNode);
 			referenceNode = null;
 			if (detached) {
@@ -59,14 +57,14 @@ class Conditional extends Composite {
 		var alternate:Conditional = <Conditional> this._alternate;
 		if (alternate) {
 			alternate.detach();
-			this._firstNode.parentNode.insertBefore(alternate.get('fragment'), this._lastNode);
+			this.get('firstNode').parentNode.insertBefore(alternate.get('fragment'), this.get('lastNode'));
 			alternate.set('attached', this.get('attached'));
 		}
 	}
 
 	private _attachConsequent():void {
 		if (this._consequentNode) {
-			this._firstNode.parentNode.insertBefore(this._consequentNode, this._boundaryNode);
+			this.get('firstNode').parentNode.insertBefore(this._consequentNode, this._boundaryNode);
 			this._consequentNode = null;
 		}
 	}
@@ -105,13 +103,13 @@ class Conditional extends Composite {
 		if (this._consequentNode) {
 			return;
 		}
-		this._consequentNode = domUtil.getRange(this._firstNode, this._boundaryNode, true).extractContents();
+		this._consequentNode = domUtil.getRange(this.get('firstNode'), this._boundaryNode, true).extractContents();
 	}
 
 	/* protected */ _render():void {
 		super._render();
 		this._boundaryNode = document.createComment('alternate boundary - ' + this.get('id'));
-		this._firstNode.parentNode.insertBefore(this._boundaryNode, this._lastNode);
+		this.get('firstNode').parentNode.insertBefore(this._boundaryNode, this.get('lastNode'));
 	}
 
 	private _resultSetter(result:boolean) {

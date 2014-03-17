@@ -2,13 +2,16 @@
 
 export import binding = require('./binding/interfaces');
 export import data = require('./data/interfaces');
-import IEvented = require('dojo/Evented');
+export import IEvented = require('dojo/Evented');
 export import ObservableArray = require('./ObservableArray');
 export import routing = require('./routing/interfaces');
+export import templating = require('./templating/interfaces');
+export import ui = require('./ui/interfaces');
 export import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication extends IObservable {
 	get:IApplicationGet;
+	set:IApplicationSet;
 }
 
 export interface IApplicationGet extends IObservableGet {
@@ -17,11 +20,14 @@ export interface IApplicationGet extends IObservableGet {
 	(key:'scheduler'):IScheduler;
 }
 
+export interface IApplicationSet extends IObservableSet {
+}
+
 export interface IArrayObserver<T> {
 	(atIndex:number, insertedItems:ObservableArray<T>, removedItems:ObservableArray<T>):void;
 }
 
-export interface IApplicationComponent {
+export interface IApplicationComponent extends IObservable {
 	get:IApplicationComponentGet;
 	set:IApplicationComponentSet;
 }
@@ -31,6 +37,14 @@ export interface IApplicationComponentGet extends IObservableGet {
 }
 
 export interface IApplicationComponentSet extends IObservableSet {
+}
+
+export interface IDestroyable extends IHandle {
+	own(...handles:IHandle[]):IHandle[];
+}
+
+export interface IHasMetadata {
+	getMetadata(key:string):IObservable;
 }
 
 export interface IObservable {
@@ -54,10 +68,6 @@ export interface IObservableEvented extends IObservable, IEvented {
 
 export interface IObserver<T> {
 	(newValue:T, oldValue:T, key?:string):void;
-}
-
-export interface IHasMetadata {
-	getMetadata(key:string):IObservable;
 }
 
 export interface IProperty<T> {

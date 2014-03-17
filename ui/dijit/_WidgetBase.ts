@@ -4,6 +4,9 @@ import DijitRenderer = require('./util/Renderer');
 import Element = require('../Element');
 
 /* abstract */ class _WidgetBase extends Element implements dijit.IWidgetBase {
+	/* protected */ _dijit:dijit._WidgetBase;
+	/* protected */ _dijitConfig:dijit.IDijitConfiguration;
+
 	get:dijit.IWidgetBaseGet;
 	set:dijit.IWidgetBaseSet;
 }

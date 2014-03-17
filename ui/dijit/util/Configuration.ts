@@ -4,11 +4,11 @@ import ui = require('../../interfaces');
 
 class DijitConfiguration implements dijit.IDijitConfiguration {
 	Base:any/*typeof ui.IWidget*/;
-	Dijit:typeof dijit._IWidgetBase;
+	Dijit:typeof dijit._WidgetBase;
 	layoutSchema:any;
 	mixins:any/*Array<typeof ui.IWidget>*/;
 	rename:any;
-	Root:typeof dijit._IWidgetBase;
+	Root:typeof dijit._WidgetBase;
 	schema:any;
 
 	constructor(config:any = {}) {
@@ -59,7 +59,7 @@ class DijitConfiguration implements dijit.IDijitConfiguration {
 	}
 
 	getConfig(target:any):DijitConfiguration {
-		return target && target.prototype.__dijitConfig;
+		return target && target.prototype._dijitConfig;
 	}
 
 	getRequiredFields():string[] {

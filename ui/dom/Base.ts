@@ -73,7 +73,7 @@ class BaseRenderer implements ui.IRenderer {
 		});
 	}
 
-	setAttribute(widget:dom.IComponent, name:string, value:string):void {
+	setAttribute(widget:dom.IElement, name:string, value:string):void {
 		// TODO: encode in comment, perhaps?
 	}
 

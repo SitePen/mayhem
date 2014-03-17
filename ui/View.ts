@@ -1,26 +1,25 @@
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import Container = require('./Container');
-import core = require('../interfaces');
+import data = require('../data/interfaces');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
 import ui = require('./interfaces');
 import util = require('../util');
 
 class View extends Container implements ui.IView {
-	/* private */ _app:core.IApplication;
 	private _bindings:binding.IBindingHandle[];
-	private _placeholders:{ [name:string]: ui.IPlaceholder; };
+	placeholders:{ [name:string]: ui.IPlaceholder; };
 
 	constructor(kwArgs?:any) {
 		this._bindings = [];
-		this._placeholders = {};
+		this.placeholders = {};
 		util.deferSetters(this, [ 'content' ], '_render');
 
 		super(kwArgs);
 
 		// TODO: capture IHandle for cleanup
-		this.observe('mediator', (mediator:core.IMediator):void => {
+		this.observe('mediator', (mediator:data.IMediator):void => {
 			if (!mediator) { return; }
 			// when the mediator changes, update any bindings
 			for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); i++) {
@@ -33,7 +32,7 @@ class View extends Container implements ui.IView {
 	add(item:ui.IWidget, position?:any):IHandle;
 	add(item:ui.IWidget, position?:any):IHandle {
 		if (typeof position === 'string') {
-			var placeholder:ui.IPlaceholder = this._placeholders[position];
+			var placeholder:ui.IPlaceholder = this.placeholders[position];
 
 			if (has('debug') && !placeholder) {
 				throw new Error('Unknown placeholder "' + position + '"');
@@ -135,8 +134,8 @@ class View extends Container implements ui.IView {
 		}
 		this._bindings = null;
 
-		for (var name in this._placeholders) {
-			var placeholder = this._placeholders[name];
+		for (var name in this.placeholders) {
+			var placeholder = this.placeholders[name];
 			placeholder.empty();
 			placeholder.destroy();
 		}

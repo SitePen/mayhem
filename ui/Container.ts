@@ -7,10 +7,10 @@ import ui = require('./interfaces');
 import util = require('../util');
 
 class Container extends Mediated implements ui.IContainer {
-	private _children:ui.IWidget[];
+	children:ui.IWidget[];
 
 	constructor(kwArgs?:any) {
-		this._children = [];
+		this.children = [];
 		super(kwArgs);
 	}
 
@@ -35,16 +35,16 @@ class Container extends Mediated implements ui.IContainer {
 				position = 0;
 			}
 			else if (position === PlacePosition.LAST) {
-				position = this._children.length;
+				position = this.children.length;
 			}
 			else {
-				position = Math.max(0, Math.min(this._children.length, position));
+				position = Math.max(0, Math.min(this.children.length, position));
 			}
 
 			item.detach();
 
-			var referenceWidget:ui.IWidget = this._children[position];
-			this._children.splice(position, 0, item);
+			var referenceWidget:ui.IWidget = this.children[position];
+			this.children.splice(position, 0, item);
 			this._renderer.add(this, item, referenceWidget, position);
 			//item.set('parent', this);
 			this.attach(item);
@@ -69,8 +69,8 @@ class Container extends Mediated implements ui.IContainer {
 
 	empty():void {
 		var widget:ui.IWidget;
-		while (this._children.length) {
-			this.remove(this._children[0]);
+		while (this.children.length) {
+			this.remove(this.children[0]);
 		}
 	}
 
@@ -85,16 +85,16 @@ class Container extends Mediated implements ui.IContainer {
 			widget = index;
 			index = widget.get('index');
 
-			if (has('debug') && widget !== this._children[index]) {
+			if (has('debug') && widget !== this.children[index]) {
 				throw new Error('Attempt to remove widget ' + widget.get('id') + ' from non-parent ' + this.get('id'));
 			}
 		}
 		else {
-			widget = this._children[index];
+			widget = this.children[index];
 		}
 
 		this._renderer.remove(this, widget);
-		this._children.splice(index, 1);
+		this.children.splice(index, 1);
 		widget.set('parent', null);
 	}
 

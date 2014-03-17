@@ -1,6 +1,5 @@
 import array = require('dojo/_base/array');
-import core = require('../../../interfaces');
-import WidgetFactory = require('../../WidgetFactory');
+import data = require('../../../data/interfaces');
 import Element = require('../../../ui/Element');
 import lang = require('dojo/_base/lang');
 import List = require('dgrid/List');
@@ -8,6 +7,7 @@ import Mediator = require('../../../data/Mediator');
 import OnDemandList = require('dgrid/OnDemandList');
 import ui = require('./interfaces');
 import util = require('../../../util');
+import WidgetFactory = require('../../WidgetFactory');
 
 class Iterator extends Element implements ui.IIterator {
 	private _factory:WidgetFactory;
@@ -32,7 +32,7 @@ class Iterator extends Element implements ui.IIterator {
 		super(kwArgs);
 	}
 
-	private _createScopedMediator(key:string, mediator?:core.IMediator):Mediator {
+	private _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
 		mediator || (mediator = this.get('mediator'));
 		var scopedMediator:Mediator = new Mediator({ model: mediator }),
 			_get = scopedMediator.get,
@@ -65,7 +65,7 @@ class Iterator extends Element implements ui.IIterator {
 
 	private _eachSetter(scopedField:string):void {
 		this._scopedField = scopedField;
-		var mediator:core.IMediator = this.get('mediator');
+		var mediator:data.IMediator = this.get('mediator');
 		if (!mediator) {
 			return;
 		}

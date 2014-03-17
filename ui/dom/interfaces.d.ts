@@ -1,8 +1,5 @@
 import ui = require('../interfaces');
 
-export interface IComponent extends ui.IComponent {
-}
-
 export interface IComposite extends ui.IComposite {
 }
 
@@ -26,7 +23,7 @@ export interface IRenderer extends ui.IRenderer {
 	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget, options?:any):void;
-	setAttribute(widget:IComponent, name:string, value:string):void;
+	setAttribute(widget:IElement, name:string, value:string):void;
 	setBody(widget:IWidget, content:any /* string | Node */):void;
 	setBodyText(widget:IWidget, text:string):string;
 }
