@@ -18,71 +18,67 @@ import when = require('dojo/when');
 // Mediators are just observables, so creating mutable properties for them is very easy
 
 class Model extends Observable implements data.IModel, core.IHasMetadata {
-	static property<T>(kwArgs:data.IPropertyArguments<T>):any {
-		return {
-			type: (kwArgs:data.IPropertyArguments<T>):Property<T> => {
-				return new Property<T>(kwArgs);
-			},
-			kwArgs: kwArgs
+	static property<T>(propertyKwArgs:data.IPropertyArguments<T>):any {
+		return (kwArgs:data.IPropertyArguments<T>):Property<T> => {
+			return new Property<T>(lang.mixin({}, propertyKwArgs, kwArgs));
 		};
 	}
 
-	static schema(ctor:Function, schemaCreator:(parentSchema?:any) => any):void {
-		var oldSchema:any = ctor.prototype._schema;
+	static schema(schemaCreator:(parentSchema?:Model.ISchema) => Model.ISchema):void {
+		var ctor:Function = this,
+			oldSchema:any = ctor.prototype._schema;
+
 		ctor.prototype._schema = schemaCreator(oldSchema);
 	}
 
-	/* private */ _app:core.IApplication;
-	private _collection:any /*dstore.Collection*/;
-	private _isExtensible:boolean = false;
-	private _scenario:string = 'insert';
-	private _validatorInProgress:IPromise<void>;
-	_schema:any;
+	_schema:Model.ISchema;
+	/* protected */ _values:{
+		app:core.IApplication;
+		collection:any /*dstore.Collection*/;
+		isExtensible:boolean;
+		scenario:string;
+		validatorInProgress:IPromise<void>;
+	};
 
 	get:data.IModelGet;
 	set:data.IModelSet;
 
-	/* protected */ _getSchema():Model.ISchema {
-		var schema:any = {};
-		for (var key in this._schema) {
-			var item:{ type:{ new (kwArgs:data.IPropertyArguments<any>):data.IProperty<any> }; kwArgs:data.IPropertyArguments<any>; } = this._schema[key];
-			schema[key] = new item.type(lang.mixin(<any>{}, item.kwArgs, {
-				key: key,
-				model: this
-			}));
-		}
-
-		this._getSchema = ():Model.ISchema => {
-			return schema;
-		};
-
-		return schema;
+	_initialize():void {
+		lang.mixin(this._values, {
+			isExtensible: false,
+			scenario: 'insert'
+		});
 	}
 
 	addError(key:string, error:ValidationError):void {
-		this._getSchema()[key].get('errors').push(error);
+		this._getProperties()[key].get('errors').push(error);
 	}
 
 	clearErrors():void {
-		var schema = this._getSchema();
-		for (var key in schema) {
-			schema[key].get('errors').splice(0, Infinity);
+		var properties = this._getProperties();
+		for (var key in properties) {
+			properties[key].get('errors').splice(0, Infinity);
 		}
+	}
+
+	destroy():void {
+		super.destroy();
+		this._getProperties = null;
 	}
 
 	// TODO: Destroy?
 	// TODO: _errorsGetter?
 	// TODO: ObservableArray?
 	getErrors(key?:string):ValidationError[] {
-		var schema:Model.ISchema = this._getSchema();
+		var properties:Model.IProperties = this._getProperties();
 		if (key) {
-			return schema[key].get('errors');
+			return properties[key].get('errors');
 		}
 
 		var errors:ValidationError[] = [];
 
-		for (key in schema) {
-			Array.prototype.push.apply(errors, schema[key].get('errors'));
+		for (key in properties) {
+			Array.prototype.push.apply(errors, properties[key].get('errors'));
 		}
 
 		return errors;
@@ -90,15 +86,31 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 
 	// TODO: Something else?
 	getMetadata(key:string):data.IProperty<any> {
-		return this._getSchema()[key];
+		return this._getProperties()[key];
 	}
 
-	private _getProperty(key:string):data.IProperty<any> {
-		var schema:Model.ISchema = this._getSchema(),
-			property:data.IProperty<any> = schema[key];
+	/* protected */ _getProperties():Model.IProperties {
+		var properties:any = {};
+		for (var key in this._schema) {
+			var PropertyCtor:Model.IPropertyConstructor<any> = this._schema[key];
+			properties[key] = new PropertyCtor({
+				key: key,
+				model: this
+			});
+		}
 
-		if (!property && this._isExtensible) {
-			property = schema[key] = new Property<any>({
+		this._getProperties = ():Model.IProperties => {
+			return properties;
+		};
+
+		return properties;
+	}
+	private _getProperty(key:string):data.IProperty<any> {
+		var properties:Model.IProperties = this._getProperties(),
+			property:data.IProperty<any> = properties[key];
+
+		if (!property && this.get('isExtensible')) {
+			property = properties[key] = new Property<any>({
 				model: this,
 				key: key
 			});
@@ -108,9 +120,9 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	isValid():boolean {
-		var schema = this._getSchema();
-		for (var key in schema) {
-			if (schema[key].get('errors').length) {
+		var properties = this._getProperties();
+		for (var key in properties) {
+			if (properties[key].get('errors').length) {
 				return false;
 			}
 		}
@@ -124,7 +136,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	remove():IPromise<any> {
-		return when(this._collection.remove(this._collection.getIdentity(this))).then(<T>(returnValue:T):T => {
+		return when(this.get('collection').remove(this.get('collection').getIdentity(this))).then(<T>(returnValue:T):T => {
 			this.set('scenario', 'insert');
 			return returnValue;
 		});
@@ -137,32 +149,32 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	validate(keysToValidate?:string[]):IPromise<boolean> {
-		if (this._validatorInProgress) {
-			this._validatorInProgress.cancel('Validation restarted');
-			this._validatorInProgress = null;
+		if (this._values.validatorInProgress) {
+			this._values.validatorInProgress.cancel('Validation restarted');
+			this._values.validatorInProgress = null;
 		}
 
 		this.clearErrors();
 
 		var self = this,
 			dfd:IDeferred<boolean> = new Deferred<boolean>(),
-			schema = this._getSchema(),
-			schemaKeys = util.getObjectKeys(schema),
+			properties = this._getProperties(),
+			propertiesKeys = util.getObjectKeys(properties),
 			i = 0;
 
 		(function validateNextField():void {
-			var key = schemaKeys[i++];
+			var key = propertiesKeys[i++];
 
 			if (!key) {
 				// all fields have been validated
-				self._validatorInProgress = null;
+				self._values.validatorInProgress = null;
 				dfd.resolve(self.isValid());
 			}
 			else if (keysToValidate && array.indexOf(keysToValidate, key) === -1) {
 				validateNextField();
 			}
 			else {
-				self._validatorInProgress = schema[key].validate().then(validateNextField, function (error:Error):void {
+				self._values.validatorInProgress = properties[key].validate().then(validateNextField, function (error:Error):void {
 					dfd.reject(error);
 				});
 			}
@@ -173,7 +185,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 }
 
 Model.prototype.get = function(key:string):any {
-	var property:data.IProperty<any> = this._getSchema()[key];
+	var property:data.IProperty<any> = this._getProperties()[key];
 	return property ? property.get('value') : Observable.prototype.get.call(this, key);
 };
 
@@ -191,14 +203,20 @@ Model.prototype.set = function(key:any, value?:any):void {
 	if (property) {
 		property.set('value', value);
 	}
-	else if (key in this) {
+	else if (this.has(key)) {
 		Observable.prototype.set.call(this, key, value);
 	}
 };
 
 module Model {
-	export interface ISchema {
+	export interface IProperties {
 		[key:string]:data.IProperty<any>;
+	}
+	export interface IPropertyConstructor<T> {
+		new (kwArgs:data.IPropertyArguments<T>):data.IProperty<T>;
+	}
+	export interface ISchema {
+		[key:string]:IPropertyConstructor<any>;
 	}
 }
 

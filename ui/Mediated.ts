@@ -1,5 +1,6 @@
 import AddPosition = require('./AddPosition');
 import core = require('../interfaces');
+import data = require('../data/interfaces');
 import has = require('../has');
 import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
@@ -7,7 +8,7 @@ import util = require('../util');
 import Widget = require('./Widget');
 
 class Mediated extends Widget implements ui.IMediated {
-	/*private*/ _mediator:core.IMediator;
+	/*private*/ _mediator:data.IMediator;
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
 	private _attachedWidgets:ui.IWidget[];
@@ -49,7 +50,7 @@ class Mediated extends Widget implements ui.IMediated {
 
 	get:ui.IMediatedGet;
 
-	private _mediatorGetter():core.IMediator {
+	private _mediatorGetter():data.IMediator {
 		if (this._mediator) {
 			return this._mediator;
 		}
@@ -84,7 +85,7 @@ class Mediated extends Widget implements ui.IMediated {
 
 		this._parentMediatorHandle && this._parentMediatorHandle.remove();
 		this._parentMediatorHandle = null;
-		var mediatorHandler = (newMediator:core.IMediator, oldMediator:core.IMediator):void => {
+		var mediatorHandler = (newMediator:data.IMediator, oldMediator:data.IMediator):void => {
 			// if no mediator has been explicitly set, notify of the parent's mediator change
 			if (!this._mediator && !util.isEqual(newMediator, oldMediator)) {
 				this._notify(newMediator, oldMediator, 'mediator');

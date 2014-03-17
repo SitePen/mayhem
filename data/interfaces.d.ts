@@ -1,6 +1,22 @@
 import core = require('../interfaces');
 import ObservableArray = require('../ObservableArray');
 
+export interface IMediator extends IModel {
+	get:IMediatorGet;
+	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
+	set:IMediatorSet;
+}
+
+export interface IMediatorGet extends IModelGet {
+	(key:'model'):IModel;
+	(key:'routeState'):Object;
+}
+
+export interface IMediatorSet extends IModelSet {
+	(key:'model', value:IModel):void;
+	(key:'routeState', value:Object):void;
+}
+
 /**
  * The IModel interface should be implemented by any object that is intended to be used as a data model within the
  * framework.
@@ -116,11 +132,12 @@ export interface IPropertySet<T> extends core.IObservableSet {
 }
 
 export interface IPropertyArguments<T> {
+	[key:string]:any;
+	get?:() => T;
 	dependencies?:string[];
 	label?:string;
+	set?:(value:T) => void;
 	value?:T;
-	_valueGetter?:() => T;
-	_valueSetter?:(value:T) => void;
 	validateOnSet?:boolean;
 	validators?:core.IValidator[];
 }

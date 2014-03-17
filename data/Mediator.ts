@@ -13,14 +13,19 @@ import Model = require('./Model');
 import Stateful = require('dojo/Stateful');
 import util = require('../util');
 
-class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
-	/* private */ _app:core.IApplication;
-	private _model:data.IModel;
+class Mediator extends Model implements data.IMediator, core.IHasMetadata {
+	get:data.IMediatorGet;
+	set:data.IMediatorSet;
 
-	get:core.IMediatorGet;
-	set:core.IMediatorSet;
+	_initialize():void {
+		lang.mixin(this._values, {
+			app: null,
+			model: null
+		});
+	}
 
-	getMetadata(key:string):core.IProxy {
+	// TODO: Fix this
+	/*getMetadata(key:string):core.IProxy {
 		var proxy:Proxy,
 			handle:IHandle = this.observe('model', function (newModel:data.IModel):void {
 				var newProperty = newModel ? newModel.getMetadata(key) : null;
@@ -37,19 +42,14 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 		});
 
 		return proxy;
-	}
+	}*/
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
-		// Prefix all keys as a simple way to avoid collisions if someone uses a name for a watch that is also on
-		// `Object.prototype`
-		// TODO: In ES5 we can just use `Object.create(null)` instead
-
-		var handle:IHandle = super.observe(key, observer),
-			privateKey = '_' + key;
+		var handle:IHandle = super.observe(key, observer);
 
 		// Keys not pre-defined on the mediator should be delegated to the model, and may change when the model
 		// changes
-		if (!(privateKey in this) && !((privateKey + 'Setter') in this)) {
+		if (!this.has(key) && !(('_' + key + 'Setter') in this) && !(key in this._getProperties())) {
 			var notifier = (newValue:any, oldValue:any):void => {
 					this._notify(newValue, oldValue, key);
 				},
@@ -60,8 +60,8 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 					modelPropertyHandle && modelPropertyHandle.remove();
 					modelPropertyHandle = newModel.observe(key, notifier);
 
-					if (!util.isEqual(oldValue[key], newValue[key])) {
-						this._notify(newValue[key], oldValue[key], key);
+					if (!util.isEqual(oldValue, newValue)) {
+						this._notify(oldValue, newValue, key);
 					}
 				}),
 				model:data.IModel = this.get('model'),
@@ -71,7 +71,7 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 			handle.remove = function ():void {
 				oldRemove.apply(this, arguments);
 				modelHandle.remove();
-				modelPropertyHandle.remove();
+				modelPropertyHandle && modelPropertyHandle.remove();
 			};
 		}
 
@@ -83,30 +83,26 @@ class Mediator extends Observable implements core.IMediator, core.IHasMetadata {
 // set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
 // to allow accessor overrides)
 lang.mixin(Mediator.prototype, {
-	_app: null,
-	_model: null,
-
 	get: function (key:string):any {
-		var privateKey = '_' + key,
-			getter = privateKey + 'Getter',
+		var getter = '_' + key + 'Getter',
 			value:any;
 
 		if (getter in this) {
 			value = this[getter]();
 		}
-		else if (privateKey in this) {
-			value = this[privateKey];
-
-			// Might be for a computed property
-			// TODO: Does this make sense?
-			if (value instanceof Property) {
-				value = (<Property<any>> value).get('value');
-			}
-		}
 		else {
-			var model = this.get('model');
-			if (model) {
-				value = model.get(key);
+			var property:data.IProperty<any> = this._getProperties()[key];
+			if (property) {
+				value = property.get('value');
+			}
+			else if (this.has(key)) {
+				value = this._values[key];
+			}
+			else {
+				var model = this.get('model');
+				if (model) {
+					value = model.get(key);
+				}
 			}
 		}
 
@@ -124,31 +120,30 @@ lang.mixin(Mediator.prototype, {
 		}
 
 		var oldValue = this.get(key),
-			privateKey = '_' + key,
-			setter = privateKey + 'Setter',
+			setter = '_' + key + 'Setter',
 			notify = false;
 
 		if (setter in this) {
 			notify = true;
 			this[setter](value);
 		}
-		else if (privateKey in this) {
-			notify = true;
-
-			if (this[privateKey] instanceof Property) {
-				this[privateKey].set(value);
+		else {
+			var property:data.IProperty<any> = this._getProperty(key);
+			if (property) {
+				property.set('value', value);
+			}
+			else if (this.has(key)) {
+				notify = true;
+				this._values[key] = value;
 			}
 			else {
-				this[privateKey] = value;
-			}
-		}
-		else {
-			var model = this.get('model');
-			if (model) {
-				model.set(key, value);
-			}
-			else if (has('debug')) {
-				console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+				var model = this.get('model');
+				if (model) {
+					model.set(key, value);
+				}
+				else if (has('debug')) {
+					console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+				}
 			}
 		}
 

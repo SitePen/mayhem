@@ -24,7 +24,7 @@ module MyModel {
 	}
 }
 
-Model.schema(MyModel, ():any => {
+MyModel.schema(():any => {
 	return {
 		firstName: Model.property<string>({
 			label: 'First name',

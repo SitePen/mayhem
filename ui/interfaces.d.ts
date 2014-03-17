@@ -1,7 +1,8 @@
 import AddPosition = require('./AddPosition');
 import core = require('../interfaces');
+export import data = require('../data/interfaces');
 import PlacePosition = require('./PlacePosition');
-import style = require('./style/interfaces');
+export import style = require('./style/interfaces');
 
 export interface IBindArguments {
 	/**
@@ -178,7 +179,7 @@ export interface IViewSet extends IContainerSet {
 	(name:'placeholders', value:{ [name:string]: IPlaceholder; }):void;
 }
 
-export interface IWidget extends core.IObservableEvented {
+export interface IWidget extends core.IApplicationComponent {
 	destroy():void;
 	detach():void;
 	get:IWidgetGet;
@@ -188,7 +189,7 @@ export interface IWidget extends core.IObservableEvented {
 	set:IWidgetSet;
 }
 
-export interface IWidgetGet extends core.IObservableSet {
+export interface IWidgetGet extends core.IApplicationComponentGet {
 	(name:'attached'):boolean;
 	(name:'firstNode'):Node;
 	(name:'fragment'):DocumentFragment;
@@ -200,7 +201,7 @@ export interface IWidgetGet extends core.IObservableSet {
 	(name:'previous'):IWidget;
 }
 
-export interface IWidgetSet extends core.IObservableSet {
+export interface IWidgetSet extends core.IApplicationComponentSet {
 	(name:'attached', value:boolean):void;
 	(name:'id', value:string):void;
 	(name:'parent', value:IContainer):void;

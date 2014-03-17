@@ -2,6 +2,7 @@
 
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
+import data = require('../data/interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
@@ -165,6 +166,7 @@ class _WidgetBinder {
 		}
 	}
 
+<<<<<<< HEAD:templating/WidgetFactory.ts
 	private _bindPropertyTemplates():void {
 		var widget = <ui.IView> this.widget,
 			bindingTemplates = this.factory.bindingTemplates,
@@ -191,6 +193,11 @@ class _WidgetBinder {
 
 		// Create an observable as a binding target and set up observers to reprocess templates
 		var target = this._templateObservable = new Observable();
+=======
+	private _bindTemplates(mediator:data.IMediator):void {
+		var widget = this.widget,
+			bindingTemplates = this.factory.bindingTemplates;
+>>>>>>> Observable changes and Mediator now extends Model.:templating/DomWidgetFactory.ts
 		util.destroyHandles(this._observerHandles);
 		this._observerHandles = [];
 		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
@@ -249,7 +256,7 @@ class _WidgetBinder {
 		// TODO: moar
 	}
 
-	private _evaluateBindingTemplate(mediator:core.IMediator, template:any[]):string {
+	private _evaluateBindingTemplate(mediator:data.IMediator, template:any[]):string {
 		return array.map(template, (item:any):any => {
 			return item.$bind ? mediator.get(item.$bind) : item;
 		}).join('');

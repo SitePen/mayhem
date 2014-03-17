@@ -6,10 +6,6 @@ import ObservableStore = require('dojo/store/Observable');
 class MyMediator extends Mediator {
 	_phone_numbers:ObservableStore<any>;
 
-	_fullNameGetter():string {
-		return this.get('model').get('fullName').replace(/J/g, 'B');
-	}
-
 	_fullNameIsBoeBloggerGetter():boolean {
 		return this.get('fullName') === 'Boe Blogger';
  	}
@@ -68,14 +64,35 @@ class MyMediator extends Mediator {
 		return dfd.promise;
 	}
 
-	save():void {
+	save(skipValidation?:boolean):IPromise<void> {
 		if (this.get('model')) {
 			console.log('Allow us to save some data!');
 		}
 		else {
 			console.log('There is no data to save!');
 		}
+		return;
 	}
 }
+MyMediator.schema(():any => {
+	return {
+		fullName: MyMediator.property<string>({
+			label: 'Full Name',
+			get: function ():string {
+				var model = this.get('model'),
+					fullName = model.get('firstName') + ' ' + model.get('lastName');
+				return fullName.replace(/J/g, 'B');
+			},
+			set: function (value:string):void {
+				var names:string[] = value.split(' ');
+				this.get('model').set({
+					firstName: names[0],
+					lastName: names.slice(1).join(' ')
+				});
+			},
+			dependencies: [ 'firstName', 'lastName' ]
+		})
+	};
+});
 
 export = MyMediator;

@@ -22,28 +22,15 @@ export interface IArrayObserver<T> {
 }
 
 export interface IApplicationComponent {
-	/* private */ _app:IApplication;
 	get:IApplicationComponentGet;
+	set:IApplicationComponentSet;
 }
 
 export interface IApplicationComponentGet extends IObservableGet {
 	(key:'app'):IApplication;
 }
 
-export interface IMediator extends IApplicationComponent, IObservable {
-	get:IMediatorGet;
-	/* protected */ _observers:{ [key:string]: IObserver<any>[]; };
-	set:IMediatorSet;
-}
-
-export interface IMediatorGet extends IObservableGet {
-	(key:'model'):data.IModel;
-	(key:'routeState'):Object;
-}
-
-export interface IMediatorSet extends IObservableSet {
-	(key:'model', value:data.IModel):void;
-	(key:'routeState', value:Object):void;
+export interface IApplicationComponentSet extends IObservableSet {
 }
 
 export interface IObservable {
@@ -52,9 +39,11 @@ export interface IObservable {
 	observe<T>(key:string, observer:IObserver<T>):IHandle;
 	set:IObservableSet;
 }
+
 export interface IObservableGet {
 	(key:string):any;
 }
+
 export interface IObservableSet {
 	(kwArgs:{ [key:string]: any; }):void;
 	(key:string, value:any):void;
@@ -69,6 +58,15 @@ export interface IObserver<T> {
 
 export interface IHasMetadata {
 	getMetadata(key:string):IObservable;
+}
+
+export interface IProperty<T> {
+	destroy():void;
+	get():T;
+	isProperty:boolean;
+	observe(observer:IObserver<T>):IHandle;
+	set(value:T):void;
+	valueOf():any;
 }
 
 export interface IProxy extends IObservable {

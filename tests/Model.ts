@@ -15,7 +15,7 @@ import RequiredValidator = require('../validation/RequiredValidator');
 import ValidationError = require('../validation/ValidationError');
 
 class PopulatedModel extends Model {}
-Model.schema(PopulatedModel, ():any => {
+PopulatedModel.schema(():any => {
 	return {
 		string: Model.property<string>({
 			default: 'foo'
@@ -86,7 +86,7 @@ var asyncStringIsBValidator = {
 };
 
 class TestValidationModel extends Model {}
-Model.schema(TestValidationModel, ():any => {
+TestValidationModel.schema(():any => {
 	return {
 		syncA: Model.property<string>({
 			default: 'A',
@@ -108,7 +108,7 @@ Model.schema(TestValidationModel, ():any => {
 });
 
 class TestRequiredValidationModel extends TestValidationModel {}
-Model.schema(TestRequiredValidationModel, (parentSchema:any):any => {
+TestRequiredValidationModel.schema((parentSchema:any):any => {
 	return lang.delegate(parentSchema, {
 		required: Model.property<string>({
 			validators: [ new RequiredValidator() ]
@@ -117,7 +117,7 @@ Model.schema(TestRequiredValidationModel, (parentSchema:any):any => {
 });
 
 class TestValidationExceptionsModel extends Model {}
-Model.schema(TestValidationExceptionsModel, ():any => {
+TestValidationExceptionsModel.schema(():any => {
 	return {
 		sync: Model.property<string>({
 			validators: [ {
@@ -162,7 +162,7 @@ var lengthOf2 = function (model:data.IModel, key:string, value:string):void {
 };
 
 class TestValidationScenarioModel extends Model {}
-Model.schema(TestValidationScenarioModel, ():any => {
+TestValidationScenarioModel.schema(():any => {
 	return {
 		prop: Model.property<string>({
 			validators: [ {
