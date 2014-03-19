@@ -2,13 +2,14 @@ import data = require('../../../data/interfaces');
 import domUtil = require('../../../ui/dom/util');
 import WidgetFactory = require('../../WidgetFactory');
 import Mediator = require('../../../data/Mediator');
+import templating = require('./interfaces');
 import ui = require('../../../ui/interfaces');
 import util = require('../../../util');
 import View = require('../../../ui/View');
 import when = require('dojo/when');
 
-// TODO: move all this render noise to _renderer
-class When extends View {
+// TODO: move all this render noise to the renderer
+class When extends View implements templating.IWhen {
 	private _duringTemplate:any;
 	private _duringWidget:ui.IWidget;
 	private _errorTemplate:any;
@@ -25,6 +26,9 @@ class When extends View {
 	private _targetPromise:any;
 	/* protected */ _values:any;
 	private _valueField:string;
+
+	get:templating.IWhenGet;
+	set:templating.IWhenSet;
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'content' ], '_targetPromiseSetter');
@@ -127,18 +131,19 @@ class When extends View {
 			this._duringWidget.detach();
 			node = this._duringWidget.get('fragment');
 		}
+		var lastNode = this.get('lastNode');
 		// Preserve content if previously rendered
 		if (!this._values.content) {
-			this._values.content = domUtil.getRange(this._values.firstNode, this._values.lastNode, true).extractContents();
+			this._values.content = domUtil.getRange(this.get('firstNode'), lastNode, true).extractContents();
 		}
-		node && this._values.lastNode.parentNode.insertBefore(node, this._values.lastNode);
+		node && lastNode.parentNode.insertBefore(node, lastNode);
 	}
 
 	private _renderError():void {
 		this._duringWidget && this._duringWidget.detach();
 		if (this._errorWidget) {
 			this._errorWidget.detach();
-			// TODO: move to _renderer
+			// TODO: move to the renderer
 			var lastNode = this.get('lastNode');
 			lastNode.parentNode.insertBefore(this._errorWidget.get('fragment'), lastNode);
 		}

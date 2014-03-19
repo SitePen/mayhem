@@ -1,19 +1,17 @@
-import configure = require('../dijit/util/configure');
-import DijitBase = require('../dijit/form/CheckBox');
-import form = require('./interfaces');
-import ToggleButton = require('./ToggleButton');
-import util = require('../../util');
+/// <amd-dependency path="../renderer!CheckBox" />
 
-class CheckBox extends ToggleButton implements form.ICheckBox {
+import ToggleButton = require('./ToggleButton');
+import form = require('./interfaces');
+
+var Renderer:any = require('../renderer!CheckBox');
+
+class CheckBox extends ToggleButton implements form.ICheckBoxImpl {
+	/* protected */ _values:form.ICheckBoxValues;
+
 	get:form.ICheckBoxGet;
 	set:form.ICheckBoxSet;
 }
 
-util.applyMixins(CheckBox, [ DijitBase ]);
-
-configure(CheckBox, {
-	Base: ToggleButton,
-	mixins: [ DijitBase ]
-});
+CheckBox.prototype._renderer = new Renderer();
 
 export = CheckBox;

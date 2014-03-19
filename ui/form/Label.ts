@@ -1,38 +1,17 @@
-/// <reference path="../../dojo" />
+/// <amd-dependency path="../renderer!Label" />
 
-import core = require('../../interfaces');
-import Element = require('../Element');
 import form = require('./interfaces');
-import ui = require('../interfaces');
-import util = require('../../util');
+import View = require('../View');
 
-class Label extends Element implements form.ILabel {
-	/* protected */ _values:form.ILabelArgs;
+var Renderer:any = require('../renderer!Label');
 
-	constructor(kwArgs?:form.ILabelArgs) {
-		util.deferSetters(this, [ 'for', 'text' ], '_render');
-		this._renderOptions = { elementType: 'label' };
-		super(kwArgs);
-	}
+class FormLabel extends View implements form.ILabelImpl {
+	/* protected */ _values:form.ILabelValues;
 
-	destroy():void {
-		super.destroy();
-	}
-
-	/* protected */ _contentSetter(value:any/* string | Node */):void {
-		super._contentSetter(value);
-		this._values.text = this._renderer.getTextContent(this);
-	}
-
-	/* protected */ _forSetter(value:string):void {
-		this._values.for = value;
-		this._renderer.setAttribute(this, 'for', value);
-	}
-
-	/* protected */ _textSetter(value:string):void {
-		this._values.text = value;
-		this._values.formattedText = this._renderer.setBodyText(this, value);
-	}
+	get:form.ILabelGet;
+	set:form.ILabelSet;
 }
 
-export = Label;
+FormLabel.prototype._renderer = new Renderer({ elementType: 'label' });
+
+export = FormLabel;

@@ -30,76 +30,41 @@ export interface IBindArguments {
 	twoWay?:boolean;
 }
 
-export interface IComposite extends IView {
-	get:ICompositeGet;
-	set:ICompositeSet;
-}
-
-export interface ICompositeGet extends IViewGet {
-}
-
-export interface ICompositeSet extends IViewSet {
-}
-
 export interface IContainer extends IMediated {
-	children:IWidget[];
+	get:IContainerGet;
+	set:IContainerSet;
 
 	add(item:IWidget, position:AddPosition):IHandle;
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, placeholder?:any):IHandle;
 	empty():void;
-	get:IContainerGet;
 	remove(index:number):void;
 	remove(widget:IWidget):void;
-	set:IContainerSet;
 }
 
 export interface IContainerGet extends IMediatedGet {
+	(name:'children'):IWidget[];
 }
 
 export interface IContainerSet extends IMediatedSet {
+	(name:'children', value:IWidget[]):void;
 }
 
-export interface IElement extends IComposite {
-	classList:style.IClassList;
-	style:style.IStyle;
-	// TODO: stash on renderer instance
-	_classListHandle:IHandle;
-	_styleHandle:IHandle;
-
-	get:IElementGet;
-	set:IElementSet;
+export interface IContainerValues extends IMediatedValues {
+	children?:IWidget[];
 }
 
-export interface IElementGet extends ICompositeGet {
-	(name:'firstNode'):HTMLElement;
-	(name:'lastNode'):HTMLElement;
-	(name:'fragment'):HTMLElement;
-}
-
-export interface IElementSet extends ICompositeSet {
-}
-
-export interface IMaster extends IView {
-	attachToWindow(referenceNode:Node):IHandle;
-	get:IMasterGet;
-	set:IMasterSet;
-}
-
-export interface IMasterGet extends IViewGet {
-}
-
-export interface IMasterSet extends IViewSet {
+export interface IContainerImpl extends IContainer, IMediatedImpl {
+	_values:IContainerValues;
+	get:IContainerGet;
+	set:IContainerSet;
 }
 
 export interface IMediated extends IWidget {
-	attach(widget:IWidget):void;
 	get:IMediatedGet;
 	set:IMediatedSet;
-}
 
-export interface IMediatedArgs extends IWidgetArgs {
-	mediator?:data.IMediator;
+	attach(widget:IWidget):void;
 }
 
 export interface IMediatedGet extends IWidgetGet {
@@ -110,10 +75,21 @@ export interface IMediatedSet extends IWidgetSet {
 	(name:'mediator', value:data.IMediator):void;
 }
 
+export interface IMediatedValues extends IWidgetValues {
+	mediator?:data.IMediator;
+}
+
+export interface IMediatedImpl extends IMediated, IWidgetImpl {
+	_values:IMediatedValues;
+	get:IMediatedGet;
+	set:IMediatedSet;
+}
+
 export interface IPlaceholder extends IMediated {
-	empty():void;
 	get:IPlaceholderGet;
 	set:IPlaceholderSet;
+
+	empty():void;
 }
 
 export interface IPlaceholderGet extends IMediatedGet {
@@ -124,68 +100,66 @@ export interface IPlaceholderSet extends IMediatedSet {
 	(name:'widget', value:IWidget):void;
 }
 
+export interface IPlaceholderValues extends IMediatedValues {
+	widget?:IWidget;
+}
+
+export interface IPlaceholderImpl extends IPlaceholder, IMediatedImpl {
+	_values:IPlaceholderValues;
+	get:IPlaceholderGet;
+	set:IPlaceholderSet;
+}
+
 export interface IRenderer {
 	add(widget:IContainer, item:IWidget, referenceItem:IWidget, position:any):void;
-	attachToWindow(widget:IMediated, window:any):void;
+	attachToWindow(widget:IWidget, window:any):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
-	getContent(widget:IComposite):Node;
-	getTextContent(widget:IComposite):string;
-	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
-	render(widget:IWidget, options?:any):void;
-	setAttribute(widget:IElement, name:string, value:string):void;
+	render(widget:IWidget):void;
 	setBody(widget:IWidget, content:Node):void;
-	setBodyText(widget:IWidget, text:string):string;
-}
-
-export interface IRenderOptions {
-	fragment?:Node;
-	elementType?:string;
 }
 
 export interface IView extends IContainer {
 	placeholders:{ [name:string]: IPlaceholder; };
+	get:IViewGet;
+	set:IViewSet;
 
 	add(item:IWidget, placeholder:string):IHandle;
-	add(item:IWidget, referenceNode:Node):IHandle;
 	add(item:IWidget, position?:any):IHandle;
 	bind(kwArgs:IBindArguments):IHandle;
 	clear():void;
+}
+
+export interface IViewGet extends IContainerGet {
+	(name:'content'):any;
+}
+
+export interface IViewSet extends IContainerSet {
+	(name:'content', value:any):void;
+}
+
+export interface IViewValues extends IContainerValues {
+	content?:any;
+}
+
+export interface IViewImpl extends IContainerImpl {
+	_values:IViewValues;
 	get:IViewGet;
 	set:IViewSet;
 }
 
-export interface IViewGet extends IContainerGet {
-	(name:'content'):Node;
-	
-}
-
-export interface IViewSet extends IContainerSet {
-	(name:'content', value:Node):void;
-}
-
 export interface IWidget extends core.IApplicationComponent, core.IEvented {
+	get:IWidgetGet;
+	set:IWidgetSet;
+
+	attachToWindow(reference:any):IHandle;
 	destroy():void;
 	detach():void;
-	get:IWidgetGet;
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IContainer, position:number):IHandle;
 	placeAt(destination:IContainer, placeholder:string):IHandle;
-	set:IWidgetSet;
-}
-
-export interface IWidgetArgs /*extends core.IApplicationComponentArgs*/ {
-	attached?:boolean;
-	firstNode?:Node;
-	fragment?:DocumentFragment;
-	id?:string;
-	lastNode?:Node;
-	parent?:IContainer;
-	index?:number;
-	next?:IWidget;
-	previous?:IWidget;
 }
 
 export interface IWidgetGet extends core.IApplicationComponentGet {
@@ -204,4 +178,22 @@ export interface IWidgetSet extends core.IApplicationComponentSet {
 	(name:'attached', value:boolean):void;
 	(name:'id', value:string):void;
 	(name:'parent', value:IContainer):void;
+}
+
+export interface IWidgetValues /*extends core.IApplicationComponentValues*/ {
+	attached?:boolean;
+	firstNode?:Node;
+	fragment?:DocumentFragment;
+	id?:string;
+	lastNode?:Node;
+	index?:number;
+	next?:IWidget;
+	parent?:IContainer;
+	previous?:IWidget;
+}
+
+export interface IWidgetImpl extends IWidget {
+	_impl:any;
+	_renderer:IRenderer;
+	_values:IWidgetValues;
 }

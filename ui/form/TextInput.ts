@@ -1,23 +1,17 @@
-import configure = require('../dijit/util/configure');
-import DijitBase = require('../dijit/form/TextBox');
+/// <amd-dependency path="../renderer!TextInput" />
+
 import Input = require('./Input');
 import form = require('./interfaces');
-import util = require('../../util');
 
-class TextInput extends Input implements form.ITextInput {
+var Renderer:any = require('../renderer!TextInput');
+
+class TextInput extends Input implements form.ITextInputImpl {
+	/* protected */ _values:form.ITextInputValues;
+
 	get:form.ITextInputGet;
 	set:form.ITextInputSet;
 }
 
-//util.applyMixins(TextInput, [ DijitBase ]);
-
-configure(TextInput, {
-	Base: Input,
-	mixins: [ DijitBase ],
-	rename: {
-		maxLength: 'maxlength',
-		placeHolder: 'placeholder'
-	}
-});
+TextInput.prototype._renderer = new Renderer();
 
 export = TextInput;

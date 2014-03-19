@@ -1,29 +1,17 @@
-import core = require('../../interfaces');
-import domConstruct = require('dojo/dom-construct');
-import Element = require('../Element');
+/// <amd-dependency path="../renderer!Error" />
+
 import form = require('./interfaces');
+import View = require('../View');
 
-class FormError extends Element implements form.IError {
-	/* protected */ _values:form.IErrorArgs;
+var Renderer:any = require('../renderer!Error');
 
-	constructor(kwArgs?:form.IErrorArgs) {
-		this._renderOptions = { elementType: 'ul' };
-		super(kwArgs);
-	}
+class FormError extends View implements form.IErrorImpl {
+	/* protected */ _values:form.IErrorValues;
 
-	/* protected */ _errorsSetter(errors:form.ValidationError[]):void {
-		this._values.errors = errors;
-		this.get('firstNode').innerHTML = '';
-
-		if (!errors) {
-			return;
-		}
-
-		for (var i = 0, error:form.ValidationError; (error = errors[i]); i++) {
-			var element = domConstruct.create('li', {}, this.get('firstNode'));
-			element.appendChild(document.createTextNode(error.toString()));
-		}
-	}
+	get:form.IErrorGet;
+	set:form.IErrorSet;
 }
+
+FormError.prototype._renderer = new Renderer();
 
 export = FormError;

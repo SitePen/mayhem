@@ -6,13 +6,16 @@ import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
 import util = require('../util');
 
-class Container extends Mediated implements ui.IContainer {
-	children:ui.IWidget[];
+class Container extends Mediated implements ui.IContainerImpl {
+	/* protected */ _values:ui.IContainerValues;
 
 	constructor(kwArgs?:any) {
-		this.children = [];
+		kwArgs.children || (kwArgs.children = []);
 		super(kwArgs);
 	}
+
+	get:ui.IContainerGet;
+	set:ui.IContainerSet;
 
 	add(item:ui.IWidget, position?:AddPosition):IHandle;
 	add(item:ui.IWidget, position?:number):IHandle;
@@ -27,6 +30,7 @@ class Container extends Mediated implements ui.IContainer {
 			handle = this.get('parent').add(item, this.get('index') + 1);
 		}
 		else {
+			var children = this.get('children');
 			if (position === PlacePosition.ONLY) {
 				this.empty();
 				position = PlacePosition.FIRST;
@@ -35,16 +39,16 @@ class Container extends Mediated implements ui.IContainer {
 				position = 0;
 			}
 			else if (position === PlacePosition.LAST) {
-				position = this.children.length;
+				position = children.length;
 			}
 			else {
-				position = Math.max(0, Math.min(this.children.length, position));
+				position = Math.max(0, Math.min(children.length, position));
 			}
 
 			item.detach();
 
-			var referenceWidget:ui.IWidget = this.children[position];
-			this.children.splice(position, 0, item);
+			var referenceWidget:ui.IWidget = children[position];
+			children.splice(position, 0, item);
 			this._renderer.add(this, item, referenceWidget, position);
 			//item.set('parent', this);
 			this.attach(item);
@@ -68,37 +72,35 @@ class Container extends Mediated implements ui.IContainer {
 	// }
 
 	empty():void {
-		var widget:ui.IWidget;
-		while (this.children.length) {
-			this.remove(this.children[0]);
+		var children = this.get('children'),
+			widget:ui.IWidget;
+		while (children.length) {
+			this.remove(children[0]);
 		}
 	}
-
-	get:ui.IContainerGet;
 
 	remove(index:number):void;
 	remove(widget:ui.IWidget):void;
 	remove(index:any):void {
-		var widget:ui.IWidget;
+		var children = this.get('children'),
+			widget:ui.IWidget;
 
 		if (typeof index !== 'number') {
 			widget = index;
 			index = widget.get('index');
 
-			if (has('debug') && widget !== this.children[index]) {
+			if (has('debug') && widget !== children[index]) {
 				throw new Error('Attempt to remove widget ' + widget.get('id') + ' from non-parent ' + this.get('id'));
 			}
 		}
 		else {
-			widget = this.children[index];
+			widget = children[index];
 		}
 
 		this._renderer.remove(this, widget);
-		this.children.splice(index, 1);
+		children.splice(index, 1);
 		widget.set('parent', null);
 	}
-
-	set:ui.IContainerSet;
 }
 
 export = Container;

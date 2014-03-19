@@ -1,24 +1,17 @@
-import configure = require('../dijit/util/configure');
-import dijit = require('../dijit/interfaces');
-import DijitRenderer = require('../dijit/util/Renderer');
-import Element = require('../Element');
-import form = require('./interfaces');
-import lang = require('dojo/_base/lang');
+/// <amd-dependency path="../renderer!Control" />
 
-/* abstract */ class Control extends Element implements form.IControl {
-	/* protected */ _dijit:dijit._WidgetBase;
-	/* protected */ _dijitConfig:dijit.IDijitConfiguration;
+import form = require('./interfaces');
+import Widget = require('../Widget');
+
+var Renderer:any = require('../renderer!Control');
+
+/* abstract */ class Control extends Widget implements form.IControlImpl {
+	/* protected */ _values:form.IControlValues;
 
 	get:form.IControlGet;
 	set:form.IControlSet;
 }
 
-configure(Control, {
-	rename: {
-		tabIndex: 'tabindex'
-	}
-});
-
-Control.prototype._renderer = new DijitRenderer();
+Control.prototype._renderer = new Renderer();
 
 export = Control;

@@ -1,27 +1,27 @@
-/// <amd-dependency path="./renderer!Base" />
+/// <amd-dependency path="./renderer!Widget" />
 declare var require:any;
 
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
-var Renderer = require('./renderer!Base');
 import ui = require('./interfaces');
 import util = require('../util');
 
-var uid = 0,
+var Renderer:any = require('./renderer!Widget'),
+	uid = 0,
 	registry:{ [id:string]:ui.IWidget } = {};
 
-class Widget extends ObservableEvented implements ui.IWidget {
+class Widget extends ObservableEvented implements ui.IWidgetImpl {
 	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
 
 	private _eventHandles:IHandle[];
+	/* protected */ _impl:any;
 	/* protected */ _renderer:ui.IRenderer;
-	/* protected */ _renderOptions:ui.IRenderOptions;
-	/* protected */ _values:ui.IWidgetArgs;
+	/* protected */ _values:ui.IWidgetValues;
 
-	constructor(kwArgs:ui.IWidgetArgs = {}) {
+	constructor(kwArgs:ui.IWidgetValues = {}) {
 		this._eventHandles = [];
 
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
@@ -30,17 +30,37 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		// Helpful for debugging
 		registry[id] = this;
 
-		// Note: _initialize is called before widget becomes Observable or Evented
 		this._initialize();
+		this._impl = {};
 		super(kwArgs);
 		this._render();
 	}
+
+	get:ui.IWidgetGet;
+	set:ui.IWidgetSet;
 
 	/* protected */ _attachedSetter(attached:boolean):void {
 		if (attached != this._values.attached) {
 			this._values.attached = !!attached;
 			this.emit(attached ? 'attached' : 'detached');
 		}
+	}
+
+	attachToWindow(window:any):IHandle {
+		this.detach();
+
+		this._renderer.attachToWindow(this, window);
+		this.set('attached', true);
+
+		var self = this;
+		return {
+			remove: function ():void {
+				this.set('attached', false);
+				this.remove = function ():void {};
+				self.detach();
+				self = null;
+			}
+		};
 	}
 
 	destroy():void {
@@ -61,8 +81,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.set('attached', false);
 	}
 
-	get:ui.IWidgetGet;
-
 	private _indexGetter():number {
 		var parent = this.get('parent');
 
@@ -70,11 +88,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return -1;
 		}
 
-		return parent.children.indexOf(this);
+		return parent.get('children').indexOf(this);
 	}
 
 	/* protected */ _initialize():void {
-		this._renderer.initialize(this);
 	}
 
 	private _nextGetter():ui.IWidget {
@@ -84,7 +101,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return null;
 		}
 
-		return this.get('parent').children[index + 1] || null;
+		return this.get('parent').get('children')[index + 1] || null;
 	}
 
 
@@ -152,15 +169,12 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return null;
 		}
 
-		return this.get('parent').children[index - 1] || null;
+		return this.get('parent').get('children')[index - 1] || null;
 	}
 
 	/* protected */ _render():void {
-		this._renderer.render(this, this._renderOptions);
-		this.emit('rendered');
+		this._renderer.render(this);
 	}
-
-	set:ui.IWidgetSet;
 }
 
 Widget.prototype._renderer = new Renderer();

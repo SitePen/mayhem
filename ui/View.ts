@@ -7,9 +7,10 @@ import lang = require('dojo/_base/lang');
 import ui = require('./interfaces');
 import util = require('../util');
 
-class View extends Container implements ui.IView {
+class View extends Container implements ui.IViewImpl {
 	private _bindings:binding.IBindingHandle[];
 	placeholders:{ [name:string]: ui.IPlaceholder; };
+	/* protected */ _values:ui.IViewValues;
 
 	constructor(kwArgs?:any) {
 		this._bindings = [];
@@ -27,6 +28,9 @@ class View extends Container implements ui.IView {
 			}
 		});
 	}
+
+	get:ui.IViewGet;
+	set:ui.IViewSet;
 
 	add(item:ui.IWidget, placeholder:string):IHandle;
 	add(item:ui.IWidget, position?:any):IHandle;
@@ -142,10 +146,6 @@ class View extends Container implements ui.IView {
 
 		super.destroy();
 	}
-
-	get:ui.IViewGet;
-
-	set:ui.IViewSet;
 }
 
 export = View;

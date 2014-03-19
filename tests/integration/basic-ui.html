@@ -45,12 +45,11 @@ var dojoConfig = {
 		<script src="../../../dojo/dojo.js"></script>
 		<script>
 require([
+	'framework/Application',
 	'framework/tests/integration/MyModel',
 	'framework/tests/integration/MyMediator',
-	'framework/Application',
-	'framework/ui/Master',
 	'framework/tests/integration/MyView'
-], function (MyModel, MyMediator, Application, Master, MyView) {
+], function (Application, MyModel, MyMediator, MyView) {
 	var app = new Application({
 		modules: { router: null }
 	});
@@ -62,19 +61,12 @@ require([
 			model: model
 		});
 
-		var masterView = window.masterView = new Master({
-			app: app,
-			mediator: mediator
-		});
-
 		var view = window.view = new MyView({
-			// TODO: reimplement deferred bind
 			app: app,
 			mediator: mediator
 		});
 
-		masterView.add(view);
-		masterView.attachToWindow(document.body);
+		view.attachToWindow(document.body);
 	});
 });
 		</script>

@@ -1,19 +1,17 @@
-import configure = require('../dijit/util/configure');
-import Control = require('./Control');
-import DijitBase = require('../dijit/form/Button');
-import form = require('./interfaces');
-import util = require('../../util');
+/// <amd-dependency path="../renderer!Button" />
 
-class Button extends Control implements form.IButton {
+import Control = require('./Control');
+import form = require('./interfaces');
+
+var Renderer:any = require('../renderer!Button');
+
+class Button extends Control implements form.IButtonImpl {
+	/* protected */ _values:form.IButtonValues;
+
 	get:form.IButtonGet;
 	set:form.IButtonSet;
 }
 
-util.applyMixins(Button, [ DijitBase ]);
-
-configure(Button, {
-	Base: Control,
-	mixins: [ DijitBase ]
-});
+Button.prototype._renderer = new Renderer();
 
 export = Button;

@@ -1,17 +1,17 @@
-import configure = require('../dijit/util/configure');
+/// <amd-dependency path="../renderer!Input" />
+
 import Control = require('./Control');
 import form = require('./interfaces');
 
-/* abstract */ class Input extends Control implements form.IInput {
+var Renderer:any = require('../renderer!Input');
+
+/* abstract */ class Input extends Control implements form.IInputImpl {
+	/* protected */ _values:form.IInputValues;
+
 	get:form.IInputGet;
 	set:form.IInputSet;
 }
 
-configure(Input, {
-	Base: Control,
-	rename: {
-		readOnly: 'readonly'
-	}
-});
+Input.prototype._renderer = new Renderer();
 
 export = Input;

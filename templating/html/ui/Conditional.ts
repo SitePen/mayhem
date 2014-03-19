@@ -1,14 +1,15 @@
 /// <reference path="../../../dojo" />
 
 import array = require('dojo/_base/array');
-import Composite = require('../../../ui/Composite');
 import core = require('../../../interfaces');
 import domUtil = require('../../../ui/dom/util');
 import Placeholder = require('../../../ui/Placeholder');
+import templating = require('./interfaces');
 import ui = require('../../../ui/interfaces');
 import util = require('../../../util');
+import View = require('../../../ui/View');
 
-class Conditional extends Composite {
+class Conditional extends View implements templating.IConditional {
 	private _alternate:ui.IWidget;
 	private _bindHandle:IHandle;
 	private _condition:string;
@@ -17,6 +18,9 @@ class Conditional extends Composite {
 	// Typescript, wut?
 	private _boundaryNode:Comment;
 	private _consequentNode:Node;
+
+	get:templating.IConditionalGet;
+	set:templating.IConditionalSet;
 
 	add(item:ui.IWidget, position?:any):IHandle {
 		var handle:IHandle;
@@ -107,9 +111,10 @@ class Conditional extends Composite {
 	}
 
 	/* protected */ _render():void {
+		// TODO: to renderer
 		super._render();
-		this._boundaryNode = document.createComment('alternate boundary - ' + this.get('id'));
-		this.get('firstNode').parentNode.insertBefore(this._boundaryNode, this.get('lastNode'));
+		this._boundaryNode = document.createComment('alternate boundary - ' + this._impl.id);
+		this._impl.firstNode.parentNode.insertBefore(this._boundaryNode, this._impl.lastNode);
 	}
 
 	private _resultSetter(result:boolean) {

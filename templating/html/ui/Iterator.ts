@@ -1,6 +1,7 @@
+/// <amd-dependency path="../../../ui/renderer!Iterator" />
+
 import array = require('dojo/_base/array');
 import data = require('../../../data/interfaces');
-import Element = require('../../../ui/Element');
 import lang = require('dojo/_base/lang');
 import List = require('dgrid/List');
 import Mediator = require('../../../data/Mediator');
@@ -8,8 +9,11 @@ import OnDemandList = require('dgrid/OnDemandList');
 import ui = require('./interfaces');
 import util = require('../../../util');
 import WidgetFactory = require('../../WidgetFactory');
+import View = require('./View');
 
-class Iterator extends Element implements ui.IIterator {
+var Renderer:any = require('../../../ui/renderer!Iterator');
+
+class Iterator extends View implements ui.IIterator {
 	private _factory:WidgetFactory;
 	private _list:List;
 	private _listLength:number;
@@ -20,17 +24,17 @@ class Iterator extends Element implements ui.IIterator {
 	private _sourceObserverHandle:IHandle;
 	private _source:any;
 	private _template:any;
-	private _WidgetCtor:typeof Element;
-	private _widgetIndex:{ [key:string]: Element; };
+	private _widgetIndex:{ [key:string]: View; };
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'source' ], '_render');
-		kwArgs.height || (kwArgs.height = '');
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
-		this._WidgetCtor = Element;
 		super(kwArgs);
 	}
+
+	get:ui.IIteratorGet;
+	set:ui.IIteratorSet;
 
 	private _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
 		mediator || (mediator = this.get('mediator'));
@@ -76,8 +80,6 @@ class Iterator extends Element implements ui.IIterator {
 		});
 	}
 
-	get:ui.IIteratorGet;
-
 	private _getSourceKey(key:any):any {
 		var source:any = this._source;
 		return source instanceof Array ? source[key] : source.get(key);
@@ -91,13 +93,13 @@ class Iterator extends Element implements ui.IIterator {
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
 	}
 
-	private _getWidgetByKey(key:any):Element {
+	private _getWidgetByKey(key:any):View {
 		var widget = this._widgetIndex[key];
 		if (widget) {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		widget = this._widgetIndex[key] = <Element> this._factory.create();
+		widget = this._widgetIndex[key] = <View> this._factory.create();
 		widget.set('mediator', mediator);
 		this.attach(widget);
 		return widget;
@@ -111,17 +113,6 @@ class Iterator extends Element implements ui.IIterator {
 			sourceBinding: sourceField,
 			targetBinding: 'source'
 		});
-	}
-
-	private _styleSetter(value:string):void {
-		// TODO: observe style changes and reset scroll node styles depending on if height is set
-		// Could we move this into renderer? Perhpas a mayhem default stylesheet?
-		// var listNode = this._list.domNode,
-		// 	bodyNode = this._list.bodyNode;
-		// listNode.style.height = style.height || 'auto';
-		// listNode.style.border = auto ? 'none' : '';
-		// bodyNode.style.position = auto ? 'relative' : '';
-		// bodyNode.style.overflowY = auto ? 'hidden' : '';
 	}
 
 	private _renderList():void {
@@ -146,17 +137,15 @@ class Iterator extends Element implements ui.IIterator {
 		else {
 			list = this._list = new OnDemandList();
 			list.renderRow = (record:any):HTMLElement => {
-				var widget:Element = this._getWidgetByKey(record[source.idProperty]);
+				var widget:View = this._getWidgetByKey(record[source.idProperty]);
 				return <HTMLElement> widget.get('fragment');
 			};
 		}
 		list.set('showHeader', false);
 		var className:string = list.domNode.className;
-		this._renderer.render(this, { fragment: list.domNode });
-		this.classList.add(className);
+		this._renderer._replace(this, { root: list.domNode });
+		this._impl.classList.add(className);
 	}
-
-	set:ui.IIteratorSet;
 
 	private _setSourceKey(key:string, value:any):void {
 		var source:any = this._source,
@@ -216,7 +205,7 @@ class Iterator extends Element implements ui.IIterator {
 		// TODO: pass reference to constructor in options
 		this._template = template;
 		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
-		this._factory = new WidgetFactory(template, this._WidgetCtor);
+		this._factory = new WidgetFactory(template, View);
 	}
 
 	private _updateList(change:number):void {
@@ -240,5 +229,7 @@ class Iterator extends Element implements ui.IIterator {
 		}
 	}
 }
+
+Iterator.prototype._renderer = new Renderer();
 
 export = Iterator;

@@ -259,7 +259,7 @@ class _WidgetBinder {
 		var childFactories = this.factory.childFactories,
 			factory:WidgetFactory,
 			widget:ui.IContainer = <ui.IContainer> this.widget,
-			children = widget.children,
+			children = widget.get('children'),
 			markerNodes = this._childMarkerNodes || [],
 			item:ui.IWidget;
 		for (var i = 0, len = childFactories.length; i < len; ++i) {

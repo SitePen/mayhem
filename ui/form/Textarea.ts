@@ -1,19 +1,17 @@
-import configure = require('../dijit/util/configure');
-import DijitBase = require('../dijit/form/SimpleTextarea');
+/// <amd-dependency path="../renderer!Textarea" />
+
 import TextInput = require('./TextInput');
 import form = require('./interfaces');
-import util = require('../../util');
 
-class Textarea extends TextInput implements form.ITextarea {
+var Renderer:any = require('../renderer!Textarea');
+
+class Textarea extends TextInput implements form.ITextareaImpl {
+	/* protected */ _values:form.ITextareaValues;
+
 	get:form.ITextareaGet;
 	set:form.ITextareaSet;
 }
 
-//util.applyMixins(Textarea, [ DijitBase ]);
-
-configure(Textarea, {
-	Base: TextInput,
-	mixins: [ DijitBase ]
-});
+TextInput.prototype._renderer = new Renderer();
 
 export = TextInput;

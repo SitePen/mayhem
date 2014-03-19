@@ -1,19 +1,17 @@
-import Button = require('./Button');
-import configure = require('../dijit/util/configure');
-import DijitBase = require('../dijit/form/ToggleButton');
-import form = require('./interfaces');
-import util = require('../../util');
+/// <amd-dependency path="../renderer!ToggleButton" />
 
-class ToggleButton extends Button implements form.IToggleButton {
+import Button = require('./Button');
+import form = require('./interfaces');
+
+var Renderer:any = require('../renderer!ToggleButton');
+
+class ToggleButton extends Button implements form.IToggleButtonImpl {
+	/* protected */ _values:form.IToggleButtonValues;
+
 	get:form.IToggleButtonGet;
 	set:form.IToggleButtonSet;
 }
 
-util.applyMixins(ToggleButton, [ DijitBase ]);
-
-configure(ToggleButton, {
-	Base: Button,
-	mixins: [ DijitBase ]
-});
+ToggleButton.prototype._renderer = new Renderer();
 
 export = ToggleButton;
