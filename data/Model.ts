@@ -18,7 +18,7 @@ import when = require('dojo/when');
 // Mediators are just observables, so creating mutable properties for them is very easy
 
 class Model extends Observable implements data.IModel, core.IHasMetadata {
-	static property<T>(propertyKwArgs:data.IPropertyArguments<T> = {}):any {
+	static property<T>(propertyKwArgs:data.IPropertyArguments<T>):any {
 		return (kwArgs:data.IPropertyArguments<T>):Property<T> => {
 			return new Property<T>(lang.mixin({}, propertyKwArgs, kwArgs));
 		};
@@ -102,6 +102,31 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		this._getProperties = ():Model.IProperties => {
 			return properties;
 		};
+
+		var connectDependency = (property:any, sourceName:string, destinationName:string):void => {
+			this.observe(sourceName, ():void => {
+				property._notify(property.get('value'), undefined, 'value');
+			});
+		};
+		for (key in properties) {
+			var property:any = properties[key],
+				dependencies:any = property.get('dependencies');
+
+			if (!dependencies) {
+				continue;
+			}
+
+			if (dependencies instanceof Array) {
+				for (var i = 0; i < dependencies.length; i++) {
+					connectDependency.call(this, property, dependencies[i], dependencies[i]);
+				}
+			}
+			else {
+				for (var name in dependencies) {
+					connectDependency.call(this, property, dependencies[name], name);
+				}
+			}
+		}
 
 		return properties;
 	}

@@ -6,6 +6,7 @@ import TextInput = require('framework/ui/form/TextInput');
 class MyView extends View {
 	private _input:TextInput;
 	private _label:FormLabel;
+	private _fullNameLabel:FormLabel;
 	private _error:FormError;
 
 	/* protected */ _render():void {
@@ -17,6 +18,9 @@ class MyView extends View {
 		});
 		this._input = new TextInput({
 			id: 'input1'
+		});
+		this._fullNameLabel = new FormLabel({
+			id: 'label2'
 		});
 		this._error = new FormError({
 			id: 'error1'
@@ -35,8 +39,13 @@ class MyView extends View {
 		});
 		this.bind({
 			sourceBinding: 'firstName!label',
-			target: this._label,
+			target: this._input,
 			targetBinding: 'placeholder'
+		});
+		this.bind({
+			sourceBinding: 'fullName',
+			target: this._fullNameLabel,
+			targetBinding: 'text'
 		});
 		this.bind({
 			sourceBinding: 'firstName!errors',
@@ -46,6 +55,7 @@ class MyView extends View {
 
 		this.add(this._label);
 		this.add(this._input);
+		this.add(this._fullNameLabel);
 		this.add(this._error);
 	}
 }

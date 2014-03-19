@@ -135,6 +135,7 @@ export interface IPropertyArguments<T> {
 	[key:string]:any;
 	get?:() => T;
 	dependencies?:string[];
+	key?:string;
 	label?:string;
 	set?:(value:T) => void;
 	value?:T;

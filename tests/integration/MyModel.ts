@@ -59,22 +59,8 @@ MyModel.schema(():any => {
 			value: null
 		}),
 
-		fullName: Model.property<string>({
-			valueGetter: function ():string {
-				return this.get('model').get('firstName') + ' ' + this.get('model').get('lastName');
-			},
-			valueSetter: function (value:string):void {
-				var names:string[] = value.split(' ');
-				this.get('model').set({
-					firstName: names[0],
-					lastName: names.slice(1).join(' ')
-				});
-			},
-			dependencies: [ 'firstName', 'lastName' ]
-		}),
-
 		firstNameIsJoey: Model.property<boolean>({
-			valueGetter: function ():boolean {
+			get: function ():boolean {
 				return this.get('model').get('firstName') === 'Joey';
 			},
 			dependencies: [ 'firstName' ]

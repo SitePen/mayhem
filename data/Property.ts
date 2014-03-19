@@ -28,14 +28,11 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	get:data.IPropertyGet<T>;
 	set:data.IPropertySet<T>;
 
-	constructor(kwArgs?:data.IPropertyArguments<T>) {
-		super(kwArgs);
-	}
-
 	_initialize():void {
 		lang.mixin(this._values, {
 			dependencies: null,
 			errors: new ObservableArray<ValidationError>(),
+			model: null,
 			validators: [],
 			validateOnSet: true
 		});

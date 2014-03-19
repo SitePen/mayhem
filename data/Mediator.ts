@@ -7,26 +7,31 @@ import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
 import Property = require('./Property');
-import Proxy = require('../Proxy');
+import PropertyProxy = require('./PropertyProxy');
 import Observable = require('../Observable');
 import Model = require('./Model');
 import Stateful = require('dojo/Stateful');
 import util = require('../util');
 
 class Mediator extends Model implements data.IMediator, core.IHasMetadata {
+	private _modelHandles:{ [key:string]:IHandle };
+
 	get:data.IMediatorGet;
 	set:data.IMediatorSet;
 
 	_initialize():void {
+		this._modelHandles = {};
+
+		super._initialize();
+
 		lang.mixin(this._values, {
 			app: null,
 			model: null
 		});
 	}
 
-	// TODO: Fix this
-	/*getMetadata(key:string):core.IProxy {
-		var proxy:Proxy,
+	getMetadata(key:string):data.IProperty<any> {
+		var proxy:PropertyProxy<any>,
 			handle:IHandle = this.observe('model', function (newModel:data.IModel):void {
 				var newProperty = newModel ? newModel.getMetadata(key) : null;
 				proxy.setTarget(newProperty || null);
@@ -35,14 +40,14 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 		var model = this.get('model'),
 			modelProperty = model && model.getMetadata(key);
 
-		proxy = new Proxy(modelProperty);
+		proxy = new PropertyProxy(modelProperty);
 		aspect.after(proxy, 'destroy', ():void => {
 			handle.remove();
 			proxy = handle = model = modelProperty = null;
 		});
 
 		return proxy;
-	}*/
+	}
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
 		var handle:IHandle = super.observe(key, observer);
@@ -50,29 +55,45 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 		// Keys not pre-defined on the mediator should be delegated to the model, and may change when the model
 		// changes
 		if (!this.has(key) && !(('_' + key + 'Setter') in this) && !(key in this._getProperties())) {
-			var notifier = (newValue:any, oldValue:any):void => {
-					this._notify(newValue, oldValue, key);
-				},
-				modelHandle:IHandle = this.observe('model', (newModel:data.IModel, oldModel:data.IModel):void => {
-					var oldValue:any = oldModel.get(key),
-						newValue:any = newModel.get(key);
+			var mediator = this,
+				oldRemove = handle.remove;
 
-					modelPropertyHandle && modelPropertyHandle.remove();
-					modelPropertyHandle = newModel.observe(key, notifier);
-
-					if (!util.isEqual(oldValue, newValue)) {
-						this._notify(oldValue, newValue, key);
-					}
-				}),
-				model:data.IModel = this.get('model'),
-				modelPropertyHandle:IHandle = model && model.observe(key, notifier);
-
-			var oldRemove = handle.remove;
 			handle.remove = function ():void {
 				oldRemove.apply(this, arguments);
-				modelHandle.remove();
-				modelPropertyHandle && modelPropertyHandle.remove();
+
+				if (!mediator._observers[key].length) {
+					mediator._modelHandles[key].remove();
+					mediator._modelHandles[key] = null;
+				}
 			};
+
+			// only set up the model notifier if it hasn't already been set up
+			if (!this._modelHandles[key]) {
+				var notifier = (newValue:any, oldValue:any):void => {
+						this._notify(newValue, oldValue, key);
+					},
+					modelHandle:IHandle = this.observe('model', (newModel:data.IModel, oldModel:data.IModel):void => {
+						var oldValue:any = oldModel && oldModel.get(key),
+							newValue:any = newModel && newModel.get(key);
+
+						modelPropertyHandle && modelPropertyHandle.remove();
+						modelPropertyHandle = newModel.observe(key, notifier);
+
+						if (!util.isEqual(oldValue, newValue)) {
+							this._notify(oldValue, newValue, key);
+						}
+					}),
+					model:data.IModel = this.get('model'),
+					modelPropertyHandle:IHandle = model && model.observe(key, notifier);
+
+				var oldModelRemove = modelHandle.remove;
+				modelHandle.remove = function ():void {
+					oldModelRemove.apply(this, arguments);
+					modelPropertyHandle && modelPropertyHandle.remove();
+				};
+
+				this._modelHandles[key] = modelHandle;
+			}
 		}
 
 		return handle;
