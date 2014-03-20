@@ -1,6 +1,5 @@
 import dom = require('./interfaces');
 import _ElementRenderer = require('./_Element');
-import ElementRenderer = require('./Element');
 import lang = require('dojo/_base/lang');
 import ui = require('../interfaces');
 import _WidgetBase = require('dijit/_WidgetBase');
