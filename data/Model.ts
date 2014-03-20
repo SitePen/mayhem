@@ -7,7 +7,6 @@ import lang = require('dojo/_base/lang');
 import Observable = require('../Observable');
 import Property = require('./Property');
 import util = require('../util');
-import ValidationError = require('../validation/ValidationError');
 import when = require('dojo/when');
 
 // TODO: The clarity:
@@ -50,7 +49,7 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		});
 	}
 
-	addError(key:string, error:ValidationError):void {
+	addError(key:string, error:core.IValidationError):void {
 		this._getProperties()[key].get('errors').push(error);
 	}
 
@@ -69,13 +68,13 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	// TODO: Destroy?
 	// TODO: _errorsGetter?
 	// TODO: ObservableArray?
-	getErrors(key?:string):ValidationError[] {
+	getErrors(key?:string):core.IValidationError[] {
 		var properties:Model.IProperties = this._getProperties();
 		if (key) {
 			return properties[key].get('errors');
 		}
 
-		var errors:ValidationError[] = [];
+		var errors:core.IValidationError[] = [];
 
 		for (key in properties) {
 			Array.prototype.push.apply(errors, properties[key].get('errors'));

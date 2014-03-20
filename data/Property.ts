@@ -8,13 +8,12 @@ import lang = require('dojo/_base/lang');
 import Observable = require('../Observable');
 import ObservableArray = require('../ObservableArray');
 import Proxty = require('../Proxty');
-import ValidationError = require('../validation/ValidationError');
 import when = require('dojo/when');
 
 class Property<T> extends Observable implements data.IProperty<T> {
 	/* protected */ _values:{
 		dependencies:string[];
-		errors:ObservableArray<ValidationError>;
+		errors:ObservableArray<core.IValidationError>;
 		key:string;
 		model:data.IModel;
 		label:string;
@@ -31,7 +30,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	_initialize():void {
 		lang.mixin(this._values, {
 			dependencies: null,
-			errors: new ObservableArray<ValidationError>(),
+			errors: new ObservableArray<core.IValidationError>(),
 			model: null,
 			validators: [],
 			validateOnSet: true
@@ -45,7 +44,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		// to be a proper way to observe these types of arrays instead in the binding system.
 		if (key === 'errors') {
 			this._values.errors.observe(():void => {
-				var errors:ObservableArray<ValidationError> = this._values.errors;
+				var errors:ObservableArray<core.IValidationError> = this._values.errors;
 				this._notify(errors, errors, 'errors');
 			});
 		}

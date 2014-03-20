@@ -1,18 +1,21 @@
+import core = require('../../../interfaces');
+import dom = require('../interfaces');
 import domConstruct = require('dojo/dom-construct');
-import Element = require('../../dom/_Element');
+import DomElementRenderer = require('../../dom/_Element');
 import form = require('../../form/interfaces');
 
-class Error extends Element {
-	renderList(widget:form.IErrorImpl, list:form.ValidationError[]):void {
+class ErrorRenderer extends DomElementRenderer implements form.IErrorRenderer {
+	renderList(widget:dom.form.IError):void {
 		this.clear(widget);
-		var firstNode = widget._impl.firstNode;
-		for (var i = 0, error:form.ValidationError; (error = list[i]); i++) {
+		var firstNode = widget._firstNode,
+			list = widget.get('list') || [];
+		for (var i = 0, error:core.IValidationError; (error = list[i]); i++) {
 			var element = domConstruct.create('li', {}, firstNode);
 			element.appendChild(document.createTextNode(error.toString()));
 		}
 	}
 }
 
-Error.prototype.elementType = 'ul';
+ErrorRenderer.prototype.elementType = 'ul';
 
-export = Error;
+export = ErrorRenderer;

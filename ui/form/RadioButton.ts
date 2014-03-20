@@ -1,11 +1,11 @@
 /// <amd-dependency path="../renderer!form/RadioButton" />
 
-import CheckBox = require('./CheckBox');
 import form = require('./interfaces');
+import CheckBox = require('./CheckBox');
 
 var Renderer:any = require('../renderer!form/RadioButton');
 
-class RadioButton extends CheckBox implements form.IRadioButtonImpl {
+class RadioButton extends CheckBox implements form.IRadioButton {
 	/* protected */ _values:form.IRadioButtonValues;
 
 	get:form.IRadioButtonGet;

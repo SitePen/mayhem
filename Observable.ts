@@ -47,10 +47,6 @@ class Observable implements core.IObservable {
 	}
 
 	observe(key:any, observer:core.IObserver<any>):IHandle {
-		// Prefix all keys as a simple way to avoid collisions if someone uses a name for a watch that is also on
-		// `Object.prototype`
-		// TODO: In ES5 we can just use `Object.create(null)` instead
-
 		if (has('es5') ? !this._observers[key] : !this._observers.hasOwnProperty(key)) {
 			this._observers[key] = [];
 		}
@@ -69,17 +65,14 @@ class Observable implements core.IObservable {
 }
 
 Observable.prototype.get = function (key:string):any {
-	var getter = '_' + key + 'Getter',
-		value:any;
+	var getter = '_' + key + 'Getter';
 
-	if (getter in this) {
-		value = this[getter]();
+	if (typeof this[getter] === 'function') {
+		return this[getter]();
 	}
-	else if (this.has(key)) {
-		value = this._values[key];
+	if (this.has(key)) {
+		return this._values[key];
 	}
-
-	return value;
 };
 
 Observable.prototype.set = function (key:any, value?:any):void {
@@ -95,7 +88,7 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	var oldValue = this.get(key),
 		setter = '_' + key + 'Setter';
 
-	if (setter in this) {
+	if (typeof this[setter] === 'function') {
 		this[setter](value);
 	}
 	else {
@@ -103,7 +96,6 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	}
 
 	var newValue = this.get(key);
-
 	if (!util.isEqual(oldValue, newValue)) {
 		this._notify(newValue, oldValue, key);
 	}

@@ -1,0 +1,14 @@
+{
+    "constructor": "framework/ui/View",
+    "kwArgs": {
+        "title": "Simple widget",
+        "selected": true
+    },
+    "children": [
+        { "constructor": "framework/ui/form/Button" }
+    ],
+    "content": [
+        "<h1>Testing</h1>",
+        { "$child": 0 }
+    ]
+}

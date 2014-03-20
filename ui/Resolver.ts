@@ -132,12 +132,12 @@ class Resolver extends View implements ui.IResolver {
 		var node:Node;
 		if (this._duringWidget) {
 			this._duringWidget.detach();
-			node = this._duringWidget.get('fragment');
+			node = this._duringWidget._fragment;
 		}
-		var lastNode = this.get('lastNode');
+		var lastNode = this._lastNode;
 		// Preserve content if previously rendered
 		if (!this._values.content) {
-			this._values.content = domUtil.getRange(this.get('firstNode'), lastNode, true).extractContents();
+			this._values.content = domUtil.getRange(this._firstNode, lastNode, true).extractContents();
 		}
 		node && lastNode.parentNode.insertBefore(node, lastNode);
 	}
@@ -147,8 +147,8 @@ class Resolver extends View implements ui.IResolver {
 		if (this._errorWidget) {
 			this._errorWidget.detach();
 			// TODO: move to the renderer
-			var lastNode = this.get('lastNode');
-			lastNode.parentNode.insertBefore(this._errorWidget.get('fragment'), lastNode);
+			var lastNode = this._lastNode;
+			lastNode.parentNode.insertBefore(this._errorWidget._fragment, lastNode);
 		}
 	}
 
@@ -164,7 +164,7 @@ class Resolver extends View implements ui.IResolver {
 			return;
 		}
 		// Bail if we've already successfully processed a value and new value isn't a promise
-		if (this._success && typeof value.then !== 'function') {
+		if (this._success && (!value || typeof value.then !== 'function')) {
 			return;
 		}
 		// Bail if we're currently processing a value
@@ -201,5 +201,7 @@ class Resolver extends View implements ui.IResolver {
 		// TODO: rewire mediator
 	}
 }
+
+Resolver.prototype._renderer = new Renderer();
 
 export = Resolver;

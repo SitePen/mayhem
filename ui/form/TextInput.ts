@@ -5,7 +5,7 @@ import form = require('./interfaces');
 
 var Renderer:any = require('../renderer!form/TextInput');
 
-class TextInput extends Input implements form.ITextInputImpl {
+class TextInput extends Input implements form.ITextInput {
 	/* protected */ _values:form.ITextInputValues;
 
 	get:form.ITextInputGet;

@@ -5,7 +5,7 @@ import form = require('./interfaces');
 
 var Renderer:any = require('../renderer!form/Button');
 
-class Button extends Control implements form.IButtonImpl {
+class Button extends Control implements form.IButton {
 	/* protected */ _values:form.IButtonValues;
 
 	get:form.IButtonGet;

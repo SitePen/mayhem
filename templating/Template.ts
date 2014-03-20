@@ -70,10 +70,10 @@ class Template implements templating.ITemplate {
 	}
 }
 
-// Base implementation expects source to be a parse tree or string representing a parse tree
+// Base implementation expects source to be a parse tree
 Template.prototype.parser = {
-	parse(source:string):templating.IParseTree {
-		return (<any> require).eval('(' + source + ')');
+	parse(source:templating.IParseTree):templating.IParseTree {
+		return source;
 	}
 }
 

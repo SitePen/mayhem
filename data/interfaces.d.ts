@@ -23,7 +23,7 @@ export interface IMediatorSet extends IModelSet {
  */
 
 export interface IModel extends core.IApplicationComponent {
-	addError(key:string, error:core.ValidationError):void;
+	addError(key:string, error:core.IValidationError):void;
 
 	/**
 	 * Retrieves the value of a property on the model.
@@ -109,7 +109,7 @@ export interface IPropertyGet<T> extends core.IObservableGet {
 	(key:'default'):T;
 	(key:'dependencies'):string[];
 	// TODO: Make into ObservableArray?
-	(key:'errors'):ObservableArray<core.ValidationError>;
+	(key:'errors'):ObservableArray<core.IValidationError>;
 	(key:'key'):string;
 	(key:'model'):IModel;
 	(key:'label'):string;
@@ -122,7 +122,7 @@ export interface IPropertyGet<T> extends core.IObservableGet {
 export interface IPropertySet<T> extends core.IObservableSet {
 	(key:'default', value:T):void;
 	(key:'dependencies', value:string[]):void;
-	(key:'errors', value:ObservableArray<core.ValidationError>):void;
+	(key:'errors', value:ObservableArray<core.IValidationError>):void;
 	(key:'key', value:string):void;
 	(key:'model', value:IModel):void;
 	(key:'label', value:string):void;

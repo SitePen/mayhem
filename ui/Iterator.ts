@@ -5,19 +5,16 @@ import data = require('../data/interfaces');
 import Mediator = require('../data/Mediator');
 import ui = require('./interfaces');
 import util = require('../util');
-import WidgetFactory = require('../templating/WidgetFactory');
 import View = require('./View');
 
 var Renderer:any = require('./renderer!Iterator');
 
 class Iterator extends View implements ui.IIterator {
-	private _factory:WidgetFactory;
-	private _listLength:number;
-	private _mediatorIndex:{ [key:string]: Mediator; };
-	private _sourceFieldHandle:IHandle;
-	private _sourceObserverHandle:IHandle;
+	///* protected */ _factory:WidgetFactory;
+	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
+	private _sourceBinding:IHandle;
 	/* protected */ _values:ui.IIteratorValues;
-	private _widgetIndex:{ [key:string]: View; };
+	/* protected */ _widgetIndex:{ [key:string]: ui.IMediated; };
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'source' ], '_render');
@@ -29,7 +26,7 @@ class Iterator extends View implements ui.IIterator {
 	get:ui.IIteratorGet;
 	set:ui.IIteratorSet;
 
-	private _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
+	/* protected */ _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
 		mediator || (mediator = this.get('mediator'));
 		var scopedMediator:Mediator = new Mediator({ model: mediator }),
 			_get = scopedMediator.get,
@@ -52,14 +49,9 @@ class Iterator extends View implements ui.IIterator {
 	}
 
 	destroy():void {
-		this._sourceFieldHandle && this._sourceFieldHandle.remove();
-		this._sourceObserverHandle && this._sourceObserverHandle.remove();
-		this._sourceFieldHandle = this._sourceObserverHandle = null;
-		this._impl.list.destroy();
-		this.set({
-			list: null,
-			source: null
-		});
+		this._sourceBinding && this._sourceBinding.remove();
+		this._sourceBinding = null;
+		// TODO: tear down derived widgets and mediators
 		super.destroy();
 	}
 
@@ -76,12 +68,12 @@ class Iterator extends View implements ui.IIterator {
 		});
 	}
 
-	private _getSourceKey(key:any):any {
+	private _getSourceKey(key:string):any {
 		var source:any = this.get('source');
 		return source instanceof Array ? source[key] : source.get(key);
 	}
 
-	private _getMediatorByKey(key:any):Mediator {
+	private _getMediatorByKey(key:string):Mediator {
 		if (this._mediatorIndex[key]) {
 			return this._mediatorIndex[key];
 		}
@@ -89,13 +81,13 @@ class Iterator extends View implements ui.IIterator {
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
 	}
 
-	private _getWidgetByKey(key:any):View {
+	getWidgetByKey(key:string):ui.IMediated {
 		var widget = this._widgetIndex[key];
 		if (widget) {
 			return widget;
 		}
 		var mediator = this._getMediatorByKey(key);
-		widget = this._widgetIndex[key] = <View> this._factory.create();
+		widget = this._widgetIndex[key] = <ui.IMediated> this._factory.create();
 		widget.set('mediator', mediator);
 		this.attach(widget);
 		return widget;
@@ -104,8 +96,8 @@ class Iterator extends View implements ui.IIterator {
 	private _inSetter(value:string):void {
 		// Tells us which field to use to get our source
 		this._values['in'] = value;
-		this._sourceFieldHandle && this._sourceFieldHandle.remove();
-		this._sourceFieldHandle = this.bind({
+		this._sourceBinding && this._sourceBinding.remove();
+		this._sourceBinding = this.bind({
 			sourceBinding: value,
 			targetBinding: 'source'
 		});
@@ -126,38 +118,6 @@ class Iterator extends View implements ui.IIterator {
 			// source should be a dojo Store
 			source.put(value[source.idProperty], value);
 		}
-	}
-
-	private _sourceSetter(source:any):void {
-		// Set up observer for new ObservableArray
-		if (source !== this._values.source) {
-			this._sourceObserverHandle && this._sourceObserverHandle.remove();
-		}
-		this._values.source = source;
-		this._renderer.renderList(this);
-		if (source instanceof Array) {
-			// Resize and refresh the list
-			var lastLength = this._listLength || 0,
-				listLength = this._listLength = source.length;
-			this._renderer.updateList(this, listLength - lastLength);
-			// Add an observer if possible
-			if (typeof source.observe === 'function') {
-				this._sourceObserverHandle = source.observe((index:number, removals:any[], additions:any[]) => {
-					this._renderer.updateList(this, additions.length - removals.length);
-				});
-			}
-		}
-		else {
-			this._impl.list.set('store', source);
-		}
-	}
-
-	private _templateSetter(value:any):void {
-		// Set constructor since it comes in without one (to avoid being constructed during processing)
-		// TODO: pass reference to constructor in options
-		this._values.template = value;
-		// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
-		this._factory = new WidgetFactory(value, View);
 	}
 }
 

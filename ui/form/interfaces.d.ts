@@ -1,6 +1,5 @@
+import core = require('../../interfaces');
 import ui = require('../interfaces');
-// TODO validation.IValidationError?
-export import ValidationError = require('../../validation/ValidationError');
 
 export interface IButton extends IControl {
 	get:IButtonGet;
@@ -22,12 +21,6 @@ export interface IButtonValues extends IControlValues {
 	type?:string;
 }
 
-export interface IButtonImpl extends IButton, IControlImpl {
-	_values:IButtonValues;
-	get:IButtonGet;
-	set:IButtonSet;
-}
-
 export interface ICheckBox extends IToggleButton {
 	get:ICheckBoxGet;
 	set:ICheckBoxSet;
@@ -43,12 +36,6 @@ export interface ICheckBoxSet extends IToggleButtonSet {
 
 export interface ICheckBoxValues extends IButtonValues {
 	indeterminate?:string;
-}
-
-export interface ICheckBoxImpl extends ICheckBox, IButtonImpl {
-	_values:ICheckBoxValues;
-	get:ICheckBoxGet;
-	set:ICheckBoxSet;
 }
 
 export interface IControl extends ui.IWidget {
@@ -71,33 +58,25 @@ export interface IControlValues extends ui.IWidgetValues {
 	tabindex?:boolean;
 }
 
-export interface IControlImpl extends IControl, ui.IWidgetImpl {
-	_values:IControlValues;
-	get:IControlGet;
-	set:IControlSet;
-}
-
 export interface IError extends ui.IWidget {
 	get:IErrorGet;
 	set:IErrorSet;
 }
 
 export interface IErrorGet extends ui.IWidgetGet {
-	(name:'list'):ValidationError[];
+	(name:'list'):core.IValidationError[];
 }
 
 export interface IErrorSet extends ui.IWidgetSet {
-	(name:'list', value:ValidationError[]):void;
+	(name:'list', value:core.IValidationError[]):void;
 }
 
 export interface IErrorValues extends ui.IWidgetValues {
-	list?:ValidationError[];
+	list?:core.IValidationError[];
 }
 
-export interface IErrorImpl extends IError, ui.IWidgetImpl {
-	_values:IErrorValues;
-	get:IErrorGet;
-	set:IErrorSet;
+export interface IErrorRenderer extends ui.IRenderer {
+	renderList(widget:IError):void;
 }
 
 export interface IInput extends IControl {
@@ -118,12 +97,6 @@ export interface IInputSet extends IControlSet {
 export interface IInputValues extends IControlValues {
 	name?:string;
 	readonly?:boolean;
-}
-
-export interface IInputImpl extends IInput, IControlImpl {
-	_values:IInputValues;
-	get:IInputGet;
-	set:IInputSet;
 }
 
 export interface ILabel extends ui.IWidget {
@@ -150,12 +123,6 @@ export interface ILabelValues extends ui.IWidgetValues {
 	text?:string;
 }
 
-export interface ILabelImpl extends ILabel, ui.IWidgetImpl {
-	get:ILabelGet;
-	set:ILabelSet;
-	_values:ILabelValues;
-}
-
 export interface IRadioButton extends ICheckBox {
 	get:IRadioButtonGet;
 	set:IRadioButtonSet;
@@ -171,12 +138,6 @@ export interface IRadioButtonSet extends ICheckBoxSet {
 
 export interface IRadioButtonValues extends ICheckBoxValues {
 	group?:string;
-}
-
-export interface IRadioButtonImpl extends IRadioButton, ICheckBoxImpl {
-	_values:IRadioButtonValues;
-	get:IRadioButtonGet;
-	set:IRadioButtonSet;
 }
 
 export interface ITextarea extends ITextInput {
@@ -197,12 +158,6 @@ export interface ITextareaSet extends ITextInputSet {
 export interface ITextareaValues extends ITextInputValues {
 	cols?:number;
 	rows?:number;
-}
-
-export interface ITextareaImpl extends ITextarea, ITextInputImpl {
-	_values:ITextareaValues;
-	get:ITextInputGet;
-	set:ITextInputSet;
 }
 
 export interface ITextInput extends IInput {
@@ -231,12 +186,6 @@ export interface ITextInputValues extends IInputValues {
 	value?:string;
 }
 
-export interface ITextInputImpl extends ITextInput, IInputImpl {
-	get:ITextInputGet;
-	set:ITextInputSet;
-	_values:ITextInputValues;
-}
-
 export interface IToggleButton extends IButton {
 	get:IToggleButtonGet;
 	set:IToggleButtonSet;
@@ -252,10 +201,4 @@ export interface IToggleButtonSet extends IButtonSet {
 
 export interface IToggleButtonValues extends IButtonValues {
 	checked?:boolean;
-}
-
-export interface IToggleButtonImpl extends IToggleButton, IButtonImpl {
-	_values:IToggleButtonValues;
-	get:IToggleButtonGet;
-	set:IToggleButtonSet;
 }

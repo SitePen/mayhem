@@ -1,6 +1,7 @@
 import AddPosition = require('./AddPosition');
 import core = require('../interfaces');
-export import data = require('../data/interfaces');
+import data = require('../data/interfaces');
+import form = require('./form/interfaces');
 import PlacePosition = require('./PlacePosition');
 export import style = require('./style/interfaces');
 
@@ -62,15 +63,15 @@ export interface IMediated extends IWidget {
 }
 
 export interface IMediatedGet extends IWidgetGet {
-	(name:'mediator'):data.IMediator;
+	(name:'mediator'):core.data.IMediator;
 }
 
 export interface IMediatedSet extends IWidgetSet {
-	(name:'mediator', value:data.IMediator):void;
+	(name:'mediator', value:core.data.IMediator):void;
 }
 
 export interface IMediatedValues extends IWidgetValues {
-	mediator?:data.IMediator;
+	mediator?:core.data.IMediator;
 }
 
 export interface IPlaceholder extends IMediated {
@@ -89,11 +90,12 @@ export interface IPlaceholderSet extends IMediatedSet {
 }
 
 export interface IRenderer {
-	add(widget:IContainer, item:IWidget, referenceItem:IWidget, position:any):void;
-	attachToWindow(widget:IWidget, window:any):void;
+	add(widget:IContainer, item:IWidget, position:any):void;
+	attachToWindow(widget:IWidget, target:any):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
+	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget):void;
 	setBody(widget:IWidget, content:Node):void;
@@ -108,6 +110,7 @@ export interface IView extends IContainer {
 	add(item:IWidget, position:AddPosition):IHandle;
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
+	attachToWindow(target:any):IHandle;
 	bind(kwArgs:IBindArguments):IHandle;
 	clear():void;
 }
@@ -128,7 +131,6 @@ export interface IWidget extends core.IApplicationComponent, core.IEvented {
 	get:IWidgetGet;
 	set:IWidgetSet;
 
-	attachToWindow(reference:any):IHandle;
 	destroy():void;
 	detach():void;
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
@@ -183,7 +185,7 @@ export interface IViewBindArguments {
 	 * only the source is bound to the target. A `TWO_WAY` binding keeps the source and target in sync no matter which
 	 * changes.
 	 */
-	direction?:BindDirection;
+	direction?:core.binding.IBindDirection;
 }
 
 /* Control flow */
@@ -211,15 +213,11 @@ export interface IConditionalValues extends IViewValues {
 	result?:boolean;
 }
 
-export interface IConditionalImpl extends IConditional, IViewImpl {
-	_values:IConditionalValues;
-	get:IConditionalGet;
-	set:IConditionalSet;
-}
-
 export interface IIterator extends IView {
 	get:IIteratorGet;
 	set:IIteratorSet;
+
+	getWidgetByKey(key:string):IMediated;
 }
 
 export interface IIteratorGet extends IViewGet {
@@ -243,29 +241,16 @@ export interface IIteratorValues extends IViewValues {
 	template?:any;
 }
 
-export interface IIteratorImpl extends IIterator, IViewImpl {
-	_values:IIteratorValues;
-	get:IIteratorGet;
-	set:IIteratorSet;
-}
-
-export interface IResolver extends IMediated {
+export interface IResolver extends IView {
 	get:IResolverGet;
 	set:IResolverSet;
 }
 
-export interface IResolverGet extends IMediatedGet {
+export interface IResolverGet extends IViewGet {
 }
 
-export interface IResolverSet extends IMediatedSet {
+export interface IResolverSet extends IViewSet {
 }
 
-export interface IResolverValues extends IMediatedValues {
+export interface IResolverValues extends IViewValues {
 }
-
-export interface IResolverImpl extends IResolver, IMediatedImpl {
-	_values:IResolverValues;
-	get:IResolverGet;
-	set:IResolverSet;
-}
-

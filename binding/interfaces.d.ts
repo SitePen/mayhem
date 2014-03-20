@@ -1,4 +1,4 @@
-import BindDirection = require('./BindDirection');
+export import IBindDirection = require('./BindDirection');
 import core = require('../interfaces');
 
 /**
@@ -32,7 +32,7 @@ export interface IBindArguments {
 	 * only the source is bound to the target. A `TWO_WAY` binding keeps the source and target in sync no matter which
 	 * changes.
 	 */
-	direction?:BindDirection;
+	direction?:IBindDirection;
 }
 
 /**
@@ -70,7 +70,7 @@ export interface IBindingHandle extends IHandle {
 	// TODO: Is it a bad limitation to not be able to set only the bindings?
 	setSource(source:Object, sourceBinding?:string):void;
 	setTarget(target:Object, targetBinding?:string):void;
-	setDirection(direction:BindDirection):void;
+	setDirection(direction:IBindDirection):void;
 }
 
 // TODO: This is needed in order to prevent race conditions when binding a source and a target together at the same

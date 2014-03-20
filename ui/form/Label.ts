@@ -5,13 +5,13 @@ import View = require('../View');
 
 var Renderer:any = require('../renderer!form/Label');
 
-class FormLabel extends View implements form.ILabelImpl {
+class FormLabel extends View implements form.ILabel {
 	/* protected */ _values:form.ILabelValues;
 
 	get:form.ILabelGet;
 	set:form.ILabelSet;
 }
 
-FormLabel.prototype._renderer = new Renderer({ elementType: 'label' });
+FormLabel.prototype._renderer = new Renderer();
 
 export = FormLabel;

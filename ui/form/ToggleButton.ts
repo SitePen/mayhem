@@ -5,7 +5,7 @@ import form = require('./interfaces');
 
 var Renderer:any = require('../renderer!form/ToggleButton');
 
-class ToggleButton extends Button implements form.IToggleButtonImpl {
+class ToggleButton extends Button implements form.IToggleButton {
 	/* protected */ _values:form.IToggleButtonValues;
 
 	get:form.IToggleButtonGet;

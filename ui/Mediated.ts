@@ -23,19 +23,24 @@ class Mediated extends Widget implements ui.IMediated {
 	attach(widget:ui.IWidget):void {
 		this._attachedWidgets.push(widget);
 		widget.set('parent', this);
-		widget.set('attached', this.get('attached'));
+		var attached = this.get('attached');
+		attached !== undefined && widget.set('attached', attached);
 		// On widget detach extract from attachedWidgets array
-		// widget.once('detached', () => util.spliceMatch(this._attachedWidgets, widget))
+		var handle = widget.on('detached', () => {
+			handle.remove();
+			util.spliceMatch(this._attachedWidgets, widget);
+			handle = widget = null;
+		});
 	}
 
-	/* protected */ _attachedSetter(attached:boolean):void {
-		var widget:ui.IWidget;
-		// Propagate attachment information
-		for (var i = 0; (widget = this._attachedWidgets[i]); ++i) {
-			widget.set('attached', attached);
-		}
-
-		super._attachedSetter(attached);
+	/* protected */ _initialize():void {
+		super._initialize();
+		this.observe('attached', (value:boolean):void => {
+			// Propagate attachment information
+			for (var i = 0, widget:ui.IWidget; (widget = this._attachedWidgets[i]); ++i) {
+				widget.set('attached', value);
+			}
+		});
 	}
 
 	destroy():void {

@@ -5,7 +5,7 @@ import form = require('./interfaces');
 
 var Renderer:any = require('../renderer!form/Input');
 
-/* abstract */ class Input extends Control implements form.IInputImpl {
+/* abstract */ class Input extends Control implements form.IInput {
 	/* protected */ _values:form.IInputValues;
 
 	get:form.IInputGet;

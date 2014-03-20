@@ -17,16 +17,17 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	private _eventHandles:IHandle[];
-	/* protected */ _impl:any;
+	private __id:string;
 	/* protected */ _renderer:ui.IRenderer;
 	/* protected */ _values:ui.IWidgetValues;
 
 	constructor(kwArgs:ui.IWidgetValues = {}) {
+		util.deferSetters(this, [ 'attached' ], '_render');
 		this._eventHandles = [];
 
-		this._impl = {};
+		// Capture id as provided before transforming
 		if (kwArgs.id) {
-			this._impl.id = kwArgs.id;
+			this.__id = kwArgs.id;
 		}
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
 
@@ -34,37 +35,12 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		// Helpful for debugging
 		registry[id] = this;
 
-		this._initialize();
 		super(kwArgs);
 		this._render();
 	}
 
 	get:ui.IWidgetGet;
 	set:ui.IWidgetSet;
-
-	/* protected */ _attachedSetter(attached:boolean):void {
-		if (attached !== this._values.attached) {
-			this._values.attached = !!attached;
-			this.emit(attached ? 'attached' : 'detached');
-		}
-	}
-
-	attachToWindow(window:any):IHandle {
-		this.detach();
-
-		this._renderer.attachToWindow(this, window);
-		this.set('attached', true);
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.set('attached', false);
-				this.remove = function ():void {};
-				self.detach();
-				self = null;
-			}
-		};
-	}
 
 	destroy():void {
 		this.detach();
@@ -96,6 +72,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	/* protected */ _initialize():void {
 		super._initialize();
+		this._renderer.initialize(this);
 	}
 
 	private _nextGetter():ui.IWidget {

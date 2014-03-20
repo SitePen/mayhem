@@ -49,8 +49,7 @@ class Container extends Mediated implements ui.IContainer {
 
 			var referenceWidget:ui.IWidget = children[position];
 			children.splice(position, 0, item);
-			this._renderer.add(this, item, referenceWidget, position);
-			// item.set('parent', this);
+			this._renderer.add(this, item, referenceWidget);
 			this.attach(item);
 
 			var self = this;

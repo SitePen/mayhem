@@ -7,10 +7,10 @@ import style = require('../style/interfaces');
 import Style = require('../style/Style');
 import ui = require('../interfaces');
 
-class _Element extends WidgetRenderer {
+class DomElementRenderer extends WidgetRenderer {
 	elementType:string;
 
-	add(widget:dom.IContainer, item:dom.IElementWidget, referenceItem:dom.IElementWidget, position:any):void {
+	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget):void {
 		var referenceNode:Node = referenceItem && referenceItem._firstNode;
 
 		widget._firstNode.insertBefore(item._fragment, referenceNode);
@@ -52,7 +52,7 @@ class _Element extends WidgetRenderer {
 		widget._styleHandle && widget._styleHandle.remove();
 	}
 
-	remove(widget:dom.IContainer, item:dom.IElementWidget):void {
+	remove(widget:dom.IContainer, item:dom.IWidget):void {
 		var firstNode:Node = item._firstNode;
 		firstNode.parentNode && firstNode.parentNode.removeChild(firstNode);
 	}
@@ -72,17 +72,6 @@ class _Element extends WidgetRenderer {
 		this.attachStyles(widget);
 	}
 
-	// /* protected */ _replace(widget:dom.IElementWidget, newRoot:HTMLElement):void {
-	// 	var newRoot = document.createElement(this.get('elementType'));
-	// 	// If widget is already attached to a parent swap out the new widget
-	// 	this.detach(widget);
-	// 	var oldRoot = widget._fragment;
-	// 	if (oldRoot && oldRoot.parentNode) {
-	// 		oldRoot.parentNode.replaceChild(newRoot, oldRoot);
-	// 	}
-	// 	widget._firstNode = widget._lastNode = widget._fragment = newRoot;
-	// }
-
 	setBody(widget:dom.IElementWidget, body?:any /* string | Node */):void {
 		if (typeof body === 'string') {
 			widget._firstNode.innerHTML = body;
@@ -94,6 +83,6 @@ class _Element extends WidgetRenderer {
 	}
 }
 
-_Element.prototype.elementType = 'div';
+DomElementRenderer.prototype.elementType = 'div';
 
-export = _Element;
+export = DomElementRenderer;

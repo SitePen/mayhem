@@ -6,13 +6,13 @@ import ui = require('../interfaces');
 import util = require('../../util');
 
 class DomWidgetRenderer implements ui.IRenderer {
-	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget, position:any):void {
+	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget):void {
 		var referenceNode:Node = referenceItem && referenceItem._firstNode;
 		widget._firstNode.parentNode.insertBefore(item._fragment, referenceNode || widget._lastNode);
 	}
 
-	attachToWindow(widget:dom.IWidget, node:Node):void {
-		node.appendChild(widget._fragment);
+	attachToWindow(widget:dom.IWidget, target:Node):void {
+		target.appendChild(widget._fragment);
 	}
 
 	clear(widget:dom.IWidget):void {
@@ -28,6 +28,9 @@ class DomWidgetRenderer implements ui.IRenderer {
 		if (!fragment || !fragment.firstChild) {
 			widget._fragment = domUtil.getRange(widget._firstNode, widget._lastNode).extractContents();
 		}
+	}
+
+	initialize(widget:dom.IWidget):void {
 	}
 
 	remove(widget:dom.IContainer, item:dom.IWidget):void {

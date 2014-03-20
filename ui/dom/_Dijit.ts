@@ -1,11 +1,11 @@
-import dom = require('./interfaces');
-import _ElementRenderer = require('./_Element');
-import lang = require('dojo/_base/lang');
-import ui = require('../interfaces');
-import _WidgetBase = require('dijit/_WidgetBase');
+/// <reference path="../../dojo" />
 
-class DijitRenderer extends _ElementRenderer {
-	DijitCtor:typeof _WidgetBase;
+import dom = require('./interfaces');
+import DomElementRenderer = require('./_Element');
+import lang = require('dojo/_base/lang');
+
+class DijitRenderer extends DomElementRenderer {
+	DijitCtor:typeof dom.IDijitWidgetImpl;
 	_dijitArgs:any;
 	_dijitRename:any;
 
@@ -38,7 +38,7 @@ class DijitRenderer extends _ElementRenderer {
 			// TODO: if prop expects a function, pull from mediator and/or wrap
 		}
 
-		var dijit:_WidgetBase = widget._impl = new this.DijitCtor(dijitArgs);
+		var dijit:dom.IDijitWidgetImpl = widget._impl = new this.DijitCtor(dijitArgs);
 		widget._firstNode = widget._lastNode = widget._fragment = dijit.domNode;
 		widget.get('classList').set(dijit.domNode.className);
 

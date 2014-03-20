@@ -1,9 +1,9 @@
-import _Element = require('../../dom/_Element');
-import form = require('./interfaces');
+import dom = require('../interfaces');
+import DomElementRenderer = require('../../dom/_Element');
 import util = require('../../../util');
 
-class Label extends _Element {
-	render(widget:form.ILabel):void {
+class LabelRenderer extends DomElementRenderer {
+	render(widget:dom.form.ILabel):void {
 		super.render(widget);
 		widget.observe('for', (value:string):void => {
 			widget._firstNode.setAttribute('for', value);
@@ -24,6 +24,6 @@ class Label extends _Element {
 	}
 }
 
-Label.prototype.elementType = 'label';
+LabelRenderer.prototype.elementType = 'label';
 
-export = Label;
+export = LabelRenderer;

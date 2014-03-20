@@ -3,7 +3,7 @@
 import ui = require('../ui/interfaces');
 
 export interface IParser {
-	parse(source:string):IParseTree;
+	parse(source:any):IParseTree;
 }
 
 export interface IParseTree {

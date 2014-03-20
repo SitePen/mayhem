@@ -1,8 +1,7 @@
+import DomWidgetRenderer = require('./Widget');
 
-import Widget = require('./Widget');
-
-class Resolver extends Widget {
+class ResolverRenderer extends DomWidgetRenderer {
 	// TODO
 }
 
-export = Widget;
+export = ResolverRenderer;

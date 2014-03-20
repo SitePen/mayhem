@@ -3,11 +3,11 @@
 export import binding = require('./binding/interfaces');
 export import data = require('./data/interfaces');
 export import IEvented = require('dojo/Evented');
-export import ObservableArray = require('./ObservableArray');
+export import IValidationError = require('./validation/ValidationError');
+export import IObservableArray = require('./ObservableArray');
 export import routing = require('./routing/interfaces');
 export import templating = require('./templating/interfaces');
 export import ui = require('./ui/interfaces');
-export import ValidationError = require('./validation/ValidationError');
 
 export interface IApplication extends IObservable {
 	get:IApplicationGet;
@@ -24,7 +24,7 @@ export interface IApplicationSet extends IObservableSet {
 }
 
 export interface IArrayObserver<T> {
-	(atIndex:number, insertedItems:ObservableArray<T>, removedItems:ObservableArray<T>):void;
+	(atIndex:number, insertedItems:IObservableArray<T>, removedItems:IObservableArray<T>):void;
 }
 
 export interface IApplicationComponent extends IObservable {
@@ -49,9 +49,10 @@ export interface IHasMetadata {
 
 export interface IObservable {
 	get:IObservableGet;
-	// TODO: invokeImmediately?
-	observe<T>(key:string, observer:IObserver<T>):IHandle;
 	set:IObservableSet;
+
+	destroy():void;
+	observe<T>(key:string, observer:IObserver<T>):IHandle;
 }
 
 export interface IObservableGet {

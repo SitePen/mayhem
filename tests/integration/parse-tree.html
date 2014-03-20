@@ -122,18 +122,31 @@ var dojoConfig = {
 	<script>
 require([
 	'framework/Application',
-	'framework/ui/Master',
+	'framework/ui/View',
 	'framework/tests/integration/MyMediator',
 	'framework/tests/integration/MyModel',
 	'framework/templating/Template',
-	'./parse-tree.js',
-	'dojo/text!./parse-tree-tmpl.js',
-	'framework/templating/Template!./parse-tree-tmpl.js',
-	'framework/templating/Template!./parse-tree-tmpl.json',
-	'framework/templating/json!./parse-tree-tmpl',
+	// './parse-tree.js',
+	// 'dojo/text!./parse-tree-tmpl.js',
+	// 'framework/templating/Template!./parse-tree-tmpl.js',
+	// 'framework/templating/Template!./parse-tree-tmpl.json',
+	// 'framework/templating/json!./parse-tree-tmpl',
+	'framework/templating/json!./test-tmpl',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dojo/resources/dojo.css'
-], function (Application, Master, MyMediator, MyModel, Template, rawTree, rawTreeString, rawTmpl, jsonTmpl, jsonTmpl2) {
+], function (
+	Application,
+	View,
+	MyMediator,
+	MyModel,
+	Template,
+	// rawTree,
+	// rawTreeString,
+	// rawTmpl,
+	// jsonTmpl,
+	// jsonTmpl2,
+	testTmpl
+) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -145,31 +158,33 @@ require([
 			model: model
 		});
 
-		var masterView = new Master({});
-		masterView.attachToWindow(document.body);
+		var view = window.view = new View({});
+		view.attachToWindow(document.body);
 
-		// masterView.add(jsonTmpl.create());
-		// masterView.add(jsonTmpl2.create());
-		// masterView.add(rawTmpl.create());
+		// view.add(jsonTmpl.create());
+		// view.add(jsonTmpl2.create());
+		// view.add(rawTmpl.create());
 
-		var rawTmpl2 = new Template(rawTree);
-		rawTmpl2.load().then(function(factory) {
-			// masterView.add(factory.create())
-		});
+		// var rawTmpl2 = new Template(rawTree);
+		// rawTmpl2.load().then(function(factory) {
+		// 	view.add(factory.create())
+		// });
 
-		var rawTmpl3 = new Template(rawTreeString);
-		rawTmpl3.load(5000).then(function(factory) {
-			// masterView.add(factory.create())
-		});
+		// var rawTmpl3 = new Template(rawTreeString);
+		// rawTmpl3.load(5000).then(function(factory) {
+		// 	view.add(factory.create())
+		// });
 
-		var rawTmpl4 = Template.process(rawTreeString).then(function(factory) {
-			masterView.add(factory.create())
-		});
+		// var rawTmpl4 = Template.process(rawTreeString).then(function(factory) {
+		// 	view.add(factory.create())
+		// });
 
 		// var template = new Template(moduleTmpl);
 		// template.load(5000).then(function(factory) {
-		// 	masterView.add(factory.create());
+		// 	view.add(factory.create());
 		// });
+
+		view.add(testTmpl.create());
 	});
 });
 		</script>
