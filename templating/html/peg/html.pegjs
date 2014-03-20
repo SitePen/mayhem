@@ -146,11 +146,11 @@ Template
 				root = root.children[0];
 			}
 			else {
-				root.constructor = 'framework/templating/html/ui/View';
+				root.constructor = 'framework/templating/ui/View';
 			}
 		}
 		else {
-			root = { constructor: 'framework/templating/html/ui/View' };
+			root = { constructor: 'framework/templating/ui/View' };
 		}
 		aliases.validate();
 		aliases.resolve(root);
@@ -282,18 +282,18 @@ If '<if/>'
 	body:NonBlankElement
 	alternates:(
 		kwArgs:ElseIfTagOpen body:NonBlankElement (ElseIfTagClose S*)? {
-			body.constructor = 'framework/templating/html/ui/Conditional';
+			body.constructor = 'framework/templating/ui/Conditional';
 			body.kwArgs = kwArgs;
 			return body;
 		}
 	)*
 	finalAlternate:(kwArgs:ElseTagOpen body:NonBlankElement (ElseTagClose S*)? {
-		body.constructor = 'framework/templating/html/ui/View';
+		body.constructor = 'framework/templating/ui/View';
 		body.kwArgs = kwArgs;
 		return body;
 	})?
 	IfTagClose {
-		body.constructor = 'framework/templating/html/ui/Conditional';
+		body.constructor = 'framework/templating/ui/Conditional';
 		body.kwArgs = kwArgs;
 
 		// Loop over our alternates and turn them into a recursive list of conditional widgets
@@ -357,7 +357,7 @@ For '<for/>'
 		// Wrap template with an array to keep it from being instantiated by processor
 		kwArgs.template = body;
 		return {
-			constructor: 'framework/templating/html/ui/Iterator',
+			constructor: 'framework/templating/ui/Iterator',
 			kwArgs: kwArgs
 		};
 	}
@@ -379,7 +379,7 @@ When '<when/>'
 		// TODO: process bindings within content, and within during and error content
 		kwArgs.during = during;
 		kwArgs.error = error;
-		widget.constructor = 'framework/templating/html/ui/When';
+		widget.constructor = 'framework/templating/ui/Resolver';
 		widget.kwArgs = kwArgs;
 		return widget;
 	}
@@ -404,7 +404,7 @@ DuringTagOpen '<during>'
 			optional: [ 'id' ]
 		});
 		return {
-			constructor: 'framework/templating/html/ui/View',
+			constructor: 'framework/templating/ui/View',
 			kwArgs: kwArgs
 		};
 	}
@@ -419,7 +419,7 @@ ErrorTagOpen '<error>'
 			optional: [ 'id' ]
 		});
 		return {
-			constructor: 'framework/templating/html/ui/View',
+			constructor: 'framework/templating/ui/View',
 			kwArgs: kwArgs
 		};
 	}

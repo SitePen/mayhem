@@ -1,8 +1,8 @@
-import Element = require('../../dom/Element');
+import _Element = require('../../dom/_Element');
 import form = require('../../form/interfaces');
 import util = require('../../../util');
 
-class Label extends Element {
+class Label extends _Element {
 	render(widget:form.ILabelImpl):void {
 		super.render(widget);
 		widget.observe('for', (value:string):void => {

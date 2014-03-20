@@ -24,6 +24,10 @@ class Widget extends ObservableEvented implements ui.IWidgetImpl {
 	constructor(kwArgs:ui.IWidgetValues = {}) {
 		this._eventHandles = [];
 
+		this._impl = {};
+		if (kwArgs.id) {
+			this._impl.id = kwArgs.id;
+		}
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
 
 		// TDOO: check registry for duplicate id and throw?
@@ -31,7 +35,6 @@ class Widget extends ObservableEvented implements ui.IWidgetImpl {
 		registry[id] = this;
 
 		this._initialize();
-		this._impl = {};
 		super(kwArgs);
 		this._render();
 	}
@@ -92,6 +95,7 @@ class Widget extends ObservableEvented implements ui.IWidgetImpl {
 	}
 
 	/* protected */ _initialize():void {
+		super._initialize();
 	}
 
 	private _nextGetter():ui.IWidget {

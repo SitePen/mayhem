@@ -284,7 +284,7 @@ If the root isn't a single widget it uses the `View` templating widget for its c
 
 ```javascript
 {
-	constructor: 'framework/templating/html/ui/View',
+	constructor: 'framework/templating/ui/View',
 	children: [{ constructor: 'foo' }, { constructor: 'bar' }],
 	content: [ { $child: 0 }, '<br>', { $child: 1 } ]
 }
@@ -300,7 +300,7 @@ In this case we don't need to track the locations of children with placeholders 
 
 ```javascript
 {
-	constructor: 'framework/templating/html/ui/View',
+	constructor: 'framework/templating/ui/View',
 	children: [{ constructor: 'foo' }, { constructor: 'bar' }]
 }
 ```
@@ -312,7 +312,7 @@ Foo <em>bar.
 ```
 ```javascript
 {
-	constructor: 'framework/templating/html/ui/View',
+	constructor: 'framework/templating/ui/View',
 	content: [ { $child: 0 }, '<br>', { $child: 1 } ]
 }
 ```
@@ -324,7 +324,7 @@ Foo <em>{bar}.<placeholder name="trailer">
 ```
 ```javascript
 {
-	constructor: 'framework/templating/html/ui/View',
+	constructor: 'framework/templating/ui/View',
 	content: [ 'Foo <em>', { $bind: 'bar' }, '.', { $named: 'trailer' } ]
 }
 ```
@@ -333,7 +333,7 @@ When there's just whitespace in a template, or no content at all, we still get a
 
 ```javascript
 {
-	constructor: 'framework/templating/html/ui/View'
+	constructor: 'framework/templating/ui/View'
 }
 ```
 
@@ -507,237 +507,10 @@ The parser transforms action nodes into functions and evaluates them before sett
 When it encounters attribute values which are functions the processor wraps them such that they are always called within the context of the owner widget's active mediator.
 
 
-# Templating Widgets
-
-The templating language has a few widgets baked in to make it easier to express concepts like control flow...
-
-## Iterator
-
-(TODO: this doesn't align with the code)
-
-```html
-<for each="fieldValue" in="iterable">
-	This is a template for each item in the iterable, including its value: {fieldValue}.
-</for>
-```
-```javascript
-{
-	constructor: 'framework/templating/html/ui/Iteration',
-	kwArgs: {
-		each: 'fieldValue',
-		in: 'iterable'
-	},
-	content: [
-		'This is a template for each item in the iterable, including its value: ',
-		{ $bind: 'fieldValue' }
-	]
-}
-```
-
-The `<for>` tag is just a convenience -- you could also build up an iterator just from `<widget>` tags. This template yields a parse tree that's essentially equivalent to the one above:
-
-```html
-<widget is="framework/templating/html/ui/Iteration" each="fieldValue" in="iterable" >
-	This is a template for each item in the iterable, including its value: {fieldValue}.
-</widget>
-```
-
-The `in` attribute of Iteration widgets is required, and it must reference an iterable property on the widget mediator.
-
-The optional `each` attribute defines a new property for the mediator of the content widget that will yield the value of the current item in the iterator. This scoped mediator only cares about the property named defined by the `each` attribute and otherwise defers to the Iterator widget's mediator for all other properties.
-
-The optional `index` attribute surfaces the index or key of the iterator's current item in the scoped mediator created for the content widget.
+# [Templating Widgets](../ui/README.md)
 
 
-
-## Conditional
-
-```html
-<if condition="firstCondition">
-	Content for when first condition matches...
-<elseif condition="secondCondition" id="first-alternative">
-	Content for when second condition matches...
-<elseif condition="thirdCondition">
-	Content for when third condition matches...
-<else>
-	Fallback content...
-</if>
-```
-
-The `<elseif>` clauses, as well as the `<else>`, are completely optional. If not provided, the content of the `<if>` widget will be emptied when its `condition` is false. Closing tags `</elseif>` and `</else>` are optional.
-
-The `<elseif>` and `<else>` elements are represented in the parse tree as nested Conditional templates. The `Conditional` just toggles between its content (if its condition is `true`) or its `alternative` widget, if provided.
-
-```javascript
-{
-	constructor: 'framework/templating/html/ui/Conditional',
-	kwArgs: {
-		condition: 'firstCondition',
-		alternate: {
-			constructor: 'framework/templating/html/ui/Conditional',
-			kwArgs: {
-				condition: 'secondCondition',
-				id: 'first-alternative',
-				alternate: {
-					constructor: 'framework/templating/html/ui/Conditional',
-					kwArgs: {
-						condition: 'thirdCondition',
-						alternate: {
-							constructor: 'framework/templating/html/ui/View',
-							content: 'Fallback content...'
-						}
-					},
-					content: 'Content for when third condition matches...'
-				}
-			},
-			content: 'Content for when second condition matches...'
-		}
-	},
-	content: 'Content for when first condition matches...'
-}
-```
-
-If a statement has a `condition` an `alternative` is optional -- no `condition` implies a statement is an `else` clause and must not have an `alternative`.
-
-
-Here's a nearly-equivalent template done manually (the only difference is that we had to create ids for all alternative widgets to be able to reference them):
-
-```html
-<widget is="framework/templating/html/ui/Conditional" condition="firstCondition" alternate=#first-alternative>
-	Content for when first condition matches...
-	<widget is="framework/templating/html/ui/Conditional" condition="secondCondition" id="first-alternative" alternate=#alt2>
-		Content for when second condition matches...
-		<widget is="framework/templating/html/ui/Conditional" condition="thirdCondition" id="alt3" alternate=#alt4>
-			Content for when third condition matches...
-			<widget is="framework/templating/html/ui/View" id="alt4">
-				Fallback content...
-			</widget>
-		</widget>
-	</widget>
-</widget>
-```
-
-
-## When
-
-The `<when>` tag can be used to wait on a remote value and show content when it is available. Optionally, content can be specified to be shown while the promise resolves using the `<during>` tag which can get access to the underlying promise's `progress` data. Error content may also be specified using the `<error>` tag in the case of promise rejection.
-
-```html
-<when promise="remoteField" value="resolvedValue">
-	Content for when promise resolves...
-<during>
-	Content for promise progress...
-<error id="custom-id">
-	Content for promise rejection...
-</when>
-```
-
-The closing tags `</during>` and `</error>` are optional.
-
-```javascript
-{
-	constructor: 'framework/templating/html/ui/When',
-	kwArgs: {
-		promise: 'remoteField',
-		value: 'resolvedValue',
-		during: {
-			constructor: 'framework/templating/html/ui/View',
-			content: 'Content for promise progress...'
-		},
-		error: {
-			constructor: 'framework/templating/html/ui/View',
-			kwArgs: { id: 'custom-id' },
-			content: 'Content for promise rejection...'
-		}
-	},
-	content: 'Content for when promise resolves...'
-}
-```
-
-We could build this template purely from `<widget>` composition too:
-
-```html
-<widget is="framework/templating/html/ui/When" promise="remoteField" value="resolvedValue" during=#dur error=#custom-id>
-	Content for when promise resolves...
-	<widget is="framework/templating/html/ui/View" id="dur">Content for promise promise...</widget>
-	<widget is="framework/templating/html/ui/View" id="custom-id">Content for promise rejection...</widget>
-</widget>
-```
-
-
-# Parse Tree Processing
-
-(TODO: move to templating README)
-
-To get a better intuition for what to expect the AST processing to do it may help to compare it with some effectively equivalent imperative code.
-
-Here's an example of a tab container with a few children and some bindings:
-
-```html
-<widget id="tabs" is="tab-container">
-	<widget is="content-pane" title={firstTabTitle}>
-		Content of Tab 1
-	</widget>
-	<widget is="content-pane" title="{secondTabTitle}" selected>
-		Content of Tab 2, with {someBinding}...
-	</widget>
-</widget>
-```
-
-The parse tree we should expect this to generate isn't much more complex:
-
-```javascript
-{
-	constructor: 'tab-container',
-	kwArgs: {
-		id: 'tabs'
-	},
-	children: [{
-		constructor: 'content-pane',
-		kwArgs: {
-			title: { $bind: 'firstTabTitle' }
-		},
-		content: 'Content of Tab 1...'
-	},
-	{
-		constructor: 'content-pane',
-		kwArgs: {
-			id: 'tab2',
-			title: [{ $bind: 'secondTabTitle' }],
-			selected: true
-		},
-		content: [ 'Content of Tab 2, with ', { $bind: 'someBinding' }, '...' ]
-	}]
-}
-```
-
-Let's look at some imperative code that does approximately the same thing we'd expect our AST processor to do:
-
-```javascript
-var tabs = new TabContainer({ id: 'tabs' });
-
-var tab1 = new ContentPane({
-	title: 'initial value of firstTabTitle'
-});
-// bound attributes are populated with its initial property set if a mediator exists at instantiation time
-// otherwise it is set as soon as an active mediator is provided
-// if no `app` property exists on widget then binding is deferred until an app object is set
-tab1.bind('title', 'firstTabTitle');
-tab1.setContent('Content of Tab 1...');
-tabs.add(tab1);
-
-var tab2 = new ContentPane({
-	id: 'tab2',
-	title: 'initial value of secondTabTitle',
-	selected: true
-});
-tab1.bindTemplate('title', [{ $bind: 'secondTabTitle' }]);
-tab2.setContent('Content of Tab 2, with <!-- {"$bind":"binding"} -->...');
-tabs.add(tab2);
-```
-
-As you can see, the template is a bit more concise than the AST, but both are arguably more legible and less error-prone than the programmatic example above.
-
+# [Parse Tree Processing](../README.md)
 
 
 # Future

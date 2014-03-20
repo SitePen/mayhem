@@ -83,15 +83,15 @@ export interface IError extends ui.IWidget {
 }
 
 export interface IErrorGet extends ui.IWidgetGet {
-	(name:'errors'):ValidationError[];
+	(name:'list'):ValidationError[];
 }
 
 export interface IErrorSet extends ui.IWidgetSet {
-	(name:'errors', value:ValidationError[]):void;
+	(name:'list', value:ValidationError[]):void;
 }
 
 export interface IErrorValues extends ui.IWidgetValues {
-	errors?:ValidationError[];
+	list?:ValidationError[];
 }
 
 export interface IErrorImpl extends IError, ui.IWidgetImpl {

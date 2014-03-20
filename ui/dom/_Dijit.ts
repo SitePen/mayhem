@@ -1,9 +1,9 @@
-import ElementRenderer = require('./Element');
+import _ElementRenderer = require('./_Element');
 import lang = require('dojo/_base/lang');
 import ui = require('../interfaces');
 import _WidgetBase = require('dijit/_WidgetBase');
 
-class _DijitRenderer extends ElementRenderer {
+class _DijitRenderer extends _ElementRenderer {
 	DijitCtor:typeof _WidgetBase;
 	_dijitArgs:any;
 	_dijitRename:any;

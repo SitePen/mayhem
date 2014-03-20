@@ -36,7 +36,7 @@ export interface IContainer extends IMediated {
 
 	add(item:IWidget, position:AddPosition):IHandle;
 	add(item:IWidget, position:number):IHandle;
-	add(item:IWidget, placeholder?:any):IHandle;
+	add(item:IWidget, position?:any):IHandle;
 	empty():void;
 	remove(index:number):void;
 	remove(widget:IWidget):void;
@@ -127,6 +127,8 @@ export interface IView extends IContainer {
 	set:IViewSet;
 
 	add(item:IWidget, placeholder:string):IHandle;
+	add(item:IWidget, position:AddPosition):IHandle;
+	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
 	bind(kwArgs:IBindArguments):IHandle;
 	clear():void;
@@ -144,7 +146,7 @@ export interface IViewValues extends IContainerValues {
 	content?:any;
 }
 
-export interface IViewImpl extends IContainerImpl {
+export interface IViewImpl extends IView, IContainerImpl {
 	_values:IViewValues;
 	get:IViewGet;
 	set:IViewSet;
@@ -197,3 +199,87 @@ export interface IWidgetImpl extends IWidget {
 	_renderer:IRenderer;
 	_values:IWidgetValues;
 }
+
+/* Control flow */
+
+export interface IConditional extends IView {
+	get:IConditionalGet;
+	set:IConditionalSet;
+}
+
+export interface IConditionalGet extends IViewGet {
+	(name:'alternate'):IWidget;
+	(name:'condition'):string;
+	(name:'result'):boolean;
+}
+
+export interface IConditionalSet extends IViewSet {
+	(name:'alternate', value:IWidget):void;
+	(name:'condition', value:string):void;
+	(name:'result', value:boolean):void;
+}
+
+export interface IConditionalValues extends IViewValues {
+	alternate?:IWidget;
+	condition?:string;
+	result?:boolean;
+}
+
+export interface IConditionalImpl extends IConditional, IViewImpl {
+	_values:IConditionalValues;
+	get:IConditionalGet;
+	set:IConditionalSet;
+}
+
+export interface IIterator extends IView {
+	get:IIteratorGet;
+	set:IIteratorSet;
+}
+
+export interface IIteratorGet extends IViewGet {
+	(name:'each'):string;
+	(name:'in'):string;
+	(name:'source'):any;
+	(name:'template'):any;
+}
+
+export interface IIteratorSet extends IViewSet {
+	(name:'each', value:string):void;
+	(name:'in', value:string):void;
+	(name:'source', value:any):void;
+	(name:'template', value:any):void;
+}
+
+export interface IIteratorValues extends IViewValues {
+	each?:string;
+	in?:string;
+	source?:any;
+	template?:any;
+}
+
+export interface IIteratorImpl extends IIterator, IViewImpl {
+	_values:IIteratorValues;
+	get:IIteratorGet;
+	set:IIteratorSet;
+}
+
+export interface IResolver extends IMediated {
+	get:IResolverGet;
+	set:IResolverSet;
+}
+
+export interface IResolverGet extends IMediatedGet {
+}
+
+export interface IResolverSet extends IMediatedSet {
+}
+
+export interface IResolverValues extends IMediatedValues {
+}
+
+export interface IResolverImpl extends IResolver, IMediatedImpl {
+	_values:IResolverValues;
+	get:IResolverGet;
+	set:IResolverSet;
+}
+

@@ -1,12 +1,12 @@
 import ClassList = require('../style/ClassList');
 import domUtil = require('./util');
-import DomWidgetRenderer = require('./Widget');
+import WidgetRenderer = require('./Widget');
 import has = require('../../has');
 import style = require('../style/interfaces');
 import Style = require('../style/Style');
 import ui = require('../interfaces');
 
-class DomElementRenderer extends DomWidgetRenderer {
+class _Element extends WidgetRenderer {
 	elementType:string;
 
 	add(widget:ui.IContainerImpl, item:ui.IWidgetImpl, referenceItem:ui.IWidgetImpl, position:any):void {
@@ -93,6 +93,6 @@ class DomElementRenderer extends DomWidgetRenderer {
 	}
 }
 
-DomElementRenderer.prototype.elementType = 'div';
+_Element.prototype.elementType = 'div';
 
-export = DomElementRenderer;
+export = _Element;

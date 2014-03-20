@@ -27,13 +27,12 @@ var dojoConfig = {
 	<script>
 require([
 	'framework/Application',
-	'framework/ui/Master',
 	'framework/tests/integration/MyMediator',
 	'framework/tests/integration/MyModel',
 	'framework/templating/html!./bindings.tmpl.html',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dijit/themes/claro/document.css'
-], function (Application, Master, MyMediator, MyModel, factory) {
+], function (Application, MyMediator, MyModel, viewFactory) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -46,11 +45,10 @@ require([
 			model: model
 		});
 
-		var masterView = window.view = new Master({});
-		masterView.add(factory.create());
-		masterView.set('app', app);
-		masterView.set('mediator', mediator);
-		masterView.attachToWindow(document.body);
+		var view = window.view = viewFactory.create();
+		view.set('app', app);
+		view.set('mediator', mediator);
+		view.attachToWindow(document.body);
 
 		// Wait a few seconds and push to observables
 		setTimeout(function() {

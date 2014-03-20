@@ -267,7 +267,7 @@ class _WidgetBinder {
 			if (factory) {
 				item = factory.create(); // TODO: child options?
 				if (markerNodes[i]) {
-					domUtil.place(item.get('fragment'), markerNodes[i], PlacePosition.REPLACE);
+					domUtil.place(item._impl.fragment, markerNodes[i], PlacePosition.REPLACE);
 					widget.attach(item);
 					children[i] = item;
 				}
@@ -323,7 +323,7 @@ class _WidgetBinder {
 			else if (descriptor.$named != null) {
 				var name:string = descriptor.$named,
 					placeholder = widget.placeholders[name] = new Placeholder();
-				domUtil.place(placeholder.get('fragment'), node, PlacePosition.REPLACE);
+				domUtil.place(placeholder._impl.fragment, node, PlacePosition.REPLACE);
 				widget.attach(placeholder);
 			}
 			else {

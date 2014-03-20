@@ -1,15 +1,18 @@
-import data = require('../../../data/interfaces');
-import domUtil = require('../../../ui/dom/util');
-import WidgetFactory = require('../../WidgetFactory');
-import Mediator = require('../../../data/Mediator');
-import templating = require('./interfaces');
-import ui = require('../../../ui/interfaces');
-import util = require('../../../util');
-import View = require('../../../ui/View');
+/// <amd-dependency path="./renderer!Resolver" />
+
+import data = require('../data/interfaces');
+import domUtil = require('./dom/util');
+import WidgetFactory = require('../templating/WidgetFactory');
+import Mediator = require('../data/Mediator');
+import ui = require('./interfaces');
+import util = require('../util');
+import View = require('./View');
 import when = require('dojo/when');
 
+var Renderer:any = require('./renderer!Resolver');
+
 // TODO: move all this render noise to the renderer
-class When extends View implements templating.IWhen {
+class Resolver extends View implements ui.IResolver {
 	private _duringTemplate:any;
 	private _duringWidget:ui.IWidget;
 	private _errorTemplate:any;
@@ -24,11 +27,11 @@ class When extends View implements templating.IWhen {
 	private _scopedMediator:Mediator;
 	private _success:boolean;
 	private _targetPromise:any;
-	/* protected */ _values:any;
+	/* protected */ _values:ui.IResolverValues;
 	private _valueField:string;
 
-	get:templating.IWhenGet;
-	set:templating.IWhenSet;
+	get:ui.IResolverGet;
+	set:ui.IResolverSet;
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'content' ], '_targetPromiseSetter');
@@ -199,4 +202,4 @@ class When extends View implements templating.IWhen {
 	}
 }
 
-export = When;
+export = Resolver;
