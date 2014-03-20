@@ -1,4 +1,5 @@
 import ClassList = require('../style/ClassList');
+import dom = require('./interfaces');
 import domUtil = require('./util');
 import WidgetRenderer = require('./Widget');
 import has = require('../../has');
@@ -9,86 +10,86 @@ import ui = require('../interfaces');
 class _Element extends WidgetRenderer {
 	elementType:string;
 
-	add(widget:ui.IContainerImpl, item:ui.IWidgetImpl, referenceItem:ui.IWidgetImpl, position:any):void {
-		var referenceNode:Node = referenceItem && referenceItem._impl.firstNode;
+	add(widget:dom.IContainer, item:dom.IElementWidget, referenceItem:dom.IElementWidget, position:any):void {
+		var referenceNode:Node = referenceItem && referenceItem._firstNode;
 
-		widget._impl.firstNode.insertBefore(item._impl.fragment, referenceNode);
+		widget._firstNode.insertBefore(item._fragment, referenceNode);
 	}
 
-	attachStyles(widget:ui.IWidgetImpl):void {
+	attachStyles(widget:dom.IElementWidget):void {
 		this.detachStyles(widget);
 
-		widget._impl.classListHandle = widget.get('classList').observe((value:string):void => {
-			widget._impl.firstNode.className = value;
+		widget._classListHandle = widget.get('classList').observe((value:string):void => {
+			widget._firstNode.className = value;
 		});
 
-		widget._impl.styleHandle = widget.get('style').observe((value:style.IStyle, oldValue:style.IStyle, key:string):void => {
+		widget._styleHandle = widget.get('style').observe((value:style.IStyle, oldValue:style.IStyle, key:string):void => {
 			if (has('debug') && key.indexOf('-') !== -1) {
 				throw new Error('CSS properties in JavaScript are camelCase, not hyphenated');
 			}
 
-			domUtil.setStyle(widget._impl.firstNode, key, value);
+			domUtil.setStyle(widget._firstNode, key, value);
 		});
 	}
 
-	clear(widget:ui.IWidgetImpl):void {
-		widget._impl.firstNode.innerHTML = '';
+	clear(widget:dom.IElementWidget):void {
+		widget._firstNode.innerHTML = '';
 	}
 
-	destroy(widget:ui.IWidgetImpl):void {
+	destroy(widget:dom.IElementWidget):void {
 		this.detachStyles(widget);
-		widget._impl.classListHandle = widget._impl.styleHandle = null;
+		widget._classListHandle = widget._styleHandle = null;
 		super.destroy(widget);
 	}
 
-	detach(widget:ui.IWidgetImpl):void {
-		var firstNode = widget._impl.firstNode;
+	detach(widget:dom.IElementWidget):void {
+		var firstNode = widget._firstNode;
 		firstNode.parentNode && firstNode.parentNode.removeChild(firstNode);
 	}
 
-	detachStyles(widget:ui.IWidgetImpl):void {
-		widget._impl.classListHandle && widget._impl.classListHandle.remove();
-		widget._impl.styleHandle && widget._impl.styleHandle.remove();
+	detachStyles(widget:dom.IElementWidget):void {
+		widget._classListHandle && widget._classListHandle.remove();
+		widget._styleHandle && widget._styleHandle.remove();
 	}
 
-	remove(widget:ui.IWidgetImpl, item:ui.IWidgetImpl):void {
-		var firstNode:Node = item._impl.firstNode;
+	remove(widget:dom.IContainer, item:dom.IElementWidget):void {
+		var firstNode:Node = item._firstNode;
 		firstNode.parentNode && firstNode.parentNode.removeChild(firstNode);
 	}
 
-	render(widget:ui.IWidgetImpl):void {
+	render(widget:dom.IElementWidget):void {
 		widget.set({
 			classList: new ClassList(),
 			style: new Style()
 		});
 		var node = document.createElement(this.elementType);
 		// If widget is already attached to a parent swap out the new widget
-		var previousNode = widget._impl.fragment;
+		var previousNode = widget._fragment;
 		if (previousNode && previousNode.parentNode) {
 			previousNode.parentNode.replaceChild(node, previousNode);
 		}
-		widget._impl.firstNode = widget._impl.lastNode = widget._impl.fragment = node;
+		widget._firstNode = widget._lastNode = widget._fragment = node;
 		this.attachStyles(widget);
 	}
 
-	// /* protected */ _replace(widget:ui.IWidget, newRoot:HTMLElement):void {
+	// /* protected */ _replace(widget:dom.IElementWidget, newRoot:HTMLElement):void {
 	// 	var newRoot = document.createElement(this.get('elementType'));
 	// 	// If widget is already attached to a parent swap out the new widget
 	// 	this.detach(widget);
-	// 	var oldRoot = widget._impl.fragment;
+	// 	var oldRoot = widget._fragment;
 	// 	if (oldRoot && oldRoot.parentNode) {
 	// 		oldRoot.parentNode.replaceChild(newRoot, oldRoot);
 	// 	}
-	// 	widget._impl.firstNode = widget._impl.lastNode = widget._impl.fragment = newRoot;
+	// 	widget._firstNode = widget._lastNode = widget._fragment = newRoot;
 	// }
 
-	setBody(widget:ui.IWidgetImpl, body?:any /* string | Node */):void {
+	setBody(widget:dom.IElementWidget, body?:any /* string | Node */):void {
 		if (typeof body === 'string') {
-			widget._impl.firstNode.innerHTML = body;
+			widget._firstNode.innerHTML = body;
 		}
 		else {
 			this.clear(widget);
-			body && widget._impl.firstNode.appendChild(body);
+			body && widget._firstNode.appendChild(body);
 		}
 	}
 }

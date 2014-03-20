@@ -7,7 +7,7 @@ import ui = require('./interfaces');
 import util = require('../util');
 import Widget = require('./Widget');
 
-class Mediated extends Widget implements ui.IMediatedImpl {
+class Mediated extends Widget implements ui.IMediated {
 	private _attachedWidgets:ui.IWidget[];
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;

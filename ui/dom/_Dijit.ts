@@ -1,32 +1,33 @@
+import dom = require('./interfaces');
 import _ElementRenderer = require('./_Element');
+import ElementRenderer = require('./Element');
 import lang = require('dojo/_base/lang');
 import ui = require('../interfaces');
 import _WidgetBase = require('dijit/_WidgetBase');
 
-class _DijitRenderer extends _ElementRenderer {
+class DijitRenderer extends _ElementRenderer {
 	DijitCtor:typeof _WidgetBase;
 	_dijitArgs:any;
 	_dijitRename:any;
 
-	static delegate(Base:typeof _DijitRenderer, key:string, initialValues:any) {
+	static delegate(Base:typeof DijitRenderer, key:string, initialValues:any):void {
 		this['prototype'][key] = lang.delegate(Base['prototype'][key], initialValues);
 	}
 
-	_getProperty(widget:ui.IWidgetImpl, key:string):any {
+	_getProperty(widget:dom.IDijitWidget, key:string):any {
 		var value:any = widget.get(key);
 		// TODO: if prop expects a function, pull from mediator and/or wrap
 		// also: if prop.dijit, return dijit
 		return value;
 	}
 
-	render(widget:ui.IWidgetImpl/*ui.IDijitImpl*/):void {
+	render(widget:dom.IDijitWidget):void {
 		super.render(widget);
 		
 		var dijitRename:any = this._dijitRename,
 			inverseRename:any = {},
 			key:string;
 		// Invert property rename map
-		var inverseRename:any = {};
 		for (key in dijitRename) {
 			inverseRename[dijitRename[key]] = key;
 		}
@@ -38,8 +39,8 @@ class _DijitRenderer extends _ElementRenderer {
 			// TODO: if prop expects a function, pull from mediator and/or wrap
 		}
 
-		var dijit:_WidgetBase = widget._impl.dijit = new this.DijitCtor(dijitArgs);
-		widget._impl.firstNode = widget._impl.lastNode = widget._impl.fragment = dijit.domNode;
+		var dijit:_WidgetBase = widget._impl = new this.DijitCtor(dijitArgs);
+		widget._firstNode = widget._lastNode = widget._fragment = dijit.domNode;
 		widget.get('classList').set(dijit.domNode.className);
 
 		// Sync widget with dijit
@@ -60,15 +61,15 @@ class _DijitRenderer extends _ElementRenderer {
 			}
 			var widgetKey:string = inverseRename[key] || key;
 			if (value !== widget.get(widgetKey)) {
-				widget.set(widgetKey, value)
+				widget.set(widgetKey, value);
 			}
 		});
 
 		// Startup when attached
-		widget.observe('attached', (attached:boolean) => {
+		widget.observe('attached', (attached:boolean):void => {
 			attached && dijit.startup();
 		});
 	}
 }
 
-export = _DijitRenderer;
+export = DijitRenderer;

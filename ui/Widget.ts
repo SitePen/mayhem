@@ -11,7 +11,7 @@ var Renderer:any = require('./renderer!Widget'),
 	uid = 0,
 	registry:{ [id:string]:ui.IWidget } = {};
 
-class Widget extends ObservableEvented implements ui.IWidgetImpl {
+class Widget extends ObservableEvented implements ui.IWidget {
 	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
@@ -43,7 +43,7 @@ class Widget extends ObservableEvented implements ui.IWidgetImpl {
 	set:ui.IWidgetSet;
 
 	/* protected */ _attachedSetter(attached:boolean):void {
-		if (attached != this._values.attached) {
+		if (attached !== this._values.attached) {
 			this._values.attached = !!attached;
 			this.emit(attached ? 'attached' : 'detached');
 		}
@@ -107,7 +107,6 @@ class Widget extends ObservableEvented implements ui.IWidgetImpl {
 
 		return this.get('parent').get('children')[index + 1] || null;
 	}
-
 
 	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
 	on(type:string, listener:(event:Event) => void):IHandle;

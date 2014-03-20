@@ -1,9 +1,8 @@
 import Mediated = require('./Mediated');
 import ui = require('./interfaces');
 
-class Placeholder extends Mediated implements ui.IPlaceholderImpl {
+class Placeholder extends Mediated implements ui.IPlaceholder {
 	private _widget:ui.IWidget;
-	/* protected */ _values:ui.IPlaceholderValues;
 
 	get:ui.IPlaceholderGet;
 	set:ui.IPlaceholderSet;

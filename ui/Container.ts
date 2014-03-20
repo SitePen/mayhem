@@ -6,7 +6,7 @@ import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
 import util = require('../util');
 
-class Container extends Mediated implements ui.IContainerImpl {
+class Container extends Mediated implements ui.IContainer {
 	/* protected */ _values:ui.IContainerValues;
 
 	constructor(kwArgs?:any) {
@@ -50,7 +50,7 @@ class Container extends Mediated implements ui.IContainerImpl {
 			var referenceWidget:ui.IWidget = children[position];
 			children.splice(position, 0, item);
 			this._renderer.add(this, item, referenceWidget, position);
-			//item.set('parent', this);
+			// item.set('parent', this);
 			this.attach(item);
 
 			var self = this;

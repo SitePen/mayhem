@@ -129,6 +129,7 @@ export interface IInputImpl extends IInput, IControlImpl {
 export interface ILabel extends ui.IWidget {
 	get:ILabelGet;
 	set:ILabelSet;
+	_values:ILabelValues;
 }
 
 export interface ILabelGet extends ui.IWidgetGet {

@@ -7,7 +7,7 @@ import lang = require('dojo/_base/lang');
 import ui = require('./interfaces');
 import util = require('../util');
 
-class View extends Container implements ui.IViewImpl {
+class View extends Container implements ui.IView {
 	private _bindings:binding.IBindingHandle[];
 	placeholders:{ [name:string]: ui.IPlaceholder; };
 	/* protected */ _values:ui.IViewValues;
@@ -51,7 +51,7 @@ class View extends Container implements ui.IViewImpl {
 				}
 			};
 		}
-		return super.add(item, position)
+		return super.add(item, position);
 	}
 
 	/* protected */ _bind(kwArgs:ui.IBindArguments):binding.IBindingHandle {

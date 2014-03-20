@@ -1,3 +1,4 @@
+import dom = require('./interfaces');
 import domUtil = require('./util');
 import domConstruct = require('dojo/dom-construct');
 import Observable = require('../../Observable');
@@ -5,51 +6,51 @@ import ui = require('../interfaces');
 import util = require('../../util');
 
 class DomWidgetRenderer implements ui.IRenderer {
-	add(widget:ui.IContainerImpl, item:ui.IWidgetImpl, referenceItem:ui.IWidgetImpl, position:any):void {
-		var referenceNode:Node = referenceItem && referenceItem._impl.firstNode;
-		widget._impl.firstNode.parentNode.insertBefore(item._impl.fragment, referenceNode || widget._impl.lastNode);
+	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget, position:any):void {
+		var referenceNode:Node = referenceItem && referenceItem._firstNode;
+		widget._firstNode.parentNode.insertBefore(item._fragment, referenceNode || widget._lastNode);
 	}
 
-	attachToWindow(widget:ui.IWidgetImpl, node:Node):void {
-		node.appendChild(widget._impl.fragment);
+	attachToWindow(widget:dom.IWidget, node:Node):void {
+		node.appendChild(widget._fragment);
 	}
 
-	clear(widget:ui.IWidgetImpl):void {
-		domUtil.getRange(widget._impl.firstNode, widget._impl.lastNode, true).deleteContents();
+	clear(widget:dom.IWidget):void {
+		domUtil.getRange(widget._firstNode, widget._lastNode, true).deleteContents();
 	}
 
-	destroy(widget:ui.IWidgetImpl):void {
-		widget._impl.firstNode = widget._impl.lastNode = widget._impl.fragment = null;
+	destroy(widget:dom.IWidget):void {
+		widget._firstNode = widget._lastNode = widget._fragment = null;
 	}
 
-	detach(widget:ui.IWidgetImpl):void {
-		var fragment = widget._impl.fragment;
+	detach(widget:dom.IWidget):void {
+		var fragment = widget._fragment;
 		if (!fragment || !fragment.firstChild) {
-			widget._impl.fragment = domUtil.getRange(widget._impl.firstNode, widget._impl.lastNode).extractContents();
+			widget._fragment = domUtil.getRange(widget._firstNode, widget._lastNode).extractContents();
 		}
 	}
 
-	remove(widget:ui.IContainerImpl, item:ui.IWidgetImpl):void {
-		item._impl.fragment = domUtil.getRange(item._impl.firstNode, item._impl.lastNode).extractContents();
+	remove(widget:dom.IContainer, item:dom.IWidget):void {
+		item._fragment = domUtil.getRange(item._firstNode, item._lastNode).extractContents();
 	}
 
-	render(widget:ui.IWidgetImpl):void {
+	render(widget:dom.IWidget):void {
 		var commentId:string = ((<any> widget.constructor).name || '') + '#' + widget.get('id').replace(/--/g, '\u2010\u2010');
 
-		var firstNode = widget._impl.firstNode = document.createComment(commentId),
-			lastNode = widget._impl.lastNode = document.createComment('/' + commentId),
-			fragment = widget._impl.fragment = document.createDocumentFragment();
+		var firstNode = widget._firstNode = document.createComment(commentId),
+			lastNode = widget._lastNode = document.createComment('/' + commentId),
+			fragment = widget._fragment = document.createDocumentFragment();
 
 		fragment.appendChild(firstNode);
 		fragment.appendChild(lastNode);
 	}
 
-	setBody(widget:ui.IWidgetImpl, body?:any /* string | Node */):void {
+	setBody(widget:dom.IWidget, body?:any /* string | Node */):void {
 		if (typeof body === 'string') {
 			body = domUtil.toDom(body);
 		}
 		this.clear(widget);
-		body && widget._impl.firstNode.parentNode.insertBefore(body, widget._impl.lastNode);
+		body && widget._firstNode.parentNode.insertBefore(body, widget._lastNode);
 	}
 }
 

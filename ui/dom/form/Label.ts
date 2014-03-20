@@ -1,12 +1,12 @@
 import _Element = require('../../dom/_Element');
-import form = require('../../form/interfaces');
+import form = require('./interfaces');
 import util = require('../../../util');
 
 class Label extends _Element {
-	render(widget:form.ILabelImpl):void {
+	render(widget:form.ILabel):void {
 		super.render(widget);
 		widget.observe('for', (value:string):void => {
-			widget._impl.firstNode.setAttribute('for', value);
+			widget._firstNode.setAttribute('for', value);
 		});
 
 		widget.observe('text', (value:string):void => {
@@ -17,7 +17,7 @@ class Label extends _Element {
 		});
 
 		widget.observe('content', ():void => {
-			var firstNode = widget._impl.firstNode;
+			var firstNode = widget._firstNode;
 			// TODO: has-branch for old IE?
 			widget._values.text = firstNode.textContent || firstNode.innerText;
 		});
