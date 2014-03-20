@@ -1,9 +1,9 @@
-/// <amd-dependency path="../renderer!Error" />
+/// <amd-dependency path="../renderer!form/Error" />
 
 import form = require('./interfaces');
 import View = require('../View');
 
-var Renderer:any = require('../renderer!Error');
+var Renderer:any = require('../renderer!form/Error');
 
 class FormError extends View implements form.IErrorImpl {
 	private _observerHandle:IHandle;

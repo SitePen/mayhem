@@ -1,9 +1,9 @@
-/// <amd-dependency path="../renderer!Label" />
+/// <amd-dependency path="../renderer!form/Label" />
 
 import form = require('./interfaces');
 import View = require('../View');
 
-var Renderer:any = require('../renderer!Label');
+var Renderer:any = require('../renderer!form/Label');
 
 class FormLabel extends View implements form.ILabelImpl {
 	/* protected */ _values:form.ILabelValues;

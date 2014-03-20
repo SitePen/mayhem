@@ -1,9 +1,9 @@
-/// <amd-dependency path="../renderer!Button" />
+/// <amd-dependency path="../renderer!form/Button" />
 
 import Control = require('./Control');
 import form = require('./interfaces');
 
-var Renderer:any = require('../renderer!Button');
+var Renderer:any = require('../renderer!form/Button');
 
 class Button extends Control implements form.IButtonImpl {
 	/* protected */ _values:form.IButtonValues;

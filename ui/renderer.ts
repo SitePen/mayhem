@@ -1,5 +1,4 @@
-/// <reference path="../dojo" />
-
+declare var require:any;
 import has = require('../has');
 
 var platform = has('host-browser') ? 'dom/' : '';
@@ -9,5 +8,5 @@ export function load(resourceId:string, contextRequire:Function, load:(...module
 }
 
 export function normalize(resourceId:string, normalize:(id:string) => string):string {
-	return normalize('./' + platform + resourceId);
+	return require.toAbsMid('./' + platform + resourceId);
 }

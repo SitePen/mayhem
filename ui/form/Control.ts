@@ -1,9 +1,9 @@
-/// <amd-dependency path="../renderer!Control" />
+/// <amd-dependency path="../renderer!form/Control" />
 
 import form = require('./interfaces');
 import Widget = require('../Widget');
 
-var Renderer:any = require('../renderer!Control');
+var Renderer:any = require('../renderer!form/Control');
 
 /* abstract */ class Control extends Widget implements form.IControlImpl {
 	/* protected */ _values:form.IControlValues;

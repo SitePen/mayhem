@@ -1,9 +1,9 @@
-/// <amd-dependency path="../renderer!ToggleButton" />
+/// <amd-dependency path="../renderer!form/ToggleButton" />
 
 import Button = require('./Button');
 import form = require('./interfaces');
 
-var Renderer:any = require('../renderer!ToggleButton');
+var Renderer:any = require('../renderer!form/ToggleButton');
 
 class ToggleButton extends Button implements form.IToggleButtonImpl {
 	/* protected */ _values:form.IToggleButtonValues;

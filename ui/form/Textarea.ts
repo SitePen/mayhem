@@ -1,9 +1,9 @@
-/// <amd-dependency path="../renderer!Textarea" />
+/// <amd-dependency path="../renderer!form/Textarea" />
 
 import TextInput = require('./TextInput');
 import form = require('./interfaces');
 
-var Renderer:any = require('../renderer!Textarea');
+var Renderer:any = require('../renderer!form/Textarea');
 
 class Textarea extends TextInput implements form.ITextareaImpl {
 	/* protected */ _values:form.ITextareaValues;
