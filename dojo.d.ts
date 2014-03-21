@@ -62,6 +62,8 @@ declare var require:{
 	(config:Object, dependencies:string[], callback?:Function):void;
 	(dependencies:string[], callback?:Function):void;
 	<T>(moduleId:string):T;
+	undef(moduleId:string):void;
+	config(config:Object):void;
 };
 
 declare module 'dojo/_base/array' {
@@ -100,6 +102,7 @@ declare module 'dojo/_base/lang' {
 		setObject(key:string, value:any, context?:Object):any;
 		trim(string:string):string;
 		isArray(it:any):boolean;
+		clone(object:any):any;
 	};
 	export = lang;
 }
@@ -132,6 +135,7 @@ declare module 'dojo/dom-construct' {
 		create(tag:'div', attrs:Object, refNode?:Node, position?:string):HTMLDivElement;
 		create(tag:'li', attrs:Object, refNode?:Node, position?:string):HTMLLIElement;
 		create(tag:string, attrs:Object, refNode?:Node, position?:string):Element;
+		destroy(node:Node):void;
 	};
 	export = domConstruct;
 }
