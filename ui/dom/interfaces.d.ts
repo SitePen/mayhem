@@ -1,7 +1,7 @@
 /// <reference path="../../dgrid" />
 /// <reference path="../../dijit" />
 
-export import IDgridList = require('dgrid/List');
+export import dgrid_IList = require('dgrid/List');
 import core = require('../../interfaces');
 export import form = require('./form/interfaces');
 import ui = require('../interfaces');
@@ -52,26 +52,10 @@ export interface IDijitWidget extends IElementWidget {
 
 /* Conrol flow */
 
-export interface IConditional extends ui.IConditional, IWidget {
-	/* protected */ _boundaryNode:Comment;
-	/* protected */ _consequentNode:Node;
-
-	get:IConditionalGet;
-	set:IConditionalSet;
-}
-
-export interface IConditionalGet extends ui.IConditionalGet {
-	(name:'alternate'):IWidget;
-}
-
-export interface IConditionalSet extends ui.IConditionalSet {
-	(name:'alternate', value:IWidget):void;
-}
-
 export interface IIterator extends ui.IIterator, IElementWidget {
-	_factory:any; // TODO: remove
-	getWidgetByKey(key:string):IMediatedElementWidget;
-	_list:IDgridList;
+	_factory:any; // TODO: templating.IViewConstructor
+	_getMediatorByKey(key:string):core.data.IMediator;
+	_list:dgrid_IList;
 	_listLength:number;
 	_mediatorIndex:{ [key:string]: core.data.IMediator; };
 	_sourceObserverHandle:IHandle;

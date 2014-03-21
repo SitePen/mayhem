@@ -83,15 +83,15 @@ export interface IPlaceholder extends IContainer {
 }
 
 export interface IPlaceholderGet extends IContainerGet {
-	(name:'content'):IWidget;
+	(name:'widget'):IWidget;
 }
 
 export interface IPlaceholderSet extends IContainerSet {
-	(name:'content', value:IWidget):void;
+	(name:'widget', value:IWidget):void;
 }
 
 export interface IPlaceholderValues extends IContainerValues {
-	content?:IWidget;
+	widget?:IWidget;
 }
 
 export interface IRenderer {
@@ -103,7 +103,7 @@ export interface IRenderer {
 	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget):void;
-	setBody(widget:IWidget, content:Node):void;
+	setContent(widget:IWidget, content:Node):void;
 }
 
 export interface IView extends IContainer {
@@ -167,24 +167,26 @@ export interface IWidgetValues /*extends core.IApplicationComponentValues*/ {
 
 /* Control flow */
 
-export interface IConditional extends IView {
+export interface IConditional extends IPlaceholder {
 	get:IConditionalGet;
 	set:IConditionalSet;
 }
 
-export interface IConditionalGet extends IViewGet {
+export interface IConditionalGet extends IPlaceholderGet {
 	(name:'alternate'):IWidget;
 	(name:'condition'):string;
+	(name:'consequent'):IView;
 	(name:'result'):boolean;
 }
 
-export interface IConditionalSet extends IViewSet {
+export interface IConditionalSet extends IPlaceholderSet {
 	(name:'alternate', value:IWidget):void;
 	(name:'condition', value:string):void;
+	(name:'consequent', value:IView):void;
 	(name:'result', value:boolean):void;
 }
 
-export interface IConditionalValues extends IViewValues {
+export interface IConditionalValues extends IPlaceholderValues {
 	alternate?:IWidget;
 	condition?:string;
 	result?:boolean;
@@ -193,8 +195,6 @@ export interface IConditionalValues extends IViewValues {
 export interface IIterator extends IView {
 	get:IIteratorGet;
 	set:IIteratorSet;
-
-	getWidgetByKey(key:string):IMediated;
 }
 
 export interface IIteratorGet extends IViewGet {

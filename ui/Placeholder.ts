@@ -12,13 +12,19 @@ class Placeholder extends Container implements ui.IPlaceholder {
 	set:ui.IPlaceholderSet;
 
 	empty():void {
-		var widget = this.get('content');
+		var widget = this.get('widget');
 		widget && widget.detach();
 	}
 
-	/* protected */ _contentSetter(widget:ui.IWidget):void {
-		var previous = this.get('content');
-		previous && previous.detach();
+	/* protected */ _initialize():void {
+		this.observe('widget', (widget:ui.IWidget, previous:ui.IWidget):void => {
+			previous && previous.detach();
+			this._placeWidget();
+		});
+	}
+
+	/* protected */ _placeWidget():void {
+		var widget = this.get('widget');
 		if (widget) {
 			this._renderer.add(this, widget);
 			this.attach(widget);

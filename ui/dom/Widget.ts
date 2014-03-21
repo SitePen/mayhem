@@ -48,12 +48,15 @@ class DomWidgetRenderer implements ui.IRenderer {
 		fragment.appendChild(lastNode);
 	}
 
-	setBody(widget:dom.IWidget, body?:any /* string | Node */):void {
-		if (typeof body === 'string') {
-			body = domUtil.toDom(body);
+	setContent(widget:dom.IWidget, value?:any /* string | Node */):void {
+		if (typeof value === 'string') {
+			value = domUtil.toDom(value);
 		}
 		this.clear(widget);
-		body && widget._firstNode.parentNode.insertBefore(body, widget._lastNode);
+		if (value) {
+			widget._firstNode.parentNode.insertBefore(value, widget._lastNode);
+			// TODO: on attach, set widget._fragment to null?
+		}
 	}
 }
 

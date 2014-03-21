@@ -26,11 +26,11 @@ class View extends Container implements ui.IView {
 				throw new Error('Unknown placeholder "' + position + '"');
 			}
 
-			placeholder.set('content', item);
+			placeholder.set('widget', item);
 			return {
 				remove: function ():void {
 					this.remove = function ():void {};
-					placeholder.set('content', null);
+					placeholder.set('widget', null);
 					placeholder = null;
 				}
 			};
@@ -60,7 +60,7 @@ class View extends Container implements ui.IView {
 	}
 
 	/* protected */ _contentSetter(content:Node):void {
-		this._renderer.setBody(this, content);
+		this._renderer.setContent(this, content);
 	}
 
 	destroy():void {

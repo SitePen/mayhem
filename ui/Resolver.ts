@@ -19,13 +19,13 @@ class Resolver extends Placeholder implements ui.IResolver {
 	get:ui.IResolverGet;
 	set:ui.IResolverSet;
 
+	// Forward add calls to success widget
 	add(item:ui.IWidget, position?:any):IHandle {
-		// Forward add calls to success widget
 		return this.get('success').add(item, position);
 	}
 
+	// Forward set content calls to success widget
 	/* protected */ _contentSetter(content:any):void {
-		// Forward content set calls to success widget
 		this.get('success').set('content', content);
 	}
 
@@ -54,11 +54,22 @@ class Resolver extends Placeholder implements ui.IResolver {
 	}
 
 	destroy():void {
-		// TODO: cancel this._values.target if it's a promise
-		this._promiseFieldBinding = util.remove(this._promiseFieldBinding) && null;
-		this._scopedMediator = util.destroy(this._scopedMediator) && null;
-		// TODO: the rest...
+		// Register destroyables to be sure they're torn down
+		this.own(this.get('success'), this.get('error'), this.get('during'));
+		
+		var promise = this.get('target');
+		promise = promise && promise['cancel'] && promise['cancel']();
+
+		util.remove(this._promiseFieldBinding);
+		util.remove(this._scopedMediator);
+		this._promiseFieldBinding = this._scopedMediator = this._sourceMediator = null;
+
 		super.destroy();
+	}
+
+	detach():void {
+		this.get('success').detach();
+		super.detach();
 	}
 
 	/* protected */ _initialize():void {
@@ -92,34 +103,18 @@ class Resolver extends Placeholder implements ui.IResolver {
 
 		// Watch target for promise to resolve
 		this.observe('target', (target:any, previous:any):void => {
-			// TODO
-			// // Bail if we've already processed a value and this is the same one
-			// if (this.get('content') !== undefined && target === previous) {
-			// 	return;
-			// }
-			// // // Bail if we've already successfully processed a value and new value isn't a promise
-			// var success = this.get('content') === this.get('success');
-			// if (success && (!target || typeof target['then'] !== 'function')) {
-			// 	return;
-			// }
-			
 			this.set('result', undefined);
-			this._setContent('during');
+			this.set('widget', this.get('during'));
 			when(target).then((result:any):void => {
 				this.set('result', result);
-				this._setContent('success');
+				this.set('widget', this.get('success'));
 			}, (error:Error):void => {
 				this.set('result', error);
-				this._setContent('error');
+				this.set('widget', this.get('error'));
 			}, (progress:any):void => {
 				this.set('result', progress);
 			});
 		});
-	}
-
-	private _setContent(type:string):void {
-		// Set placeholder content directly
-		super._contentSetter(this.get(type));
 	}
 }
 

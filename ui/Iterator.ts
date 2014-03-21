@@ -10,7 +10,6 @@ import View = require('./View');
 var Renderer:any = require('./renderer!Iterator');
 
 class Iterator extends View implements ui.IIterator {
-	/* protected */ _factory:any; // WidgetFactory, but should be `typeof View` instead
 	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
 	private _sourceBinding:IHandle;
 	/* protected */ _values:ui.IIteratorValues;
@@ -49,9 +48,20 @@ class Iterator extends View implements ui.IIterator {
 	}
 
 	destroy():void {
-		this._sourceBinding && this._sourceBinding.remove();
+		util.remove(this._sourceBinding);
 		this._sourceBinding = null;
-		// TODO: tear down derived widgets and mediators
+
+		// Destroy derived widgets and mediators
+		var widgets = this._widgetIndex,
+			mediators = this._mediatorIndex;
+		for (var i in widgets) {
+			util.destroy(widgets[i]);
+		}
+		for (var j in mediators) {
+			util.destroy(mediators[j]);
+		}
+		this._widgetIndex = this._mediatorIndex = widgets = mediators = null;
+
 		super.destroy();
 	}
 
@@ -73,7 +83,7 @@ class Iterator extends View implements ui.IIterator {
 		return source instanceof Array ? source[key] : source.get(key);
 	}
 
-	private _getMediatorByKey(key:string):Mediator {
+	/* protected */ _getMediatorByKey(key:string):Mediator {
 		if (this._mediatorIndex[key]) {
 			return this._mediatorIndex[key];
 		}
@@ -81,22 +91,10 @@ class Iterator extends View implements ui.IIterator {
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
 	}
 
-	getWidgetByKey(key:string):ui.IMediated {
-		var widget = this._widgetIndex[key];
-		if (widget) {
-			return widget;
-		}
-		var mediator = this._getMediatorByKey(key);
-		widget = this._widgetIndex[key] = <ui.IMediated> this._factory.create();
-		widget.set('mediator', mediator);
-		this.attach(widget);
-		return widget;
-	}
-
 	private _inSetter(value:string):void {
 		// Tells us which field to use to get our source
 		this._values['in'] = value;
-		this._sourceBinding && this._sourceBinding.remove();
+		util.remove(this._sourceBinding);
 		this._sourceBinding = this.bind({
 			sourceBinding: value,
 			targetBinding: 'source'

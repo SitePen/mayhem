@@ -13,6 +13,18 @@ class IteratorRenderer extends DomElementRenderer {
 		widget._list = null;
 	}
 
+	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IMediatedElementWidget {
+		var child = widget._widgetIndex[key];
+		if (child) {
+			return child;
+		}
+		var mediator = widget._getMediatorByKey(key);
+		child = widget._widgetIndex[key] = <dom.IMediatedElementWidget> widget._factory.create();
+		child.set('mediator', mediator);
+		widget.attach(child);
+		return child;
+	}
+
 	initialize(widget:dom.IIterator):void {
 		widget.observe('source', (source:any, previous:any) => {
 			// Remove old source observer, if applicable
@@ -41,7 +53,7 @@ class IteratorRenderer extends DomElementRenderer {
 			// Set constructor since it comes in without one (to avoid being constructed during processing)
 			// TODO: pass reference to constructor in options
 			// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
-			widget._factory = new WidgetFactory(template, View);
+			widget._factory = new WidgetFactory(template, RowView);
 		});
 	}
 
@@ -64,7 +76,7 @@ class IteratorRenderer extends DomElementRenderer {
 			list = widget._list = new List();
 			var _insertRow:any = list.insertRow;
 			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
-				var child = widget.getWidgetByKey('' + i);
+				var child = this._getWidgetByKey(widget, '' + i);
 				child.detach();
 				return _insertRow.call(list, child._fragment, parent, beforeNode, i, options);
 			};
@@ -73,7 +85,7 @@ class IteratorRenderer extends DomElementRenderer {
 		else {
 			list = widget._list = new OnDemandList();
 			list.renderRow = (record:any):HTMLElement => {
-				var child = widget.getWidgetByKey(record[source.idProperty]);
+				var child = this._getWidgetByKey(widget, record[source.idProperty]);
 				return child._fragment;
 			};
 		}
@@ -112,5 +124,8 @@ class IteratorRenderer extends DomElementRenderer {
 		}
 	}
 }
+
+class RowView extends View {};
+RowView.prototype._renderer = new DomElementRenderer();
 
 export = IteratorRenderer;

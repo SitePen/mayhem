@@ -6,6 +6,7 @@ import has = require('../../has');
 import style = require('../style/interfaces');
 import Style = require('../style/Style');
 import ui = require('../interfaces');
+import util = require('../../util');
 
 class DomElementRenderer extends WidgetRenderer {
 	elementType:string;
@@ -48,8 +49,8 @@ class DomElementRenderer extends WidgetRenderer {
 	}
 
 	detachStyles(widget:dom.IElementWidget):void {
-		widget._classListHandle && widget._classListHandle.remove();
-		widget._styleHandle && widget._styleHandle.remove();
+		util.remove(widget._classListHandle);
+		util.remove(widget._styleHandle);
 	}
 
 	remove(widget:dom.IContainer, item:dom.IWidget):void {
@@ -72,7 +73,7 @@ class DomElementRenderer extends WidgetRenderer {
 		this.attachStyles(widget);
 	}
 
-	setBody(widget:dom.IElementWidget, body?:any /* string | Node */):void {
+	setContent(widget:dom.IElementWidget, body?:any /* string | Node */):void {
 		if (typeof body === 'string') {
 			widget._firstNode.innerHTML = body;
 		}
