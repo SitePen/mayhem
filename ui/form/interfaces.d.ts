@@ -75,10 +75,6 @@ export interface IErrorValues extends ui.IWidgetValues {
 	list?:core.IValidationError[];
 }
 
-export interface IErrorRenderer extends ui.IRenderer {
-	renderList(widget:IError):void;
-}
-
 export interface IInput extends IControl {
 	get:IInputGet;
 	set:IInputSet;

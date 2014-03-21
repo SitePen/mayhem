@@ -191,7 +191,7 @@ class _WidgetBinder {
 
 		// Create an observable as a binding target and set up observers to reprocess templates
 		var target = this._templateObservable = new Observable();
-		util.destroyHandles(this._observerHandles);
+		util.remove.apply(null, this._observerHandles);
 		this._observerHandles = [];
 		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
 			var templates:any[] = sourceMap[property];
@@ -225,7 +225,7 @@ class _WidgetBinder {
 		if (!this._textBindingNodes || !this._textBindingPaths) {
 			return;
 		}
-		util.destroyHandles(this._textBindingHandles);
+		util.remove.apply(null, this._textBindingHandles);
 		this._textBindingHandles = [];
 		var widget = <ui.IView> this.widget,
 			node:Node,
@@ -244,8 +244,7 @@ class _WidgetBinder {
 	}
 
 	destroy():void {
-		util.destroyHandles(this._observerHandles);
-		this._observerHandles = null;
+		this._observerHandles = util.remove.apply(null, this._observerHandles) && null;
 		// TODO: moar
 	}
 
@@ -267,7 +266,7 @@ class _WidgetBinder {
 			if (factory) {
 				item = factory.create(); // TODO: child options?
 				if (markerNodes[i]) {
-					domUtil.place(item._fragment, markerNodes[i], PlacePosition.REPLACE);
+					domUtil.place(item['_fragment'], markerNodes[i], PlacePosition.REPLACE);
 					widget.attach(item);
 					children[i] = item;
 				}
@@ -323,7 +322,7 @@ class _WidgetBinder {
 			else if (descriptor.$named != null) {
 				var name:string = descriptor.$named,
 					placeholder = widget.placeholders[name] = new Placeholder();
-				domUtil.place(placeholder._fragment, node, PlacePosition.REPLACE);
+				domUtil.place(placeholder['_fragment'], node, PlacePosition.REPLACE);
 				widget.attach(placeholder);
 			}
 			else {

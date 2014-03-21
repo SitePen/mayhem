@@ -60,6 +60,7 @@ export interface IMediated extends IWidget {
 	set:IMediatedSet;
 
 	attach(widget:IWidget):void;
+	bind(kwArgs:IBindArguments):IHandle;
 }
 
 export interface IMediatedGet extends IWidgetGet {
@@ -74,23 +75,27 @@ export interface IMediatedValues extends IWidgetValues {
 	mediator?:core.data.IMediator;
 }
 
-export interface IPlaceholder extends IMediated {
+export interface IPlaceholder extends IContainer {
 	get:IPlaceholderGet;
 	set:IPlaceholderSet;
 
 	empty():void;
 }
 
-export interface IPlaceholderGet extends IMediatedGet {
-	(name:'widget'):IWidget;
+export interface IPlaceholderGet extends IContainerGet {
+	(name:'content'):IWidget;
 }
 
-export interface IPlaceholderSet extends IMediatedSet {
-	(name:'widget', value:IWidget):void;
+export interface IPlaceholderSet extends IContainerSet {
+	(name:'content', value:IWidget):void;
+}
+
+export interface IPlaceholderValues extends IContainerValues {
+	content?:IWidget;
 }
 
 export interface IRenderer {
-	add(widget:IContainer, item:IWidget, position:any):void;
+	add(widget:IContainer, item:IWidget, position?:any):void;
 	attachToWindow(widget:IWidget, target:any):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
@@ -111,7 +116,6 @@ export interface IView extends IContainer {
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
 	attachToWindow(target:any):IHandle;
-	bind(kwArgs:IBindArguments):IHandle;
 	clear():void;
 }
 
@@ -127,11 +131,10 @@ export interface IViewValues extends IContainerValues {
 	content?:any;
 }
 
-export interface IWidget extends core.IApplicationComponent, core.IEvented {
+export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {
 	get:IWidgetGet;
 	set:IWidgetSet;
 
-	destroy():void;
 	detach():void;
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IContainer, position:number):IHandle;
@@ -160,32 +163,6 @@ export interface IWidgetValues /*extends core.IApplicationComponentValues*/ {
 	next?:IWidget;
 	parent?:IContainer;
 	previous?:IWidget;
-}
-
-export interface IViewBindArguments {
-	/**
-	 * The binding string for the property being bound on the source object. The binding string can be any arbitrary
-	 * string but is typically an identifier or expression. The data binding registry in use determines whether or not
-	 * the specified binding string is valid.
-	 */
-	sourceBinding:string;
-
-	/**
-	 * The target object to bind to.
-	 */
-	target:Object;
-
-	/**
-	 * The binding string for the property being bound on the target object.
-	 */
-	targetBinding:string;
-
-	/**
-	 * The direction in which the two properties are bound. By default, the direction is `ONE_WAY`, which means that
-	 * only the source is bound to the target. A `TWO_WAY` binding keeps the source and target in sync no matter which
-	 * changes.
-	 */
-	direction?:core.binding.IBindDirection;
 }
 
 /* Control flow */
@@ -241,16 +218,16 @@ export interface IIteratorValues extends IViewValues {
 	template?:any;
 }
 
-export interface IResolver extends IView {
+export interface IResolver extends IPlaceholder {
 	get:IResolverGet;
 	set:IResolverSet;
 }
 
-export interface IResolverGet extends IViewGet {
+export interface IResolverGet extends IPlaceholderGet {
 }
 
-export interface IResolverSet extends IViewSet {
+export interface IResolverSet extends IPlaceholderSet {
 }
 
-export interface IResolverValues extends IViewValues {
+export interface IResolverValues extends IPlaceholderValues {
 }

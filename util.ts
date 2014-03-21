@@ -106,13 +106,15 @@ export function deferSetters(target:Object, methods:string[], untilMethod:string
 	deferMethods(target, array.map(methods, method => '_' + method + 'Setter'), untilMethod);
 }
 
-export function destroyHandles(handles:IHandle[]):void {
-	if (!handles) {
-		return;
+/**
+ * Cleans up any provided destroyables.
+ */
+export function destroy(...targets:core.IDestroyable[]):void {
+	for (var i = 0, target:core.IDestroyable; (target = targets[i]); ++i) {
+		target.destroy();
+		target.destroy = function ():void {};
 	}
-	for (var i = 0, l = handles.length; i < l; ++i) {
-		handles[i] && handles[i].remove();
-	}
+	targets = null;
 }
 
 /**
@@ -165,6 +167,17 @@ export function isEqual(a:any, b:any):boolean {
 export function isObject(object:any):boolean {
 	var type:string = typeof object;
 	return object != null && (type === 'object' || type === 'function');
+}
+
+/**
+ * Cleans up any provided handles.
+ */
+export function remove(...handles:IHandle[]):void {
+	for (var i = 0, handle:IHandle; (handle = handles[i]); ++i) {
+		handle.remove();
+		handle.remove = function ():void {};
+	}
+	handle = null;
 }
 
 /**

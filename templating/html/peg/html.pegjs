@@ -373,8 +373,16 @@ ForTagClose '</for>'
 When '<when/>'
 	= kwArgs:WhenTagOpen
 	widget:Any?
-	during:(DuringTagOpen body:Any? (DuringTagClose S*)? { return body })?
-	error:(ErrorTagOpen body:Any? (ErrorTagClose S*)? { return body })?
+	during:(head:DuringTagOpen body:Any? (DuringTagClose S*)? {
+		body.constructor = head.constructor;
+		body.kwArgs = head.kwArgs;
+		return body;
+	})?
+	error:(head:ErrorTagOpen body:Any? (ErrorTagClose S*)? {
+		body.constructor = head.constructor;
+		body.kwArgs = head.kwArgs;
+		return body;
+	})?
 	WhenTagClose {
 		// TODO: process bindings within content, and within during and error content
 		kwArgs.during = during;

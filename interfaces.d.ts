@@ -39,19 +39,23 @@ export interface IApplicationComponentGet extends IObservableGet {
 export interface IApplicationComponentSet extends IObservableSet {
 }
 
-export interface IDestroyable extends IHandle {
-	own(...handles:IHandle[]):IHandle[];
+export interface IDestroyable {
+	destroy():void;
 }
 
 export interface IHasMetadata {
 	getMetadata(key:string):IObservable;
 }
 
-export interface IObservable {
+export interface IManagedDestroyable extends IDestroyable {
+	// own(...handles:Array<IHandle | IDestroyable>):void;
+	own(...handles:any[]):void;
+}
+
+export interface IObservable extends IDestroyable {
 	get:IObservableGet;
 	set:IObservableSet;
 
-	destroy():void;
 	observe<T>(key:string, observer:IObserver<T>):IHandle;
 }
 
@@ -71,8 +75,7 @@ export interface IObserver<T> {
 	(newValue:T, oldValue:T, key?:string):void;
 }
 
-export interface IProperty<T> {
-	destroy():void;
+export interface IProperty<T> extends IDestroyable {
 	get():T;
 	isProperty:boolean;
 	observe(observer:IObserver<T>):IHandle;
@@ -80,8 +83,7 @@ export interface IProperty<T> {
 	valueOf():any;
 }
 
-export interface IProxy extends IObservable {
-	destroy():void;
+export interface IProxy extends IObservable, IDestroyable {
 	setTarget(observable:IObservable):void;
 }
 
@@ -90,12 +92,7 @@ export interface IProxy extends IObservable {
  * that can be observed for changes and accessed without knowing the location of the original object or the name of
  * the property.
  */
-export interface IProxty<T> {
-	/**
-	 * Permanently destroys the binding to the original property.
-	 */
-	destroy():void;
-
+export interface IProxty<T> extends IDestroyable {
 	/**
 	 * Retrieves the value stored in the proxty.
 	 */

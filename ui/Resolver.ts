@@ -1,9 +1,8 @@
 /// <amd-dependency path="./renderer!Resolver" />
 
 import data = require('../data/interfaces');
-import domUtil = require('./dom/util');
-import WidgetFactory = require('../templating/WidgetFactory');
 import Mediator = require('../data/Mediator');
+import Placeholder = require('./Placeholder');
 import ui = require('./interfaces');
 import util = require('../util');
 import View = require('./View');
@@ -11,194 +10,116 @@ import when = require('dojo/when');
 
 var Renderer:any = require('./renderer!Resolver');
 
-// TODO: move all this render noise to the renderer
-class Resolver extends View implements ui.IResolver {
-	private _duringTemplate:any;
-	private _duringWidget:ui.IWidget;
-	private _errorTemplate:any;
-	private _errorWidget:ui.IWidget;
-	private _hasProgress:boolean;
-	private _inFlight:boolean;
-	private _mediatorHandle:IHandle;
-	private _originalMediator:data.IMediator;
-	private _promiseField:string;
-	private _promiseFieldHandle:IHandle;
-	private _promiseValue:any;
+class Resolver extends Placeholder implements ui.IResolver {
+	private _promiseFieldBinding:IHandle;
 	private _scopedMediator:Mediator;
-	private _success:boolean;
-	private _targetPromise:any;
+	private _sourceMediator:data.IMediator;
 	/* protected */ _values:ui.IResolverValues;
-	private _valueField:string;
 
 	get:ui.IResolverGet;
 	set:ui.IResolverSet;
 
-	constructor(kwArgs:any = {}) {
-		util.deferSetters(this, [ 'content' ], '_targetPromiseSetter');
-		super(kwArgs);
-		this._mediatorHandle = this.observe('mediator', (mediator:data.IMediator) => {
-			mediator && this._scopeMediator(mediator);
-		});
-		kwArgs.mediator && this._scopeMediator(kwArgs.mediator);
+	add(item:ui.IWidget, position?:any):IHandle {
+		// Forward add calls to success widget
+		return this.get('success').add(item, position);
 	}
 
-	/* protected */ _contentSetter(content:Node):void {
-		this._values.content = content;
-		// Defer content render unless we've already resolved succesfully
-		if (this._success) {
-			this._renderSuccess();
-		}
+	/* protected */ _contentSetter(content:any):void {
+		// Forward content set calls to success widget
+		this.get('success').set('content', content);
 	}
 
 	private _createScopedMediator(mediator:data.IMediator):Mediator {
-		var scopedMediator:Mediator = new Mediator({ model: mediator }),
+		this._scopedMediator && this._scopedMediator.destroy();
+		var scopedMediator = this._scopedMediator = new Mediator({ model: mediator }),
 			_get = scopedMediator.get,
 			_set = scopedMediator.set;
-		scopedMediator.get = (field:string):any => {
-			if (field !== this._valueField) {
-				return _get.call(scopedMediator, field);
+		scopedMediator.get = (name:string):any => {
+			if (name === this.get('value')) {
+				return this.get('result');
 			}
-			return this._promiseValue;
+			else {
+				return _get.call(scopedMediator, name);
+			}
 		}
-		scopedMediator.set = (field:string, value:any):void => {
-			if (field !== this._valueField) {
-				return _set.call(scopedMediator, field, value);
+		scopedMediator.set = <data.IMediatorGet> ((name:string, value:any):void => {
+			if (name === this.get('value')) {
+				return this.set('result', value);
 			}
-			var oldValue:any = this._promiseValue;
-			this.set('promiseValue', value);
-		};
+			else {
+				_set.call(scopedMediator, name, value);
+			}
+		});
 		return scopedMediator;
 	}
 
-	private _createWidget(template:any):ui.IWidget {
-		if (template) {
-			var widget = new WidgetFactory(template, View).create();
-			this.attach(widget);
-			return widget;
-		}
-	}
-
 	destroy():void {
-		// TODO cancel this._targetPromise?
-		this._promiseFieldHandle && this._promiseFieldHandle.remove();
-		this._promiseFieldHandle = this._targetPromise = null;
-		this._errorWidget.destroy();
-		this._duringWidget.destroy();
-		this._errorWidget = this._duringWidget = this._promiseValue = null;
-		this._mediatorHandle && this._mediatorHandle.remove();
-		this._mediatorHandle = null;
-		this._values.mediator && this._values.mediator.destroy();
-		this._values.mediator = this._originalMediator = null;
+		// TODO: cancel this._values.target if it's a promise
+		this._promiseFieldBinding = util.remove(this._promiseFieldBinding) && null;
+		this._scopedMediator = util.destroy(this._scopedMediator) && null;
+		// TODO: the rest...
 		super.destroy();
 	}
 
-	private _duringSetter(template:any):void {
-		this._duringTemplate = template;
-		this._duringWidget = this._createWidget(template);
-	}
+	/* protected */ _initialize():void {
+		super._initialize();
 
-	private _errorSetter(template:any):void {
-		this._errorTemplate = template;
-		this._errorWidget = this._createWidget(template);
-	}
+		this.set('success', new View());
 
-	private _promiseSetter(field:string):void {
-		this._promiseField = field;
-		this._promiseFieldHandle && this._promiseFieldHandle.remove();
-		if (this._values.mediator) {
-			this._promiseFieldHandle = this._values.mediator.observe(field, (promise:any) => {
-				this._targetPromiseSetter(promise);
+		this.observe('mediator', (mediator:data.IMediator):void => {
+			if (!mediator) {
+				// TODO: what's the right thing to do here?
+				return;
+			}
+			util.destroy(this._scopedMediator);
+			this._sourceMediator = mediator;
+			this._scopedMediator = this._createScopedMediator(mediator);
+			// Call promise setter again to get a new promise field observer
+		});
+
+		this.observe('result', (result:any, previous:any):void => {
+			this._scopedMediator && this._scopedMediator['_notify'](result, previous, this.get('value'));
+		});
+
+		// Observe widget's `promise` property and bind mediator's field to widget's `target` property
+		this.observe('promise', (sourceBinding:string):void => {
+			util.remove(this._promiseFieldBinding);
+			this._promiseFieldBinding = this.bind({
+				sourceBinding: sourceBinding,
+				targetBinding: 'target'
 			});
-			this._targetPromiseSetter(this._values.mediator.get(field));
-		}
-	}
+		});
 
-	private _promiseValueSetter(value:any):void {
-		var oldValue = this._promiseValue;
-		this._promiseValue = value;
-		this._values.mediator._notify(value, oldValue, this._valueField);
-	}
-
-	private _scopeMediator(mediator:data.IMediator):void {
-		this._originalMediator = mediator;
-		this._values.mediator && this._values.mediator.destroy();
-		this._values.mediator = this._createScopedMediator(mediator);
-		// Call promise setter again to get a new promise field observer
-		this._promiseSetter(this._promiseField);
-	}
-
-	private _renderDuring():void {
-		this._errorWidget && this._errorWidget.detach();
-		var node:Node;
-		if (this._duringWidget) {
-			this._duringWidget.detach();
-			node = this._duringWidget._fragment;
-		}
-		var lastNode = this._lastNode;
-		// Preserve content if previously rendered
-		if (!this._values.content) {
-			this._values.content = domUtil.getRange(this._firstNode, lastNode, true).extractContents();
-		}
-		node && lastNode.parentNode.insertBefore(node, lastNode);
-	}
-
-	private _renderError():void {
-		this._duringWidget && this._duringWidget.detach();
-		if (this._errorWidget) {
-			this._errorWidget.detach();
-			// TODO: move to the renderer
-			var lastNode = this._lastNode;
-			lastNode.parentNode.insertBefore(this._errorWidget._fragment, lastNode);
-		}
-	}
-
-	private _renderSuccess():void {
-		this._duringWidget && this._duringWidget.detach();
-		//this._renderContent();
-		// this._renderer.setBody...
-	}
-
-	private _targetPromiseSetter(value:any):void {
-		// Bail if we've already processed a value and this is the same one
-		if (this._success !== undefined && value === this._targetPromise) {
-			return;
-		}
-		// Bail if we've already successfully processed a value and new value isn't a promise
-		if (this._success && (!value || typeof value.then !== 'function')) {
-			return;
-		}
-		// Bail if we're currently processing a value
-		// TODO: how should we handle this? cancel previous promise? throw?
-		if (this._inFlight) {
-			return;
-		}
-		this._targetPromise = value;
-		this._hasProgress = false;
-		this._inFlight = true;
-		this._promiseValue = undefined;
-		this._success = null;
-		
-		this._renderDuring();
-		when(value).then((value:any):void => {
-			this._success = true;
-			this.set('promiseValue', value);
-			// TODO: detach error or progress?
-			this._renderSuccess();
-		}, (error:Error):void => {
-			this._success = false;
-			this.set('promiseValue', error);
-			this._renderError();
-		}, (progress:any):void => {
-			this._hasProgress || (this._hasProgress = true);
-			this.set('promiseValue', progress);
-		}).then(():void => {
-			this._inFlight = false;
+		// Watch target for promise to resolve
+		this.observe('target', (target:any, previous:any):void => {
+			// TODO
+			// // Bail if we've already processed a value and this is the same one
+			// if (this.get('content') !== undefined && target === previous) {
+			// 	return;
+			// }
+			// // // Bail if we've already successfully processed a value and new value isn't a promise
+			// var success = this.get('content') === this.get('success');
+			// if (success && (!target || typeof target['then'] !== 'function')) {
+			// 	return;
+			// }
+			
+			this.set('result', undefined);
+			this._setContent('during');
+			when(target).then((result:any):void => {
+				this.set('result', result);
+				this._setContent('success');
+			}, (error:Error):void => {
+				this.set('result', error);
+				this._setContent('error');
+			}, (progress:any):void => {
+				this.set('result', progress);
+			});
 		});
 	}
 
-	private _valueSetter(field:string):void {
-		this._valueField = field;
-		// TODO: rewire mediator
+	private _setContent(type:string):void {
+		// Set placeholder content directly
+		super._contentSetter(this.get(type));
 	}
 }
 

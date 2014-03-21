@@ -1,6 +1,7 @@
 /// <amd-dependency path="./renderer!Widget" />
 declare var require:any;
 
+import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
@@ -16,14 +17,14 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return registry[id];
 	}
 
-	private _eventHandles:IHandle[];
 	private __id:string;
 	/* protected */ _renderer:ui.IRenderer;
+	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
 	/* protected */ _values:ui.IWidgetValues;
 
 	constructor(kwArgs:ui.IWidgetValues = {}) {
 		util.deferSetters(this, [ 'attached' ], '_render');
-		this._eventHandles = [];
+		this._ownHandles = [];
 
 		// Capture id as provided before transforming
 		if (kwArgs.id) {
@@ -31,7 +32,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
 
-		// TDOO: check registry for duplicate id and throw?
+		// TODO: check registry for duplicate id and throw?
 		// Helpful for debugging
 		registry[id] = this;
 
@@ -45,8 +46,19 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	destroy():void {
 		this.detach();
 		this._renderer.destroy(this);
-		util.destroyHandles(this._eventHandles);
-		this._eventHandles = null;
+
+		// Clean up any handles and destroyables we own
+		var handles = this._ownHandles;
+		for (var i = 0, len = handles.length; i < len; ++i) {
+			var handle = handles[i];
+			if (handle && handle['destroy']) {
+				util.destroy(handle);
+			}
+			else if (handle && handle['remove']) {
+				util.remove(handle);
+			}
+		}
+		this._ownHandles = handles = handle = null;
 
 		registry[this.get('id')] = null;
 		super.destroy();
@@ -89,7 +101,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	on(type:string, listener:(event:Event) => void):IHandle;
 	on(type:any, listener:(event:Event) => void):IHandle {
 		var handle = super.on.apply(this, arguments);
-		this._eventHandles.push(handle);
+		this._ownHandles.push(handle);
 		return handle;
 	}
 
@@ -154,6 +166,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	/* protected */ _render():void {
 		this._renderer.render(this);
+	}
+
+	own(...handles:any[]):void {
+		handles.length && this._ownHandles.push.apply(this._ownHandles, handles);
 	}
 }
 

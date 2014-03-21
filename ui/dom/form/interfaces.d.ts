@@ -2,6 +2,8 @@ import dom = require('../interfaces');
 import form = require('../../form/interfaces');
 
 export interface IError extends form.IError, dom.IElementWidget {
+	_observerHandle:IHandle;
+
 	get:IErrorGet;
 	set:IErrorSet;
 }

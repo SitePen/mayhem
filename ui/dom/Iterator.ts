@@ -10,7 +10,7 @@ import WidgetFactory = require('../../templating/WidgetFactory');
 class IteratorRenderer extends DomElementRenderer {
 	destroy(widget:dom.IIterator):void {
 		widget._list && widget._list.destroy();
-		widget._list = widget._source = null;
+		widget._list = null;
 	}
 
 	initialize(widget:dom.IIterator):void {
@@ -64,7 +64,7 @@ class IteratorRenderer extends DomElementRenderer {
 			list = widget._list = new List();
 			var _insertRow:any = list.insertRow;
 			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
-				var child = widget.getWidgetByKey(i);
+				var child = widget.getWidgetByKey('' + i);
 				child.detach();
 				return _insertRow.call(list, child._fragment, parent, beforeNode, i, options);
 			};

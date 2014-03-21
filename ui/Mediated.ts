@@ -1,7 +1,10 @@
 import AddPosition = require('./AddPosition');
+import BindDirection = require('../binding/BindDirection');
+import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import data = require('../data/interfaces');
 import has = require('../has');
+import lang = require('dojo/_base/lang');
 import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
 import util = require('../util');
@@ -9,14 +12,19 @@ import Widget = require('./Widget');
 
 class Mediated extends Widget implements ui.IMediated {
 	private _attachedWidgets:ui.IWidget[];
+	private _bindings:binding.IBindingHandle[];
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
 	/* protected */ _values:ui.IMediatedValues;
 
 	constructor(kwArgs?:ui.IMediatedValues) {
 		this._attachedWidgets = [];
+		this._bindings = [];
 		super(kwArgs);
 	}
+
+	get:ui.IMediatedGet;
+	set:ui.IMediatedSet;
 
 	// Set widget parent and bind widget's attached state to parent
 	// This doesn't fully express parent/child relationship, just the parent side (to propagate attachment information)
@@ -33,27 +41,110 @@ class Mediated extends Widget implements ui.IMediated {
 		});
 	}
 
+	/* protected */ _bind(kwArgs:ui.IBindArguments):binding.IBindingHandle {
+		return this.get('app').get('binder').bind({
+			source: this.get('mediator'),
+			sourceBinding: kwArgs.sourceBinding,
+			target: kwArgs.target || this,
+			targetBinding: kwArgs.targetBinding,
+			direction: BindDirection[kwArgs.twoWay ? 'TWO_WAY' : 'ONE_WAY']
+		});
+	}
+
+	bind(kwArgs:ui.IBindArguments):IHandle {
+		kwArgs = lang.mixin(<any>{}, kwArgs);
+		var deferBind = (propertyName:string):IHandle => {
+			// Helper to defer binding calls until a property has been set
+			var handle:IHandle;
+			if (!this.get(propertyName)) {
+				var propertyHandle:IHandle = this.observe(propertyName, (value:any):void => {
+					if (!value || !propertyHandle) {
+						// value was not actually passed or binding was removed before this happened
+						return;
+					}
+					propertyHandle.remove();
+
+					var bindHandle:IHandle = this.bind(kwArgs);
+					handle.remove = function ():void {
+						this.remove = function ():void {};
+						bindHandle.remove();
+
+						handle = propertyHandle = bindHandle = null;
+					};
+				});
+
+			}
+			handle = {
+				remove: function ():void {
+					this.remove = function ():void {};
+					propertyHandle.remove();
+					handle = propertyHandle = null;
+				}
+			};
+			return handle;
+		};
+		if (!this.get('app')) {
+			// If no app is set on the widget, delay the binding until one exists
+			return deferBind('app');
+		}
+
+		if (!this.get('mediator')) {
+			// If no mediator is set on the widget, delay binding as well
+			return deferBind('mediator');
+		}
+
+		var bindings = this._bindings,
+			handle:binding.IBindingHandle;
+
+		handle = this._bind(kwArgs);
+		bindings.push(handle);
+
+		return {
+			remove: function ():void {
+				this.remove = function ():void {};
+				handle.remove();
+				util.spliceMatch(bindings, handle);
+				bindings = handle = null;
+			}
+		};
+	}
+
+	destroy():void {
+		this.detach();
+
+		// Loop over attached widgets and de-parent them
+		var widget:ui.IWidget;
+		for (var i = 0; (widget = this._attachedWidgets[i]); ++i) {
+			widget.set('parent', null);
+		}
+
+		var binding:binding.IBindingHandle;
+		for (var i = 0; (binding = this._bindings[i]); ++i) {
+			binding.remove();
+		}
+		this._bindings = null;
+
+		super.destroy();
+	}
+
 	/* protected */ _initialize():void {
 		super._initialize();
+
 		this.observe('attached', (value:boolean):void => {
 			// Propagate attachment information
 			for (var i = 0, widget:ui.IWidget; (widget = this._attachedWidgets[i]); ++i) {
 				widget.set('attached', value);
 			}
 		});
-	}
 
-	destroy():void {
-		this.detach();
-		// Loop over attached widgets and de-parent them
-		var widget:ui.IWidget;
-		for (var i = 0; (widget = this._attachedWidgets[i]); ++i) {
-			widget.set('parent', null);
-		}
-		super.destroy();
+		this.observe('mediator', (mediator:data.IMediator):void => {
+			if (!mediator) { return; }
+			// when the mediator changes, update any bindings
+			for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); i++) {
+				binding.setSource(mediator);
+			}
+		});
 	}
-
-	get:ui.IMediatedGet;
 
 	private _mediatorGetter():data.IMediator {
 		if (this._values.mediator) {
@@ -103,8 +194,6 @@ class Mediated extends Widget implements ui.IMediated {
 			mediatorHandler(parent && parent.get('mediator'), oldParent && oldParent.get('mediator'));
 		}
 	}
-
-	set:ui.IMediatedSet;
 }
 
 export = Mediated;

@@ -33,7 +33,7 @@ class DijitRenderer extends DomElementRenderer {
 
 		// Walk widget values and get initial properties to pass to dijit constructor
 		var dijitArgs:any = lang.mixin({}, this._dijitArgs);
-		for (key in widget._values) {
+		for (key in widget['_values']) {
 			dijitArgs[dijitRename[key] || key] = this._getProperty(widget, key);
 			// TODO: if prop expects a function, pull from mediator and/or wrap
 		}

@@ -6,7 +6,7 @@ import ui = require('../interfaces');
 import util = require('../../util');
 
 class DomWidgetRenderer implements ui.IRenderer {
-	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget):void {
+	add(widget:dom.IContainer, item:dom.IWidget, referenceItem?:dom.IWidget):void {
 		var referenceNode:Node = referenceItem && referenceItem._firstNode;
 		widget._firstNode.parentNode.insertBefore(item._fragment, referenceNode || widget._lastNode);
 	}

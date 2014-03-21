@@ -1,5 +1,6 @@
 /// <reference path="../dojo" />
 
+import core = require('../interfaces');
 import ui = require('../ui/interfaces');
 
 export interface IParser {
@@ -36,7 +37,6 @@ export interface ITemplate {
 	scan():string[];
 }
 
-export interface IWidgetFactory {
+export interface IWidgetFactory extends core.IDestroyable {
 	create(options?:any):ui.IWidget;
-	destroy():void;
 }

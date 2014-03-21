@@ -9,7 +9,7 @@ import util = require('../util');
 class Container extends Mediated implements ui.IContainer {
 	/* protected */ _values:ui.IContainerValues;
 
-	constructor(kwArgs?:any) {
+	constructor(kwArgs:any = {}) {
 		kwArgs.children || (kwArgs.children = []);
 		super(kwArgs);
 	}

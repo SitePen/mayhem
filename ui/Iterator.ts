@@ -10,7 +10,7 @@ import View = require('./View');
 var Renderer:any = require('./renderer!Iterator');
 
 class Iterator extends View implements ui.IIterator {
-	///* protected */ _factory:WidgetFactory;
+	/* protected */ _factory:any; // WidgetFactory, but should be `typeof View` instead
 	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
 	private _sourceBinding:IHandle;
 	/* protected */ _values:ui.IIteratorValues;
@@ -31,20 +31,20 @@ class Iterator extends View implements ui.IIterator {
 		var scopedMediator:Mediator = new Mediator({ model: mediator }),
 			_get = scopedMediator.get,
 			_set = scopedMediator.set;
-		scopedMediator.get = (field:string):any => {
-			if (field !== this._values.each) {
-				return _get.call(scopedMediator, field);
+		scopedMediator.get = (name:string):any => {
+			if (name !== this._values.each) {
+				return _get.call(scopedMediator, name);
 			}
 			return this._getSourceKey(key);
 		}
-		scopedMediator.set = (field:string, value:any):void => {
-			if (field !== this._values.each) {
-				return _set.call(scopedMediator, field, value);
+		scopedMediator.set = <data.IMediatorSet> ((name:string, value:any):void => {
+			if (name !== this._values.each) {
+				return _set.call(scopedMediator, name, value);
 			}
 			var oldValue:any = this._getSourceKey(key);
 			this._setSourceKey(key, value);
 			scopedMediator._notify(value, oldValue, this._values.each);
-		};
+		});
 		return scopedMediator;
 	}
 

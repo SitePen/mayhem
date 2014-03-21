@@ -1,32 +1,31 @@
-import Mediated = require('./Mediated');
+/// <amd-dependency path="./renderer!Placeholder" />
+
+import Container = require('./Container');
 import ui = require('./interfaces');
 
-class Placeholder extends Mediated implements ui.IPlaceholder {
-	private _widget:ui.IWidget;
+var Renderer:any = require('./renderer!Placeholder');
+
+class Placeholder extends Container implements ui.IPlaceholder {
+	/* protected */ _values:ui.IPlaceholderValues;
 
 	get:ui.IPlaceholderGet;
 	set:ui.IPlaceholderSet;
 
 	empty():void {
-		if (this._widget) {
-			this._widget.detach();
-			this._widget = null;
-		}
+		var widget = this.get('content');
+		widget && widget.detach();
 	}
 
-	private _widgetSetter(widget:ui.IWidget):void {
-		if (this._widget === widget) {
-			return;
-		}
-		this._widget && this._widget.detach();
-		this._widget = widget;
-
+	/* protected */ _contentSetter(widget:ui.IWidget):void {
+		var previous = this.get('content');
+		previous && previous.detach();
 		if (widget) {
-			widget.detach();
-			this._renderer.setBody(this, widget.get('fragment'));
-			widget.set('attached', true);
+			this._renderer.add(this, widget);
+			this.attach(widget);
 		}
 	}
 }
+
+Placeholder.prototype._renderer = new Renderer();
 
 export = Placeholder;

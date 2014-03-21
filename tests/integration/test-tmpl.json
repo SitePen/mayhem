@@ -5,10 +5,17 @@
         "selected": true
     },
     "children": [
-        { "constructor": "framework/ui/form/Button" }
+        {
+            "constructor": "framework/ui/form/Button",
+            "kwArgs": {
+                "label": "foo"
+            }
+        }
     ],
     "content": [
         "<h1>Testing</h1>",
-        { "$child": 0 }
+        {
+            "$child": 0
+        }
     ]
 }
