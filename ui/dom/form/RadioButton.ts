@@ -1,9 +1,10 @@
-import DijitCtor = require('dijit/form/RadioButton');
 import CheckBox = require('./CheckBox');
+import RadioButtonImpl = require('dijit/form/RadioButton');
 
-class RadioButton extends CheckBox {
-}
+class RadioButton extends CheckBox {}
 
-RadioButton.prototype.DijitCtor = DijitCtor;
+RadioButton.implementation({
+	constructor: RadioButtonImpl
+});
 
 export = RadioButton;

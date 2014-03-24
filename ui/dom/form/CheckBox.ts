@@ -1,9 +1,10 @@
-import DijitCtor = require('dijit/form/CheckBox');
+import CheckBoxImpl = require('dijit/form/CheckBox');
 import ToggleButton = require('./ToggleButton');
 
-class CheckBox extends ToggleButton {
-}
+class CheckBox extends ToggleButton {}
 
-CheckBox.prototype.DijitCtor = DijitCtor;
+CheckBox.implementation({
+	constructor: CheckBoxImpl
+});
 
 export = CheckBox;

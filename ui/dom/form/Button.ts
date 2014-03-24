@@ -1,9 +1,10 @@
 import Control = require('./Control');
-import DijitCtor = require('dijit/form/Button');
+import ButtonImpl = require('dijit/form/Button');
 
-class Button extends Control {
-}
+class Button extends Control {}
 
-Button.prototype.DijitCtor = DijitCtor;
+Button.implementation({
+	constructor: ButtonImpl
+});
 
 export = Button;

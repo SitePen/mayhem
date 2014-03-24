@@ -282,7 +282,7 @@ declare module 'dijit/_WidgetBase' {
 		/* readonly */ containerNode?:HTMLElement;
 		/* readonly */ domNode:HTMLElement;
 
-		constructor(kwArgs?:Object, srcNodeRef?:HTMLElement):_WidgetBase;
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):_WidgetBase;
 
 		get(key:'className'):string;
 		get(key:'domNode'):HTMLElement;

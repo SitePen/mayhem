@@ -1,10 +1,11 @@
 import Control = require('./Control');
 
-class Input extends Control {
-}
+class Input extends Control {}
 
-Input.delegate(Control, '_dijitRename', {
-	readonly: 'readOnly'
+Input.implementation({
+	nameMap: {
+		readonly: 'readOnly'
+	}
 });
 
 export = Input;

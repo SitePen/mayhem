@@ -1,9 +1,10 @@
-import DijitCtor = require('dijit/form/SimpleTextarea');
+import SimpleTextAreaImpl = require('dijit/form/SimpleTextarea');
 import TextInput = require('./TextInput');
 
-class Textarea extends TextInput {
-}
+class Textarea extends TextInput {}
 
-Textarea.prototype.DijitCtor = DijitCtor;
+Textarea.implementation({
+	constructor: SimpleTextAreaImpl
+});
 
 export = Textarea;

@@ -1,19 +1,17 @@
-import DijitCtor = require('dijit/form/TextBox');
 import Input = require('./Input');
-import form = require('../../form/interfaces');
+import TextBoxImpl = require('dijit/form/TextBox');
 
-class TextInput extends Input {
-}
+class TextInput extends Input {}
 
-TextInput.prototype.DijitCtor = DijitCtor;
-
-TextInput.delegate(Input, '_dijitArgs', {
-	intermediateChanges: true
-});
-
-TextInput.delegate(Input, '_dijitRename', {
-	maxlength: 'maxLength',
-	placeholder: 'placeHolder'
+TextInput.implementation({
+	constructor: TextBoxImpl,
+	defaults: {
+		intermediateChanges: true
+	},
+	nameMap: {
+		maxlength: 'maxLength',
+		placeholder: 'placeHolder'
+	}
 });
 
 export = TextInput;

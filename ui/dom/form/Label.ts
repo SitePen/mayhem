@@ -1,9 +1,10 @@
 import dom = require('../interfaces');
 import DomElementRenderer = require('../../dom/_Element');
+import form = require('./interfaces');
 import util = require('../../../util');
 
 class LabelRenderer extends DomElementRenderer {
-	render(widget:dom.form.ILabel):void {
+	render(widget:form.ILabel):void {
 		super.render(widget);
 		widget.observe('for', (value:string):void => {
 			widget._firstNode.setAttribute('for', value);

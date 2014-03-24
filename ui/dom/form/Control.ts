@@ -1,10 +1,11 @@
-import DijitRenderer = require('../../dom/_Dijit');
+import DijitRenderer = require('../_Dijit');
 
-class ControlRenderer extends DijitRenderer {
-}
+class ControlRenderer extends DijitRenderer {}
 
-ControlRenderer.delegate(DijitRenderer, '_dijitRename', {
-	tabindex: 'tabIndex'
+ControlRenderer.implementation({
+	nameMap: {
+		tabindex: 'tabIndex'
+	}
 });
 
 export = ControlRenderer;

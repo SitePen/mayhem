@@ -1,11 +1,10 @@
 /// <reference path="../../dgrid" />
 /// <reference path="../../dijit" />
 
-export import dgrid_IList = require('dgrid/List');
+import List = require('dgrid/List');
 import core = require('../../interfaces');
-export import form = require('./form/interfaces');
 import ui = require('../interfaces');
-export import IDijitWidgetImpl = require('dijit/_WidgetBase');
+import _WidgetBase = require('dijit/_WidgetBase');
 
 export interface IWidget extends ui.IWidget {
 	_firstNode:Node;
@@ -47,7 +46,7 @@ export interface IMediatedElementWidget extends IElementWidget, IMediated {
 }
 
 export interface IDijitWidget extends IElementWidget {
-	_impl:IDijitWidgetImpl;
+	_impl:_WidgetBase;
 }
 
 /* Conrol flow */
@@ -55,7 +54,7 @@ export interface IDijitWidget extends IElementWidget {
 export interface IIterator extends ui.IIterator, IElementWidget {
 	_factory:any; // TODO: templating.IViewConstructor
 	_getMediatorByKey(key:string):core.data.IMediator;
-	_list:dgrid_IList;
+	_list:List;
 	_listLength:number;
 	_mediatorIndex:{ [key:string]: core.data.IMediator; };
 	_sourceObserverHandle:IHandle;
