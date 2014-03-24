@@ -17,6 +17,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return registry[id];
 	}
 
+	private _attachedWidgets:ui.IWidget[];
 	private __id:string;
 	/* protected */ _renderer:ui.IRenderer;
 	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
@@ -24,6 +25,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	constructor(kwArgs:ui.IWidgetValues = {}) {
 		util.deferSetters(this, [ 'attached' ], '_render');
+		this._attachedWidgets = [];
 		this._ownHandles = [];
 
 		// Capture id as provided before transforming
@@ -43,8 +45,31 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	get:ui.IWidgetGet;
 	set:ui.IWidgetSet;
 
+	// Set widget parent and bind widget's attached state to parent
+	// This doesn't fully express parent/child relationship, just the parent side (to propagate attachment information)
+	attach(widget:ui.IWidget):void {
+		this._attachedWidgets.push(widget);
+		widget.set('parent', this);
+		var attached = this.get('attached');
+		attached !== undefined && widget.set('attached', attached);
+		// On widget detach extract from attachedWidgets array
+		var handle = widget.on('detached', () => {
+			handle.remove();
+			util.spliceMatch(this._attachedWidgets, widget);
+			handle = widget = null;
+		});
+	}
+
 	destroy():void {
 		this.detach();
+
+		// Loop over attached widgets and de-parent them
+		var widget:ui.IWidget;
+		for (var i = 0; (widget = this._attachedWidgets[i]); ++i) {
+			widget.set('parent', null);
+		}
+		widget = null;
+
 		this._renderer.destroy(this);
 
 		// Clean up any handles and destroyables we own
@@ -67,8 +92,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	detach():void {
 		this._renderer.detach(this);
-		// var parent:ui.IContainer = this.get('parent');
-		// parent && parent.remove(this);
 		this.set('attached', false);
 	}
 
@@ -85,6 +108,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _initialize():void {
 		super._initialize();
 		this._renderer.initialize(this);
+
+		this.observe('attached', (value:boolean):void => {
+			// Propagate attachment information
+			for (var i = 0, widget:ui.IWidget; (widget = this._attachedWidgets[i]); ++i) {
+				widget.set('attached', value);
+			}
+		});
 	}
 
 	private _nextGetter():ui.IWidget {

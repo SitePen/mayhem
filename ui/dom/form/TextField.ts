@@ -1,9 +1,9 @@
-import Input = require('./Input');
+import InputRenderer = require('./Input');
 import TextBoxImpl = require('dijit/form/TextBox');
 
-class TextInput extends Input {}
+class TextFieldRenderer extends InputRenderer {}
 
-TextInput.implementation({
+TextFieldRenderer.implementation({
 	constructor: TextBoxImpl,
 	defaults: {
 		intermediateChanges: true
@@ -14,4 +14,4 @@ TextInput.implementation({
 	}
 });
 
-export = TextInput;
+export = TextFieldRenderer;

@@ -1,10 +1,10 @@
-import Control = require('./Control');
 import ButtonImpl = require('dijit/form/Button');
+import DijitRenderer = require('../_Dijit');
 
-class Button extends Control {}
+class ButtonRenderer extends DijitRenderer {}
 
-Button.implementation({
+ButtonRenderer.implementation({
 	constructor: ButtonImpl
 });
 
-export = Button;
+export = ButtonRenderer;

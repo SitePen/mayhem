@@ -528,14 +528,14 @@ This would be equivalent to:
 
 Widgets can also be denoted as void:
 ```html
-<register-widget tag="af-input" is="framework/ui/form/TextInput" void/>
+<register-widget tag="af-input" is="framework/ui/form/TextField" void/>
 ```
 The following are all equivalent:
 ```html
 <af-input value={field}></dijit-textbox>
 <af-input value={field}/>
 <af-input value={field}>
-<widget is="framework/ui/form/TextInput" value={field}></widget>
+<widget is="framework/ui/form/TextField" value={field}></widget>
 ```
 
 Ideally we could limit the scope of widget registrations to the enclosing widget, which would make it possible to support redeclaring tag registrations in child scopes.

@@ -55,6 +55,10 @@ export interface IContainerValues extends IMediatedValues {
 	children?:IWidget[];
 }
 
+export interface IMaster extends IView {
+	attachToWindow(target:any):IHandle;
+}
+
 export interface IMediated extends IWidget {
 	get:IMediatedGet;
 	set:IMediatedSet;
@@ -115,7 +119,6 @@ export interface IView extends IContainer {
 	add(item:IWidget, position:AddPosition):IHandle;
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
-	attachToWindow(target:any):IHandle;
 	clear():void;
 }
 

@@ -51,6 +51,7 @@ class Container extends Mediated implements ui.IContainer {
 			children.splice(position, 0, item);
 			this._renderer.add(this, item, referenceWidget);
 			this.attach(item);
+			// TODO: observe detach on child widget and splice from children array?
 
 			var self = this;
 			handle = {

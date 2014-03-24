@@ -87,4 +87,10 @@ class DijitRenderer extends DomElementRenderer {
 	}
 }
 
+DijitRenderer.implementation({
+	nameMap: {
+		tabindex: 'tabIndex'
+	}
+});
+
 export = DijitRenderer;

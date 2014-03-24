@@ -38,22 +38,6 @@ class View extends Container implements ui.IView {
 		return super.add(item, position);
 	}
 
-	attachToWindow(target:any):IHandle {
-		this.detach();
-
-		this._renderer.attachToWindow(this, target);
-		this.set('attached', true);
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self.detach();
-				self = null;
-			}
-		};
-	}
-
 	clear():void {
 		// TODO: detach children, placeholders
 		this._renderer.clear(this);

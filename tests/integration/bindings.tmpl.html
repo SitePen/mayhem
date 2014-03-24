@@ -1,9 +1,9 @@
-<widget is="framework/ui/form/Textarea" value='{firstName} {lastName}'></widget>
-First Name: <widget is="framework/ui/form/TextInput" value={firstName} label={firstName}></widget>
+<widget is="framework/ui/form/TextArea" value='{firstName} {lastName}'></widget>
+First Name: <widget is="framework/ui/form/TextField" value={firstName} label={firstName}></widget>
 <widget is="framework/ui/form/Error" binding="firstName"></widget>
-Last Name: <widget is="framework/ui/form/TextInput" value={lastName}></widget>
+Last Name: <widget is="framework/ui/form/TextField" value={lastName}></widget>
 <widget is="framework/ui/form/Error" binding="lastName"></widget>
-fullName bound input: <widget is="framework/ui/form/TextInput" value={fullName}></widget>
+fullName bound input: <widget is="framework/ui/form/TextField" value={fullName}></widget>
 <br>
 fullName computed field: {fullName}<br>
 firstName lastName: {firstName} {lastName}<br>
@@ -31,33 +31,33 @@ Name preference: {firstName}
 <elseif condition="fullNameIsBoeBlogger">
 	(4) transformed fullName should be Boe Blogger (is: {fullName}).<br>
 <elseif condition="firstName">
-	<widget is="framework/ui/form/TextInput" value={firstName}></widget>
-	<widget is="framework/ui/form/TextInput" value={lastName}></widget>
+	<widget is="framework/ui/form/TextField" value={firstName}></widget>
+	<widget is="framework/ui/form/TextField" value={lastName}></widget>
 <else>
 	(X) No match... here's a read-only widget binding for fun:
-	<widget is="framework/ui/form/TextInput" value='{firstName} {lastName}'></widget>
+	<widget is="framework/ui/form/TextField" value='{firstName} {lastName}'></widget>
 </if>
 
 <h3>Iterators</h3>
 
 <h4>Hobbies (observable array): {hobbies}</h4>
 <for id='hobby-iter' each='hobby' in="hobbies">
-	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/form/TextInput" value={hobby}></widget></span>
+	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/form/TextField" value={hobby}></widget></span>
 </for>
 
 <h4>Phone numbers (store): {phone_numbers}</h4>
 <for id='phone-iter' each='phone' in="phone_numbers">
 	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
-	<widget is="framework/ui/form/TextInput" value={phone.value}></widget>
+	<widget is="framework/ui/form/TextField" value={phone.value}></widget>
 </for>
 
 <h4>Colors (array): {colors}</h4>
 <p>(label: {colors_string!label})</p>
 <for id='color-iter' each='color' in="colors">
-	<widget is="framework/ui/form/TextInput" value={firstName}></widget> likes color:
-	<widget is="framework/ui/form/TextInput" value={color}></widget>
+	<widget is="framework/ui/form/TextField" value={firstName}></widget> likes color:
+	<widget is="framework/ui/form/TextField" value={color}></widget>
 </for>
-Edit colors: <widget is="framework/ui/form/TextInput" value={colors_string} style="width:20em"></widget>
+Edit colors: <widget is="framework/ui/form/TextField" value={colors_string} style="width:20em"></widget>
 
 <placeholder name="interstitial">
 
@@ -67,8 +67,8 @@ Edit colors: <widget is="framework/ui/form/TextInput" value={colors_string} styl
 
 <when promise='firstName' value='firstNameScoped'>
 	Resolved (syncronously):<br>
-	firstName (scoped): {firstNameScoped} <widget is="framework/ui/form/TextInput" value={firstName}></widget>
-	firstName: {firstName} <widget is="framework/ui/form/TextInput" value={firstName}></widget>
+	firstName (scoped): {firstNameScoped} <widget is="framework/ui/form/TextField" value={firstName}></widget>
+	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
 <during>
 	I SHOULD NOT BE VISIBLE
 <error>
@@ -79,8 +79,8 @@ Edit colors: <widget is="framework/ui/form/TextInput" value={colors_string} styl
 
 <when id='when' promise='remoteString' value='str'>
 	Resolved remoteString:<br>
-	str: {str} <widget is="framework/ui/form/TextInput" value={str}></widget>
-	firstName: {firstName} <widget is="framework/ui/form/TextInput" value={firstName}></widget>
+	str: {str} <widget is="framework/ui/form/TextField" value={str}></widget>
+	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
 <during>
 	remoteString: loading...
 </during>
@@ -93,9 +93,9 @@ Edit colors: <widget is="framework/ui/form/TextInput" value={colors_string} styl
 
 <when promise='remoteObject' value='obj'>
 	Resolved remoteObject:<br>
-	obj.foo: {obj.foo} <widget is="framework/ui/form/TextInput" value={obj.foo}></widget><br>
-	obj.bar: {obj.bar} <widget is="framework/ui/form/TextInput" value={obj.bar}></widget><br>
-	firstName: {firstName} <widget is="framework/ui/form/TextInput" value={firstName}></widget>
+	obj.foo: {obj.foo} <widget is="framework/ui/form/TextField" value={obj.foo}></widget><br>
+	obj.bar: {obj.bar} <widget is="framework/ui/form/TextField" value={obj.bar}></widget><br>
+	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
 <during>
 	remoteObject: loading...
 <error>
@@ -110,7 +110,7 @@ Edit colors: <widget is="framework/ui/form/TextInput" value={colors_string} styl
 	Error!!<br>
 	<!-- TODO: get binding paths to work on an Error object -->
 	err.message: {err.message}<br>
-	firstName: {firstName} <widget is="framework/ui/form/TextInput" value={firstName}></widget>
+	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
 </when>
 
 <hr>

@@ -1,10 +1,10 @@
 import FormError = require('framework/ui/form/Error');
 import FormLabel = require('framework/ui/form/Label');
-import View = require('framework/ui/View');
-import TextInput = require('framework/ui/form/TextInput');
+import Master = require('framework/ui/Master');
+import TextField = require('framework/ui/form/TextField');
 
-class MyView extends View {
-	private _input:TextInput;
+class MyView extends Master {
+	private _input:TextField;
 	private _label:FormLabel;
 	private _fullNameLabel:FormLabel;
 	private _error:FormError;
@@ -16,7 +16,7 @@ class MyView extends View {
 			id: 'label1',
 			'for': 'input1'
 		});
-		this._input = new TextInput({
+		this._input = new TextField({
 			id: 'input1'
 		});
 		this._fullNameLabel = new FormLabel({

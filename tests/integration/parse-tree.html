@@ -21,7 +21,7 @@ var dojoConfig = {
 	<script>
 require([
 	'framework/Application',
-	'framework/ui/View',
+	'framework/ui/Master',
 	'framework/tests/integration/MyMediator',
 	'framework/tests/integration/MyModel',
 	'framework/templating/Template',
@@ -35,7 +35,7 @@ require([
 	'xstyle/css!dojo/resources/dojo.css'
 ], function (
 	Application,
-	View,
+	Master,
 	MyMediator,
 	MyModel,
 	Template,
@@ -57,7 +57,7 @@ require([
 			model: model
 		});
 
-		var view = window.view = new View({});
+		var view = window.view = new Master({});
 		view.attachToWindow(document.body);
 
 		// view.add(jsonTmpl.create());

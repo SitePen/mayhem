@@ -11,35 +11,18 @@ import util = require('../util');
 import Widget = require('./Widget');
 
 class Mediated extends Widget implements ui.IMediated {
-	private _attachedWidgets:ui.IWidget[];
 	private _bindings:binding.IBindingHandle[];
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
 	/* protected */ _values:ui.IMediatedValues;
 
 	constructor(kwArgs?:ui.IMediatedValues) {
-		this._attachedWidgets = [];
 		this._bindings = [];
 		super(kwArgs);
 	}
 
 	get:ui.IMediatedGet;
 	set:ui.IMediatedSet;
-
-	// Set widget parent and bind widget's attached state to parent
-	// This doesn't fully express parent/child relationship, just the parent side (to propagate attachment information)
-	attach(widget:ui.IWidget):void {
-		this._attachedWidgets.push(widget);
-		widget.set('parent', this);
-		var attached = this.get('attached');
-		attached !== undefined && widget.set('attached', attached);
-		// On widget detach extract from attachedWidgets array
-		var handle = widget.on('detached', () => {
-			handle.remove();
-			util.spliceMatch(this._attachedWidgets, widget);
-			handle = widget = null;
-		});
-	}
 
 	/* protected */ _bind(kwArgs:ui.IBindArguments):binding.IBindingHandle {
 		return this.get('app').get('binder').bind({
@@ -110,14 +93,6 @@ class Mediated extends Widget implements ui.IMediated {
 	}
 
 	destroy():void {
-		this.detach();
-
-		// Loop over attached widgets and de-parent them
-		var widget:ui.IWidget;
-		for (var i = 0; (widget = this._attachedWidgets[i]); ++i) {
-			widget.set('parent', null);
-		}
-
 		var binding:binding.IBindingHandle;
 		for (var i = 0; (binding = this._bindings[i]); ++i) {
 			binding.remove();
@@ -129,13 +104,6 @@ class Mediated extends Widget implements ui.IMediated {
 
 	/* protected */ _initialize():void {
 		super._initialize();
-
-		this.observe('attached', (value:boolean):void => {
-			// Propagate attachment information
-			for (var i = 0, widget:ui.IWidget; (widget = this._attachedWidgets[i]); ++i) {
-				widget.set('attached', value);
-			}
-		});
 
 		this.observe('mediator', (mediator:data.IMediator):void => {
 			if (!mediator) { return; }

@@ -5,7 +5,7 @@ import util = require('dojo/request/util');
 
 class WebApplication extends Application {
 	router:routing.IRouter;
-	ui:ui.IView;
+	ui:ui.IMaster;
 
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepCopy(super._getDefaultConfig(), {

@@ -1,22 +1,22 @@
 import core = require('../../interfaces');
 import ui = require('../interfaces');
 
-export interface IButton extends IControl {
+export interface IButton extends ui.IWidget {
 	get:IButtonGet;
 	set:IButtonSet;
 }
 
-export interface IButtonGet extends IControlGet {
+export interface IButtonGet extends ui.IWidgetGet {
 	(name:'label'):string;
 	(name:'type'):string;
 }
 
-export interface IButtonSet extends IControlSet {
+export interface IButtonSet extends ui.IWidgetSet {
 	(name:'label', value:string):void;
 	(name:'type', value:string):void;
 }
 
-export interface IButtonValues extends IControlValues {
+export interface IButtonValues extends ui.IWidgetValues {
 	label?:string;
 	type?:string;
 }
@@ -38,26 +38,6 @@ export interface ICheckBoxValues extends IButtonValues {
 	indeterminate?:string;
 }
 
-export interface IControl extends ui.IWidget {
-	get:IControlGet;
-	set:IControlSet;
-}
-
-export interface IControlGet extends ui.IWidgetGet {
-	(name:'disabled'):boolean;
-	(name:'tabindex'):number;
-}
-
-export interface IControlSet extends ui.IWidgetSet {
-	(name:'disabled', value:boolean):void;
-	(name:'tabindex', value:number):void;
-}
-
-export interface IControlValues extends ui.IWidgetValues {
-	disabled?:boolean;
-	tabindex?:boolean;
-}
-
 export interface IError extends ui.IWidget {
 	get:IErrorGet;
 	set:IErrorSet;
@@ -75,22 +55,22 @@ export interface IErrorValues extends ui.IWidgetValues {
 	list?:core.IValidationError[];
 }
 
-export interface IInput extends IControl {
+export interface IInput extends ui.IWidget {
 	get:IInputGet;
 	set:IInputSet;
 }
 
-export interface IInputGet extends IControlGet {
+export interface IInputGet extends ui.IWidgetGet {
 	(name:'name'):string;
 	(name:'readonly'):boolean;
 }
 
-export interface IInputSet extends IControlSet {
+export interface IInputSet extends ui.IWidgetSet {
 	(name:'name', value:string):void;
 	(name:'readonly', value:boolean):void;
 }
 
-export interface IInputValues extends IControlValues {
+export interface IInputValues extends ui.IWidgetValues {
 	name?:string;
 	readonly?:boolean;
 }
@@ -136,46 +116,46 @@ export interface IRadioButtonValues extends ICheckBoxValues {
 	group?:string;
 }
 
-export interface ITextarea extends ITextInput {
-	get:ITextInputGet;
-	set:ITextInputSet;
+export interface ITextArea extends ITextField {
+	get:ITextAreaGet;
+	set:ITextAreaSet;
 }
 
-export interface ITextareaGet extends ITextInputGet {
+export interface ITextAreaGet extends ITextFieldGet {
 	(name:'cols'):number;
 	(name:'rows'):number;
 }
 
-export interface ITextareaSet extends ITextInputSet {
+export interface ITextAreaSet extends ITextFieldSet {
 	(name:'cols', value:number):void;
 	(name:'rows', value:number):void;
 }
 
-export interface ITextareaValues extends ITextInputValues {
+export interface ITextAreaValues extends ITextFieldValues {
 	cols?:number;
 	rows?:number;
 }
 
-export interface ITextInput extends IInput {
-	get:ITextInputGet;
-	set:ITextInputSet;
+export interface ITextField extends IInput {
+	get:ITextFieldGet;
+	set:ITextFieldSet;
 }
 
-export interface ITextInputGet extends IInputGet {
+export interface ITextFieldGet extends IInputGet {
 	(name:'maxlength'):number;
 	(name:'placeholder'):string;
 	(name:'trim'):boolean;
 	(name:'value'):string;
 }
 
-export interface ITextInputSet extends IInputSet {
+export interface ITextFieldSet extends IInputSet {
 	(name:'maxlength', value:number):void;
 	(name:'placeholder', value:string):void;
 	(name:'trim', value:boolean):void;
 	(name:'value', value:string):void;
 }
 
-export interface ITextInputValues extends IInputValues {
+export interface ITextFieldValues extends IInputValues {
 	maxlength?:number;
 	placeholder?:string;
 	trim?:boolean;

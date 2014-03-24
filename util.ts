@@ -175,7 +175,6 @@ export function isObject(object:any):boolean {
 export function remove(...handles:IHandle[]):void {
 	for (var i = 0, handle:IHandle; (handle = handles[i]); ++i) {
 		handle.remove();
-		handle.remove = function ():void {};
 	}
 	handle = null;
 }

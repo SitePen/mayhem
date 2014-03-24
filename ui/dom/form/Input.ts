@@ -1,11 +1,11 @@
-import Control = require('./Control');
+import DijitRenderer = require('../_Dijit');
 
-class Input extends Control {}
+class InputRenderer extends DijitRenderer {}
 
-Input.implementation({
+InputRenderer.implementation({
 	nameMap: {
 		readonly: 'readOnly'
 	}
 });
 
-export = Input;
+export = InputRenderer;
