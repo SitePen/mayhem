@@ -30,12 +30,14 @@ class ErrorRenderer extends DomElementRenderer {
 
 	private _renderList(widget:form.IError):void {
 		this.clear(widget);
-		var firstNode = widget._firstNode,
+
+		var fragment = document.createDocumentFragment(),
 			list = widget.get('list') || [];
 		for (var i = 0, error:core.IValidationError; (error = list[i]); i++) {
-			var element = domConstruct.create('li', {}, firstNode);
+			var element = domConstruct.create('li', {}, fragment);
 			element.appendChild(document.createTextNode(error.toString()));
 		}
+		widget._firstNode.appendChild(fragment);
 	}
 }
 
