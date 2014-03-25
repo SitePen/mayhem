@@ -6,11 +6,23 @@ import Observable = require('../Observable');
  * An abstract base class for managing user authentication and authorization.
  */
 class User extends Observable {
-	/** Whether or not the current user is authenticated. @protected */
-	_isAuthenticated:boolean;
+	/* protected */ _values:{
+		/**
+		 * Whether or not the current user is authenticated. @protected
+		 */
+		isAuthenticated:boolean;
 
-	/** User-specific data about the currently authenticated user. @protected */
-	_state:Object;
+		/**
+		 * User-specific data about the currently authenticated user. @protected
+		 */
+		state:Object;
+	};
+
+	/* protected */ _initialize():void {
+		lang.mixin(this._values, {
+			isAuthenticated: false
+		});
+	}
 
 	/**
 	 * Performs a login for the current user. If successful, the user object is set to authenticated and its state
@@ -22,10 +34,8 @@ class User extends Observable {
 	 * @returns a Promise that resolves with an object containing the user information.
 	 */ 
 	login(kwArgs:Object):IPromise<void> {
-		var self = this;
-
-		return this.authenticate.apply(this, arguments).then(function (userData:Object) {
-			self.set({
+		return this.authenticate.apply(this, arguments).then((userData:Object):Object => {
+			this.set({
 				isAuthenticated: true,
 				state: userData
 			});
@@ -72,10 +82,5 @@ class User extends Observable {
 		return true;
 	}
 }
-
-// Set default primitive property values
-lang.mixin(User.prototype, {
-	_isAuthenticated: false
-});
 
 export = User;
