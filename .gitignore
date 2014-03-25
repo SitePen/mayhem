@@ -4,3 +4,4 @@ html-report/
 node_modules/
 !tests/intern.js
 !tests/support/lcovhtml.js
+tscommand-*.tmp.txt
