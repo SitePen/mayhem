@@ -33,7 +33,7 @@ class User extends Observable {
 	 *
 	 * @returns a Promise that resolves with an object containing the user information.
 	 */ 
-	login(kwArgs:Object):IPromise<void> {
+	login(kwArgs:Object):IPromise<Object> {
 		return this.authenticate.apply(this, arguments).then((userData:Object):Object => {
 			this.set({
 				isAuthenticated: true,

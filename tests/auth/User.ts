@@ -19,11 +19,11 @@ class MockUser extends User {
 	}
 
 	_idGetter():string {
-		return this._state['id'];
+		return this._values.state['id'];
 	}
 
 	_usernameGetter():string {
-		return this._state['username'];
+		return this._values.state['username'];
 	}
 }
 
@@ -32,39 +32,39 @@ var user = new MockUser();
 registerSuite({
 	name: 'User',
 
-	'#login base': function () {
+	'#login base': function ():void {
 		var user = new User();
-		assert.throws(function() { user.login({}) }, /Abstract method "authenticate" not implemented/,
+		assert.throws(function():void { user.login({}); }, /Abstract method "authenticate" not implemented/,
 			'Base User authentication should throw');
 	},
 
-	'#login invalid': function () {
-		return user.login({ username: 'foo', password: 'wrong' }).then(function () {
+	'#login invalid': function ():IPromise<void> {
+		return user.login({ username: 'foo', password: 'wrong' }).then(function (userData:Object):void {
 			assert.ok(false, 'Invalid login should fail');
-		}, function () {
+		}, function ():void {
 			// suppress instrumentation
 		});
 	},
 
-	'#login valid': function () {
-		return user.login({ username: 'foo', password: 'bar' }).then(function (userData) {
+	'#login valid': function ():IPromise<void> {
+		return user.login({ username: 'foo', password: 'bar' }).then(function (userData:Object):void {
 			assert.isTrue(user.get('isAuthenticated'), 'Valid login should set user to authenticated state');
 			assert.deepEqual(userData, { id: 1, username: 'foo' }, 'Valid login should return authenticated state data');
 			assert.deepEqual(user.get('state'), userData, 'Valid login should set user "state" property to authenticated state data');
 			assert.strictEqual(user.get('id'), 1, 'Valid login state should be retrievable via User object');
-		}, function () {
+		}, function ():void {
 			assert.ok(false, 'Logging in with valid credentials should not fail');
 		});
 	},
 
-	'#logout valid': function () {
+	'#logout valid': function ():void {
 		assert.isTrue(user.get('isAuthenticated'), 'User should be authenticated prior to attempting logout');
 		user.logout();
 		assert.isFalse(user.get('isAuthenticated'), 'User should no longer be authenticated after logout');
 		assert.isNull(user.get('state'), 'User should no longer have state after logout');
 	},
 
-	'#checkAccess': function () {
+	'#checkAccess': function ():void {
 		assert.isTrue(user.checkAccess('delete'), 'User has full access by default');
 	}
 });
