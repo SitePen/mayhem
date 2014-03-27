@@ -1,7 +1,7 @@
 import dom = require('./interfaces');
-import PlaceholderRenderer = require('./Placeholder');
+import DomWidgetRenderer = require('./Widget');
 
-class ConditionalRenderer extends PlaceholderRenderer {
+class ConditionalRenderer extends DomWidgetRenderer {
 }
 
 export = ConditionalRenderer;

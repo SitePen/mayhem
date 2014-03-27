@@ -55,7 +55,7 @@ class DijitRenderer extends DomElementRenderer {
 		}
 
 		var dijit = widget._impl = new this._ImplCtor(args);
-		widget._firstNode = widget._lastNode = widget._fragment = dijit.domNode;
+		widget._firstNode = widget._lastNode = widget._outerFragment = dijit.domNode;
 		widget.get('classList').set(dijit.domNode.className);
 
 		// Sync widget with dijit

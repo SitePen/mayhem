@@ -1,10 +1,12 @@
 /// <amd-dependency path="./renderer!Widget" />
 declare var require:any;
 
+import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
+import Style = require('./style/Style');
 import ui = require('./interfaces');
 import util = require('../util');
 
@@ -17,7 +19,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return registry[id];
 	}
 
-	private _attachedWidgets:ui.IWidget[];
 	private __id:string;
 	/* protected */ _renderer:ui.IRenderer;
 	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
@@ -25,7 +26,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	constructor(kwArgs:ui.IWidgetValues = {}) {
 		util.deferSetters(this, [ 'attached' ], '_render');
-		this._attachedWidgets = [];
 		this._ownHandles = [];
 
 		// Capture id as provided before transforming
@@ -45,31 +45,12 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	get:ui.IWidgetGet;
 	set:ui.IWidgetSet;
 
-	// Set widget parent and bind widget's attached state to parent
-	// This doesn't fully express parent/child relationship, just the parent side (to propagate attachment information)
-	attach(widget:ui.IWidget):void {
-		this._attachedWidgets.push(widget);
-		widget.set('parent', this);
-		var attached = this.get('attached');
-		attached !== undefined && widget.set('attached', attached);
-		// On widget detach extract from attachedWidgets array
-		var handle = widget.on('detached', () => {
-			handle.remove();
-			util.spliceMatch(this._attachedWidgets, widget);
-			handle = widget = null;
-		});
+	/* protected */ _attachedSetter(attached:boolean):void {
+		this._values.attached = attached;
 	}
 
 	destroy():void {
 		this.detach();
-
-		// Loop over attached widgets and de-parent them
-		var widget:ui.IWidget;
-		for (var i = 0; (widget = this._attachedWidgets[i]); ++i) {
-			widget.set('parent', null);
-		}
-		widget = null;
-
 		this._renderer.destroy(this);
 
 		// Clean up any handles and destroyables we own
@@ -87,12 +68,11 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 		registry[this.get('id')] = null;
 		super.destroy();
-		this.emit('destroyed');
 	}
 
 	detach():void {
-		this._renderer.detach(this);
-		this.set('attached', false);
+		var parent = this.get('parent');
+		parent && parent.remove(this);
 	}
 
 	private _indexGetter():number {
@@ -102,29 +82,20 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			return -1;
 		}
 
-		return parent.get('children').indexOf(this);
+		return parent.getChildIndex(this);
 	}
 
 	/* protected */ _initialize():void {
 		super._initialize();
-		this._renderer.initialize(this);
 
-		this.observe('attached', (value:boolean):void => {
-			// Propagate attachment information
-			for (var i = 0, widget:ui.IWidget; (widget = this._attachedWidgets[i]); ++i) {
-				widget.set('attached', value);
-			}
-		});
+		this.set('classList', new ClassList());
+		this.set('style', new Style());
+		this._renderer.initialize(this);
 	}
 
 	private _nextGetter():ui.IWidget {
-		var index = this.get('index');
-
-		if (index === -1) {
-			return null;
-		}
-
-		return this.get('parent').get('children')[index + 1] || null;
+		var parent = this.get('parent');
+		return parent ? parent.nextChild(this) : null;
 	}
 
 	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
@@ -167,7 +138,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			}
 
 			var index:number = destination.get('index');
-			destination.detach();
+			destination._renderer.detach(destination);
 			handle = destinationParent.add(this, index);
 		}
 		else {
@@ -177,29 +148,26 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return handle;
 	}
 
-	/* protected */ _parentSetter(parent:ui.IContainer):void {
-		if (parent !== this._values.parent) {
-			this._values.parent = parent;
-			this.emit('parented');
-		}
-	}
-
 	private _previousGetter():ui.IWidget {
-		var index:number = this.get('index');
-
-		if (index === -1) {
-			return null;
-		}
-
-		return this.get('parent').get('children')[index - 1] || null;
+		var parent = this.get('parent');
+		return parent ? parent.previousChild(this) : null;
 	}
 
 	/* protected */ _render():void {
 		this._renderer.render(this);
+		this.set('rendered', true);
 	}
 
 	own(...handles:any[]):void {
 		handles.length && this._ownHandles.push.apply(this._ownHandles, handles);
+	}
+
+	// /* protected */ _visibleGetter():boolean {
+	// 	return this.get('style').get('display') !== 'none';
+	// }
+
+	/* protected */ _visibleSetter(visible:boolean):void {
+		this.get('style').set('display', visible ? '' : 'none');
 	}
 }
 

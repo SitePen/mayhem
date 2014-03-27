@@ -2,7 +2,7 @@ import domConstruct = require('dojo/dom-construct');
 import PlacePosition = require('../PlacePosition');
 
 export function toDom(value:any /* string | Node */):Node {
-	return domConstruct.toDom(value)
+	return typeof value === 'string' ? domConstruct.toDom(value) : value;
 }
 
 export function getRange(start:Node, end:Node, exclusive:boolean = false):Range {

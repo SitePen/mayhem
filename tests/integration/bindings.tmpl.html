@@ -66,9 +66,13 @@ Edit colors: <widget is="framework/ui/form/TextField" value={colors_string} styl
 <hr>
 
 <when promise='firstName' value='firstNameScoped'>
-	Resolved (syncronously):<br>
-	firstName (scoped): {firstNameScoped} <widget is="framework/ui/form/TextField" value={firstName}></widget>
-	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
+	Resolved (syncronously):
+	<br>
+	firstName (scoped): {firstNameScoped}
+	<widget is="framework/ui/form/TextField" value={firstNameScoped}></widget>
+	<br>
+	firstName: {firstName}
+	<widget is="framework/ui/form/TextField" value={firstName}></widget>
 <during>
 	I SHOULD NOT BE VISIBLE
 <error>
@@ -78,9 +82,13 @@ Edit colors: <widget is="framework/ui/form/TextField" value={colors_string} styl
 <hr>
 
 <when id='when' promise='remoteString' value='str'>
-	Resolved remoteString:<br>
-	str: {str} <widget is="framework/ui/form/TextField" value={str}></widget>
-	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
+	Resolved remoteString:
+	<br>
+	str: {str}
+	<widget is="framework/ui/form/TextField" value={str}></widget>
+	<br>
+	firstName: {firstName}
+	<widget is="framework/ui/form/TextField" value={firstName}></widget>
 <during>
 	remoteString: loading...
 </during>
@@ -92,10 +100,16 @@ Edit colors: <widget is="framework/ui/form/TextField" value={colors_string} styl
 <hr>
 
 <when promise='remoteObject' value='obj'>
-	Resolved remoteObject:<br>
-	obj.foo: {obj.foo} <widget is="framework/ui/form/TextField" value={obj.foo}></widget><br>
-	obj.bar: {obj.bar} <widget is="framework/ui/form/TextField" value={obj.bar}></widget><br>
-	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
+	Resolved remoteObject:
+	<br>
+	obj.foo: {obj.foo}
+	<widget is="framework/ui/form/TextField" value={obj.foo}></widget><br>
+	<br>
+	obj.bar: {obj.bar}
+	<widget is="framework/ui/form/TextField" value={obj.bar}></widget><br>
+	<br>
+	firstName: {firstName}
+	<widget is="framework/ui/form/TextField" value={firstName}></widget>
 <during>
 	remoteObject: loading...
 <error>
@@ -109,8 +123,10 @@ Edit colors: <widget is="framework/ui/form/TextField" value={colors_string} styl
 <error>
 	Error!!<br>
 	<!-- TODO: get binding paths to work on an Error object -->
-	err.message: {err.message}<br>
-	firstName: {firstName} <widget is="framework/ui/form/TextField" value={firstName}></widget>
+	err.message: {err.message}
+	<br>
+	firstName: {firstName}
+	<widget is="framework/ui/form/TextField" value={firstName}></widget>
 </when>
 
 <hr>

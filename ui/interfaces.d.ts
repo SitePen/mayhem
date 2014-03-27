@@ -39,6 +39,10 @@ export interface IContainer extends IMediated {
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
 	empty():void;
+	getChild(index:number):IWidget;
+	getChildIndex(item:IWidget):number;
+	nextChild(item:IWidget):IWidget;
+	previousChild(item:IWidget):IWidget;
 	remove(index:number):void;
 	remove(widget:IWidget):void;
 }
@@ -48,11 +52,9 @@ export interface IContainerGet extends IMediatedGet {
 }
 
 export interface IContainerSet extends IMediatedSet {
-	(name:'children', value:IWidget[]):void;
 }
 
 export interface IContainerValues extends IMediatedValues {
-	children?:IWidget[];
 }
 
 export interface IMaster extends IView {
@@ -63,7 +65,6 @@ export interface IMediated extends IWidget {
 	get:IMediatedGet;
 	set:IMediatedSet;
 
-	attach(widget:IWidget):void;
 	bind(kwArgs:IBindArguments):IHandle;
 }
 
@@ -87,27 +88,31 @@ export interface IPlaceholder extends IContainer {
 }
 
 export interface IPlaceholderGet extends IContainerGet {
-	(name:'widget'):IWidget;
+	(name:'child'):IWidget;
 }
 
 export interface IPlaceholderSet extends IContainerSet {
-	(name:'widget', value:IWidget):void;
+	(name:'child', value:IWidget):void;
 }
 
 export interface IPlaceholderValues extends IContainerValues {
-	widget?:IWidget;
+	child?:IWidget;
 }
 
 export interface IRenderer {
 	add(widget:IContainer, item:IWidget, position?:any):void;
+	attachContent(widget:IWidget):void;
+	attachStyles(widget:IWidget):void;
 	attachToWindow(widget:IWidget, target:any):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
+	detachContent(widget:IWidget):void;
+	detachStyles(widget:IWidget):void;
 	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget):void;
-	setContent(widget:IWidget, content:Node):void;
+	setContent(widget:IWidget, content:any):void;
 }
 
 export interface IView extends IContainer {
@@ -120,18 +125,16 @@ export interface IView extends IContainer {
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
 	clear():void;
+	setContent(content:any):void;
 }
 
 export interface IViewGet extends IContainerGet {
-	(name:'content'):any;
 }
 
 export interface IViewSet extends IContainerSet {
-	(name:'content', value:any):void;
 }
 
 export interface IViewValues extends IContainerValues {
-	content?:any;
 }
 
 export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {
@@ -151,12 +154,14 @@ export interface IWidgetGet extends core.IApplicationComponentGet {
 	(name:'index'):number;
 	(name:'next'):IWidget;
 	(name:'previous'):IWidget;
+	(name:'visible'):boolean;
 }
 
 export interface IWidgetSet extends core.IApplicationComponentSet {
 	(name:'attached', value:boolean):void;
 	(name:'id', value:string):void;
 	(name:'parent', value:IContainer):void;
+	(name:'visible', value:boolean):void;
 }
 
 export interface IWidgetValues /*extends core.IApplicationComponentValues*/ {
@@ -166,6 +171,7 @@ export interface IWidgetValues /*extends core.IApplicationComponentValues*/ {
 	next?:IWidget;
 	parent?:IContainer;
 	previous?:IWidget;
+	visible?:boolean;
 }
 
 /* Control flow */

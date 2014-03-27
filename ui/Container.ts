@@ -1,4 +1,5 @@
 import AddPosition = require('./AddPosition');
+import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import has = require('../has');
 import Mediated = require('./Mediated');
@@ -7,10 +8,11 @@ import ui = require('./interfaces');
 import util = require('../util');
 
 class Container extends Mediated implements ui.IContainer {
+	private _children:ui.IWidget[];
 	/* protected */ _values:ui.IContainerValues;
 
-	constructor(kwArgs:any = {}) {
-		kwArgs.children || (kwArgs.children = []);
+	constructor(kwArgs?:any) {
+		this._children = [];
 		super(kwArgs);
 	}
 
@@ -30,7 +32,7 @@ class Container extends Mediated implements ui.IContainer {
 			handle = this.get('parent').add(item, this.get('index') + 1);
 		}
 		else {
-			var children = this.get('children');
+			var children = this._children;
 			if (position === PlacePosition.ONLY) {
 				this.empty();
 				position = PlacePosition.FIRST;
@@ -45,13 +47,10 @@ class Container extends Mediated implements ui.IContainer {
 				position = Math.max(0, Math.min(children.length, position));
 			}
 
-			item.detach();
-
 			var referenceWidget:ui.IWidget = children[position];
 			children.splice(position, 0, item);
 			this._renderer.add(this, item, referenceWidget);
-			this.attach(item);
-			// TODO: observe detach on child widget and splice from children array?
+			item.set('parent', this);
 
 			var self = this;
 			handle = {
@@ -66,23 +65,62 @@ class Container extends Mediated implements ui.IContainer {
 		return handle;
 	}
 
-	// destroy():void {
-	// 	// TODO: what to do about children?
-	// 	super.destroy();
-	// }
+	/* protected */ _attachedSetter(attached:boolean):void {
+		// Propagate attachment information to children
+		var children = this._children;
+		for (var i = 0, child:ui.IWidget; (child = children[i]); ++i) {
+			child.set('attached', attached);
+		}
+		super._attachedSetter(attached);
+	}
+
+	/* protected */ _childrenGetter():ui.IWidget[] {
+		// Copy children array to avoid issues with mutation
+		return array.map(this._children, (child:ui.IWidget) => child);
+	}
+
+	/* protected */ _childrenSetter(children:ui.IWidget[]):void {
+		this.empty();
+		for (var i = 0, child:ui.IWidget; (child = children[i]); ++i) {
+			this.add(child, i);
+		}
+	}
+
+	destroy():void {
+		this.empty();
+		this._children = null;
+	}
 
 	empty():void {
-		var children = this.get('children'),
-			widget:ui.IWidget;
+		var children = this._children;
 		while (children.length) {
-			this.remove(children[0]);
+			children.pop().detach()
 		}
+		children = null;
+	}
+
+	getChild(index:number):ui.IWidget {
+		return this._children[index];
+	}
+
+	getChildIndex(item:ui.IWidget):number {
+		return this._children.indexOf(item);
+	}
+
+	nextChild(item:ui.IWidget):ui.IWidget {
+		var index = this.getChildIndex(item);
+		return index === -1 ? null : this._children[index + 1];
+	}
+
+	previousChild(item:ui.IWidget):ui.IWidget {
+		var index = this.getChildIndex(item);
+		return index === -1 ? null : this._children[index - 1];
 	}
 
 	remove(index:number):void;
 	remove(widget:ui.IWidget):void;
 	remove(index:any):void {
-		var children = this.get('children'),
+		var children = this._children,
 			widget:ui.IWidget;
 
 		if (typeof index !== 'number') {

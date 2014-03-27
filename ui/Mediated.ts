@@ -112,6 +112,33 @@ class Mediated extends Widget implements ui.IMediated {
 				binding.setSource(mediator);
 			}
 		});
+
+		this.observe('parent', (parent:ui.IContainer, previous:ui.IContainer) => {
+			if (!this.get('app')) {
+				var parentApp = parent.get('app');
+				if (parentApp) {
+					this.set('app', parentApp);
+				}
+				else {
+					// Wait for parent's app (only once)
+					this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
+						this._parentAppHandle.remove();
+						this._parentAppHandle = null;
+						this.set('app', parentApp);
+					});
+				}
+			}
+
+			var mediatorHandler = (mediator:data.IMediator, previous:data.IMediator):void => {
+				// if no mediator has been explicitly set, notify of the parent's mediator change
+				if (!this._values.mediator && !util.isEqual(mediator, previous)) {
+					this._notify(mediator, previous, 'mediator');
+				}
+			};
+			util.remove(this._parentMediatorHandle);
+			this._parentMediatorHandle = parent && parent.observe('mediator', mediatorHandler);
+			mediatorHandler(parent && parent.get('mediator'), previous && previous.get('mediator'));
+		})
 	}
 
 	private _mediatorGetter():data.IMediator {
@@ -123,44 +150,6 @@ class Mediated extends Widget implements ui.IMediated {
 			return parent.get('mediator');
 		}
 		return null;
-	}
-
-	/* protected */ _parentSetter(parent:ui.IContainer):void {
-		// Pass app down to children
-		// TODO: kill this
-		this._parentAppHandle && this._parentAppHandle.remove();
-		if (!this.get('app')) {
-			var parentApp:core.IApplication = parent.get('app');
-			if (parentApp) {
-				this.set('app', parentApp);
-			}
-			else {
-				this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
-					// Only once
-					this._parentAppHandle.remove();
-					this._parentAppHandle = null;
-					this.set('app', parentApp);
-				});
-			}
-		}
-
-		var oldParent = this._values.parent;
-		super._parentSetter(parent);
-
-		this._parentMediatorHandle && this._parentMediatorHandle.remove();
-		this._parentMediatorHandle = null;
-		var mediatorHandler = (newMediator:data.IMediator, oldMediator:data.IMediator):void => {
-			// if no mediator has been explicitly set, notify of the parent's mediator change
-			if (!this._values.mediator && !util.isEqual(newMediator, oldMediator)) {
-				this._notify(newMediator, oldMediator, 'mediator');
-			}
-		};
-		if (parent) {
-			this._parentMediatorHandle = parent.observe('mediator', mediatorHandler);
-		}
-		if (!this._values.mediator && !util.isEqual(parent, oldParent)) {
-			mediatorHandler(parent && parent.get('mediator'), oldParent && oldParent.get('mediator'));
-		}
 	}
 }
 

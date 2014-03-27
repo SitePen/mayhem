@@ -7,9 +7,13 @@ import ui = require('../interfaces');
 import _WidgetBase = require('dijit/_WidgetBase');
 
 export interface IWidget extends ui.IWidget {
+	_classListHandle:IHandle;
+	_innerFragment:Node;
 	_firstNode:Node;
-	_fragment:Node;
 	_lastNode:Node;
+	_outerFragment:Node;
+	_renderer:ui.IRenderer;
+	_styleHandle:IHandle;
 }
 
 export interface IContainer extends ui.IContainer, IMediated {
@@ -19,16 +23,14 @@ export interface IContainer extends ui.IContainer, IMediated {
 
 export interface IPlaceholdingWidget extends IContainer {
 	_firstNode:Comment;
-	_fragment:DocumentFragment;
 	_lastNode:Comment;
+	_outerFragment:DocumentFragment;
 }
 
 export interface IElementWidget extends IWidget {
-	_classListHandle:IHandle;
 	_firstNode:HTMLElement;
-	_fragment:HTMLElement;
 	_lastNode:HTMLElement;
-	_styleHandle:IHandle;
+	_outerFragment:HTMLElement;
 }
 
 export interface IMediated extends ui.IMediated, IWidget {
@@ -38,8 +40,8 @@ export interface IMediated extends ui.IMediated, IWidget {
 
 export interface IMediatedElementWidget extends IElementWidget, IMediated {
 	_firstNode:HTMLElement;
-	_fragment:HTMLElement;
 	_lastNode:HTMLElement;
+	_outerFragment:HTMLElement;
 
 	get:ui.IMediatedGet;
 	set:ui.IMediatedSet;
@@ -49,7 +51,7 @@ export interface IDijitWidget extends IElementWidget {
 	_impl:_WidgetBase;
 }
 
-/* Conrol flow */
+/* Control flow */
 
 export interface IIterator extends ui.IIterator, IElementWidget {
 	_factory:any; // TODO: templating.IViewConstructor

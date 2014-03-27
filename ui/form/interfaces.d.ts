@@ -63,16 +63,19 @@ export interface IInput extends ui.IWidget {
 export interface IInputGet extends ui.IWidgetGet {
 	(name:'name'):string;
 	(name:'readonly'):boolean;
+	(name:'value'):any;
 }
 
 export interface IInputSet extends ui.IWidgetSet {
 	(name:'name', value:string):void;
 	(name:'readonly', value:boolean):void;
+	(name:'value', value:any):void;
 }
 
 export interface IInputValues extends ui.IWidgetValues {
 	name?:string;
 	readonly?:boolean;
+	value?:any;
 }
 
 export interface ILabel extends ui.IWidget {

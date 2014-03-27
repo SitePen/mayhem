@@ -21,7 +21,7 @@ class IteratorRenderer extends DomElementRenderer {
 		var mediator = widget._getMediatorByKey(key);
 		child = widget._widgetIndex[key] = <dom.IMediatedElementWidget> widget._factory.create();
 		child.set('mediator', mediator);
-		widget.attach(child);
+		child.set('parent', widget);
 		return child;
 	}
 
@@ -69,7 +69,8 @@ class IteratorRenderer extends DomElementRenderer {
 		}
 		// Clean up list and detach all widgets
 		array.forEach(util.getObjectKeys(widget._widgetIndex), (key:string) => {
-			widget._widgetIndex[key].detach();
+			var item = widget._widgetIndex[key];
+			item._renderer.detach(item);
 		});
 		list && list.destroy();
 		if (source instanceof Array) {
@@ -77,8 +78,8 @@ class IteratorRenderer extends DomElementRenderer {
 			var _insertRow:any = list.insertRow;
 			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
 				var child = this._getWidgetByKey(widget, '' + i);
-				child.detach();
-				return _insertRow.call(list, child._fragment, parent, beforeNode, i, options);
+				child._renderer.detach(child);
+				return _insertRow.call(list, child._outerFragment, parent, beforeNode, i, options);
 			};
 			list.renderRow = (element:any):HTMLElement => element;
 		}
@@ -86,7 +87,7 @@ class IteratorRenderer extends DomElementRenderer {
 			list = widget._list = new OnDemandList();
 			list.renderRow = (record:any):HTMLElement => {
 				var child = this._getWidgetByKey(widget, record[source.idProperty]);
-				return child._fragment;
+				return child._outerFragment;
 			};
 		}
 		list.set('showHeader', false);
@@ -96,17 +97,18 @@ class IteratorRenderer extends DomElementRenderer {
 	}
 
 	private _replace(widget:dom.IIterator, newRoot:HTMLElement):void {
-		var oldRoot = widget._fragment;
+		var oldRoot = widget._outerFragment;
 		if (oldRoot && oldRoot.parentNode) {
 			oldRoot.parentNode.replaceChild(newRoot, oldRoot);
 		}
-		widget._firstNode = widget._lastNode = widget._fragment = newRoot;
+		widget._firstNode = widget._lastNode = widget._outerFragment = newRoot;
 	}
 
 	private _updateList(widget:dom.IIterator, change:number):void {
 		var scopeField = widget.get('each'),
 			source = widget.get('source'),
-			sourceLength = source.length;
+			sourceLength = source.length,
+			child:dom.IMediatedElementWidget;
 		if (change > 0) {
 			// If array is larger than before add the necessary rows to our list
 			widget._list.renderArray(source.toArray ? source.toArray() : source);
@@ -115,7 +117,8 @@ class IteratorRenderer extends DomElementRenderer {
 			// If it's smaller, we need to detach any extra widgets
 			change = -change;
 			for (var i = 0; i < change; ++i) {
-				widget._widgetIndex[sourceLength + i].detach();
+				child = widget._widgetIndex[sourceLength + i];
+				child._renderer.detach(child);
 			}
 		}
 		// Notify all scoped mediators of their current values

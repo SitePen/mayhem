@@ -11,18 +11,22 @@ class LabelRenderer extends DomElementRenderer {
 			widget._firstNode.setAttribute('for', value);
 		});
 
-		widget.observe('text', (value:string):void => {
-			// TODO: set up observer on formattedText to set body, wire up content setter
-			// widget.set('formattedText', util.escapeXml(value));
-			var content = widget._values.formattedText = util.escapeXml(value);
-			this.setContent(widget, content);
+		widget.observe('formattedText', (value:string) => {
+			this.setContent(widget, value);
 		});
 
-		widget.observe('content', ():void => {
-			var firstNode = widget._firstNode;
-			// TODO: has-branch for old IE?
-			widget._values.text = firstNode.textContent || firstNode.innerText;
+		widget.observe('text', (value:string):void => {
+			this.setContent(widget, util.escapeXml(value));
 		});
+	}
+
+	setContent(widget:form.ILabel, value:any):void {
+		super.setContent(widget, value);
+		// Update text properties silently w/ actual text value of our new content
+		var firstNode = widget._firstNode;
+		widget._values.formattedText = firstNode.innerHTML;
+		// TODO: has-branch for old IE?
+		widget._values.text = firstNode.textContent || firstNode.innerText;
 	}
 }
 

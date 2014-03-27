@@ -1,7 +1,7 @@
 import dom = require('./interfaces');
-import PlaceholderRenderer = require('./Placeholder');
+import DomWidgetRenderer = require('./Widget');
 
-class ResolverRenderer extends PlaceholderRenderer {
+class ResolverRenderer extends DomWidgetRenderer {
 }
 
 export = ResolverRenderer;

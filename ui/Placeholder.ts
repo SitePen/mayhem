@@ -1,6 +1,8 @@
 /// <amd-dependency path="./renderer!Placeholder" />
 
 import Container = require('./Container');
+import has = require('../has');
+import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
 
 var Renderer:any = require('./renderer!Placeholder');
@@ -11,24 +13,19 @@ class Placeholder extends Container implements ui.IPlaceholder {
 	get:ui.IPlaceholderGet;
 	set:ui.IPlaceholderSet;
 
-	empty():void {
-		var widget = this.get('widget');
-		widget && widget.detach();
-	}
-
-	/* protected */ _initialize():void {
-		this.observe('widget', (widget:ui.IWidget, previous:ui.IWidget):void => {
-			previous && previous.detach();
-			this._placeWidget();
-		});
-	}
-
-	/* protected */ _placeWidget():void {
-		var widget = this.get('widget');
-		if (widget) {
-			this._renderer.add(this, widget);
-			this.attach(widget);
+	add(child:ui.IWidget, position?:any):IHandle {
+		if (has('debug') && position && position !== PlacePosition.ONLY) {
+			throw new Error('Placeholder can only have a single child');
 		}
+		return super.add(child, position);
+	}
+
+	/* protected */ _childGetter():ui.IWidget {
+		return this.getChild(0);
+	}
+
+	/* protected */ _childSetter(child:ui.IWidget):void {
+		this.add(child, PlacePosition.ONLY);
 	}
 }
 

@@ -1,4 +1,5 @@
 import core = require('../../interfaces');
+import has = require('../../has');
 import Observable = require('../../Observable');
 import style = require('./interfaces');
 import util = require('../../util');
@@ -17,6 +18,11 @@ class Style extends Observable implements style.IStyle {
 		var observers = this._globalObservers.slice(0);
 		for (var i = 0, observer:core.IObserver<any>; (observer = observers[i]); ++i) {
 			observer.call(this, newValue, oldValue, key);
+		}
+
+		// TODO: do this check during set instead
+		if (has('debug') && typeof key === 'string' && key.indexOf('-') !== -1) {
+			throw new Error('CSS properties in JavaScript are camelCase, not hyphenated');
 		}
 	}
 

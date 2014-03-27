@@ -1,85 +1,77 @@
-import ClassList = require('../style/ClassList');
 import dom = require('./interfaces');
 import domUtil = require('./util');
 import WidgetRenderer = require('./Widget');
-import has = require('../../has');
+import PlacePosition = require('../PlacePosition');
 import style = require('../style/interfaces');
-import Style = require('../style/Style');
 import ui = require('../interfaces');
 import util = require('../../util');
 
 class DomElementRenderer extends WidgetRenderer {
 	elementType:string;
 
-	add(widget:dom.IContainer, item:dom.IWidget, referenceItem:dom.IWidget):void {
-		var referenceNode:Node = referenceItem && referenceItem._firstNode;
+	add(widget:dom.IContainer, item:dom.IWidget, reference?:any /* dom.IWidget | Node */):void {
+		item._renderer.detach(item);
+		if (reference instanceof Node) {
+			// Replace provided reference node with item
+			domUtil.place(item._outerFragment, reference, PlacePosition.REPLACE);
+		}
+		else {
+			widget._outerFragment.insertBefore(item._outerFragment, reference && reference._outerFragment);
+		}
+	}
 
-		widget._firstNode.insertBefore(item._fragment, referenceNode);
+	attachContent(widget:dom.IElementWidget):void {
+		var content = widget._innerFragment;
+		if (content && content.firstChild) {
+			widget._outerFragment.appendChild(content);
+		}
+		widget._innerFragment = null;
 	}
 
 	attachStyles(widget:dom.IElementWidget):void {
 		this.detachStyles(widget);
 
 		widget._classListHandle = widget.get('classList').observe((value:string):void => {
-			widget._firstNode.className = value;
+			widget._outerFragment.className = value;
 		});
 
-		widget._styleHandle = widget.get('style').observe((value:style.IStyle, oldValue:style.IStyle, key:string):void => {
-			if (has('debug') && key.indexOf('-') !== -1) {
-				throw new Error('CSS properties in JavaScript are camelCase, not hyphenated');
-			}
-
-			domUtil.setStyle(widget._firstNode, key, value);
+		widget._styleHandle = widget.get('style').observe((value:any, previous:any, key:string):void => {
+			domUtil.setStyle(widget._outerFragment, key, value);
 		});
 	}
 
 	clear(widget:dom.IElementWidget):void {
-		widget._firstNode.innerHTML = '';
-	}
-
-	destroy(widget:dom.IElementWidget):void {
-		this.detachStyles(widget);
-		widget._classListHandle = widget._styleHandle = null;
-		super.destroy(widget);
+		widget._outerFragment.innerHTML = '';
+		widget._innerFragment = null;
 	}
 
 	detach(widget:dom.IElementWidget):void {
-		var firstNode = widget._firstNode;
-		firstNode.parentNode && firstNode.parentNode.removeChild(firstNode);
+		var node = widget._outerFragment;
+		node.parentNode && node.parentNode.removeChild(node);
 	}
 
-	detachStyles(widget:dom.IElementWidget):void {
-		util.remove(widget._classListHandle);
-		util.remove(widget._styleHandle);
-	}
-
-	remove(widget:dom.IContainer, item:dom.IWidget):void {
-		var firstNode:Node = item._firstNode;
-		firstNode.parentNode && firstNode.parentNode.removeChild(firstNode);
+	detachContent(widget:dom.IElementWidget):void {
+		var node = widget._outerFragment;
+		widget._innerFragment = domUtil.getRange(node.firstChild, node.lastChild).extractContents();
 	}
 
 	render(widget:dom.IElementWidget):void {
-		widget.set({
-			classList: new ClassList(),
-			style: new Style()
-		});
 		var node = document.createElement(this.elementType);
 		// If widget is already attached to a parent swap out the new widget
-		var previousNode = widget._fragment;
+		var previousNode = widget._outerFragment;
 		if (previousNode && previousNode.parentNode) {
 			previousNode.parentNode.replaceChild(node, previousNode);
 		}
-		widget._firstNode = widget._lastNode = widget._fragment = node;
-		this.attachStyles(widget);
+		widget._firstNode = widget._lastNode = widget._outerFragment = node;
 	}
 
-	setContent(widget:dom.IElementWidget, body?:any /* string | Node */):void {
-		if (typeof body === 'string') {
-			widget._firstNode.innerHTML = body;
+	setContent(widget:dom.IElementWidget, value?:any /* string | Node */):void {
+		if (typeof value === 'string') {
+			widget._outerFragment.innerHTML = value;
 		}
 		else {
 			this.clear(widget);
-			body && widget._firstNode.appendChild(body);
+			value && widget._outerFragment.appendChild(value);
 		}
 	}
 }

@@ -2,6 +2,7 @@
 
 import array = require('dojo/_base/array');
 import data = require('../data/interfaces');
+import dom = require('../ui/dom/interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
@@ -136,8 +137,8 @@ class _WidgetBinder {
 		this._widgetArgs = lang.mixin({}, factory.widgetArgs, options);
 		this._processKwArgWidgets();
 		var widget = this.widget = new factory.WidgetCtor(this._widgetArgs);
-		this._processContent();
-		this._processChildren();
+		this._placeContent();
+		this._placeChildren();
 		this._bindProperties();
 		this._bindPropertyTemplates();
 		this._bindTextNodes();
@@ -254,37 +255,34 @@ class _WidgetBinder {
 		}).join('');
 	}
 
-	private _processChildren():void {
+	private _placeChildren():void {
 		var childFactories = this.factory.childFactories,
 			factory:WidgetFactory,
-			widget:ui.IContainer = <ui.IContainer> this.widget,
-			children = widget.get('children'),
+			widget:dom.IContainer = <dom.IContainer> this.widget,
 			markerNodes = this._childMarkerNodes || [],
-			item:ui.IWidget;
+			item:dom.IWidget;
 		for (var i = 0, len = childFactories.length; i < len; ++i) {
 			factory = childFactories[i];
 			if (factory) {
-				item = factory.create(); // TODO: child options?
-				if (markerNodes[i]) {
-					domUtil.place(item['_fragment'], markerNodes[i], PlacePosition.REPLACE);
-					widget.attach(item);
-					children[i] = item;
-				}
-				else {
-					widget.add(item);
+				item = <dom.IWidget> factory.create(); // TODO: child options?
+				widget.add(item, i);
+				// If a marker node exists move child to it
+				var node = markerNodes[i];
+				if (node) {
+					widget._renderer.add(widget, item, node);
 				}
 			}
 		}
 	}
 
-	private _processContent():void {
+	private _placeContent():void {
 		if (this.factory.content) {
 			var content = this.factory.content.cloneNode(true);
 			this._textBindingNodes = [];
 			this._textBindingPaths = [];
 			this._childMarkerNodes = [];
 			this._processContentMarkers(content);
-			this.widget.set('content', content);
+			(<ui.IView> this.widget).setContent(content);
 		}
 	}
 
@@ -322,8 +320,8 @@ class _WidgetBinder {
 			else if (descriptor.$named != null) {
 				var name:string = descriptor.$named,
 					placeholder = widget.placeholders[name] = new Placeholder();
-				domUtil.place(placeholder['_fragment'], node, PlacePosition.REPLACE);
-				widget.attach(placeholder);
+				domUtil.place(placeholder['_outerFragment'], node, PlacePosition.REPLACE);
+				placeholder.set('parent', widget);
 			}
 			else {
 				if (has('debug')) {

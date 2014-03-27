@@ -1,61 +1,33 @@
 /// <amd-dependency path="./renderer!Conditional" />
 
-import Placeholder = require('./Placeholder');
 import ui = require('./interfaces');
 import util = require('../util');
 import View = require('./View');
 
 var Renderer:any = require('./renderer!Conditional');
 
-class Conditional extends Placeholder implements ui.IConditional {
+class Conditional extends View implements ui.IConditional {
 	private _conditionBindHandle:IHandle;
 	/* protected */ _values:ui.IConditionalValues;
 
 	get:ui.IConditionalGet;
 	set:ui.IConditionalSet;
 
-	// Forward add calls to consequent widget
 	add(item:ui.IWidget, position?:any):IHandle {
+		// Forward view-specific calls to consequent widget
 		return this.get('consequent').add(item, position);
-	}
-
-	// Forward set content calls to consequent widget
-	/* protected */ _contentSetter(content:any):void {
-		this.get('consequent').set('content', content);
-	}
-
-	destroy():void {
-		this.own(this.get('alternate'));
-		util.remove(this._conditionBindHandle);
-		this._conditionBindHandle = null;
-	}
-
-	detach():void {
-		this.get('consequent').detach();
-		super.detach();
 	}
 
 	/* protected */ _initialize():void {
 		super._initialize();
 
+		this.observe('alternate', this._placeView);
+		this.observe('consequent', this._placeView);
+
 		this.set('consequent', new View());
 
-		this.observe('attached', (attached:boolean):void => {
-			if (attached) {
-				this._selectWidget();
-			}
-		});
-
-		this.observe('result', ():void => {
-			if (this.get('attached')) {
-				this._selectWidget();
-			}
-		});
-
-		this.observe('alternate', (alternate:ui.IWidget, previous:ui.IWidget):void => {
-			util.destroy(previous);
-			alternate.set('parent', this);
-			this._selectWidget();
+		this.observe('result', (result:boolean):void => {
+			this._updateVisibility(result);
 		});
 
 		this.observe('condition', (condition:string):void => {
@@ -67,15 +39,46 @@ class Conditional extends Placeholder implements ui.IConditional {
 		});
 	}
 
-	private _selectWidget():void {
-		var result = this.get('result');
-		// Noop if we haven't been evaluated yet
-		if (result === undefined) {
+	remove(index:any):void {
+		// Forward view-specific calls to consequent widget
+		return this.get('consequent').remove(index);
+	}
+
+	private _placeView(view:ui.IWidget, previous:ui.IWidget):void {
+		if(!view && !previous) {
 			return;
 		}
-		this.set('widget', this.get(result ? 'consequent' : 'alternate' ));
-		// Force placeholder to render widget
-		this._placeWidget();
+		// Defer until rendered
+		if (!this.get('rendered')) {
+			this.observe('rendered', () => {
+				this._placeView(view, previous);
+			});
+			return;
+		}
+
+		var index:number;
+		if (previous) {
+			index = previous.get('index');
+			previous.destroy();
+			previous = null;
+		}
+		view && super.add(view, index >= 0 ? index : null);
+		this._updateVisibility(this.get('result'));
+	}
+
+	setContent(content:any):void {
+		// Forward view-specific calls to consequent widget
+		this.get('consequent').setContent(content);
+	}
+
+	private _updateVisibility(result:boolean):void {
+		if (result == null) {
+			return;
+		}
+		var consequent = this.get('consequent'),
+			alternate = this.get('alternate');
+		consequent && consequent.set('visible', result);
+		alternate && alternate.set('visible', !result);
 	}
 }
 
