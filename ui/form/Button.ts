@@ -1,12 +1,12 @@
 /// <amd-dependency path="../renderer!form/Button" />
 
+import ContentView = require('../ContentView');
 import form = require('./interfaces');
-import View = require('../View');
 //import Widget = require('../Widget');
 
 var Renderer:any = require('../renderer!form/Button');
 
-class Button extends /*Widget*/ View implements form.IButton {
+class Button extends /*Widget*/ ContentView implements form.IButton {
 	/* protected */ _values:form.IButtonValues;
 
 	get:form.IButtonGet;

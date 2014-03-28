@@ -1,10 +1,10 @@
 import array = require('dojo/_base/array');
+import ContentView = require('../ContentView');
 import dom = require('./interfaces');
 import DomElementRenderer = require('./_Element');
 import List = require('dgrid/List');
 import OnDemandList = require('dgrid/OnDemandList');
 import util = require('../../util');
-import View = require('../View');
 import WidgetFactory = require('../../templating/WidgetFactory');
 
 class IteratorRenderer extends DomElementRenderer {
@@ -13,13 +13,13 @@ class IteratorRenderer extends DomElementRenderer {
 		widget._list = null;
 	}
 
-	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IMediatedElementWidget {
+	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IViewWidget {
 		var child = widget._widgetIndex[key];
 		if (child) {
 			return child;
 		}
 		var mediator = widget._getMediatorByKey(key);
-		child = widget._widgetIndex[key] = <dom.IMediatedElementWidget> widget._factory.create();
+		child = widget._widgetIndex[key] = <dom.IViewWidget> widget._factory.create();
 		child.set('mediator', mediator);
 		child.set('parent', widget);
 		return child;
@@ -108,7 +108,7 @@ class IteratorRenderer extends DomElementRenderer {
 		var scopeField = widget.get('each'),
 			source = widget.get('source'),
 			sourceLength = source.length,
-			child:dom.IMediatedElementWidget;
+			child:dom.IViewWidget;
 		if (change > 0) {
 			// If array is larger than before add the necessary rows to our list
 			widget._list.renderArray(source.toArray ? source.toArray() : source);
@@ -128,7 +128,7 @@ class IteratorRenderer extends DomElementRenderer {
 	}
 }
 
-class RowView extends View {};
+class RowView extends ContentView {};
 RowView.prototype._renderer = new DomElementRenderer();
 
 export = IteratorRenderer;

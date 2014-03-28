@@ -30,7 +30,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	/**
 	 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
 	 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
-	 * `ui.IView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
+	 * `ui.IContentView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
 	 * transformed. If null, a generic View object will be used for this route instead.
 	 */
 	private _view:string;
@@ -50,7 +50,7 @@ class Route extends BaseRoute implements routing.IRoute {
 
 	private _subViewHandles:Array<{ remove:() => void}> = [];
 	private _controllerInstance:any /* framework/Controller */;
-	private _viewInstance:any /* ui.IView */;
+	private _viewInstance:any /* ui.IContentView */;
 
 	/** @protected */
 	_app:core.IApplication;
@@ -135,7 +135,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * @param view - The sub-view to place.
 	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
 	 */
-	place(view:any /* ui.IView */, placeholderId?:string) {
+	place(view:any /* ui.IContentView */, placeholderId?:string) {
 		return this._viewInstance.addSubView(view, placeholderId);
 	}
 

@@ -15,7 +15,6 @@ import templating = require('./interfaces');
 import ui = require('../ui/interfaces');
 import util = require('../util');
 import domUtil = require('../ui/dom/util');
-import View = require('../ui/View');
 import Widget = require('../ui/Widget');
 
 class WidgetFactory implements templating.IWidgetFactory {
@@ -167,7 +166,7 @@ class _WidgetBinder {
 	}
 
 	private _bindPropertyTemplates():void {
-		var widget = <ui.IView> this.widget,
+		var widget = <ui.IContentView> this.widget,
 			bindingTemplates = this.factory.bindingTemplates,
 			template:any;
 
@@ -228,7 +227,7 @@ class _WidgetBinder {
 		}
 		util.remove.apply(null, this._textBindingHandles);
 		this._textBindingHandles = [];
-		var widget = <ui.IView> this.widget,
+		var widget = <ui.IContentView> this.widget,
 			node:Node,
 			path:string;
 		for (var i = 0, len = this._textBindingNodes.length; i < len; i++) {
@@ -282,7 +281,7 @@ class _WidgetBinder {
 			this._textBindingPaths = [];
 			this._childMarkerNodes = [];
 			this._processContentMarkers(content);
-			(<ui.IView> this.widget).setContent(content);
+			(<ui.IContentView> this.widget).setContent(content);
 		}
 	}
 
@@ -303,7 +302,7 @@ class _WidgetBinder {
 	}
 
 	private _processContentComment(node:Node):void {
-		var widget = <ui.IView> this.widget,
+		var widget = <ui.IContentView> this.widget,
 			match:string[] = node.nodeValue.match(this.factory.MARKER_PATTERN),
 			descriptor:any = match && JSON.parse(match[1]);
 		if (descriptor) {

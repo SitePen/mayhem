@@ -1,11 +1,11 @@
 /// <amd-dependency path="../renderer!form/Label" />
 
+import ContentView = require('../ContentView');
 import form = require('./interfaces');
-import View = require('../View');
 
 var Renderer:any = require('../renderer!form/Label');
 
-class FormLabel extends View implements form.ILabel {
+class FormLabel extends ContentView implements form.ILabel {
 	/* protected */ _values:form.ILabelValues;
 
 	get:form.ILabelGet;

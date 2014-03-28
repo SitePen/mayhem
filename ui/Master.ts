@@ -1,7 +1,7 @@
+import ContentView = require('./ContentView');
 import ui = require('./interfaces');
-import View = require('./View');
 
-class Master extends View implements ui.IMaster {
+class Master extends ContentView implements ui.IMaster {
 	attachToWindow(target:any):IHandle {
 		this._renderer.detach(this);
 

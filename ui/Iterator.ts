@@ -1,19 +1,19 @@
 /// <amd-dependency path="./renderer!Iterator" />
 
 import array = require('dojo/_base/array');
+import ContentView = require('./ContentView');
 import data = require('../data/interfaces');
 import Mediator = require('../data/Mediator');
 import ui = require('./interfaces');
 import util = require('../util');
-import View = require('./View');
 
 var Renderer:any = require('./renderer!Iterator');
 
-class Iterator extends View implements ui.IIterator {
+class Iterator extends ContentView implements ui.IIterator {
 	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
 	private _sourceBinding:IHandle;
 	/* protected */ _values:ui.IIteratorValues;
-	/* protected */ _widgetIndex:{ [key:string]: ui.IMediated; };
+	/* protected */ _widgetIndex:{ [key:string]: ui.IView; };
 
 	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'source' ], '_render');

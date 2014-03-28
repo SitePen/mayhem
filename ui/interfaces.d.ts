@@ -31,7 +31,7 @@ export interface IBindArguments {
 	twoWay?:boolean;
 }
 
-export interface IContainer extends IMediated {
+export interface IContainer extends IView {
 	get:IContainerGet;
 	set:IContainerSet;
 
@@ -47,36 +47,36 @@ export interface IContainer extends IMediated {
 	remove(widget:IWidget):void;
 }
 
-export interface IContainerGet extends IMediatedGet {
+export interface IContainerGet extends IViewGet {
 	(name:'children'):IWidget[];
 }
 
-export interface IContainerSet extends IMediatedSet {
+export interface IContainerSet extends IViewSet {
 }
 
-export interface IContainerValues extends IMediatedValues {
+export interface IContainerValues extends IViewValues {
 }
 
-export interface IMaster extends IView {
+export interface IMaster extends IContentView {
 	attachToWindow(target:any):IHandle;
 }
 
-export interface IMediated extends IWidget {
-	get:IMediatedGet;
-	set:IMediatedSet;
+export interface IView extends IWidget {
+	get:IViewGet;
+	set:IViewSet;
 
 	bind(kwArgs:IBindArguments):IHandle;
 }
 
-export interface IMediatedGet extends IWidgetGet {
+export interface IViewGet extends IWidgetGet {
 	(name:'mediator'):core.data.IMediator;
 }
 
-export interface IMediatedSet extends IWidgetSet {
+export interface IViewSet extends IWidgetSet {
 	(name:'mediator', value:core.data.IMediator):void;
 }
 
-export interface IMediatedValues extends IWidgetValues {
+export interface IViewValues extends IWidgetValues {
 	mediator?:core.data.IMediator;
 }
 
@@ -115,10 +115,10 @@ export interface IRenderer {
 	setContent(widget:IWidget, content:any):void;
 }
 
-export interface IView extends IContainer {
+export interface IContentView extends IContainer {
 	placeholders:{ [name:string]: IPlaceholder; };
-	get:IViewGet;
-	set:IViewSet;
+	get:IContentViewGet;
+	set:IContentViewSet;
 
 	add(item:IWidget, placeholder:string):IHandle;
 	add(item:IWidget, position:AddPosition):IHandle;
@@ -128,13 +128,13 @@ export interface IView extends IContainer {
 	setContent(content:any):void;
 }
 
-export interface IViewGet extends IContainerGet {
+export interface IContentViewGet extends IContainerGet {
 }
 
-export interface IViewSet extends IContainerSet {
+export interface IContentViewSet extends IContainerSet {
 }
 
-export interface IViewValues extends IContainerValues {
+export interface IContentViewValues extends IContainerValues {
 }
 
 export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {
@@ -184,14 +184,14 @@ export interface IConditional extends IPlaceholder {
 export interface IConditionalGet extends IPlaceholderGet {
 	(name:'alternate'):IWidget;
 	(name:'condition'):string;
-	(name:'consequent'):IView;
+	(name:'consequent'):IContentView;
 	(name:'result'):boolean;
 }
 
 export interface IConditionalSet extends IPlaceholderSet {
 	(name:'alternate', value:IWidget):void;
 	(name:'condition', value:string):void;
-	(name:'consequent', value:IView):void;
+	(name:'consequent', value:IContentView):void;
 	(name:'result', value:boolean):void;
 }
 
@@ -201,26 +201,27 @@ export interface IConditionalValues extends IPlaceholderValues {
 	result?:boolean;
 }
 
-export interface IIterator extends IView {
+// TODO: IIterator should extend IAdaptiveContainer instead
+export interface IIterator extends IContentView {
 	get:IIteratorGet;
 	set:IIteratorSet;
 }
 
-export interface IIteratorGet extends IViewGet {
+export interface IIteratorGet extends IContentViewGet {
 	(name:'each'):string;
 	(name:'in'):string;
 	(name:'source'):any;
 	(name:'template'):any;
 }
 
-export interface IIteratorSet extends IViewSet {
+export interface IIteratorSet extends IContentViewSet {
 	(name:'each', value:string):void;
 	(name:'in', value:string):void;
 	(name:'source', value:any):void;
 	(name:'template', value:any):void;
 }
 
-export interface IIteratorValues extends IViewValues {
+export interface IIteratorValues extends IContentViewValues {
 	each?:string;
 	in?:string;
 	source?:any;

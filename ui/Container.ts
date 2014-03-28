@@ -2,12 +2,12 @@ import AddPosition = require('./AddPosition');
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import has = require('../has');
-import Mediated = require('./Mediated');
 import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
 import util = require('../util');
+import View = require('./View');
 
-class Container extends Mediated implements ui.IContainer {
+class Container extends View implements ui.IContainer {
 	private _children:ui.IWidget[];
 	/* protected */ _values:ui.IContainerValues;
 

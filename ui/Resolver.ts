@@ -1,15 +1,15 @@
 /// <amd-dependency path="./renderer!Resolver" />
 
+import ContentView = require('./ContentView');
 import data = require('../data/interfaces');
 import Mediator = require('../data/Mediator');
 import ui = require('./interfaces');
 import util = require('../util');
-import View = require('./View');
 import when = require('dojo/when');
 
 var Renderer:any = require('./renderer!Resolver');
 
-class Resolver extends View implements ui.IResolver {
+class Resolver extends ContentView implements ui.IResolver {
 	private _promiseFieldBinding:IHandle;
 	/* protected */ _values:ui.IResolverValues;
 
@@ -67,7 +67,7 @@ class Resolver extends View implements ui.IResolver {
 		this.observe('error', this._placeView);
 		this.observe('during', this._placeView);
 
-		this.set('success', new View());
+		this.set('success', new ContentView());
 	}
 
 	private _notifyScopedMediator(result:any, previous:any):void {

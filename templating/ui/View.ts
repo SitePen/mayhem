@@ -1,6 +1,6 @@
-import View = require('../../ui/View');
+import ContentView = require('../../ui/ContentView');
 
-class TemplatingView extends View {
+class TemplatingView extends ContentView {
 }
 
 export = TemplatingView;

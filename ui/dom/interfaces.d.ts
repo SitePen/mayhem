@@ -16,7 +16,7 @@ export interface IWidget extends ui.IWidget {
 	_styleHandle:IHandle;
 }
 
-export interface IContainer extends ui.IContainer, IMediated {
+export interface IContainer extends ui.IContainer, IView {
 	get:ui.IContainerGet;
 	set:ui.IContainerSet;
 }
@@ -33,18 +33,18 @@ export interface IElementWidget extends IWidget {
 	_outerFragment:HTMLElement;
 }
 
-export interface IMediated extends ui.IMediated, IWidget {
-	get:ui.IMediatedGet;
-	set:ui.IMediatedSet;
+export interface IView extends ui.IView, IWidget {
+	get:ui.IViewGet;
+	set:ui.IViewSet;
 }
 
-export interface IMediatedElementWidget extends IElementWidget, IMediated {
+export interface IViewWidget extends IElementWidget, IView {
 	_firstNode:HTMLElement;
 	_lastNode:HTMLElement;
 	_outerFragment:HTMLElement;
 
-	get:ui.IMediatedGet;
-	set:ui.IMediatedSet;
+	get:ui.IViewGet;
+	set:ui.IViewSet;
 }
 
 export interface IDijitWidget extends IElementWidget {
@@ -61,7 +61,7 @@ export interface IIterator extends ui.IIterator, IElementWidget {
 	_mediatorIndex:{ [key:string]: core.data.IMediator; };
 	_sourceObserverHandle:IHandle;
 	_values:ui.IIteratorValues;
-	_widgetIndex:{ [key:string]: IMediatedElementWidget; };
+	_widgetIndex:{ [key:string]: IViewWidget; };
 
 	get:IIteratorGet;
 	set:IIteratorSet;

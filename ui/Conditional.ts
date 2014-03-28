@@ -2,11 +2,11 @@
 
 import ui = require('./interfaces');
 import util = require('../util');
-import View = require('./View');
+import ContentView = require('./ContentView');
 
 var Renderer:any = require('./renderer!Conditional');
 
-class Conditional extends View implements ui.IConditional {
+class Conditional extends ContentView implements ui.IConditional {
 	private _conditionBindHandle:IHandle;
 	/* protected */ _values:ui.IConditionalValues;
 
@@ -24,7 +24,7 @@ class Conditional extends View implements ui.IConditional {
 		this.observe('alternate', this._placeView);
 		this.observe('consequent', this._placeView);
 
-		this.set('consequent', new View());
+		this.set('consequent', new ContentView());
 
 		this.observe('result', (result:boolean):void => {
 			this._updateVisibility(result);
