@@ -57,6 +57,28 @@ export interface IContainerSet extends IViewSet {
 export interface IContainerValues extends IViewValues {
 }
 
+export interface IContentView extends IContainer {
+	placeholders:{ [name:string]: IPlaceholder; };
+	get:IContentViewGet;
+	set:IContentViewSet;
+
+	add(item:IWidget, placeholder:string):IHandle;
+	add(item:IWidget, position:AddPosition):IHandle;
+	add(item:IWidget, position:number):IHandle;
+	add(item:IWidget, position?:any):IHandle;
+	clear():void;
+	setContent(content:any):void;
+}
+
+export interface IContentViewGet extends IContainerGet {
+}
+
+export interface IContentViewSet extends IContainerSet {
+}
+
+export interface IContentViewValues extends IContainerValues {
+}
+
 export interface IMaster extends IContentView {
 	attachToWindow(target:any):IHandle;
 }
@@ -88,15 +110,15 @@ export interface IPlaceholder extends IContainer {
 }
 
 export interface IPlaceholderGet extends IContainerGet {
-	(name:'child'):IWidget;
+	(name:'currentChild'):IWidget;
 }
 
 export interface IPlaceholderSet extends IContainerSet {
-	(name:'child', value:IWidget):void;
+	(name:'currentChild', value:IWidget):void;
 }
 
 export interface IPlaceholderValues extends IContainerValues {
-	child?:IWidget;
+	currentChild?:IWidget;
 }
 
 export interface IRenderer {
@@ -115,26 +137,24 @@ export interface IRenderer {
 	setContent(widget:IWidget, content:any):void;
 }
 
-export interface IContentView extends IContainer {
-	placeholders:{ [name:string]: IPlaceholder; };
-	get:IContentViewGet;
-	set:IContentViewSet;
-
-	add(item:IWidget, placeholder:string):IHandle;
-	add(item:IWidget, position:AddPosition):IHandle;
-	add(item:IWidget, position:number):IHandle;
-	add(item:IWidget, position?:any):IHandle;
-	clear():void;
-	setContent(content:any):void;
+export interface ITextView extends IView {
+	get:ITextViewGet;
+	set:ITextViewSet;
 }
 
-export interface IContentViewGet extends IContainerGet {
+export interface ITextViewGet extends IViewGet {
+	(name:'formattedText'):string;
+	(name:'text'):string;
 }
 
-export interface IContentViewSet extends IContainerSet {
+export interface ITextViewSet extends IViewSet {
+	(name:'formattedText', value:string):void;
+	(name:'text', value:string):void;
 }
 
-export interface IContentViewValues extends IContainerValues {
+export interface ITextViewValues extends IViewValues {
+	formattedText?:string;
+	text?:string;
 }
 
 export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {

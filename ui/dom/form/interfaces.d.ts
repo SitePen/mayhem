@@ -4,15 +4,13 @@ import form = require('../../form/interfaces');
 export interface IError extends form.IError, dom.IElementWidget {
 	_observerHandle:IHandle;
 
-	get:IErrorGet;
-	set:IErrorSet;
+	get:form.IErrorGet;
+	set:form.IErrorSet;
 }
-export interface IErrorGet extends form.IErrorGet {}
-export interface IErrorSet extends form.IErrorSet {}
 
-export interface ILabel extends form.ILabel, dom.IElementWidget {
-	get:ILabelGet;
-	set:ILabelSet;
+export interface ILabel extends form.ILabel, dom.ITextView {
+	_values:form.ILabelValues;
+
+	get:form.ILabelGet;
+	set:form.ILabelSet;
 }
-export interface ILabelGet extends form.ILabelGet {}
-export interface ILabelSet extends form.ILabelSet {}

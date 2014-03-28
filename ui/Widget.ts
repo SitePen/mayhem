@@ -1,5 +1,4 @@
-/// <amd-dependency path="./renderer!Widget" />
-declare var require:any;
+// declare var require:any;
 
 import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
@@ -10,9 +9,8 @@ import Style = require('./style/Style');
 import ui = require('./interfaces');
 import util = require('../util');
 
-var Renderer:any = require('./renderer!Widget'),
-	uid = 0,
-	registry:{ [id:string]:ui.IWidget } = {};
+var registry:{ [id:string]:ui.IWidget } = {},
+	uid = 0;
 
 class Widget extends ObservableEvented implements ui.IWidget {
 	static byId(id:string):ui.IWidget {
@@ -190,7 +188,5 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.get('style').set('display', visible ? '' : 'none');
 	}
 }
-
-Widget.prototype._renderer = new Renderer();
 
 export = Widget;

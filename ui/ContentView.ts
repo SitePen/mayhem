@@ -1,7 +1,11 @@
+/// <amd-dependency path="./renderer!ContentView" />
+
 import Container = require('./Container');
 import has = require('../has');
 import ui = require('./interfaces');
 import util = require('../util');
+
+var Renderer:any = require('./renderer!ContentView');
 
 class ContentView extends Container implements ui.IContentView {
 	placeholders:{ [name:string]: ui.IPlaceholder; };
@@ -26,11 +30,11 @@ class ContentView extends Container implements ui.IContentView {
 				throw new Error('Unknown placeholder "' + position + '"');
 			}
 
-			placeholder.set('child', item);
+			placeholder.set('currentChild', item);
 			return {
 				remove: function ():void {
 					this.remove = function ():void {};
-					placeholder.set('child', null);
+					placeholder.set('currentChild', null);
 					placeholder = null;
 				}
 			};
@@ -57,5 +61,7 @@ class ContentView extends Container implements ui.IContentView {
 		super.destroy();
 	}
 }
+
+ContentView.prototype._renderer = new Renderer();
 
 export = ContentView;

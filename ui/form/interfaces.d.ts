@@ -1,41 +1,55 @@
 import core = require('../../interfaces');
 import ui = require('../interfaces');
 
-export interface IButton extends ui.IWidget {
+export interface IButton extends IControl {
 	get:IButtonGet;
 	set:IButtonSet;
 }
 
-export interface IButtonGet extends ui.IWidgetGet {
+export interface IButtonGet extends IControlGet {
 	(name:'label'):string;
 	(name:'type'):string;
 }
 
-export interface IButtonSet extends ui.IWidgetSet {
+export interface IButtonSet extends IControlSet {
 	(name:'label', value:string):void;
 	(name:'type', value:string):void;
 }
 
-export interface IButtonValues extends ui.IWidgetValues {
+export interface IButtonValues extends IControlValues {
 	label?:string;
 	type?:string;
 }
 
-export interface ICheckBox extends IToggleButton {
-	get:ICheckBoxGet;
-	set:ICheckBoxSet;
+export interface ICheckbox extends IInput, ISwitch {
+	get:ICheckboxGet;
+	set:ICheckboxSet;
 }
 
-export interface ICheckBoxGet extends IToggleButtonGet {
-	(name:'indeterminate'):boolean;
+export interface ICheckboxGet extends IInputGet, ISwitchGet {
 }
 
-export interface ICheckBoxSet extends IToggleButtonSet {
-	(name:'indeterminate', value:string):boolean;
+export interface ICheckboxSet extends IInputSet, ISwitchSet {
 }
 
-export interface ICheckBoxValues extends IButtonValues {
-	indeterminate?:string;
+export interface ICheckboxValues extends IInputValues, ISwitchValues {
+}
+
+export interface IControl extends ui.IWidget {
+	get:IControlGet;
+	set:IControlSet;
+}
+
+export interface IControlGet extends ui.IWidgetGet {
+	(name:'disabled'):boolean;
+}
+
+export interface IControlSet extends ui.IWidgetSet {
+	(name:'disabled', value:boolean):void;
+}
+
+export interface IControlValues extends ui.IWidgetValues {
+	disabled?:boolean;
 }
 
 export interface IError extends ui.IWidget {
@@ -55,24 +69,24 @@ export interface IErrorValues extends ui.IWidgetValues {
 	list?:core.IValidationError[];
 }
 
-export interface IInput extends ui.IWidget {
+export interface IInput extends IControl {
 	get:IInputGet;
 	set:IInputSet;
 }
 
-export interface IInputGet extends ui.IWidgetGet {
+export interface IInputGet extends IControlGet {
 	(name:'name'):string;
 	(name:'readonly'):boolean;
 	(name:'value'):any;
 }
 
-export interface IInputSet extends ui.IWidgetSet {
+export interface IInputSet extends IControlSet {
 	(name:'name', value:string):void;
 	(name:'readonly', value:boolean):void;
 	(name:'value', value:any):void;
 }
 
-export interface IInputValues extends ui.IWidgetValues {
+export interface IInputValues extends IControlValues {
 	name?:string;
 	readonly?:boolean;
 	value?:any;
@@ -86,37 +100,48 @@ export interface ILabel extends ui.IWidget {
 
 export interface ILabelGet extends ui.IWidgetGet {
 	(name:'for'):string;
-	(name:'formattedText'):string;
-	(name:'text'):string;
 }
 
 export interface ILabelSet extends ui.IWidgetSet {
 	(name:'for', value:string):void;
-	(name:'formattedText', value:string):void;
-	(name:'text', value:string):void;
 }
 
 export interface ILabelValues extends ui.IWidgetValues {
 	for?:string;
-	formattedText?:string;
-	text?:string;
 }
 
-export interface IRadioButton extends ICheckBox {
+export interface IRadioButton extends ICheckbox {
 	get:IRadioButtonGet;
 	set:IRadioButtonSet;
 }
 
-export interface IRadioButtonGet extends ICheckBoxGet {
-	(name:'group'):string;
+export interface IRadioButtonGet extends ICheckboxGet {
 }
 
-export interface IRadioButtonSet extends ICheckBoxSet {
-	(name:'group', value:string):string;
+export interface IRadioButtonSet extends ICheckboxSet {
 }
 
-export interface IRadioButtonValues extends ICheckBoxValues {
-	group?:string;
+export interface IRadioButtonValues extends ICheckboxValues {
+}
+
+export interface ISwitch extends IControl {
+	get:ISwitchGet;
+	set:ISwitchSet;
+}
+
+export interface ISwitchGet extends IControlGet {
+	(name:'checked'):boolean;
+	(name:'indeterminate'):boolean;
+}
+
+export interface ISwitchSet extends IControlSet {
+	(name:'checked', value:boolean):void;
+	(name:'indeterminate', value:boolean):void;
+}
+
+export interface ISwitchValues extends IControlValues {
+	checked?:boolean;
+	indeterminate?:boolean;
 }
 
 export interface ITextArea extends ITextField {
@@ -125,17 +150,17 @@ export interface ITextArea extends ITextField {
 }
 
 export interface ITextAreaGet extends ITextFieldGet {
-	(name:'cols'):number;
+	(name:'columns'):number;
 	(name:'rows'):number;
 }
 
 export interface ITextAreaSet extends ITextFieldSet {
-	(name:'cols', value:number):void;
+	(name:'columns', value:number):void;
 	(name:'rows', value:number):void;
 }
 
 export interface ITextAreaValues extends ITextFieldValues {
-	cols?:number;
+	columns?:number;
 	rows?:number;
 }
 
@@ -165,19 +190,16 @@ export interface ITextFieldValues extends IInputValues {
 	value?:string;
 }
 
-export interface IToggleButton extends IButton {
+export interface IToggleButton extends IButton, ISwitch {
 	get:IToggleButtonGet;
 	set:IToggleButtonSet;
 }
 
-export interface IToggleButtonGet extends IButtonGet {
-	(name:'checked'):boolean;
+export interface IToggleButtonGet extends IButtonGet, ISwitchGet {
 }
 
-export interface IToggleButtonSet extends IButtonSet {
-	(name:'checked', value:string):boolean;
+export interface IToggleButtonSet extends IButtonSet, ISwitchSet {
 }
 
-export interface IToggleButtonValues extends IButtonValues {
-	checked?:boolean;
+export interface IToggleButtonValues extends IButtonValues, ISwitchValues {
 }

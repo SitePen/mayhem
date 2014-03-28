@@ -47,6 +47,13 @@ export interface IViewWidget extends IElementWidget, IView {
 	set:ui.IViewSet;
 }
 
+export interface ITextView extends ui.ITextView, IElementWidget {
+	_values:ui.ITextViewValues;
+
+	get:ui.ITextViewGet;
+	set:ui.ITextViewSet;
+}
+
 export interface IDijitWidget extends IElementWidget {
 	_impl:_WidgetBase;
 }

@@ -20,11 +20,11 @@ class Placeholder extends Container implements ui.IPlaceholder {
 		return super.add(child, position);
 	}
 
-	/* protected */ _childGetter():ui.IWidget {
+	/* protected */ _currentChildGetter():ui.IWidget {
 		return this.getChild(0);
 	}
 
-	/* protected */ _childSetter(child:ui.IWidget):void {
+	/* protected */ _currentChildSetter(child:ui.IWidget):void {
 		this.add(child, PlacePosition.ONLY);
 	}
 }

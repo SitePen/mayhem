@@ -1,7 +1,7 @@
-import ButtonRenderer = require('./Button');
+import ControlRenderer = require('./Control');
 import ToggleButtonImpl = require('dijit/form/ToggleButton');
 
-class ToggleButtonRenderer extends ButtonRenderer {}
+class ToggleButtonRenderer extends ControlRenderer {}
 
 ToggleButtonRenderer.implementation({
 	constructor: ToggleButtonImpl

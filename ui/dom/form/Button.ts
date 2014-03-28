@@ -1,7 +1,7 @@
 import ButtonImpl = require('dijit/form/Button');
-import DijitRenderer = require('../_Dijit');
+import ControlRenderer = require('./Control');
 
-class ButtonRenderer extends DijitRenderer {}
+class ButtonRenderer extends ControlRenderer {}
 
 ButtonRenderer.implementation({
 	constructor: ButtonImpl
