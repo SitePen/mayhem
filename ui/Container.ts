@@ -94,7 +94,7 @@ class Container extends Mediated implements ui.IContainer {
 	empty():void {
 		var children = this._children;
 		while (children.length) {
-			children.pop().detach()
+			children.pop().detach();
 		}
 		children = null;
 	}

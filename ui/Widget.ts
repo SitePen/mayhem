@@ -75,6 +75,18 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		parent && parent.remove(this);
 	}
 
+	disown(...handles:any[]):void {
+		var owned = this._ownHandles,
+			handle:any;
+		for (var i = 0, len = handles.length; i < len; ++i) {
+			handle = handles[i];
+			// List of owned handles is a set
+			if (handle && owned.indexOf(handle) !== -1) {
+				util.spliceMatch(owned, handle);
+			}
+		}
+	}
+
 	private _indexGetter():number {
 		var parent = this.get('parent');
 
@@ -159,7 +171,15 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	own(...handles:any[]):void {
-		handles.length && this._ownHandles.push.apply(this._ownHandles, handles);
+		var owned = this._ownHandles,
+			handle:any;
+		for (var i = 0, len = handles.length; i < len; ++i) {
+			handle = handles[i];
+			// List of owned handles is a set
+			if (handle && owned.indexOf(handle) === -1) {
+				owned.push(handle);
+			}
+		}
 	}
 
 	// /* protected */ _visibleGetter():boolean {

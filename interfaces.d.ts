@@ -50,6 +50,8 @@ export interface IHasMetadata {
 export interface IManagedDestroyable extends IDestroyable {
 	// own(...handles:Array<IHandle | IDestroyable>):void;
 	own(...handles:any[]):void;
+	// disown(...handles:Array<IHandle | IDestroyable>):void;
+	disown(...handles:any[]):void;
 }
 
 export interface IObservable extends IDestroyable {
