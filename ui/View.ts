@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import AddPosition = require('./AddPosition');
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');

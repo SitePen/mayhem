@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import AddPosition = require('./AddPosition');
 import array = require('dojo/_base/array');
 import core = require('../interfaces');

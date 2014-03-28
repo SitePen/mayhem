@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import arrayUtil = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import core = require('../interfaces');

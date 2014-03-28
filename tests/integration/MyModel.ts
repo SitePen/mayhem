@@ -1,3 +1,5 @@
+/// <reference path="../../dojo" />
+
 import data = require('../../data/interfaces');
 import MemoryStore = require('dojo/store/Memory');
 import Model = require('../../data/Model');

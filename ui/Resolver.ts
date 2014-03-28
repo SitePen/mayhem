@@ -1,4 +1,5 @@
 /// <amd-dependency path="./renderer!Resolver" />
+/// <reference path="../dojo" />
 
 import ContentView = require('./ContentView');
 import data = require('../data/interfaces');

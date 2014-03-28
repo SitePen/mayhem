@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import Observable = require('../Observable');
 import core = require('../interfaces');
 import ioQuery = require('dojo/io-query');

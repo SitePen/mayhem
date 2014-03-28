@@ -1,3 +1,4 @@
+/// <reference path="../dojo" />
 /// <reference path="./intern" />
 
 import assert = require('intern/chai!assert');

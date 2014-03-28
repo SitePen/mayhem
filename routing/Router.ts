@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import Deferred = require('dojo/Deferred');
 import ObservableEvented = require('../ObservableEvented');
 import Route = require('./Route');

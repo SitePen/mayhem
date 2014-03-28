@@ -1,3 +1,5 @@
+/// <reference path="../../dojo" />
+
 import array = require('dojo/_base/array');
 import ContentView = require('../ContentView');
 import dom = require('./interfaces');

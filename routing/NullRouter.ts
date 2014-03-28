@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import Router = require('./Router');
 import lang = require('dojo/_base/lang');
 

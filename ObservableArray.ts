@@ -1,3 +1,5 @@
+/// <reference path="./dojo" />
+
 /* tslint:disable:max-line-length */
 
 import core = require('./interfaces');

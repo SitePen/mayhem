@@ -1,3 +1,5 @@
+/// <reference path="./dojo" />
+
 import Application = require('./Application');
 import routing = require('./routing/interfaces');
 import ui = require('./ui/interfaces');

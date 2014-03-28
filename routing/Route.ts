@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import Deferred = require('dojo/Deferred');
 import BaseRoute = require('./BaseRoute');
 import RouteEvent = require('./RouteEvent');

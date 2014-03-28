@@ -1,4 +1,5 @@
 /// <reference path="../dojo" />
+
 import binding = require('./interfaces');
 import createError = require('dojo/errors/create');
 import lang = require('dojo/_base/lang');

@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import Deferred = require('dojo/Deferred');
 import Router = require('./Router');
 import hash = require('dojo/hash');

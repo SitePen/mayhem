@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import Deferred = require('dojo/Deferred');
 import dojoText = require('dojo/text');
 import WidgetFactory = require('./WidgetFactory');

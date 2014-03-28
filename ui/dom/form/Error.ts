@@ -1,3 +1,5 @@
+/// <reference path="../../../dojo" />
+
 import core = require('../../../interfaces');
 import dom = require('../interfaces');
 import domConstruct = require('dojo/dom-construct');

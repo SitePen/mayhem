@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import lang = require('dojo/_base/lang');
 import has = require('../has');
 import Observable = require('../Observable');

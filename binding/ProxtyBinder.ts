@@ -1,3 +1,5 @@
+/// <reference path="../dojo" />
+
 import aspect = require('dojo/aspect');
 import BindDirection = require('./BindDirection');
 import binding = require('./interfaces');

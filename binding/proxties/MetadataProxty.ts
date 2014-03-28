@@ -1,3 +1,5 @@
+/// <reference path="../../dojo" />
+
 import binding = require('../interfaces');
 import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
