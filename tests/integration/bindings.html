@@ -43,7 +43,7 @@ require([
 	'framework/templating/html!./bindings.tmpl.html',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dijit/themes/claro/document.css'
-], function (Application, Master, MyMediator, MyModel, viewFactory) {
+], function (Application, Master, MyMediator, MyModel, BindingsView) {
 	var app = window.app = new Application({
 		modules: { router: null }
 	});
@@ -56,7 +56,7 @@ require([
 			model: model
 		});
 
-		var view = window.view = viewFactory.create();
+		var view = window.view = new BindingsView();
 		view.set('app', app);
 		view.set('mediator', mediator);
 

@@ -1,5 +1,5 @@
 {
-    "constructor": "framework/ui/View",
+    "constructor": "framework/ui/ContentView",
     "kwArgs": {
         "title": "Simple widget",
         "selected": true

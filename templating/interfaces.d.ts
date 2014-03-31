@@ -22,21 +22,21 @@ export interface ITemplateConstructor extends ILoaderPlugin {
     new(source:any):ITemplate;
     load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void;
     parse(source:string):IParseTree;
-	process(source:any, timeout?:number):IPromise<IWidgetFactory>;
+	process(source:any, timeout?:number):IPromise<IWidgetConstructor>;
 	scan(tree:IParseTree, seedList?:string[]):string[];
 }
 
 export interface ITemplate {
 	dependencies:string[];
-	factory:IWidgetFactory;
 	source:any; // string | IParseTree
 	tree:IParseTree;
 
-	load(timeout?:number):IPromise<IWidgetFactory>;
+	load(timeout?:number):IPromise<IWidgetConstructor>;
 	parse():IParseTree;
 	scan():string[];
 }
 
-export interface IWidgetFactory extends core.IDestroyable {
-	create(options?:any):ui.IWidget;
+export interface IWidgetConstructor {
+	new(options?:any):ui.IWidget;
+	(options?:any):ui.IWidget;
 }

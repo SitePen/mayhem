@@ -17,7 +17,7 @@ import util = require('../util');
 import domUtil = require('../ui/dom/util');
 import Widget = require('../ui/Widget');
 
-class WidgetFactory implements templating.IWidgetFactory {
+class WidgetFactory {
 	bindingTemplates:{ [key:string]: any; } = {};
 	childFactories:WidgetFactory[] = [];
 	content:Node;
@@ -66,7 +66,7 @@ class WidgetFactory implements templating.IWidgetFactory {
 		}
 		for (key in kwArgs) {
 			value = kwArgs[key];
-			if (value && typeof value.constructor === 'string') {
+			if (value && value.hasOwnProperty('constructor')) {
 				// Initialize factory for widgets in kwArg
 				kwArgFactories[key] = new WidgetFactory(value);
 			}

@@ -41,10 +41,10 @@ require([
 	Template,
 	// rawTree,
 	// rawTreeString,
-	// rawTmpl,
-	// jsonTmpl,
-	// jsonTmpl2,
-	testTmpl
+	// RawTmpl,
+	// JsonTmpl,
+	// JsonTmpl2,
+	TestTmpl
 ) {
 	var app = window.app = new Application({
 		modules: { router: null }
@@ -60,30 +60,30 @@ require([
 		var view = window.view = new Master({});
 		view.attachToWindow(document.body);
 
-		// view.add(jsonTmpl.create());
-		// view.add(jsonTmpl2.create());
-		// view.add(rawTmpl.create());
+		// view.add(new JsonTmpl());
+		// view.add(new JsonTmpl2());
+		// view.add(new RawTmpl());
 
 		// var rawTmpl2 = new Template(rawTree);
-		// rawTmpl2.load().then(function(factory) {
-		// 	view.add(factory.create())
+		// rawTmpl2.load().then(function(View) {
+		// 	view.add(new View())
 		// });
 
 		// var rawTmpl3 = new Template(rawTreeString);
-		// rawTmpl3.load(5000).then(function(factory) {
-		// 	view.add(factory.create())
+		// rawTmpl3.load(5000).then(function(View) {
+		// 	view.add(new View())
 		// });
 
 		// var rawTmpl4 = Template.process(rawTreeString).then(function(factory) {
-		// 	view.add(factory.create())
+		// 	view.add(new View())
 		// });
 
 		// var template = new Template(moduleTmpl);
-		// template.load(5000).then(function(factory) {
-		// 	view.add(factory.create());
+		// template.load(5000).then(function(View) {
+		// 	view.add(new View());
 		// });
 
-		view.add(testTmpl.create());
+		view.add(new TestTmpl());
 	});
 });
 		</script>

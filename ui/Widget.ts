@@ -1,5 +1,3 @@
-// declare var require:any;
-
 import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
 import has = require('../has');
