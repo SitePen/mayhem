@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Test app</title>
+
+	<link rel="stylesheet" href="./main.css">
+</head>
+<body class="claro">
+	<script>
+		var dojoConfig = {
+			async: true,
+			baseUrl: '../../../',
+			packages: [
+				'dojo',
+				'dijit',
+				'xstyle',
+				'put-selector',
+				'dgrid',
+				'framework',
+				{ name: 'app', location: 'framework/tests/app' }
+			],
+			deps: [ 'app' ]
+		};
+	</script>
+	<script src="../../../dojo/dojo.js" async></script>
+</body>
+</html>
