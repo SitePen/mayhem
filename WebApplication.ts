@@ -6,9 +6,6 @@ import ui = require('./ui/interfaces');
 import util = require('dojo/request/util');
 
 class WebApplication extends Application {
-	router:routing.IRouter;
-	ui:ui.IMaster;
-
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepCopy(super._getDefaultConfig(), {
 			modules: {
@@ -17,19 +14,19 @@ class WebApplication extends Application {
 				},
 				ui: {
 					constructor: 'app/views/ApplicationView',
-					viewModel: this
+					mediator: this
 				}
 			}
 		});
 	}
 
 	place(widget:ui.IWidget, placeholder?:string):IHandle {
-		return this.ui.add(widget, placeholder);
+		return this.get('ui').add(widget, placeholder);
 	}
 
 	startup():IPromise<WebApplication> {
 		var promise = super.startup().then(():WebApplication => {
-			this.ui.attachToWindow(document.body);
+			this.get('ui').attachToWindow(document.body);
 			return this;
 		});
 
