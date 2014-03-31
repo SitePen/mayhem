@@ -96,7 +96,7 @@ class Container extends View implements ui.IContainer {
 	empty():void {
 		var children = this._children;
 		while (children.length) {
-			children.pop().detach();
+			this.remove(children[0]);
 		}
 		children = null;
 	}

@@ -25,7 +25,12 @@ class Placeholder extends Container implements ui.IPlaceholder {
 	}
 
 	/* protected */ _currentChildSetter(child:ui.IWidget):void {
-		this.add(child, PlacePosition.ONLY);
+		if (child == null) {
+			this.empty();
+		}
+		else {
+			this.add(child, PlacePosition.ONLY);
+		}
 	}
 }
 

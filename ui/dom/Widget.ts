@@ -81,7 +81,7 @@ class DomWidgetRenderer implements ui.IRenderer {
 	detachContent(widget:dom.IWidget):void {
 		var content = widget._innerFragment;
 		if (!content || !content.firstChild) {
-			widget._innerFragment = domUtil.getRange(widget._firstNode, widget._lastNode, true).extractContents();	
+			widget._innerFragment = domUtil.getRange(widget._firstNode, widget._lastNode, true).extractContents();
 		}
 	}
 
