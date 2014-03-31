@@ -7,7 +7,7 @@ import lang = require('dojo/_base/lang');
  * A router implementation with no alternative backing mechanism. Change routes by calling `go`.
  */
 class NullRouter extends Router {
-	paused:boolean;
+	_values:NullRouter.IValues;
 
 	/**
 	 * Starts the router, using the current hash as the initial route to load. If no hash is set, the `defaultRoute`
@@ -15,7 +15,7 @@ class NullRouter extends Router {
 	 */
 	startup():IPromise<void> {
 		var promise = super.startup();
-		this._handlePathChange(this.createPath(this._defaultRoute));
+		this._handlePathChange(this.createPath(this.get('defaultRoute')));
 		return promise;
 	}
 
@@ -23,21 +23,21 @@ class NullRouter extends Router {
 	 * Resume this router.
 	 */
 	resume():void {
-		this.paused = false;
+		this.set('paused', false);
 	}
 
 	/**
 	 * Pause this router.
 	 */
 	pause():void {
-		this.paused = true;
+		this.set('paused', true);
 	}
 
 	/**
 	 * Transition to a new route.
 	 */
 	go(routeId:string, kwArgs?:Object):void {
-		if (this.paused) {
+		if (this.get('paused')) {
 			throw new Error('Router is paused');
 		}
 
@@ -58,13 +58,18 @@ class NullRouter extends Router {
 	/**
 	 * Stringifies the given arguments
 	 */
-	createPath(routeId:string, kwArgs?:{ [key:string]: any }) {
+	createPath(routeId:string, kwArgs?:{ [key:string]: any }):string {
 		return JSON.stringify({ id: routeId, kwArgs: kwArgs });
 	}
 }
 
-// Default primitive property values
-lang.mixin(NullRouter.prototype, {
+module NullRouter {
+	export interface IValues extends Router.IValues {
+		paused:boolean;
+	}
+}
+
+NullRouter.defaults({
 	paused: false
 });
 

@@ -42,13 +42,6 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	get:data.IModelGet;
 	set:data.IModelSet;
 
-	_initialize():void {
-		lang.mixin(this._values, {
-			isExtensible: false,
-			scenario: 'insert'
-		});
-	}
-
 	addError(key:string, error:core.IValidationError):void {
 		this._getProperties()[key].get('errors').push(error);
 	}
@@ -244,5 +237,10 @@ module Model {
 		[key:string]:IPropertyConstructor<any>;
 	}
 }
+
+Model.defaults({
+	isExtensible: false,
+	scenario: 'insert'
+});
 
 export = Model;

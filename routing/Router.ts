@@ -29,40 +29,33 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * load sub-views into parent views.
 	 *
 	 * See `framework/routing/Route` for more information on available Route properties. By default, Router will set the
-	 * `path`, `view`, and `controller` properties to the ID of the route if they are not explicitly set.
+	 * `path`, `view`, and `mediator` properties to the ID of the route if they are not explicitly set.
 	 *
-	 * For the moment, routes must only be set after the `controllerPath`, `viewPath`, and `templatePath` have been set
+	 * For the moment, routes must only be set after the `mediatorPath`, `viewPath`, and `templatePath` have been set
 	 * to their correct values.
 	 *
 	 * Once the router has been started, routes can no longer be changed.
 	 */
 
-	/** The app for this router. @protected */
-	_app:core.IApplication;
+	get:routing.IRouterGet;
+	set:routing.IRouterSet;
+	_values:Router.IValues;
 
-	/** The routes managed by this router. @protected */
-	_routes:{ [key:string]: Route };
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._activeRoutes = [];
 
-	/** The currently active routes. @protected */
-	_activeRoutes:Array<Route> = [];
+		super(kwArgs);
+	}
 
-	/** The previous path after a route transition. @protected */
+	/**
+	 * The currently active routes. @protected
+	 */
+	_activeRoutes:Array<Route>;
+
+	/**
+	 * The previous path after a route transition. @protected
+	 */
 	_oldPath:string;
-
-	/** The default location for controllers. @protected */
-	_controllerPath:string;
-
-	/** The default location for views. @protected */
-	_viewPath:string;
-
-	/** The default location for templates. @protected */
-	_templatePath:string;
-
-	/** The default route when the application is loaded without an existing route. @protected */
-	_defaultRoute:string;
-
-	/** The route to load when an unmatched route is loaded. @protected */
-	_notFoundRoute:string;
 
 	/**
 	 * Starts listening for new path changes.
@@ -70,17 +63,17 @@ class Router extends ObservableEvented implements routing.IRouter {
 	startup():IPromise<void> {
 		var dfd:IDeferred<void> = new Deferred<void>();
 		dfd.resolve(null);
-		this._routesSetter = function ():void { }
-		this.startup = function ():IPromise<void> { return dfd; };
+		this._routesSetter = function ():void {};
+		this.startup = function ():IPromise<void> { return dfd.promise; };
 		this.resume();
-		return dfd;
+		return dfd.promise;
 	}
 
 	/**
 	 * Stops listening for any new path changes, exits all active routes, and destroys all registered routes.
 	 */
 	destroy():void {
-		this.destroy = function () {};
+		this.destroy = function ():void {};
 		this.pause();
 
 		var route:Route;
@@ -89,12 +82,13 @@ class Router extends ObservableEvented implements routing.IRouter {
 			route.exit();
 		}
 
-		for (var id in this._routes) {
-			route = this._routes[id];
+		var routes = this.get('routes');
+		for (var id in routes) {
+			route = routes[id];
 			route.destroy && route.destroy();
 		}
 
-		this._activeRoutes = this._routes = null;
+		this._activeRoutes = this._values.routes = null;
 	}
 
 	/**
@@ -157,11 +151,11 @@ class Router extends ObservableEvented implements routing.IRouter {
 		id = id.replace(/^\.\//, idPrefix);
 
 		if (id === '') {
-			id = this._defaultRoute;
+			id = this.get('defaultRoute');
 		}
 
 		if (id.charAt(id.length - 1) === '/') {
-			id += this._defaultRoute;
+			id += this.get('defaultRoute');
 		}
 
 		return id;
@@ -171,15 +165,15 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Setter for the _routes property.
 	 *
 	 * @param routeMap A mapping of route IDs to some sort of route descriptor. The descriptor may be a an object, a
-	 * string, or a Route. An object descriptor may have the properties `controller`, `view`, `code`, or `path`.
+	 * string, or a Route. An object descriptor may have the properties `mediator`, `view`, `code`, or `path`.
 	 *
 	 * @returns the routeMap
 	 */
 	_routesSetter(routeMap:{ [id:string]: any }):void {
-		var routes = this._routes = {};
+		var routes = this._values.routes = {};
 
-		if (!routeMap[this._notFoundRoute]) {
-			routeMap[this._notFoundRoute] = { controller: null, view: '/framework/views/ErrorView', code: 404 };
+		if (!routeMap[this.get('notFoundRoute')]) {
+			routeMap[this.get('notFoundRoute')] = { mediator: null, view: '/framework/views/ErrorView', code: 404 };
 		}
 
 		var kwArgs:any,
@@ -192,7 +186,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 				route = kwArgs;
 				route.set({
 					id: routeId,
-					app: this._app
+					app: this.get('app')
 				});
 			}
 			else {
@@ -202,7 +196,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 				kwArgs.id = routeId;
 				kwArgs.router = this;
-				kwArgs.app = this._app;
+				kwArgs.app = this.get('app');
 
 				// Path might be the empty string, and this is OK, but it cannot be null or undefined. Then,
 				// because of the way path nesting works, only the last part of the route identifier is used as
@@ -218,14 +212,14 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 		// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
 		// spend a little time on it
-		linkParentRoutes: for (var routeId in routes) {
+		linkParentRoutes: for (routeId in routes) {
 			route = routes[routeId];
 			var parentDelimiterIndex = routeId.lastIndexOf('/');
 
 			if (parentDelimiterIndex === -1) {
 				// TODO: It feels weird to say the parent of a root route is the app, but it is the easiest way
 				// to place views into the main application view
-				route.set('parent', this._app);
+				route.set('parent', this.get('app'));
 				continue;
 			}
 
@@ -244,7 +238,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Transforms route view/template/controller arguments to complete module IDs. Directly modifies the passed object.
+	 * Transforms route view/template/mediator arguments to complete module IDs. Directly modifies the passed object.
 	 */
 	_fixUpRouteArguments(kwArgs:{ id: string; [key:string]: any }):void {
 		/**
@@ -252,7 +246,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		 * foo/Bar`
 		 */
 		function resolve(value:string):string {
-			return value.replace(/(^|\/)([a-z])([^\/]*)$/, function () {
+			return value.replace(/(^|\/)([a-z])([^\/]*)$/, function ():string {
 				return arguments[1] + arguments[2].toUpperCase() + arguments[3];
 			});
 		}
@@ -260,16 +254,16 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var suffixes = {
 			view: 'View',
 			template: 'View.html',
-			controller: 'Controller'
+			mediator: 'Mediator'
 		};
 
 		var routeId = kwArgs.id,
 			resolvedRouteId = resolve(routeId);
 
-		for (var key in { controller: 1, view: 1, template: 1 }) {
+		for (var key in { mediator: 1, view: 1, template: 1 }) {
 			var value = kwArgs[key];
 
-			// undefined controller and template default to computing the ID based on the route ID
+			// undefined mediator and template default to computing the ID based on the route ID
 			if (value === undefined && key !== 'view') {
 				kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId + suffixes[key];
 			}
@@ -316,8 +310,8 @@ class Router extends ObservableEvented implements routing.IRouter {
 			whenAll([
 				this._exitRoutes(event),
 				this._enterRoutes(event)
-			]).then(function () {
-				function emitIdle() {
+			]).then(function ():any {
+				function emitIdle():void {
 					self.emit('idle', new RouteEvent({
 						oldPath: event.oldPath,
 						newPath: event.newPath,
@@ -360,8 +354,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var entrances:Array<IPromise<void>> = [],
 			route:Route;
 
-		for (var id in this._routes) {
-			route = this._routes[id];
+		var routes = this.get('routes');
+		for (var id in routes) {
+			route = routes[id];
 			if (route.test(event.newPath)) {
 				entrances.push(route.enter(event));
 
@@ -378,19 +373,57 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Handles not found routes by activating the not-found route.
 	 */
 	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
-		var notFoundRoute = this._routes[this._notFoundRoute];
+		var notFoundRoute = this.get('routes')[this.get('notFoundRoute')];
 		this._activeRoutes.push(notFoundRoute);
 		return when(notFoundRoute.enter(event));
 	}
 }
 
-// Set default primitive properties on the prototype so that they exist before any code depending on them runs.
-lang.mixin(Router.prototype, {
-	_controllerPath: 'app/controllers',
-	_viewPath: 'app/views',
-	_templatePath: '../template!app/views',
-	_defaultRoute: 'index',
-	_notFoundRoute: 'error'
+module Router {
+	export interface IValues {
+		/**
+		 * The app for this router. @protected
+		 */
+		app:core.IApplication;
+
+		/**
+		 * The routes managed by this router. @protected
+		 */
+		routes:{ [key:string]:Route };
+
+		/**
+		 * The default location for mediators. @protected
+		 */
+		mediatorPath:string;
+
+		/**
+		 * The default location for views. @protected
+		 */
+		viewPath:string;
+
+		/**
+		 * The default location for templates. @protected
+		 */
+		templatePath:string;
+
+		/**
+		 * The default route when the application is loaded without an existing route. @protected
+		 */
+		defaultRoute:string;
+
+		/**
+		 * The route to load when an unmatched route is loaded. @protected
+		 */
+		notFoundRoute:string;
+	}
+}
+
+Router.defaults({
+	mediatorPath: 'app/mediators',
+	viewPath: 'app/views',
+	templatePath: '../template!app/views',
+	defaultRoute: 'index',
+	notFoundRoute: 'error'
 });
 
 export = Router;

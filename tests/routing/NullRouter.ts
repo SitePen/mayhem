@@ -28,12 +28,12 @@ registerSuite({
 
 	'#pause': function () {
 		router.pause();
-		assert.isTrue(router.paused, 'NullRouter should be paused after a call to pause');
+		assert.isTrue(router.get('paused'), 'NullRouter should be paused after a call to pause');
 	},
 
 	'#resume': function () {
 		router.resume();
-		assert.isFalse(router.paused, 'NullRouter should not be paused after a call to resume');
+		assert.isFalse(router.get('paused'), 'NullRouter should not be paused after a call to resume');
 	},
 
 	'#go': function () {

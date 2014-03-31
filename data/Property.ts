@@ -29,11 +29,8 @@ class Property<T> extends Observable implements data.IProperty<T> {
 
 	_initialize():void {
 		lang.mixin(this._values, {
-			dependencies: null,
 			errors: new ObservableArray<core.IValidationError>(),
-			model: null,
-			validators: [],
-			validateOnSet: true
+			validators: []
 		});
 	}
 
@@ -136,30 +133,40 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	}
 }
 
-Property.prototype.get = function (key?:string):any {
-	if (key == null) {
-		var serialized:Object = {};
-		for (var property in this) {
-			if (property.charAt(0) !== '_' || typeof this[property] === 'function') {
-				continue;
+Property.defaults({
+	dependencies: null,
+	errors: null,
+	model: null,
+	validators: null,
+	validateOnSet: true
+});
+
+lang.mixin(Property.prototype, {
+	get: function (key?:string):any {
+		if (key == null) {
+			var serialized:Object = {};
+			for (var property in this) {
+				if (property.charAt(0) !== '_' || typeof this[property] === 'function') {
+					continue;
+				}
+
+				serialized[property.slice(1)] = this[property];
 			}
-
-			serialized[property.slice(1)] = this[property];
+			return serialized;
 		}
-		return serialized;
-	}
 
-	return Observable.prototype.get.call(this, key);
-};
+		return Observable.prototype.get.call(this, key);
+	},
 
-Property.prototype.set = function (key:any, value?:any):void {
-	if (key === 'get') {
-		key = 'valueGetter';
+	set: function (key:any, value?:any):void {
+		if (key === 'get') {
+			key = 'valueGetter';
+		}
+		else if (key === 'set') {
+			key = 'valueSetter';
+		}
+		Observable.prototype.set.call(this, key, value);
 	}
-	else if (key === 'set') {
-		key = 'valueSetter';
-	}
-	Observable.prototype.set.call(this, key, value);
-};
+});
 
 export = Property;

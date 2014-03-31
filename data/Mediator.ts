@@ -21,15 +21,10 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 	get:data.IMediatorGet;
 	set:data.IMediatorSet;
 
-	_initialize():void {
+	constructor(kwArgs?:{ [key:string]: any; }) {
 		this._modelHandles = {};
 
-		super._initialize();
-
-		lang.mixin(this._values, {
-			app: null,
-			model: null
-		});
+		super(kwArgs);
 	}
 
 	getMetadata(key:string):data.IProperty<any> {
@@ -178,6 +173,11 @@ lang.mixin(Mediator.prototype, {
 			}
 		}
 	}
+});
+
+Mediator.defaults({
+	app: null,
+	model: null
 });
 
 export = Mediator;

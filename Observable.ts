@@ -1,8 +1,19 @@
 import core = require('./interfaces');
 import has = require('./has');
+import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 class Observable implements core.IObservable {
+	static defaults(kwArgs:any):void {
+		var proto:any = this.prototype;
+		if (!proto.hasOwnProperty('_values')) {
+			proto._values = lang.delegate(proto._values, kwArgs);
+		}
+		else {
+			lang.mixin(proto._values, kwArgs);
+		}
+	}
+
 	get:core.IObservableGet;
 	has:(key:string) => boolean;
 	set:core.IObservableSet;
@@ -10,6 +21,7 @@ class Observable implements core.IObservable {
 	/* protected */ _values:Object;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
+		var defaults = this._values;
 		if (has('es5')) {
 			this._observers = Object.create(null);
 			this._values = Object.create(null);
@@ -18,6 +30,7 @@ class Observable implements core.IObservable {
 			this._observers = {};
 			this._values = {};
 		}
+		this._values = lang.delegate(defaults);
 		this._initialize();
 		kwArgs && this.set(kwArgs);
 	}

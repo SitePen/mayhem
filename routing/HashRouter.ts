@@ -11,25 +11,21 @@ import when = require('dojo/when');
  * A router implementation that operates using the window's location hash.
  */
 class HashRouter extends Router {
-	/**
-	 * A prefix that is expected to exist on all URLs loaded through this router.
-	 */
-	pathPrefix:string;
-
-	private _changeHandle:{ remove:() => void };
+	_values:HashRouter.IValues;
+	private _changeHandle:IHandle;
 
 	/**
 	 * Starts the router, using the current hash as the initial route to load. If no hash is set, the `defaultRoute`
 	 * will be set as the hash and loaded.
 	 */
 	startup():IPromise<void> {
-		return when(super.startup()).then(function ():void {
+		return when(super.startup()).then(():void => {
 			var initialRoute = hash();
 			if (initialRoute) {
 				this._handlePathChange(this.normalizeId(initialRoute));
 			}
 			else {
-				hash(this.createPath(this.defaultRoute), true);
+				hash(this.createPath(this.get('defaultRoute')), true);
 			}
 		});
 	}
@@ -82,13 +78,13 @@ class HashRouter extends Router {
 	createPath(id:string, kwArgs?:Object):string {
 		id = this.normalizeId(id);
 
-		var route = this._routes[id];
+		var route = this.get('routes')[id];
 
 		if (!route) {
 			throw new Error('Invalid route id "' + id + '"');
 		}
 
-		return '#' + this.pathPrefix + route.serialize(kwArgs);
+		return '#' + this.get('pathPrefix') + route.serialize(kwArgs);
 	}
 
 	/**
@@ -97,16 +93,25 @@ class HashRouter extends Router {
 	normalizeId(id:string):string {
 		// TODO: If something is passing an thing that is prefixed they are probably passing the path instead, which
 		// is not correct
-		if (id.indexOf(this.pathPrefix) === 0) {
-			id = id.slice(this.pathPrefix.length);
+		var prefix:string = this.get('pathPrefix');
+		if (id.indexOf(prefix) === 0) {
+			id = id.slice(prefix.length);
 		}
 
 		return super.normalizeId(id);
 	}
 }
 
-// Default primitive property values
-lang.mixin(HashRouter.prototype, {
+module HashRouter {
+	export interface IValues extends Router.IValues {
+		/**
+		 * A prefix that is expected to exist on all URLs loaded through this router.
+		 */
+		pathPrefix:string;
+	}
+}
+
+HashRouter.defaults({
 	pathPrefix: '!/'
 });
 

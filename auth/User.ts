@@ -20,12 +20,6 @@ class User extends Observable {
 		state:Object;
 	};
 
-	/* protected */ _initialize():void {
-		lang.mixin(this._values, {
-			isAuthenticated: false
-		});
-	}
-
 	/**
 	 * Performs a login for the current user. If successful, the user object is set to authenticated and its state
 	 * property is updated with the data returned by the `authenticate` method. Data passed to the `login` method is
@@ -84,5 +78,9 @@ class User extends Observable {
 		return true;
 	}
 }
+
+User.defaults({
+	isAuthenticated: false
+});
 
 export = User;
