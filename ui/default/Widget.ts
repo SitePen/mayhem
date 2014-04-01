@@ -15,7 +15,7 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 		console.debug('#attachStyles');
 	}
 
-	attachToWindow(widget:ui.IWidget, target:Node):void {
+	attachToWindow(widget:ui.IWidget, target:any):void {
 		console.debug('#attachToWindow');
 	}
 
@@ -51,7 +51,7 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 		console.debug('#render');
 	}
 
-	setContent(widget:ui.IWidget, value?:any /* string | Node */):void {
+	setContent(widget:ui.IWidget, value:any):void {
 		console.debug('#setContent');
 		this._content[widget.get('id')] = value;
 	}
