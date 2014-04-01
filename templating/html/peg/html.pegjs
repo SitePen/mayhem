@@ -50,6 +50,15 @@
 		return results.join('');
 	}
 
+	function trim(str) {
+		// Levithan trim via http://blog.stevenlevithan.com/archives/faster-trim-javascript
+		var	str = str.replace(/^\s\s*/, ''),
+			ws = /\s/,
+			i = str.length;
+		while (ws.test(str.charAt(--i)));
+		return str.slice(0, i + 1);
+	}
+
 	var aliases = {
 		_aliases: [],
 		_map: null,
@@ -272,22 +281,22 @@ BoundText
 	= ( Binding / !'{' value:('\\{' { return '\x7b' } / [^{])+ { return value.join('') } )*
 
 Binding
-	= '{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { $bind: value.join('') } }
+	= '{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { $bind: trim(value.join('')) } }
 
 
 // conditionals
 
 If '<if/>'
 	= kwArgs:IfTagOpen
-	body:NonBlankElement
+	body:Element?
 	alternates:(
-		kwArgs:ElseIfTagOpen body:NonBlankElement (ElseIfTagClose S*)? {
+		kwArgs:ElseIfTagOpen body:Element? (ElseIfTagClose S*)? {
 			body.constructor = 'framework/templating/ui/Conditional';
 			body.kwArgs = kwArgs;
 			return body;
 		}
 	)*
-	finalAlternate:(kwArgs:ElseTagOpen body:NonBlankElement (ElseTagClose S*)? {
+	finalAlternate:(kwArgs:ElseTagOpen body:Element? (ElseTagClose S*)? {
 		body.constructor = 'framework/templating/ui/View';
 		body.kwArgs = kwArgs;
 		return body;

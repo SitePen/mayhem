@@ -1,16 +1,16 @@
-<widget is="framework/ui/form/TextArea" value='{firstName} {lastName}'></widget>
-First Name: <widget is="framework/ui/form/TextField" value={firstName} label={firstName}></widget>
+<widget is="framework/ui/form/TextArea" value='{ firstName } { lastName }'></widget>
+First Name: <widget is="framework/ui/form/TextField" value={ firstName } label={ firstName }></widget>
 <widget is="framework/ui/form/Error" binding="firstName"></widget>
-Last Name: <widget is="framework/ui/form/TextField" value={lastName}></widget>
+Last Name: <widget is="framework/ui/form/TextField" value={ lastName }></widget>
 <widget is="framework/ui/form/Error" binding="lastName"></widget>
-fullName bound input: <widget is="framework/ui/form/TextField" value={fullName}></widget>
+fullName bound input: <widget is="framework/ui/form/TextField" value={ fullName }></widget>
 <br>
-fullName computed field: {fullName}<br>
-firstName lastName: {firstName} {lastName}<br>
+fullName computed field: { fullName }<br>
+firstName lastName: { firstName } { lastName }<br>
 
 <p>
-<label>Enabled: <widget is="framework/ui/form/Checkbox" checked={enabled}></widget></label><br>
-<label for='cb2'>Enabled:</label> <widget is="framework/ui/form/Checkbox" checked={enabled} id='cb2'></widget>
+<label>Enabled: <widget is="framework/ui/form/Checkbox" checked={ enabled }></widget></label><br>
+<label for='cb2'>Enabled:</label> <widget is="framework/ui/form/Checkbox" checked={ enabled } id='cb2'></widget>
 </p><p>
 Name preference: {firstName}
 <fieldset>
@@ -25,29 +25,29 @@ Name preference: {firstName}
 <if condition="enabled">
 	(1) `enabled` is true<br>
 <elseif condition="firstNameIsJoey">
-	(2) firstName should be Joey (is: {firstName}).<br>
+	(2) firstName should be Joey (is: { firstName }).<br>
 <elseif condition="lastNameIsBloggs">
-	(3) lastName should be Bloggs (is: {lastName}).<br>
+	(3) lastName should be Bloggs (is: { lastName }).<br>
 <elseif condition="fullNameIsBoeBlogger">
-	(4) transformed fullName should be Boe Blogger (is: {fullName}).<br>
+	(4) transformed fullName should be Boe Blogger (is: { fullName }).<br>
 <elseif condition="firstName">
-	<widget is="framework/ui/form/TextField" value={firstName}></widget>
-	<widget is="framework/ui/form/TextField" value={lastName}></widget>
+	<widget is="framework/ui/form/TextField" value={ firstName }></widget>
+	<widget is="framework/ui/form/TextField" value={ lastName }></widget>
 <else>
 	(X) No match... here's a read-only widget binding for fun:
-	<widget is="framework/ui/form/TextField" value='{firstName} {lastName}'></widget>
+	<widget is="framework/ui/form/TextField" value='{ firstName } { lastName }'></widget>
 </if>
 
 <h3>Iterators</h3>
 
-<h4>Hobbies (observable array): {hobbies}</h4>
+<h4>Hobbies (observable array): { hobbies }</h4>
 <for id='hobby-iter' each='hobby' in="hobbies">
-	<span style="background-color:yellow"><em>{firstName}</span> likes</em> <widget is="framework/ui/form/TextField" value={hobby}></widget></span>
+	<span style="background-color:yellow"><em>{ firstName }</span> likes</em> <widget is="framework/ui/form/TextField" value={hobby}></widget></span>
 </for>
 
-<h4>Phone numbers (store): {phone_numbers}</h4>
+<h4>Phone numbers (store): { phone_numbers }</h4>
 <for id='phone-iter' each='phone' in="phone_numbers">
-	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> {phone.value}</span>
+	<span style="background-color:cyan"><em>{phone.type}</span> (type)</em> { phone.value }</span>
 	<widget is="framework/ui/form/TextField" value={phone.value}></widget>
 </for>
 
