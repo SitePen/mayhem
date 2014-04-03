@@ -14,9 +14,8 @@ function assertIsObservableArray(obj:any) {
 registerSuite({
 	name: 'ObservableArray',
 
-	// TODO: Shouldn't we be able to mix param types to concat?
 	'#concat' () {
-		var observableArray = new ObservableArray([ 1, 2, 3 ]),
+		var observableArray:ObservableArray<any> = new ObservableArray([ 1, 2, 3 ]),
 			numericResult:ObservableArray<any> = observableArray.concat(4, 5, 6, [ 7, 8 ]),
 			mixedResult:ObservableArray<any> = numericResult.concat([ [ 9, 10 ] ]);
 
@@ -41,7 +40,7 @@ registerSuite({
 			filterResults = observableArray.filter((x) => x % 3 == 0),
 			expectedResults = new ObservableArray([ 3, 6 ]);
 
-		assertIsObservableArray(filterResults, ObservableArray);
+		assertIsObservableArray(filterResults);
 		assert.deepEqual(filterResults, expectedResults);
 	},
 
@@ -84,7 +83,7 @@ registerSuite({
 			});
 		});
 
-		for (var i = 0, newValue; i < observableArray.length; ++i) {
+		for (var i = 0, newValue:number; i < observableArray.length; ++i) {
 			newValue = 7 + i;
 			observableArray.set(i, newValue);
 			assert.strictEqual(observableArray.get(i), newValue);
@@ -325,7 +324,7 @@ registerSuite({
 		assert.deepEqual(observableArray.splice(-2, 2, 16, 17), new ObservableArray([ 13, 14 ]));
 		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 16, 17 ]));
 
-		assert.deepEqual(observations, [
+		var expectedObservations = [
 			{ index: 0, removals: [ 1 ], additions: [] },
 			{ index: 0, removals: [ 2, 3 ], additions: [] },
 			{ index: 0, removals: [ 4, 5 ], additions: [ 1, 2 ] },
@@ -335,7 +334,12 @@ registerSuite({
 			{ index: 6, removals: [ 9 ], additions: [] },
 			{ index: 4, removals: [ 15, 8 ], additions: [] },
 			{ index: 2, removals: [ 13, 14 ], additions: [ 16, 17 ] },
-		]);
+		];
+		expectedObservations.forEach((observation) => {
+			observation.removals = new ObservableArray(observation.removals);
+		});
+
+		assert.deepEqual(observations, expectedObservations);
 	},
 
 	'#toArray' () {
