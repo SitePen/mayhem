@@ -88,19 +88,22 @@ registerSuite({
 	},
 
 	'#placeAt': function () {
-		var added:any,
-			parent = {
-				index: 0,
+		var parent:any = {
+				_index: null,
+				_added: null,
 				add(widget:any, index:number) {
-					added = widget;
-					this.index = index;
+					this._added = widget;
+					this._index = index;
 				}
 			},
 			reference:any = {
-				index: 0,
 				parent: parent,
-				add(widget:any) {
-					added = 'reference';
+				index: 0,
+				_index: null,
+				_added: null,
+				add(widget:any, index:number) {
+					this._added = widget;
+					this._index = index;
 				},
 				get(key:string) {
 					return this[key];
@@ -112,12 +115,26 @@ registerSuite({
 				}
 			};
 		widget.placeAt(reference, PlacePosition.BEFORE);
-		assert.strictEqual(added, widget, 'Widget should have been added to the parent');
-		assert.strictEqual(parent.index, 0, 'Widget should have been added to the parent at index 0');
 
+		widget.placeAt(reference, PlacePosition.BEFORE);
+		assert.strictEqual(parent._added, widget, 'Widget should have been added to the parent');
+		assert.strictEqual(parent._index, 0, 'Widget should have been added to the parent at index 0');
+
+		parent._added = null;
+		parent.index = null;
 		widget.placeAt(reference, PlacePosition.AFTER);
-		assert.strictEqual(added, widget, 'Widget should have been added to the parent');
-		assert.strictEqual(parent.index, 1, 'Widget should have been added to the parent at index 1');
+		assert.strictEqual(parent._added, widget, 'Widget should have been added to the parent');
+		assert.strictEqual(parent._index, 1, 'Widget should have been added to the parent at index 1');
+
+		// undefined position -- should be last
+		widget.placeAt(reference, undefined);
+		assert.strictEqual(reference._added, widget, 'Widget should have been added to the reference');
+		assert.strictEqual(reference._index, PlacePosition.LAST, 'Widget should have been added to the reference at index -2');
+
+		// positive position -- should be placed in reference at defined position
+		widget.placeAt(reference, 0);
+		assert.strictEqual(reference._added, widget, 'Widget should have been added to the reference');
+		assert.strictEqual(reference._index, 0, 'Widget should have been added to the reference at index 0');
 
 		widget.placeAt(reference, PlacePosition.REPLACE);
 		assert.isTrue(reference._renderer.detached, 'Destination should have been detached');
@@ -163,10 +180,11 @@ registerSuite({
 
 		widget.set('parent', parent);
 		parent.children.push(widget);
-		assert.isNull(widget.get('previous'), 'Previous entry should be null');
+		assert.isNull(widget.get('previous'), 'Previous entry from first/only widget should be null');
 
 		parent.children.splice(0, 0, 'firstChild');
-		assert.strictEqual(widget.get('previous'), 'firstChild', 'Previous entry should be string');
+		assert.strictEqual(widget.get('previous'), 'firstChild',
+			'Previous entry from second widget should not be null');
 	},
 
 	'#_nextGetter': function () {
@@ -183,10 +201,22 @@ registerSuite({
 
 		widget.set('parent', parent);
 		parent.children.push(widget);
-		assert.isNull(widget.get('next'), 'Next entry should be null');
+		assert.isNull(widget.get('next'), 'Next entry from last/only widget should be null');
 
 		parent.children.push('lastChild');
-		assert.strictEqual(widget.get('next'), 'lastChild', 'Next entry should be string');
+		assert.strictEqual(widget.get('next'), 'lastChild', 'Next entry from first widget should not be null');
+	},
+
+	'#_visibleSetter': function () {
+		var style = widget.get('style');
+		widget.set('visible', true);
+		assert.strictEqual(style.get('display'), '', 'display style for visible=true should be ""');
+		widget.set('visible', false);
+		assert.strictEqual(style.get('display'), 'none', 'display style for visible=false should be "none"');
+		widget.set('visible', 0);
+		assert.strictEqual(style.get('display'), 'none', 'display style for visible=0 should be "none"');
+		widget.set('visible', 'foo');
+		assert.strictEqual(style.get('display'), '', 'display style for visible="foo" should be ""');
 	},
 
 	'.byId': function () {

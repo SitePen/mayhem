@@ -63,7 +63,11 @@ registerSuite({
 		}, 'Destroying a resolver should not throw');
 		assert.isTrue(success._destroyed, 'Success view should have been destroyed');
 
-		// TODO: test canceling target promise
+		var target:IDeferred<void> = new Deferred<void>();
+		resolver = new Resolver();
+		resolver.set('target', target.promise);
+		resolver.destroy();
+		assert.isTrue(target.isCanceled(), 'Target promise should have been canceled');
 	},
 
 	'#setContent': function () {

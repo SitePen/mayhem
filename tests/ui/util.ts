@@ -1,5 +1,6 @@
 /// <reference path="../../dojo" />
 
+import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
 import Deferred = require('dojo/Deferred');
 
@@ -36,6 +37,20 @@ export function configureLoader(config:{ map:{ [key:string]: string }; undef?: s
 			return dfd.promise;
 		}
 	}
+}
+
+/**
+ * Destroy a given destroyable, silently ignoring any errors
+ */
+export function destroy(destroyable:core.IDestroyable):any {
+	if (destroyable) {
+		try {
+			destroyable.destroy();
+		} catch (e) {
+			// ignored
+		}
+	}
+	return null;
 }
 
 export function createDestroyable() {
