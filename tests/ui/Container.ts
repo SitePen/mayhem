@@ -40,7 +40,7 @@ registerSuite({
 	},
 
 	'#add': function () {
-		var widget:any = new Widget(),
+		var widget = new Widget(),
 			parent:any = {
 				children: [],
 				add(child:any, index?:number) {
@@ -105,10 +105,9 @@ registerSuite({
 	},
 
 	'#empty': function () {
-		// set all indexes to 0 since they'll be removed in-order
-		var widget1:any = new Widget(),
-			widget2:any = new Widget(),
-			widget3:any = new Widget();
+		var widget1 = new Widget(),
+			widget2 = new Widget(),
+			widget3 = new Widget();
 
 		container.add(widget1);
 		container.add(widget2);
@@ -121,9 +120,9 @@ registerSuite({
 	},
 
 	'#remove': function () {
-		var widget1:any = new Widget(),
-			widget2:any = new Widget(),
-			widget3:any = new Widget();
+		var widget1 = new Widget(),
+			widget2 = new Widget(),
+			widget3 = new Widget();
 
 		container.add(widget1);
 		container.add(widget2);
@@ -135,5 +134,70 @@ registerSuite({
 
 		container.remove(0);
 		assert.deepEqual(container.get('children'), [widget3], 'widget1 should have been removed');
+	},
+
+	'#getChild': function () {
+		var widget1 = new Widget(),
+			widget2 = new Widget();
+		container.add(widget1);
+		container.add(widget2);
+		assert.strictEqual(container.getChild(0), widget1, 'Child 0 should be widget1');
+		assert.strictEqual(container.getChild(1), widget2, 'Child 1 should be widget2');
+	},
+
+	'#getChildIndex': function () {
+		var widget1 = new Widget(),
+			widget2 = new Widget();
+		container.add(widget1);
+		container.add(widget2);
+		assert.strictEqual(container.getChildIndex(widget1), 0, 'Child 0 should be widget1');
+		assert.strictEqual(container.getChildIndex(widget2), 1, 'Child 1 should be widget2');
+	},
+
+	'#nextChild': function () {
+		var widget1 = new Widget(),
+			widget2 = new Widget(),
+			widget3 = new Widget();
+		container.add(widget1);
+		container.add(widget2);
+		assert.strictEqual(container.nextChild(widget1), widget2, 'Child after widget1 should be widget2');
+		assert.isNull(container.nextChild(widget2), 'Child after widget2 should be null');
+		assert.isNull(container.nextChild(widget3), 'Child after non-member widget should be null');
+	},
+
+	'#previousChild': function () {
+		var widget1 = new Widget(),
+			widget2 = new Widget(),
+			widget3 = new Widget();
+		container.add(widget1);
+		container.add(widget2);
+		assert.isNull(container.previousChild(widget1), 'Child before widget1 should be null');
+		assert.strictEqual(container.previousChild(widget2), widget1, 'Child before widget2 should be widget1');
+		assert.isNull(container.previousChild(widget3), 'Child before non-member widget should be null');
+	},
+
+	'#_attachedSetter': function () {
+		var widget1 = new Widget(),
+			widget2 = new Widget();
+		container.add(widget1);
+		container.add(widget2);
+
+		container.set('attached', true);
+		assert.isTrue(widget1.get('attached'), 'Widget1 should be attached');
+		assert.isTrue(widget2.get('attached'), 'Widget2 should be attached');
+
+		container.set('attached', false);
+		assert.isFalse(widget1.get('attached'), 'Widget1 should not be attached');
+		assert.isFalse(widget2.get('attached'), 'Widget2 should not be attached');
+	},
+
+	'#_childrenSetter': function () {
+		var children:Widget[] = [ new Widget(), new Widget() ];
+		container.set('children', children);
+		assert.sameMembers(container.get('children'), children, 'Widgets should be children of container');
+
+		children = [ new Widget(), new Widget() ];
+		container.set('children', children);
+		assert.sameMembers(container.get('children'), children, 'New widgets should be only children of container');
 	}
 });

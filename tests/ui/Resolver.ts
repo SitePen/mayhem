@@ -9,13 +9,14 @@ import Mediator = require('../mocks/data/Mediator');
 import Widget = require('../../ui/Widget');
 import MockRenderer = require('../mocks/ui/Renderer');
 import Deferred = require('dojo/Deferred');
+import Observable = require('../../Observable');
 
 var resolver:Resolver,
 	resolverRenderer:any = Resolver.prototype._renderer,
 	contentViewRenderer:any = ContentView.prototype._renderer;
 
 registerSuite({
-	name: 'ui/dom/Resolver',
+	name: 'ui/Resolver',
 
 	setup() {
 		Resolver.prototype._renderer = <any> new MockRenderer();
@@ -57,8 +58,12 @@ registerSuite({
 
 	'#destroy': function () {
 		var success = resolver.get('success');
-		resolver.destroy();
+		assert.doesNotThrow(function () {
+			resolver.destroy();
+		}, 'Destroying a resolver should not throw');
 		assert.isTrue(success._destroyed, 'Success view should have been destroyed');
+
+		// TODO: test canceling target promise
 	},
 
 	'#setContent': function () {
@@ -124,6 +129,30 @@ registerSuite({
 		assert.strictEqual(binding, 'foo', 'Resolver should have created binding for foo');
 	},
 
+	'phase observer': function () {
+		var during = new Observable({ visible: false }),
+			error = new Observable({ visible: false }),
+			success = new Observable({ visible: false });
+		resolver.set('during', during)
+		resolver.set('error', error)
+		resolver.set('success', success)
+
+		resolver.set('phase', 'during')
+		assert.isTrue(during.get('visible'));
+		assert.isFalse(error.get('visible'));
+		assert.isFalse(success.get('visible'));
+
+		resolver.set('phase', 'error')
+		assert.isFalse(during.get('visible'));
+		assert.isTrue(error.get('visible'));
+		assert.isFalse(success.get('visible'));
+
+		resolver.set('phase', 'success')
+		assert.isFalse(during.get('visible'));
+		assert.isFalse(error.get('visible'));
+		assert.isTrue(success.get('visible'));
+	},
+
 	'result observer': function () {
 		var notification:any;
 
@@ -183,5 +212,21 @@ registerSuite({
 		// assert.doesNotThrow(function () {
 		// 	resolver.set('mediator')
 		// }, 'Should be able to undefine mediator');
+	},
+
+	'scopedMediator': function () {
+		var mediator = new Observable({ 'foo': 'item foo', 'bar': 'item bar' });
+		resolver.set('value', 'foo');
+		resolver.set('result', 'baz');
+		resolver.set('mediator', mediator);
+		var scopedMediator = resolver.get('scopedMediator');
+
+		assert.strictEqual(scopedMediator.get('foo'), 'baz', 'Should have gotten resolver result');
+		assert.strictEqual(scopedMediator.get('bar'), 'item bar', 'Should have gotten mediator value');
+
+		scopedMediator.set('foo', 'new foo');
+		assert.strictEqual(resolver.get('result'), 'new foo', 'Should have seen new result in resolver');
+		scopedMediator.set('bar', 'new bar');
+		assert.strictEqual(mediator.get('bar'), 'new bar', 'Should have seen new mediator value');
 	}
 });

@@ -55,3 +55,15 @@ export function createRemovable() {
 		}
 	}
 }
+
+export function createView() {
+	return {
+		destroyed: false,
+		destroy() {
+			this.destroyed = true;
+		},
+		set(key:string, value:any) {
+			this[key] = value;
+		}
+	};
+}

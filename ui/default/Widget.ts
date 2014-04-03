@@ -1,8 +1,18 @@
 import ui = require('../interfaces');
 
 class DefaultWidgetRenderer implements ui.IRenderer {
+	_content:{ [key:string]: any } = <any> {};
+
 	add(widget:ui.IContainer, item:ui.IWidget, referenceItem?:ui.IWidget):void {
 		console.debug('#add');
+	}
+
+	attachContent(widget:ui.IWidget):void {
+		console.debug('#attachContent');
+	}
+
+	attachStyles(widget:ui.IWidget):void {
+		console.debug('#attachStyles');
 	}
 
 	attachToWindow(widget:ui.IWidget, target:Node):void {
@@ -21,6 +31,14 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 		console.debug('#detach');
 	}
 
+	detachContent(widget:ui.IWidget):void {
+		console.debug('#detachContent');
+	}
+
+	detachStyles(widget:ui.IWidget):void {
+		console.debug('#detachStyles');
+	}
+
 	initialize(widget:ui.IWidget):void {
 		console.debug('#initialize');
 	}
@@ -35,6 +53,7 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 
 	setContent(widget:ui.IWidget, value?:any /* string | Node */):void {
 		console.debug('#setContent');
+		this._content[widget.get('id')] = value;
 	}
 }
 

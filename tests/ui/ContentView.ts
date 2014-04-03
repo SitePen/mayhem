@@ -2,12 +2,10 @@
 
 import assert = require('intern/chai!assert');
 import registerSuite = require('intern!object');
+import ui = require('../../ui/interfaces');
 import ContentView = require('../../ui/ContentView');
 import Widget = require('../../ui/Widget');
-import ui = require('../../ui/interfaces');
 import MockRenderer = require('../mocks/ui/Renderer');
-import Deferred = require('dojo/Deferred');
-import util = require('./util');
 
 var view:ContentView,
 	contentViewRenderer:any = ContentView.prototype._renderer;

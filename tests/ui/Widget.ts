@@ -68,6 +68,25 @@ registerSuite({
 		assert.strictEqual(removeCounter, 0, 'Remove counter should be 0');
 	},
 
+	'#disown': function () {
+		function createHandle() {
+			return {
+				remove () { console.log('removing...'); this._removed = true; }
+			};
+		}
+
+		var handle1 = createHandle(),
+			handle2 = createHandle(),
+			handle3 = createHandle();
+		widget.own(handle1, handle2, handle3);
+		widget.disown(handle2);
+		widget.destroy();
+
+		assert.propertyVal(handle1, '_removed', true, 'handle1 should have been removed');
+		assert.notProperty(handle2, '_removed', 'handle2 should not have been removed');
+		assert.propertyVal(handle3, '_removed', true, 'handle3 should have been removed');
+	},
+
 	'#placeAt': function () {
 		var added:any,
 			parent = {

@@ -8,5 +8,8 @@ define([
 	'./ui/Conditional',
 	'./ui/Iterator',
 	'./ui/Resolver',
+	'./ui/style/Style',
+	'./ui/style/ClassList',
+	'./ui/style/BackgroundRepeat',
 	'dojo/has!host-browser?./ui/dom'
 ]);

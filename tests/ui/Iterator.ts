@@ -31,10 +31,14 @@ registerSuite({
 	},
 
 	afterEach: function () {
-		// if (iterator) {
-		// 	iterator.destroy();
-		// 	iterator = null;
-		// }
+		if (iterator) {
+			try {
+				iterator.destroy();
+			} catch (e) {
+				// ignored
+			}
+			iterator = null;
+		}
 	},
 
 	'#destroy': function () {
@@ -131,6 +135,9 @@ registerSuite({
 			mediator:any = {
 				set(key:string, value:any) {
 					this[key] = value;
+				},
+				get(key:string):any {
+					return this[key];
 				}
 			};
 
@@ -142,17 +149,35 @@ registerSuite({
 		iterator.set('mediator', mediator);
 		iterator.set('each', 'foo');
 
-		mediator = iterator._mediatorIndex['0'];
+		var scopedMediator = iterator._mediatorIndex['0'];
 
 		// get the iterator's "each" property -- should get the source value corresponding to the key for the mediator
 		// ('0')
-		var value = mediator.get('foo');
+		var value = scopedMediator.get('foo');
 		assert.strictEqual(value, 'item0', 'Value for iterator "each" property should have expected value');
 
+		// getting an arbitrary property from the scopedMediator should defer to the original mediator
+		mediator.bar = 'baz';
+		value = scopedMediator.get('bar');
+		assert.strictEqual(value, 'baz', 'Value for arbitrary mediator property should have expected value');
+
 		var newValue = { id: '2', value: 'new baz value' };
-		mediator.set('foo', newValue);
+		scopedMediator.set('foo', newValue);
 		// should set value for source index corresponding to the mediator index; we're using mediator 0
 		assert.propertyVal(source, '0', newValue, 'New property should have been added to source');
+
+		var setValue = {};
+		source = [ 'item0', 'item1' ];
+		source['set'] = function (key:string, value:any) {
+			setValue[key] = value;
+		}
+		iterator.set('source', source);
+		scopedMediator.set('foo', newValue);
+		assert.deepEqual(setValue, { '0': newValue }, 'New property should have been set on source at key "0"');
+
+		// setting an arbitrary property on the scoped mediator should set it on the original mediator
+		scopedMediator.set('bar', 'frob');
+		assert.propertyVal(mediator, 'bar', 'frob', 'Original mediator should have new property');
 	},
 
 	'#_getMediatorByKey': function () {
