@@ -1,18 +1,19 @@
+/// <reference path="../../../dojo" />
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
 import aspect = require('dojo/aspect');
-import registerSuite = require('intern!object');
-import TextView = require('../../../ui/dom/TextView');
-import Widget = require('../../../ui/Widget');
 import MockRenderer = require('../../mocks/ui/Renderer');
 import Observable = require('../../../Observable');
+import registerSuite = require('intern!object');
+import TextView = require('../../../ui/dom/Text');
 import util = require('../support/util');
+import Widget = require('../../../ui/Widget');
 
 var renderer:any;
 
 registerSuite({
-	name: 'ui/dom/TextView',
+	name: 'ui/dom/Text',
 
 	setup() {
 		Widget.prototype._renderer = new MockRenderer();

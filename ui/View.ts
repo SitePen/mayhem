@@ -94,6 +94,10 @@ class View extends Widget implements ui.IView {
 		};
 	}
 
+	clear():void {
+		this._renderer.clear(this);
+	}
+
 	destroy():void {
 		var binding:binding.IBindingHandle;
 		for (var i = 0; (binding = this._bindings[i]); ++i) {

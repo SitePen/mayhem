@@ -189,6 +189,13 @@ declare module 'dojo/io-query' {
 	export = ioQuery;
 }
 
+declare module 'dojo/on' {
+	var on:{
+		(target:Node, type:string, listener:EventListener, dontFix?:boolean):IHandle;
+	};
+	export = on;
+}
+
 declare module 'dojo/promise/all' {
 	var all:{
 		<T>(array:T[]):IPromise<T[]>;
@@ -239,6 +246,13 @@ declare module 'dojo/Stateful' {
 	export = Stateful;
 }
 
+declare module 'dojo/string' {
+	var string:{
+		pad(text:any, size:number, char?:string, end?:boolean):string;
+	};
+	export = string;
+}
+
 declare module 'dojo/store/Memory' {
 	class MemoryStore<T> implements IStore<T> {
 		data:T[];
@@ -279,6 +293,13 @@ declare module 'dojo/topic' {
 		subscribe(topic:string, listener:() => void):{ remove: () => void };
 	};
 	export = topic;
+}
+
+declare module 'dojo/touch' {
+	var touch:{
+		press(node:Node, handler:EventListener):IHandle;
+	};
+	export = touch;
 }
 
 declare module 'dojo/when' {

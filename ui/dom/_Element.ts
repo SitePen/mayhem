@@ -1,25 +1,16 @@
+import array = require('dojo/_base/array');
 import dom = require('./interfaces');
 import domUtil = require('./util');
-import WidgetRenderer = require('./Widget');
+import on = require('dojo/on');
 import PlacePosition = require('../PlacePosition');
 import style = require('../style/interfaces');
+import touch = require('dojo/touch');
 import ui = require('../interfaces');
 import util = require('../../util');
+import WidgetRenderer = require('./Widget');
 
 class DomElementRenderer extends WidgetRenderer {
 	elementType:string;
-
-	add(widget:dom.IContainer, item:dom.IWidget, reference:any /* dom.IWidget | Node */):void {
-		item._renderer.detach(item);
-		if (reference && reference.nodeType) {
-			// Replace provided reference node with item
-			domUtil.place(item._outerFragment, reference, PlacePosition.REPLACE);
-		}
-		else {
-			// must pass null instead of undefined for compatibility with insertBefore in old IE
-			widget._outerFragment.insertBefore(item._outerFragment, reference ? reference._outerFragment : null);
-		}
-	}
 
 	attachContent(widget:dom.IElementWidget):void {
 		var content = widget._innerFragment;
@@ -32,12 +23,26 @@ class DomElementRenderer extends WidgetRenderer {
 	attachStyles(widget:dom.IElementWidget):void {
 		this.detachStyles(widget);
 
-		widget._classListHandle = widget.get('classList').observe((value:string):void => {
+		widget._classListHandle = widget.classList.observe((value:string):void => {
 			widget._outerFragment.className = value;
 		});
 
-		widget._styleHandle = widget.get('style').observe((value:any, previous:any, key:string):void => {
+		widget._styleHandle = widget.style.observe((value:any, previous:any, key:string):void => {
 			domUtil.setStyle(widget._outerFragment, key, value);
+		});
+	}
+
+	/* protected */ _bindAttribute(widget:dom.IElementWidget, property:string, options:any = {}):void {
+		var attribute = options.attribute || property;
+		var value:any = widget.get(property);
+		value && widget._firstNode.setAttribute(attribute, value);
+		widget.observe(property, (value:any):void => {
+			if (value == null) {
+				widget._firstNode.removeAttribute(attribute);
+			}
+			else {
+				widget._firstNode.setAttribute(attribute, value);
+			}
 		});
 	}
 
@@ -56,14 +61,37 @@ class DomElementRenderer extends WidgetRenderer {
 		widget._innerFragment = domUtil.extractRange(node.firstChild, node.lastChild);
 	}
 
+	initialize(widget:dom.IElementWidget):void {
+		super.initialize(widget);
+
+		widget.observe('on', (subscriptions:any):void => {
+			// TODO: handle more than one set call sanely
+			array.forEach(util.getObjectKeys(subscriptions), (type:string) => {
+				on(widget._firstNode, touch[type], (event:Event):void => {
+					var method = subscriptions[type],
+						mediator = widget.get('mediator');
+					mediator && mediator[method] && mediator[method](event);
+				});
+			});
+		});
+	}
+
 	render(widget:dom.IElementWidget):void {
 		var node = document.createElement(this.elementType);
+		node.id = widget.get('id');
 		// If widget is already attached to a parent swap out the new widget
 		var previousNode = widget._outerFragment;
 		if (previousNode && previousNode.parentNode) {
 			previousNode.parentNode.replaceChild(node, previousNode);
 		}
 		widget._firstNode = widget._lastNode = widget._outerFragment = node;
+		this.attachStyles(widget);
+
+		this._bindAttribute(widget, 'accesskey');
+		this._bindAttribute(widget, 'role');
+		this._bindAttribute(widget, 'spellcheck');
+		this._bindAttribute(widget, 'tabindex');
+		this._bindAttribute(widget, 'title');
 	}
 
 	setContent(widget:dom.IElementWidget, value?:any /* string | Node */):void {

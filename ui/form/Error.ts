@@ -1,13 +1,13 @@
 /// <amd-dependency path="../renderer!form/Error" />
 
-import ContentView = require('../ContentView');
 import core = require('../../interfaces');
 import form = require('./interfaces');
+import List = require('../List');
 
 var Renderer:any = require('../renderer!form/Error');
 
-class FormError extends ContentView implements form.IError {
-	_list:core.IValidationError[];
+class FormError extends List implements form.IError {
+	_source:core.IValidationError[];
 
 	get:form.IErrorGet;
 	set:form.IErrorSet;

@@ -1,9 +1,10 @@
 import ui = require('../interfaces');
 
 class DefaultWidgetRenderer implements ui.IRenderer {
+	className:string;
 	_content:{ [key:string]: any } = <any> {};
 
-	add(widget:ui.IContainer, item:ui.IWidget, referenceItem?:ui.IWidget):void {
+	add(widget:ui.IContainer, item:ui.IWidget, reference?:ui.IWidget):void {
 		console.debug('#add');
 	}
 

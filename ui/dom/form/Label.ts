@@ -1,13 +1,10 @@
 import form = require('./interfaces');
-import TextViewRenderer = require('../TextView');
+import TextRenderer = require('../Text');
 
-class LabelRenderer extends TextViewRenderer {
+class LabelRenderer extends TextRenderer {
 	render(widget:form.ILabel):void {
 		super.render(widget);
-
-		widget.observe('for', (value:string):void => {
-			widget._firstNode.setAttribute('for', value);
-		});
+		this._bindAttribute(widget, 'for');
 	}
 }
 

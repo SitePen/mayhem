@@ -5,13 +5,18 @@ import Proxty = require('../../Proxty');
 import style = require('./interfaces');
 
 class ClassList extends Proxty<string> implements style.IClassList {
-	constructor(initialValue:string = '') {
-		super(initialValue);
+	static parse(value:any):string[] {
+		return typeof value === 'string' ? lang.trim(value).split(/\s+/g) : value;
 	}
 
-	add(className:string):void {
-		var classes:string[] = lang.trim(className).split(/\s+/g),
-			classList:string = this.get();
+	constructor(initialValue?:string) {
+		super(initialValue || '');
+	}
+
+	add(value:any):void {
+		var classes = ClassList.parse(value),
+			classList:string = this.get(),
+			className:string;
 
 		for (var i = 0; (className = classes[i]); ++i) {
 			if (!this.has(className)) {
@@ -19,12 +24,13 @@ class ClassList extends Proxty<string> implements style.IClassList {
 			}
 		}
 
-		this.set(classList);
+		this.set(lang.trim(classList));
 	}
 
-	has(className:string):boolean {
-		var classes:string[] = lang.trim(className).split(/\s+/g),
-			classList:string = ' ' + this.get() + ' ';
+	has(value:any):boolean {
+		var classes = ClassList.parse(value),
+			classList:string = ' ' + this.get() + ' ',
+			className:string;
 
 		for (var i = 0; (className = classes[i]); ++i) {
 			if (classList.indexOf(' ' + className + ' ') === -1) {
@@ -35,9 +41,13 @@ class ClassList extends Proxty<string> implements style.IClassList {
 		return true;
 	}
 
-	remove(className:string):void {
-		var classes:string[] = lang.trim(className).split(/\s+/g),
-			classList:string = ' ' + this.get() + ' ';
+	remove(value:any):void {
+		if (!value || !value.length) {
+			return;
+		}
+		var classes = ClassList.parse(value),
+			classList:string = ' ' + this.get() + ' ',
+			className:string;
 
 		for (var i = 0; (className = classes[i]); ++i) {
 			classList = classList.replace(' ' + className + ' ', ' ');
@@ -51,7 +61,7 @@ class ClassList extends Proxty<string> implements style.IClassList {
 			this[forceState ? 'add' : 'remove'](className);
 		}
 		else {
-			var classes:string[] = lang.trim(className).split(/\s+/g);
+			var classes = ClassList.parse(className);
 
 			for (var i = 0; (className = classes[i]); ++i) {
 				this.has(className) ? this.remove(className) : this.add(className);

@@ -6,10 +6,8 @@ import _ModelMixin = require('./_ModelMixin');
 import _RequestMemory = require('dstore/RequestMemory');
 
 class RequestMemory<T extends data.IModel> extends _RequestMemory<T> {
-	constructor(kwArgs?:Object) {
-		if (!kwArgs || !(<any>kwArgs).cachingStore) {
-			this.cachingStore = new Memory<T>();
-		}
+	constructor(kwArgs:any = {}) {
+		kwArgs.cachingStore || (kwArgs.cachingStore = new Memory<T>());
 
 		super(kwArgs);
 	}

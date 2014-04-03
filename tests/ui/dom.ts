@@ -5,7 +5,7 @@ define([
 	'./dom/Iterator',
 	'./dom/Placeholder',
 	'./dom/Resolver',
-	'./dom/TextView',
+	'./dom/Text',
 	'./dom/Widget',
 	'./dom/_Dijit',
 	'./dom/_Element',

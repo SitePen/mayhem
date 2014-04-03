@@ -1,5 +1,7 @@
+/// <reference path="../dojo.d.ts"/>
 /// <reference path="../dstore.d.ts"/>
 
+import Adapter = require('dstore/legacy/DstoreAdapter');
 import all = require('dojo/promise/all');
 import core = require('../interfaces');
 import data = require('./interfaces');
@@ -7,7 +9,6 @@ import Deferred = require('dojo/Deferred');
 import lang = require('dojo/_base/lang');
 import Observable = require('../Observable');
 import Store = require('dstore/Store');
-import Adapter = require('dstore/legacy/DstoreAdapter');
 
 function resolve(value:string):string {
 	return value.replace(/(^|\/)([a-z])([^\/]*)$/, ():string => {
@@ -16,7 +17,8 @@ function resolve(value:string):string {
 }
 
 class CollectionManager extends Observable {
-	_values:CollectionManager.IValues;
+	_models:any;
+
 	get:CollectionManager.IGet;
 
 	getCollection(name:string):IPromise<dstore.ICollection<data.IModel>> {
@@ -59,7 +61,7 @@ class CollectionManager extends Observable {
 	}
 
 	_modelsSetter(modelMap:{ [id:string]: any }):void {
-		var models:any = this._values.models = {};
+		var models:any = this._models = {};
 
 		var kwArgs:any,
 			collection:dstore.ICollection<any>;
@@ -103,9 +105,6 @@ module CollectionManager {
 	export interface IGet extends core.IObservableGet {
 		(key:'defaultStore'):string;
 		(key:'models'):{ [key:string]:any };
-	}
-	export interface IValues {
-		models:{ [key:string]:any; };
 	}
 }
 

@@ -63,7 +63,6 @@ export interface IContentView extends IContainer {
 	add(item:IWidget, position:AddPosition):IHandle;
 	add(item:IWidget, position:number):IHandle;
 	add(item:IWidget, position?:any):IHandle;
-	clear():void;
 	setContent(content:any):void;
 }
 
@@ -73,30 +72,52 @@ export interface IContentViewGet extends IContainerGet {
 export interface IContentViewSet extends IContainerSet {
 }
 
+export interface IDialog extends IContentView {
+	get:IDialogGet;
+	set:IDialogSet;
+}
+
+export interface IDialogGet extends IWidgetGet {
+	(name:'closable'):boolean;
+}
+
+export interface IDialogSet extends IWidgetSet {
+	(name:'closable', value:boolean):void;
+}
+
+export interface IImage extends IView {
+	get:IImageGet;
+	set:IImageSet;
+}
+
+export interface IImageGet extends IViewGet {
+	(name:'src'):string;
+}
+
+export interface IImageSet extends IViewSet {
+	(name:'src', value:string):void;
+}
+
+export interface IList extends IView {
+	get:IListGet;
+	set:IListSet;
+}
+
+export interface IListGet extends IViewGet {
+	(name:'source'):any[];
+}
+
+export interface IListSet extends IViewSet {
+	(name:'source', value:any[]):void;
+}
+
 export interface IMaster extends IContentView {
 	attachToWindow(target:any):IHandle;
-}
-
-export interface IView extends IWidget {
-	get:IViewGet;
-	set:IViewSet;
-
-	bind(kwArgs:IBindArguments):IHandle;
-}
-
-export interface IViewGet extends IWidgetGet {
-	(name:'mediator'):core.data.IMediator;
-}
-
-export interface IViewSet extends IWidgetSet {
-	(name:'mediator', value:core.data.IMediator):void;
 }
 
 export interface IPlaceholder extends IContainer {
 	get:IPlaceholderGet;
 	set:IPlaceholderSet;
-
-	empty():void;
 }
 
 export interface IPlaceholderGet extends IContainerGet {
@@ -108,7 +129,9 @@ export interface IPlaceholderSet extends IContainerSet {
 }
 
 export interface IRenderer {
-	add(widget:IContainer, item:IWidget, position?:any):void;
+	className:string;
+
+	add(widget:IContainer, item:IWidget, reference?:any, position?:PlacePosition):void;
 	attachContent(widget:IWidget):void;
 	attachStyles(widget:IWidget):void;
 	attachToWindow(widget:IWidget, target:any):void;
@@ -123,22 +146,46 @@ export interface IRenderer {
 	setContent(widget:IWidget, content:any):void;
 }
 
-export interface ITextView extends IView {
-	get:ITextViewGet;
-	set:ITextViewSet;
+export interface IText extends IView {
+	get:ITextGet;
+	set:ITextSet;
+
+	setContent(content:string):void;
 }
 
-export interface ITextViewGet extends IViewGet {
+export interface ITextGet extends IViewGet {
 	(name:'formattedText'):string;
 	(name:'text'):string;
 }
 
-export interface ITextViewSet extends IViewSet {
+export interface ITextSet extends IViewSet {
 	(name:'formattedText', value:string):void;
 	(name:'text', value:string):void;
 }
 
+export interface IView extends IWidget {
+	_mediator:data.IMediator;
+
+	get:IViewGet;
+	set:IViewSet;
+
+	bind(kwArgs:IBindArguments):IHandle;
+	clear():void;
+}
+
+export interface IViewGet extends IWidgetGet {
+	(name:'mediator'):core.data.IMediator;
+}
+
+export interface IViewSet extends IWidgetSet {
+	(name:'mediator', value:core.data.IMediator):void;
+}
+
 export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {
+	classList:style.IClassList;
+	className:string;
+	style:style.IStyle;
+
 	get:IWidgetGet;
 	set:IWidgetSet;
 
@@ -193,15 +240,15 @@ export interface IIterator extends IContentView {
 }
 
 export interface IIteratorGet extends IContentViewGet {
-	(name:'each'):string;
-	(name:'in'):string;
+	(name:'each'):string; // TODO: rename `var`?
+	(name:'selectedItem'):any;
 	(name:'source'):any;
 	(name:'template'):any;
 }
 
 export interface IIteratorSet extends IContentViewSet {
 	(name:'each', value:string):void;
-	(name:'in', value:string):void;
+	(name:'selectedItem', value:any):void;
 	(name:'source', value:any):void;
 	(name:'template', value:any):void;
 }

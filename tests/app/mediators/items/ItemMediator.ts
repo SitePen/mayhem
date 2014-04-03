@@ -3,6 +3,8 @@ import util = require('framework/util');
 import when = require('dojo/when');
 
 class ItemMediator extends Mediator {
+	_itemsStore:any;
+
 	constructor(kwArgs?:any) {
 		super(kwArgs);
 
@@ -22,7 +24,7 @@ class ItemMediator extends Mediator {
 	}
 
 	_itemsStoreSetter(itemsStore:any):void {
-		this._values['itemsStore'] = itemsStore;
+		this._itemsStore = itemsStore;
 	}
 }
 

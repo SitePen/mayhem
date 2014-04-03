@@ -2,8 +2,10 @@ import core = require('../interfaces');
 import ObservableArray = require('../ObservableArray');
 
 export interface IMediator extends IModel {
-	get:IMediatorGet;
 	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
+	_routeState:Object;
+
+	get:IMediatorGet;
 	set:IMediatorSet;
 }
 
@@ -21,7 +23,6 @@ export interface IMediatorSet extends IModelSet {
  * The IModel interface should be implemented by any object that is intended to be used as a data model within the
  * framework.
  */
-
 export interface IModel extends core.IApplicationComponent {
 	addError(key:string, error:core.IValidationError):void;
 

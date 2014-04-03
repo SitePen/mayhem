@@ -36,6 +36,11 @@ class Observable implements core.IObservable {
 	}
 
 	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {
+		var changedMethod = '_' + key + 'Changed';
+		this[changedMethod] && this[changedMethod](newValue, oldValue);
+
+		// TODO: we could eventually use the changed handler's return value to suppress observer notifications
+
 		var observers:core.IObserver<any>[] = has('es5') ? this._observers[key] : (this._observers.hasOwnProperty(key) && this._observers[key]);
 
 		if (observers) {

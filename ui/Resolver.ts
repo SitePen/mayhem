@@ -15,7 +15,7 @@ class Resolver extends ContentView implements ui.IResolver {
 	_target:any;
 
 	constructor(kwArgs?:any) {
-		util.deferSetters(this, [ 'target' ], '_render');
+		this._deferProperty('target', '_render');
 		super(kwArgs);
 	}
 

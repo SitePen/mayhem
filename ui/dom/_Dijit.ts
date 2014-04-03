@@ -66,7 +66,7 @@ class DijitRenderer extends DomElementRenderer {
 
 		var dijit = widget._impl = new this._ImplCtor(args);
 		widget._firstNode = widget._lastNode = widget._outerFragment = dijit.domNode;
-		widget.get('classList').set(dijit.domNode.className);
+		widget.set('class', dijit.domNode.className);
 
 		// Sync widget with dijit
 		var _notify:(value:any, oldValue:any, key:string) => void = widget['_notify'];

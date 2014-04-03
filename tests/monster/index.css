@@ -1,0 +1,294 @@
+@import "../../../dgrid/css/dgrid.css";
+
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+body {
+	background-image: -webkit-linear-gradient(133deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
+	background-image: -moz-linear-gradient(133deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
+	background-image: -o-linear-gradient(133deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
+	background-image: -ms-linear-gradient(133deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
+	background-image: linear-gradient(-43deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
+}
+
+.gallery {
+	border-right: 1px solid rgba(0,0,0,0.5);
+	bottom: 0;
+	-webkit-box-shadow: 0px 0px 10px black;
+	-moz-box-shadow: 0px 0px 10px black;
+	box-shadow: 0px 0px 10px black;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 600px;
+	z-index: 1;
+}
+
+.gallery .dgrid {
+	border: 0;
+	height:100%;
+	width: 100%;
+}
+
+.gallery .dgrid-scroller {
+	margin-top: 0;
+}
+
+.gallery .dgrid-content {
+	background: url(images/monsterMayhem.svg) no-repeat top center;
+	background-size: 50%;
+	margin-top: 0;
+}
+
+/* TODO: ask Ken about a better way to do this */
+.gallery .dgrid-content .dgrid-preload {
+	height: 90px !important;
+}
+
+.gallery .dgrid-row {
+	float: left;
+	height: 150px;
+	opacity: 0.8;
+	padding: 20px;
+	width: 150px;
+}
+
+.gallery .dgrid-row.dgrid-focus {
+	outline-width: 0px;
+}
+
+.gallery .dgrid-row.dgrid-selected {
+	opacity: 1;
+	background: none;
+}
+
+.gallery .monster {
+	background: #fff5f3;
+	border: 1px solid rgba(0,0,0,0.5);
+	-webkit-box-shadow: 5px 5px 20px black;
+	-moz-box-shadow: 5px 5px 20px black;
+	box-shadow: 5px 5px 20px black;
+}
+
+.gallery .dgrid-row.dgrid-focus .monster {
+	border: 1px solid black;
+}
+
+.monster {
+	height: 100%;
+	position: relative;
+}
+
+.monster img {
+	height: 100%;
+	position: absolute;
+	width: 100%;
+}
+
+.monster img.body {
+	height: 80%;
+	margin-top: 7%;
+}
+
+.monster img.mouth {
+	height: 10%;
+	left: 35%;
+	top: 39%;
+	width: 30%;
+}
+
+.monster img.eyes {
+	height: 10%;
+	left: 40%;
+	top: 25%;
+	width: 20%;
+}
+
+.remix {
+	bottom: 0;
+	left: 600px;
+	min-height: 320px;
+	min-width: 420px;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+
+.remix .nav {
+	background-color: rgb(187,55,70);
+	height: 40px;
+	width: 100%;
+	position: absolute;
+	z-index: 1;
+}
+
+.remix .nav, .remix .dialog, .remix .button {
+	font-family: 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial;
+	font-size: 20px;
+	font-weight: 400;
+}
+
+.remix .button {
+	background: none;
+	border: none;
+}
+
+.tablet .remix .nav {
+	background-color: rgba(0,0,0,0.5);
+}
+
+.remix .nav .button {
+	bottom: 0;
+	color: white;
+	position: absolute;
+	margin: 0;
+	padding: 0;
+	top: 0;
+}
+
+.remix .nav .button.close {
+	background: url(images/galleryButton.svg) no-repeat center;
+	background-size: 75%;
+	height: 40px;
+	left: 0;
+	width: 40px;
+}
+
+.remix .nav .button.edit {
+	background: url(images/remixButtonBg.svg) no-repeat top center;
+	-webkit-background-size: contain;
+	-moz-background-size: contain;
+	background-size: contain;
+	height: 75px;
+	left: 37.5%;
+	-webkit-transition: top 0.1s linear;
+	-moz-transition: top 0.1s linear;
+	-o-transition: top 0.1s linear;
+	-ms-transition: top 0.1s linear;
+	transition: top 0.25s linear;
+	top: -4px;
+	width: 25%;
+}
+
+.remix .nav .button.edit:hover {
+	top: -1px;
+}
+
+.remix .nav .button.edit:after {
+	content: url(images/remixButtonLabel.svg);
+	zoom: 0.5;
+}
+
+.remix .nav .button.edit.activated {
+	background: url(images/saveButtonBg.svg) no-repeat top center;
+	-webkit-background-size: contain;
+	-moz-background-size: contain;
+	background-size: contain;
+}
+
+.remix .nav .button.edit.activated:after {
+	content: url(images/saveButtonLabel.svg);
+}
+
+.remix .button.share {
+	padding: 5px 10px;
+	right: 0;
+}
+
+.remix .monster {
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	background-size: cover;
+}
+
+.dialog.share input {
+	font-size: 20px;
+}
+
+.dialog, .picker {
+	background-color: rgba(255,255,255,0.9);
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	-moz-box-shadow: 0 0 15px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 15px rgba(0,0,0,0.5);
+	box-shadow: 0 0 15px rgba(0,0,0,0.5);
+	height: 150px;
+	left: 50%;
+	margin-left: -125px;
+	margin-top: -75px;
+	position: absolute;
+	top: 50%;
+	width: 250px;
+}
+
+.dialog .content {
+	color: #333;
+	font-family: 'Arial-BoldMT', 'Arial Bold', 'Arial';
+	font-size: 24px;
+	margin-top: 10%;
+	text-align: center;
+}
+
+.dialog .button {
+	border-top: 1px solid rgba(0,0,0,0.2);
+	bottom: 0;
+	color: #4d8bf8;
+	font-size: 16px;
+	height: 50%;
+	position: absolute;
+	text-align: center;
+	width: 50%;
+}
+
+.dialog .button.save, .dialog .button.twitter {
+	border-right: 1px solid rgba(0,0,0,0.2);
+	left: 0;
+}
+
+.dialog .button.cancel, .dialog .button.facebook {
+	right: 0;
+}
+
+.picker {
+	height: 300px;
+	margin-left: -200px;
+	margin-top: -150px;
+	width: 400px;
+}
+
+.picker .title {
+	padding: 5px;
+}
+
+.picker .dgrid {
+	border: 0;
+	bottom: 0;
+	height:100%;
+	position: absolute;
+	top: 0;
+	width: 100%;
+}
+
+.picker .dgrid-content {
+	top: 60px;
+}
+
+.picker .dgrid-row {
+	float: left;
+	height: 75px;
+	padding: 12px;
+	width: 75px;
+}
+
+.picker .dgrid-row.dgrid-focus {
+	outline-width: 0px;
+	opacity: 0.9;
+}
+
+.picker .dgrid-row.dgrid-selected {
+	background: #efefef;
+}

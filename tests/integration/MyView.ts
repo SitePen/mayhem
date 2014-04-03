@@ -50,7 +50,7 @@ class MyView extends Master {
 		this.bind({
 			sourceBinding: 'firstName!errors',
 			target: this._error,
-			targetBinding: 'list'
+			targetBinding: 'source'
 		});
 
 		this.add(this._label);

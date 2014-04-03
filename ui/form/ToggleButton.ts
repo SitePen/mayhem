@@ -11,6 +11,10 @@ class ToggleButton extends Button implements form.IToggleButton {
 
 	get:form.IToggleButtonGet;
 	set:form.IToggleButtonSet;
+
+	toggle(forceState?:boolean):void {
+		this.set('selected', typeof forceState === 'boolean' ? forceState : !this.get('selected'));
+	}
 }
 
 ToggleButton.prototype._renderer = new Renderer();

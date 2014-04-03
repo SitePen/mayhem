@@ -8,7 +8,6 @@ import has = require('./has');
 import lang = require('dojo/_base/lang');
 import ObservableEvented = require('./ObservableEvented');
 import util = require('dojo/request/util');
-import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
 class Application extends ObservableEvented implements core.IApplication {

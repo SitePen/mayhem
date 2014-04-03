@@ -46,11 +46,11 @@ export interface IError extends ui.IWidget {
 }
 
 export interface IErrorGet extends ui.IWidgetGet {
-	(name:'list'):core.IValidationError[];
+	(name:'source'):core.IValidationError[];
 }
 
 export interface IErrorSet extends ui.IWidgetSet {
-	(name:'list', value:core.IValidationError[]):void;
+	(name:'source', value:core.IValidationError[]):void;
 }
 
 export interface IInput extends IControl {
@@ -100,13 +100,11 @@ export interface ISwitch extends IControl {
 }
 
 export interface ISwitchGet extends IControlGet {
-	(name:'checked'):boolean;
-	(name:'indeterminate'):boolean;
+	(name:'selected'):boolean;
 }
 
 export interface ISwitchSet extends IControlSet {
-	(name:'checked', value:boolean):void;
-	(name:'indeterminate', value:boolean):void;
+	(name:'selected', value:boolean):void;
 }
 
 export interface ITextArea extends ITextField {
@@ -146,6 +144,8 @@ export interface ITextFieldSet extends IInputSet {
 export interface IToggleButton extends IButton, ISwitch {
 	get:IToggleButtonGet;
 	set:IToggleButtonSet;
+
+	toggle(forceState?:boolean):void;
 }
 
 export interface IToggleButtonGet extends IButtonGet, ISwitchGet {

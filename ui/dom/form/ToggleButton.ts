@@ -1,10 +1,15 @@
-import ControlRenderer = require('./Control');
-import ToggleButtonImpl = require('dijit/form/ToggleButton');
+import ButtonRenderer = require('./Button');
+import form = require('./interfaces');
+import touch = require('dojo/touch');
 
-class ToggleButtonRenderer extends ControlRenderer {}
+class ToggleButtonRenderer extends ButtonRenderer {
+	initialize(widget:form.IToggleButton):void {
+		super.initialize(widget);
 
-ToggleButtonRenderer.implementation({
-	constructor: ToggleButtonImpl
-});
+		widget.observe('selected', (value:boolean) => {
+			widget.classList.toggle('selected', value);
+		});
+	}
+}
 
 export = ToggleButtonRenderer;

@@ -360,11 +360,20 @@ For '<for/>'
 	= kwArgs:ForTagOpen body:Element ForTagClose {
 		validate(kwArgs, {
 			type: '<for>',
-			required: [ 'each', 'in' ],
-			optional: [ 'index', 'id' ]
+			required: [ 'in' ],
+			extensible: true
 		});
-		// Wrap template with an array to keep it from being instantiated by processor
-		kwArgs.template = body;
+
+		// Add a constructor and wrap in signal object to just get a ctor instead of a constructed instance
+		body.constructor = 'framework/templating/ui/IteratorElement';
+		kwArgs.template = { $ctor: body };
+		
+		// Convert "in" attribute into a one-way "source" binding
+		if (kwArgs.in) {
+			kwArgs.source = { $bind: kwArgs.in };
+			delete kwArgs.in;
+		}
+
 		return {
 			constructor: 'framework/templating/ui/Iterator',
 			kwArgs: kwArgs
@@ -558,7 +567,14 @@ AttributeValue
 	= AttributeReferenceValue
 	/ AttributeStringValue
 	/ JSONValue
+	/ BidirectionalBinding
 	/ Binding
+
+BidirectionalBinding
+	= '{' binding:Binding '}' {
+		binding.bidirectional = true;
+		return binding;
+	}
 
 AttributeReferenceValue
 	= '#' id:Identifier {

@@ -7,7 +7,6 @@ import form = require('./interfaces');
 var Renderer:any = require('../renderer!form/Button');
 
 class Button extends /*Widget*/ ContentView implements form.IButton {
-	_disabled:boolean;
 	/* protected */ _label:string;
 	/* protected */ _type:string;
 
@@ -15,6 +14,7 @@ class Button extends /*Widget*/ ContentView implements form.IButton {
 	set:form.IButtonSet;
 }
 
+Button.prototype.className = 'button';
 Button.prototype._renderer = new Renderer();
 
 export = Button;

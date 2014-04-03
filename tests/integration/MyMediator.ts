@@ -1,4 +1,5 @@
 /// <reference path="../../dojo" />
+/// <reference path="../../dstore" />
 
 import Deferred = require('dojo/Deferred');
 import Mediator = require('../../data/Mediator');

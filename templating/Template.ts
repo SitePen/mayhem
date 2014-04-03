@@ -2,6 +2,7 @@
 
 import Deferred = require('dojo/Deferred');
 import dojoText = require('dojo/text');
+import has = require('../has');
 import templating = require('./interfaces');
 import array = require('dojo/_base/array');
 import ui = require('../ui/interfaces');
@@ -11,6 +12,11 @@ import WidgetFactory = require('./WidgetFactory');
 import when = require('dojo/when');
 
 class Template implements templating.ITemplate {
+	static create(tree:templating.IParseTree, CtorOverride?:any):templating.IWidgetConstructor {
+		// Dependencies of tree source must already be resolved before creating a template constructor
+		return WidgetFactory.getConstructor(tree, CtorOverride);
+	}
+
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		var Loader:templating.ITemplateConstructor = (<any> this).result || this;
 		dojoText.load(resourceId, contextRequire, (input:string):void => {
@@ -22,23 +28,30 @@ class Template implements templating.ITemplate {
 		return new this(source).parse();
 	}
 
-	static process(source:any, timeout?:number):IPromise<templating.IWidgetConstructor> {
-		return new this(source).load(timeout);
+	static process(source:any, CtorOverride?:any, timeout?:number):IPromise<templating.IWidgetConstructor> {
+		return new this(source).process(CtorOverride, timeout);
 	}
 
 	static scan(tree:templating.IParseTree, seedList?:string[]):string[] {
 		return new this(tree).scan(seedList);
 	}
 
+	Constructor:templating.IWidgetConstructor;
 	dependencies:string[];
 	parser:templating.IParser;
 	scanner:templating.IScanner;
 	tree:templating.IParseTree;
-	private _WidgetConstructor:templating.IWidgetConstructor;
 
 	constructor(public source:any) {
 		this.tree = this.parse();
 		this.dependencies = this.scan();
+	}
+
+	create(options?:any):any {
+		if (!this.Constructor && has('debug')) {
+			console.warn('Dependencies must be loaded before Template can create instances')
+		}
+		return this.Constructor(options);
 	}
 
 	private _fetch(timeout?:number):IPromise<void> {
@@ -56,34 +69,20 @@ class Template implements templating.ITemplate {
 		return dfd;
 	}
 
-	load(timeout?:number):IPromise<templating.IWidgetConstructor> {
-		console.log('AST: ', this.tree);
-		return this._fetch(timeout).then(():templating.IWidgetConstructor => {
-			return this._WidgetConstructor = this.createConstructor();
-		});
-	}
-
 	parse():templating.IParseTree {
 		var source = this.source;
 		return typeof source === 'string' ? this.parser.parse(source) : source;
 	}
 
+	process(CtorOverride?:any, timeout?:number):IPromise<templating.IWidgetConstructor> {
+		console.log('AST: ', this.tree);
+		return this._fetch(timeout).then(():templating.IWidgetConstructor => {
+			return this.Constructor = Template.create(this.tree, CtorOverride);
+		});
+	}
+
 	scan(seedList?:string[]):string[] {
 		return this.scanner.scan(this.tree, seedList);
-	}
-
-	create(options?:any):any {
-		if (!this._WidgetConstructor) {
-			throw new Error('Dependencies must be loaded before Template can create instances')
-		}
-		return this._WidgetConstructor(options);
-	}
-
-	createConstructor():templating.IWidgetConstructor {
-		var factory = new WidgetFactory(this.tree);
-		return <templating.IWidgetConstructor> function(options?:any):ui.IWidget {
-			return factory.create(options);
-		}
 	}
 }
 
@@ -92,42 +91,41 @@ Template.prototype.parser = {
 	parse(source:templating.IParseTree):templating.IParseTree {
 		return source;
 	}
-}
+};
 
-// Base implementatino scans a parse tree recursively for dependencies
-Template.prototype.scanner = {
-	scan(tree:templating.IParseTree, dependencies:string[] = []):string[] {
-		function hasDependency(value:templating.IParseTree):boolean {
-			return value && typeof value.constructor === 'string';
-		}
-
-		if (hasDependency(tree)) {
-			var ctor:any = tree.constructor;
-			// Dependency list has set semantics
-			array.indexOf(dependencies, ctor) === -1 && dependencies.push(ctor);
-		}
-		var children:any = tree.children,
-			child:any;
-		if (children) {
-			for (var i = 0, len = children.length; i < len; ++i) {
-				child = children[i];
-				if (hasDependency(child)) {
-					Template.scan(child, dependencies);
-				}
-			}
-		}
-		var kwArgs:any = tree.kwArgs,
-			arg:any;
-		if (kwArgs) {
-			for (var key in kwArgs) {
-				arg = kwArgs[key];
-				if (hasDependency(arg)) {
-					Template.scan(arg, dependencies);
-				}
-			}
-		}
-		return dependencies;
+// Base implementation scans a parse tree recursively for dependencies
+function scan(tree:templating.IParseTree, dependencies:string[] = []):string[] {
+	var ctor:any = tree.constructor;
+	if (typeof ctor === 'string') {
+		// Dependency list has set-like semantics
+		dependencies.indexOf(ctor) === -1 && dependencies.push(ctor);
 	}
+	var children:any = tree.children,
+		child:any;
+	if (children) {
+		for (var i = 0, len = children.length; i < len; ++i) {
+			child = children[i];
+			if (child && child.hasOwnProperty('constructor')) {
+				scan(child, dependencies);
+			}
+		}
+	}
+	var kwArgs:any = tree.kwArgs,
+		arg:any;
+	if (kwArgs) {
+		for (var key in kwArgs) {
+			arg = kwArgs[key];
+			if (arg && arg.hasOwnProperty('constructor')) {
+				scan(arg, dependencies);
+			}
+			else if (arg && arg['$ctor']) {
+				scan(arg['$ctor'], dependencies);
+			}
+		}
+	}
+	return dependencies;
 }
+
+Template.prototype.scanner = { scan: scan };
 
 export = Template;

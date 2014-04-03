@@ -1,72 +1,138 @@
+/// <reference path="../../dgrid" />
 /// <reference path="../../dojo" />
 
 import array = require('dojo/_base/array');
 import ContentView = require('../ContentView');
+import declare = require('dojo/_base/declare');
+import Deferred = require('dojo/Deferred');
 import dom = require('./interfaces');
 import DomElementRenderer = require('./_Element');
-import List = require('dgrid/List');
-import OnDemandList = require('dgrid/OnDemandList');
+import Template = require('../../templating/Template');
 import util = require('../../util');
-import WidgetFactory = require('../../templating/WidgetFactory');
+import when = require('dojo/when');
 
 class IteratorRenderer extends DomElementRenderer {
 	destroy(widget:dom.IIterator):void {
-		widget._list && widget._list.destroy();
-		widget._list = null;
+		widget._impl && widget._impl.destroy();
+		widget._impl = null;
 	}
 
-	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IViewWidget {
+	private _getImplCtor(widget:dom.IIterator):IPromise<any> {
+		var base = this._sourceIsArray(widget) ? 'dgrid/List' : 'dgrid/OnDemandList',
+			dfd:any = new Deferred<any>();
+
+		require([ base, 'dgrid/Keyboard', 'dgrid/Selection' ], (...modules:any[]):void => {
+			dfd.resolve(declare(modules));
+		});
+
+		return dfd;
+	}
+
+	private _getSelectionMode(value:any):string {
+		// Use 'single' selection mode when truthy but not a string
+		if (value) {
+			return typeof value === 'string' ? value : 'single';
+		}
+	}
+
+	private _sourceIsArray(widget:dom.IIterator):boolean {
+		return widget.get('source') instanceof Array;
+	}
+
+	private _implIsOnDemand(widget:dom.IIterator):boolean {
+		// Duck test based on a property specific to OnDemandList
+		return widget._impl && widget._impl['farOffRemoval'];
+	}
+
+	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IContentWidget {
 		var child = widget._widgetIndex[key];
 		if (child) {
 			return child;
 		}
 		var mediator = widget._getMediatorByKey(key);
-		child = widget._widgetIndex[key] = <dom.IViewWidget> widget._factory.create();
+		child = widget._widgetIndex[key] = <dom.IContentWidget> new widget._ViewCtor();
 		child.set('mediator', mediator);
 		child.set('parent', widget);
 		return child;
 	}
 
 	initialize(widget:dom.IIterator):void {
+		super.initialize(widget);
+
+		// TODO: multiselect support
+		widget.observe('selectedItem', (item:any):void => {
+			var list:any = widget._impl;
+			if (!list) {
+				return;
+			}
+
+			// Silently clear our list impl's selection
+			// TODO: can we do this silently in dgrid?
+			list.allSelected = false;
+			for (var id in list.selection) {
+				list._select(id, null, false);
+			}
+			list._lastSelected = null;
+			// Silently select each value in our selected array
+			// for (var i = 0, len = items.length; i < len; ++i) {
+			// 	list._select(items[i] || '', null, true);
+			// }
+			item !== null && list._select(item, null, true);
+		});
+
+		widget.observe('allowSelectAll', (value:boolean) => {
+			widget._impl && widget._impl.set('allowSelectAll', false);
+		});
+
+		widget.observe('allowTextSelection', (value:boolean) => {
+			widget._impl && widget._impl.set('allowTextSelection', false);
+		});
+
 		widget.observe('source', (source:any, previous:any) => {
-			// Remove old source observer, if applicable
-			if (source !== previous) {
-				widget._sourceObserverHandle && widget._sourceObserverHandle.remove();
-			}
-			this._renderList(widget);
-			if (source instanceof Array) {
-				// Resize and force refresh on the list
-				var lastLength = widget._listLength || 0,
-					listLength = widget._listLength = source.length;
-				this._updateList(widget, listLength - lastLength);
-				// Observe our source if it's an ObservableArray
-				if (typeof source.observe === 'function') {
-					widget._sourceObserverHandle = source.observe((index:number, removals:any[], additions:any[]) => {
-						this._updateList(widget, additions.length - removals.length);
-					});
+			widget._sourceObserverHandle && widget._sourceObserverHandle.remove();
+
+			when(this._renderList(widget), ():void => {
+				if (this._sourceIsArray(widget)) {
+					// Resize and force refresh on the list
+					var lastLength = widget._sourceLength || 0,
+						sourceLength = widget._sourceLength = source.length;
+					this._updateList(widget, sourceLength - lastLength);
+					// Observe our source if it's an ObservableArray
+					if (typeof source.observe === 'function') {
+						widget._sourceObserverHandle = source.observe((index:number, removals:any[], additions:any[]) => {
+							this._updateList(widget, additions.length - removals.length);
+						});
+					}
 				}
-			}
-			else {
-				widget._list.set('store', source);
-			}
+				else {
+					widget._impl.set('store', source);
+				}
+			});
 		});
 
 		widget.observe('template', (template:any) => {
-			// Set constructor since it comes in without one (to avoid being constructed during processing)
-			// TODO: pass reference to constructor in options
+			// Wipe out old view constructor template and resolve the new one
+			widget._ViewCtor = null;
+			when(template, (ViewCtor:any) => {
+				widget._ViewCtor = ViewCtor;
+			});
 			// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
-			widget._factory = new WidgetFactory(template, RowView);
+		});
+
+		// TODO: two-way bind property to impl list
+		widget.observe('selection', (value:any) => {
+			widget._impl && widget._impl.set('selectionMode', this._getSelectionMode(value));
 		});
 	}
 
-	private _renderList(widget:dom.IIterator):void {
-		var list = widget._list,
+	private _renderList(widget:dom.IIterator):IPromise<void> {
+		var list = widget._impl,
 			source = widget.get('source'),
 			arraySource = source instanceof Array,
-			onDemand = list instanceof OnDemandList;
+			currentlyOnDemand = this._implIsOnDemand(widget);
 
 		// No need to render if we already have the right kind of list
-		if ((arraySource && list && !onDemand) || (!arraySource && onDemand)) {
+		if ((arraySource && list && !currentlyOnDemand) || (!arraySource && currentlyOnDemand)) {
 			return;
 		}
 		// Clean up list and detach all widgets
@@ -74,30 +140,55 @@ class IteratorRenderer extends DomElementRenderer {
 			var item = widget._widgetIndex[key];
 			item._renderer.detach(item);
 		});
+
 		list && list.destroy();
-		if (source instanceof Array) {
-			list = widget._list = new List();
-			var _insertRow:any = list.insertRow;
-			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
-				var child = this._getWidgetByKey(widget, '' + i);
-				child._renderer.detach(child);
-				return _insertRow.call(list, child._outerFragment, parent, beforeNode, i, options);
-			};
-			list.renderRow = (element:any):HTMLElement => element;
-		}
-		else {
-			list = widget._list = new OnDemandList();
-			list.renderRow = (record:any):HTMLElement => {
-				var id = source.idProperty,
-					key = '' + (typeof record.get === 'function' ? record.get(id) : record[id]),
-					child = this._getWidgetByKey(widget, key);
-				return child._outerFragment;
-			};
-		}
-		list.set('showHeader', false);
-		var className:string = list.domNode.className;
-		this._replace(widget, list.domNode);
-		widget.get('classList').add(className);
+		return when(this._getImplCtor(widget), (ImplCtor:any) => {
+			list = widget._impl = new ImplCtor({ id: widget.get('id') });
+			list._onNotification = function() {
+				console.log('list notification:', arguments)
+			}
+
+			if (arraySource) {
+				var _insertRow:any = list.insertRow;
+				list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
+					var child = this._getWidgetByKey(widget, '' + i);
+					child._renderer.detach(child);
+					return _insertRow.call(list, child._outerFragment, parent, beforeNode, i, options);
+				};
+				list.renderRow = (element:any):HTMLElement => element;
+			}
+			else {
+				list.renderRow = (record:any):HTMLElement => {
+					var idProperty = source.idProperty,
+						id = record.get ? record.get(idProperty) : record[idProperty];
+					return this._getWidgetByKey(widget, id)._outerFragment;
+				};
+			}
+
+			// Initialize some list properties and add event listeners
+			list.set('selectionMode', this._getSelectionMode(widget.get('selection')));
+			list.set('allowSelectAll', widget.get('allowSelectAll'));
+			list.set('allowTextSelection', widget.get('allowTextSelection'));
+
+
+			// TODO: widget selected property as ObservableArray?
+			list.on('dgrid-select,dgrid-deselect', util.debounce(() => {
+				var selection = widget._impl.selection,
+					items:string[] = [];
+				for (var key in selection) {
+					selection[key] && items.push(key);
+				}
+				console.log('updating selected...', items)
+				widget.set('selectedItem', items.length === 1 ? items[0] : null);
+			}));
+
+			var className = list.domNode.className;
+			this._replace(widget, list.domNode);
+			widget.classList.add(className);
+
+			// Also wait on iterator's template which could be a promise
+			return when(widget.get('template'));
+		});
 	}
 
 	private _replace(widget:dom.IIterator, newRoot:HTMLElement):void {
@@ -112,10 +203,10 @@ class IteratorRenderer extends DomElementRenderer {
 		var scopeField = widget.get('each'),
 			source = widget.get('source'),
 			sourceLength = source.length,
-			child:dom.IViewWidget;
+			child:dom.IContentWidget;
 		if (change > 0) {
 			// If array is larger than before add the necessary rows to our list
-			widget._list.renderArray(source.toArray ? source.toArray() : source);
+			widget._impl.renderArray(source.toArray ? source.toArray() : source);
 		}
 		else if (change < 0) {
 			// If it's smaller, we need to detach any extra widgets
@@ -131,8 +222,5 @@ class IteratorRenderer extends DomElementRenderer {
 		}
 	}
 }
-
-class RowView extends ContentView {};
-RowView.prototype._renderer = new DomElementRenderer();
 
 export = IteratorRenderer;

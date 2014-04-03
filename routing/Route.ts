@@ -95,7 +95,7 @@ class Route extends BaseRoute implements routing.IRoute {
 						kwArgs[k] = this[k];
 					}
 
-					lang.mixin(kwArgs, this.parse(event.newPath));
+					lang.mixin(kwArgs, this.parse(event.newPath), { route: this });
 
 					has('debug') && console.log('new route state for', id, kwArgs);
 					this._mediatorInstance.set('routeState', kwArgs);
@@ -180,62 +180,6 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 }
 
-<<<<<<< HEAD
-=======
-module Route {
-	export interface IValues extends BaseRoute.IValues {
-		/**
-		 * The unique identifier for this route.
-		 */
-		id:string;
-
-		/**
-		 * The parent route of this route. If no parent route exists, parent will be set to the main Application instance.
-		 */
-		parent:any /*routing.IRoute, core.IApplication*/;
-
-		/**
-		 * The name of a mediator which, when transformed using the expression `router.mediatorPath + '/' +
-		 * toUpperCamelCase(route.mediator) + 'Mediator'`, provides a module ID that points to a module whose value is a
-		 * `framework/data/Mediator`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-		 * transformed. If null, a generic Mediator object will be used for this route instead.
-		 */
-		mediator:string;
-
-		/**
-		 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
-		 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
-		 * `ui.IView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-		 * transformed. If null, a generic View object will be used for this route instead.
-		 */
-		view:string;
-
-		/**
-		 * The name of a template which, when transformed using the expression `router.viewPath + '/' +
-		 * toUpperCamelCase(route.template) + 'View.html'`, provides a path to a Mayhem template. If the string starts with
-		 * a '/', it will be treated as an absolute path and not transformed.
-		 */
-		template:string;
-
-		/**
-		 * The ID of the placeholder in the parent route's view that this route's view should be injected into.
-		 */
-		placeholder:string;
-
-		/**
-		 * The router to which this route belongs.
-		 */
-		router:routing.IRouter;
-
-		/**
-		 * @protected
-		 */
-		app:core.IApplication;
-
-	}
-}
-
->>>>>>> Collections manager and related changes. WIP.
 // Default primitive property values
 Route.defaults({
 	placeholder: 'default'

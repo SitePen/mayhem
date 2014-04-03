@@ -2,6 +2,8 @@
 
 import Container = require('./Container');
 import has = require('../has');
+import Placeholder = require('./Placeholder');
+import PlacePosition = require('./PlacePosition');
 import ui = require('./interfaces');
 import util = require('../util');
 
@@ -30,20 +32,37 @@ class ContentView extends Container implements ui.IContentView {
 			}
 
 			placeholder.set('currentChild', item);
+			var self = this;
 			return {
 				remove: function ():void {
 					this.remove = function ():void {};
-					placeholder.set('currentChild', null);
-					placeholder = null;
+					placeholder.empty();
+					// TODO: the router uses this handle to empty placeholder, not remove it entirely
+					// self.placeholders[position] = placeholder = null;
 				}
 			};
 		}
 		return super.add(item, position);
 	}
 
+	addPlaceholder(name:string, placeholder?:ui.IPlaceholder, reference?:any, position:PlacePosition = PlacePosition.AFTER):void {
+		placeholder || (placeholder = new Placeholder());
+		this.placeholders[name] = placeholder;
+		this._renderer.add(this, placeholder, reference, position);
+	}
+
 	clear():void {
-		// TODO: detach children, placeholders
-		this._renderer.clear(this);
+		this.empty();
+		super.clear();
+	}
+
+	empty():void {
+		var placeholders = this.placeholders;
+		for (var name in placeholders) {
+			placeholders[name].empty();
+		}
+
+		super.empty();
 	}
 
 	setContent(content:any):void {

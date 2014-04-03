@@ -1,8 +1,16 @@
 /// <reference path="./dojo" />
 
+declare module 'dgrid/Keyboard' {
+	class Keyboard {}
+
+	export = Keyboard;
+}
+
 declare module 'dgrid/List' {
 	class List {
 		/* readonly */ domNode:HTMLElement;
+		selection:any; // TODO: interface for dgrid/Selection
+
 		constructor(kwArgs?:Object);
 
 		get(key:string):any;
@@ -11,13 +19,11 @@ declare module 'dgrid/List' {
 		set(key:string, value:any):void;
 
 		destroy():void;
-
 		insertRow(object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement;
-
+		on(type:string, listener:EventListener):IHandle;
+		_onNotification(rows?:any[], object?:any, from?:number, to?:number):void;
 		refresh(options?:Object):IPromise<any>;
-
 		renderArray(results:any, beforeNode?:Node, options?:any):HTMLElement;
-
 		renderRow(value:any, options?:Object):HTMLElement;
 	}
 
@@ -38,4 +44,10 @@ declare module 'dgrid/OnDemandList' {
 	}
 
 	export = OnDemandList;
+}
+
+declare module 'dgrid/Selection' {
+	class Selection {}
+
+	export = Selection;
 }

@@ -5,6 +5,24 @@ import style = require('./interfaces');
 import util = require('../../util');
 
 class Style extends Observable implements style.IStyle {
+	static parse(value:any = {}):any {
+		// TODO: moar correct?
+		if (typeof value !== 'string') {
+			return value;
+		}
+		var pattern = /\s*([^:]+?)\s*\:\s*([^:]+?)\s*/,
+			rules = value.split(';'),
+			value:any = {},
+			parts:string[];
+		for (var i = 0, len = rules.length; i < len; ++i) {
+			parts = rules[i].split(':');
+			if (parts.length === 2 && parts[0]) {
+				value[parts[0]] = parts[1];
+			}
+		}
+		return value;
+	}
+
 	private _globalObservers:core.IObserver<any>[];
 
 	constructor(kwArgs?:Object) {

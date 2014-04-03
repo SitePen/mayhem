@@ -22,7 +22,7 @@ export interface ITemplateConstructor extends ILoaderPlugin {
     new(source:any):ITemplate;
     load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void;
     parse(source:string):IParseTree;
-	process(source:any, timeout?:number):IPromise<IWidgetConstructor>;
+	process(source:any, CtorOverride?:any, timeout?:number):IPromise<IWidgetConstructor>;
 	scan(tree:IParseTree, seedList?:string[]):string[];
 }
 
@@ -31,8 +31,8 @@ export interface ITemplate {
 	source:any; // string | IParseTree
 	tree:IParseTree;
 
-	load(timeout?:number):IPromise<IWidgetConstructor>;
 	parse():IParseTree;
+	process(CtorOverride?:any, timeout?:number):IPromise<IWidgetConstructor>;
 	scan():string[];
 }
 

@@ -1,6 +1,7 @@
 import dom = require('./interfaces');
 import domUtil = require('./util');
 import domConstruct = require('dojo/dom-construct');
+import has = require('../../has');
 import Observable = require('../../Observable');
 import PlacePosition = require('../PlacePosition');
 import style = require('../style/interfaces');
@@ -8,15 +9,27 @@ import ui = require('../interfaces');
 import util = require('../../util');
 
 class DomWidgetRenderer implements ui.IRenderer {
-	add(widget:dom.IContainer, item:dom.IWidget, reference?:any /* dom.IWidget | Node */):void {
+	className:string;
+
+	add(widget:dom.IContainer, item:dom.IWidget, reference?:any /* dom.IWidget | Node */, position?:PlacePosition):void {
 		item._renderer.detach(item);
-		if (reference && reference.nodeType) {
-			// Replace provided reference node with item
-			domUtil.place(item._outerFragment, reference, PlacePosition.REPLACE);
+		if (reference) {
+			if (!(reference && reference.nodeType)) {
+				reference = this._getReferenceNode(reference, position);
+			}
+			// Position item in relation to its reference
+			domUtil.place(item._outerFragment, reference, position);
 		}
 		else {
-			// Add item just before reference node, if any, or to the very end of the widget
-			widget._firstNode.parentNode.insertBefore(item._outerFragment, reference && reference._firstNode || widget._lastNode);
+			// Position item at the very end of the widget
+			var firstNode = widget._firstNode,
+				lastNode = widget._lastNode;
+			if (firstNode === lastNode) {
+				firstNode.appendChild(item._outerFragment);
+			}
+			else {
+				firstNode.parentNode.insertBefore(item._outerFragment, lastNode);
+			}
 		}
 	}
 
@@ -36,8 +49,8 @@ class DomWidgetRenderer implements ui.IRenderer {
 	attachStyles(widget:dom.IWidget):void {
 		this.detachStyles(widget);
 
-		widget._styleHandle = widget.get('style').observe((value:any, previous:any, key:string):void => {
-			// We can't hide content so we detach it on display: none
+		widget._styleHandle = widget.style.observe((value:any, previous:any, key:string):void => {
+			// We can't hide content so we have to detach for display: none
 			if (key === 'display') {
 				value === 'none' ? this.detachContent(widget) : this.attachContent(widget);
 			}
@@ -90,6 +103,19 @@ class DomWidgetRenderer implements ui.IRenderer {
 		util.remove(widget._styleHandle);
 	}
 
+	/* protected */ _getReferenceNode(reference:dom.IWidget, position:PlacePosition = PlacePosition.LAST) {
+		if (position === PlacePosition.FIRST || position === PlacePosition.BEFORE) {
+			return reference._firstNode;
+		}
+		if (position === PlacePosition.LAST || position === PlacePosition.AFTER) {
+			return reference._lastNode;
+		}
+		if (has('debug')) {
+			// TODO: reference.detach() and return outerFragment instead?
+			throw new Error('Reference widget cannot be provided with PlacePosition ' + position);
+		}
+	}
+
 	initialize(widget:dom.IWidget):void {
 	}
 
@@ -115,5 +141,7 @@ class DomWidgetRenderer implements ui.IRenderer {
 		this.attachContent(widget);
 	}
 }
+
+DomWidgetRenderer.prototype.className = '';
 
 export = DomWidgetRenderer;

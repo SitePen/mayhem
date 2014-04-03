@@ -13,6 +13,7 @@ class Container extends View implements ui.IContainer {
 	private _children:ui.IWidget[];
 
 	constructor(kwArgs?:any) {
+		this._deferProperty('attached', '_render');
 		this._children = [];
 		super(kwArgs);
 	}
@@ -50,7 +51,7 @@ class Container extends View implements ui.IContainer {
 
 			var referenceWidget:ui.IWidget = children[position];
 			children.splice(position, 0, item);
-			this._renderer.add(this, item, referenceWidget);
+			this._renderer.add(this, item, referenceWidget, PlacePosition.BEFORE);
 			item.set('parent', this);
 
 			var self = this;
@@ -66,13 +67,12 @@ class Container extends View implements ui.IContainer {
 		return handle;
 	}
 
-	/* protected */ _attachedSetter(attached:boolean):void {
+	/* protected */ _attachedChanged(value:boolean):void {
 		// Propagate attachment information to children
 		var children = this._children;
 		for (var i = 0, child:ui.IWidget; (child = children[i]); ++i) {
-			child.set('attached', attached);
+			child.set('attached', value);
 		}
-		super._attachedSetter(attached);
 	}
 
 	/* protected */ _childrenGetter():ui.IWidget[] {

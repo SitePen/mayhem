@@ -3,6 +3,7 @@
 import array = require('dojo/_base/array');
 import ContentView = require('./ContentView');
 import data = require('../data/interfaces');
+import has = require('../has');
 import Mediator = require('../data/Mediator');
 import Property = require('../data/Property');
 import ui = require('./interfaces');
@@ -19,17 +20,13 @@ class ScopedMediator extends Mediator {
 }
 
 class Iterator extends ContentView implements ui.IIterator {
+	/* protected */ _each:string;
 	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
-	private _sourceBinding:IHandle;
+	/* protected */ _selectedItem:any;
 	/* protected */ _widgetIndex:{ [key:string]: ui.IView; };
 
-	_each:string;
-	_in:string;
-	_source:any;
-	_template:any;
-
-	constructor(kwArgs?:any) {
-		util.deferSetters(this, [ 'source' ], '_render');
+	constructor(kwArgs:any = {}) {
+		this._deferProperty('source', '_render');
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
 		super(kwArgs);
@@ -38,17 +35,17 @@ class Iterator extends ContentView implements ui.IIterator {
 	get:ui.IIteratorGet;
 	set:ui.IIteratorSet;
 
-	/* protected */ _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
+	private _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
 		var view = this,
 			scoped = ScopedMediator.scope(mediator || this.get('mediator')),
 			valueProperty = new Property<any>({
-			get: function ():any {
-				return view._getSourceKey(key);
-			},
-			set: function (value:any):void {
-				view._setSourceKey(key, value);
-			}
-		});
+				get: function ():any {
+					return view._getSourceKey(key);
+				},
+				set: function (value:any):void {
+					view._setSourceKey(key, value);
+				}
+			});
 
 		// Replace _getProperties to take over property management
 		scoped._getProperties = ():{ [key:string]:data.IProperty<any> } => {
@@ -61,9 +58,6 @@ class Iterator extends ContentView implements ui.IIterator {
 	}
 
 	destroy():void {
-		util.remove(this._sourceBinding);
-		this._sourceBinding = null;
-
 		// Destroy derived widgets and mediators
 		var widgets = this._widgetIndex,
 			mediators = this._mediatorIndex;
@@ -84,6 +78,7 @@ class Iterator extends ContentView implements ui.IIterator {
 		if (!mediator) {
 			return;
 		}
+		debugger
 		// Recreate our scoped mediators since the name of our value field changed
 		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string):void => {
 			var scoped = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
@@ -93,7 +88,12 @@ class Iterator extends ContentView implements ui.IIterator {
 
 	private _getSourceKey(key:string):any {
 		var source:any = this.get('source');
-		return source instanceof Array ? source[key] : source.get(key);
+		if (source instanceof Array) {
+			return source[key];
+		}
+		else if (source && source.get) {
+			return source.get(key);
+		}
 	}
 
 	/* protected */ _getMediatorByKey(key:string):Mediator {
@@ -102,16 +102,6 @@ class Iterator extends ContentView implements ui.IIterator {
 		}
 		// Create and cache a new mediator that delegates to the old one
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
-	}
-
-	private _inSetter(value:string):void {
-		// Tells us which field to use to get our source
-		this._in = value;
-		util.remove(this._sourceBinding);
-		this._sourceBinding = this.bind({
-			sourceBinding: value,
-			targetBinding: 'source'
-		});
 	}
 
 	private _setSourceKey(key:string, value:any):void {

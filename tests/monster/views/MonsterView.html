@@ -1,0 +1,24 @@
+<div class="nav">
+	<widget is="framework/ui/form/Button" class="close" on={ "press": "closeMonster" }></widget>
+	<widget is="framework/ui/form/ToggleButton" class="edit" activated={{ editable }}></widget>
+	<widget is="framework/ui/form/Button" text="Share" class="share" on={ "press": "shareMonster" }></widget>
+</div>
+
+<widget is="app/views/Monster" monster={ monster } editable={ editable } background={ app.selectedBackground }></widget>
+<widget is="app/views/Picker" part={ pickMonsterPart }></widget>
+
+<widget is="framework/ui/Dialog" class="save dialog" closable visible={ showSaveDialog }>
+	<div class="content">Save Monster?</div>
+	<widget is="framework/ui/form/Button" class="save" on={ "press": "saveMonster" }>Save Monster</widget>
+	<widget is="framework/ui/form/Button" class="cancel" on={ "press": "cancelMonster" }>Don't Save</widget>
+</widget>
+
+<widget is="framework/ui/Dialog" class="share" closable visible={ showShareDialog }>
+	<div class="content">
+		<widget is="framework/ui/form/TextField" value={ shareLink } editable=false></widget>
+	</div>
+	<widget is="framework/ui/form/Button" class="twitter" on={ "press": "sendToTwitter" }>Twitter</widget>
+	<widget is="framework/ui/form/Button" class="facebook" on={ "press": "sendToFacebook" }>Facebook</widget>
+</widget>
+
+<widget is="framework/ui/Text" xxx="app/views/Notification" class="notification" source={ notification }></widget>

@@ -7,6 +7,8 @@ import Model = require('dstore/Model');
 class MyModel extends Model {}
 
 class ItemsMediator extends Mediator {
+	_itemsStore:any;
+
 	constructor(kwArgs?:any) {
 		super(kwArgs);
 
@@ -16,7 +18,7 @@ class ItemsMediator extends Mediator {
 	}
 
 	_itemsStoreSetter(itemsStore:any):void {
-		this._values['itemsStore'] = itemsStore;
+		this._itemsStore = itemsStore;
 	}
 }
 

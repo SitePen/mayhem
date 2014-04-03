@@ -38,7 +38,7 @@ export interface IView extends ui.IView, IWidget {
 	set:ui.IViewSet;
 }
 
-export interface IViewWidget extends IElementWidget, IView {
+export interface IContentWidget extends IElementWidget, IView {
 	_firstNode:HTMLElement;
 	_lastNode:HTMLElement;
 	_outerFragment:HTMLElement;
@@ -47,12 +47,29 @@ export interface IViewWidget extends IElementWidget, IView {
 	set:ui.IViewSet;
 }
 
-export interface ITextView extends ui.ITextView, IElementWidget {
+export interface IDialog extends ui.IDialog, IElementWidget {
+	get:ui.IDialogGet;
+	set:ui.IDialogSet;
+}
+
+export interface IImage extends ui.IImage, IElementWidget {
+	get:ui.IImageGet;
+	set:ui.IImageSet;
+}
+
+export interface IList extends ui.IList, IElementWidget {
+	_observerHandle:IHandle;
+
+	get:ui.IListGet;
+	set:ui.IListSet;
+}
+
+export interface IText extends ui.IText, IElementWidget {
 	_formattedText:string;
 	_text:string;
 
-	get:ui.ITextViewGet;
-	set:ui.ITextViewSet;
+	get:ui.ITextGet;
+	set:ui.ITextSet;
 }
 
 export interface IDijitWidget extends IElementWidget {
@@ -65,14 +82,14 @@ export interface IIterator extends ui.IIterator, IElementWidget {
 	_each:string;
 	_factory:any; // TODO: templating.IViewConstructor
 	_getMediatorByKey(key:string):core.data.IMediator;
-	_in:string;
-	_list:List;
-	_listLength:number;
+	_impl:List;
 	_mediatorIndex:{ [key:string]: core.data.IMediator; };
 	_source:any;
+	_sourceLength:number;
 	_sourceObserverHandle:IHandle;
 	_template:any;
-	_widgetIndex:{ [key:string]: IViewWidget; };
+	_ViewCtor:any; // TODO: templating.IWidgetConstructor
+	_widgetIndex:{ [key:string]: IContentWidget; };
 
 	get:IIteratorGet;
 	set:IIteratorSet;

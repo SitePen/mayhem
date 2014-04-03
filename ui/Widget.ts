@@ -1,5 +1,8 @@
-import ClassList = require('./style/ClassList');
+/// <reference path="../dojo" />
+
 import array = require('dojo/_base/array');
+import aspect = require('dojo/aspect');
+import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
@@ -11,36 +14,40 @@ import util = require('../util');
 var registry:{ [id:string]:ui.IWidget } = {},
 	uid = 0;
 
+if (has('debug')) {
+	(<any> window).__widgets = registry;
+}
+
 class Widget extends ObservableEvented implements ui.IWidget {
 	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
 
-	_attached:boolean;
-	_id:string;
-	_index:number;
-	_next:ui.IWidget;
-	_parent:ui.IContainer;
-	_previous:ui.IWidget;
-	_visible:boolean;
-
-	private __id:string;
-	/* protected */ _renderer:ui.IRenderer;
+	/* protected */ _class:any;
+	classList:ClassList;
+	className:string;
+	/* protected */ _id:string;
+	/* protected */ _index:number;
+	/* protected */ _next:ui.IWidget;
 	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
+	/* protected */ _parent:ui.IContainer;
+	/* protected */ _previous:ui.IWidget;
+	/* protected */ _renderer:ui.IRenderer;
+	style:Style;
+	/* protected */ _visible:boolean;
 
 	constructor(kwArgs:any = {}) {
-		util.deferSetters(this, [ 'attached' ], '_render');
+		this._deferProperty('on', '_render');
 		this._ownHandles = [];
 
 		// Capture id as provided before transforming
-		if (kwArgs.id) {
-			this.__id = kwArgs.id;
-		}
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
 
 		// TODO: check registry for duplicate id and throw?
-		// Helpful for debugging
 		registry[id] = this;
+
+		// Always set class to roll in className values of widget and renderer
+		kwArgs['class'] || (kwArgs['class'] = '');
 
 		super(kwArgs);
 		this._render();
@@ -49,8 +56,47 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	get:ui.IWidgetGet;
 	set:ui.IWidgetSet;
 
-	/* protected */ _attachedSetter(attached:boolean):void {
-		this._attached = attached;
+	/* protected */ _classSetter(value:any):void {
+		// Reset a widget's classList, incorporating in existing widget and renderer classNames
+		this._class = value;
+
+		var classes:any = [];
+		this.className && classes.push(this.className);
+		this._renderer.className && classes.push(this._renderer.className);
+
+		this.classList.add(classes.concat(ClassList.parse(value)).join(' '));
+	}
+
+	/* protected */ _deferProperty(name:string, ...untilMethods:string[]):void {
+		var setterName = '_' + name + 'Setter',
+			originalSetter:any = this[setterName],
+			outstandingMethods = untilMethods.length,
+			values:any[] = [];
+
+		this[setterName] = (value:any):void => {
+			values.push(value);
+		};
+
+		var untilHandles:any[] = array.map(untilMethods, (method:string, i:number) => {
+			return aspect.after(this, method, ():void => {
+				untilHandles[i].remove();
+				if (!--outstandingMethods) {
+					untilHandles = null;
+
+					if (originalSetter) {
+						this[setterName] = originalSetter;
+					}
+					else {
+						delete this[setterName];
+						
+					}
+
+					// Only use last value (for now)
+					values.length && this.set(name, values.pop());
+					values = null;
+				}
+			});
+		});
 	}
 
 	destroy():void {
@@ -104,8 +150,10 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _initialize():void {
 		super._initialize();
 
-		this.set('classList', new ClassList());
-		this.set('style', new Style());
+		// Create Style and ClassList properties
+		this.style = new Style();
+		this.classList = new ClassList();
+
 		this._renderer.initialize(this);
 	}
 
@@ -174,6 +222,15 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.set('rendered', true);
 	}
 
+	/* protected */ _renderedChanged(value:boolean, previous:boolean):void {
+		if (value) {
+			this.emit(previous === false ? 'rerendered' : 'rendered');
+		}
+		else {
+			this.emit('unrendered');
+		}
+	}
+
 	own(...handles:any[]):void {
 		var owned = this._ownHandles,
 			handle:any;
@@ -186,13 +243,32 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
+	/* protected */ _selectedChanged(value:boolean, previous:boolean):void {
+		if (value === true) {
+			this.emit('selected');
+		}
+		if (value === false && previous === true) {
+			this.emit('unselected');
+		}
+		if (typeof value === 'boolean' && previous !== null) {
+			this.emit('toggled');
+		}
+	}
+
+	/* protected */ _styleSetter(value:string) {
+		// Adds any manually set styles to widget's Style
+		this.style.set(Style.parse(value));
+	}
+
 	// /* protected */ _visibleGetter():boolean {
-	// 	return this.get('style').get('display') !== 'none';
+	// 	return this.style.get('display') !== 'none';
 	// }
 
 	/* protected */ _visibleSetter(visible:boolean):void {
-		this.get('style').set('display', visible ? '' : 'none');
+		this.style.set('display', visible ? '' : 'none');
 	}
 }
+
+Widget.prototype.className = '';
 
 export = Widget;

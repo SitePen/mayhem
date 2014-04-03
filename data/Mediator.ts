@@ -4,7 +4,6 @@ import arrayUtil = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import core = require('../interfaces');
 import data = require('./interfaces');
-import declare = require('dojo/_base/declare');
 import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
@@ -17,6 +16,7 @@ import util = require('../util');
 
 class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 	private _modelHandles:{ [key:string]:IHandle };
+	_routeState:Object;
 
 	get:data.IMediatorGet;
 	set:data.IMediatorSet;

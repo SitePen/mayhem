@@ -3,6 +3,7 @@
 import array = require('dojo/_base/array');
 import data = require('../data/interfaces');
 import dom = require('../ui/dom/interfaces');
+import domUtil = require('../ui/dom/util');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
@@ -10,20 +11,26 @@ import html = require('./html');
 import Observable = require('../Observable');
 import Placeholder = require('../ui/Placeholder');
 import PlacePosition = require('../ui/PlacePosition');
-import Template = require('./Template');
 import templating = require('./interfaces');
 import ui = require('../ui/interfaces');
 import util = require('../util');
-import domUtil = require('../ui/dom/util');
 import Widget = require('../ui/Widget');
 
 class WidgetFactory {
+	static getConstructor(tree:templating.IParseTree, CtorOverride?:any):templating.IWidgetConstructor {
+		var factory = new WidgetFactory(tree, CtorOverride);
+		return <templating.IWidgetConstructor> function(options?:any):ui.IWidget {
+			return factory.create(options);
+		}
+	}
+
+	bidirectionalBindings:{ [key:string]: boolean; } = {};
 	bindingTemplates:{ [key:string]: any; } = {};
 	childFactories:WidgetFactory[] = [];
 	content:Node;
-	kwArgFactories:{ [key:string]: WidgetFactory; } = {};
 	MARKER_PATTERN:RegExp = /^\s*⟨⟨ ({[^{]+}) ⟩⟩\s*$/;
 	propertyBindings:{ [key:string]: string; } = {};
+	propertyWidgetFactories:{ [key:string]: WidgetFactory; } = {};
 	tree:templating.IParseTree;
 	widgetArgs:any = {};
 	WidgetCtor:typeof Widget;
@@ -31,9 +38,6 @@ class WidgetFactory {
 	constructor(tree:templating.IParseTree, WidgetCtor?:typeof Widget) {
 		// TODO: for widgets with ids to be cloned multiple times we need a way to transform child ids
 		this.WidgetCtor = WidgetCtor || <typeof Widget> require(tree.constructor);
-		if (!((<any> this.WidgetCtor).prototype instanceof Widget)) {
-			throw new Error('Factory can only construct Widget instances');
-		}
 		this.tree = tree;
 		this._initializeArgs();
 		this._initializeContent();
@@ -41,7 +45,10 @@ class WidgetFactory {
 	}
 
 	create(options?:any):ui.IWidget {
-		return new _WidgetBinder(this, options).widget;
+		var binder = new _WidgetBinder(this, options);
+		// TODO: allow containing view to be specified?
+		binder.attachBindings();
+		return binder.widget;
 	}
 
 	destroy():void {
@@ -54,8 +61,9 @@ class WidgetFactory {
 
 	private _initializeArgs():void {
 		var kwArgs = this.tree.kwArgs,
-			kwArgFactories = this.kwArgFactories,
+			propertyWidgetFactories = this.propertyWidgetFactories,
 			propertyBindings = this.propertyBindings,
+			bidirectionalBindings = this.bidirectionalBindings,
 			bindingTemplates = this.bindingTemplates,
 			widgetArgs = this.widgetArgs,
 			key:string,
@@ -64,30 +72,36 @@ class WidgetFactory {
 		if (!kwArgs) {
 			return;
 		}
+
 		for (key in kwArgs) {
 			value = kwArgs[key];
 			if (value && value.hasOwnProperty('constructor')) {
 				// Initialize factory for widgets in kwArg
-				kwArgFactories[key] = new WidgetFactory(value);
+				propertyWidgetFactories[key] = new WidgetFactory(value);
+			}
+			else if (value && value.$ctor) {
+				widgetArgs[key] = WidgetFactory.getConstructor(value.$ctor);
 			}
 			else if (value && value.$bind) {
 				binding = value.$bind;
-				// Bind paths that are plain strings are bidirectional property bindings
+				// Bind paths that are plain strings are property bindings
 				if (typeof binding === 'string') {
-					this.propertyBindings[key] = binding;
+					propertyBindings[key] = binding;
+					// Track whether binding should be bidirectional
+					bidirectionalBindings[key] = value.bidirectional;
 				}
 				// Arrays are binding templates
 				else if (binding instanceof Array) {
-					this.bindingTemplates[key] = binding;
+					bindingTemplates[key] = binding;
 				}
 				else {
 					if (has('debug')) {
-						throw new Error('No handler for binding: ' + binding);
+						throw new Error('No handler for this kind of binding: ' + binding);
 					}
 				}
 			}
 			else {
-				this.widgetArgs[key] = value;
+				widgetArgs[key] = value;
 			}
 		}
 	}
@@ -124,6 +138,8 @@ class _WidgetBinder {
 	factory:WidgetFactory;
 	private _mediatorHandle:IHandle;
 	private _observerHandles:IHandle[];
+	originView:ui.IView;
+	propertyWidgetBinders:{ [key:string]:_WidgetBinder } = {};
 	private _templateObservable:Observable;
 	private _textBindingNodes:Node[] = [];
 	private _textBindingPaths:string[] = [];
@@ -131,42 +147,48 @@ class _WidgetBinder {
 	widget:ui.IWidget;
 	private _widgetArgs:any;
 
-	constructor(factory:WidgetFactory, options:any) {
+	constructor(factory:WidgetFactory, options:any = {}) {
 		this.factory = factory;
 		this._widgetArgs = lang.mixin({}, factory.widgetArgs, options);
-		this._processKwArgWidgets();
+		// Create attribute children before widget so we can pass them to the ctor
+		this._processPropertyWidgetFactories();
 		var widget = this.widget = new factory.WidgetCtor(this._widgetArgs);
+		this._processPropertyWidgetBinders();
 		this._placeContent();
 		this._placeChildren();
-		this._bindProperties();
-		this._bindPropertyTemplates();
-		this._bindTextNodes();
 
-		// Hook widget's destroy method to tear down the template
+		// Hook widget's destroy method for binder teardown
 		var _destroy:() => void = widget.destroy;
 		widget.destroy = ():void => {
-			this._mediatorHandle && this._mediatorHandle.remove();
-			this._mediatorHandle = null;
 			this.destroy();
 			_destroy.call(widget);
 		};
 	}
 
+	attachBindings():void {
+		this._bindProperties();
+		this._bindPropertyTemplates();
+		this._bindTextNodes();
+	}
+
 	private _bindProperties():void {
-		var widget = <ui.IView> this.widget,
-			propertyBindings = this.factory.propertyBindings;
+		var widget = this.widget,
+			view = this.getView(),
+			propertyBindings = this.factory.propertyBindings,
+			bidirectionalBindings = this.factory.bidirectionalBindings;
 		for (var key in propertyBindings) {
-			// TODO: keep a reference to origin view and use its bind, setting widget as target
-			widget.bind({
+			view.bind({
 				sourceBinding: propertyBindings[key],
+				target: widget,
 				targetBinding: key,
-				twoWay: true
+				twoWay: bidirectionalBindings[key]
 			});
 		}
 	}
 
 	private _bindPropertyTemplates():void {
-		var widget = <ui.IContentView> this.widget,
+		var widget = this.widget,
+			view = this.getView(),
 			bindingTemplates = this.factory.bindingTemplates,
 			template:any;
 
@@ -189,21 +211,21 @@ class _WidgetBinder {
 			return;
 		}
 
-		// Create an observable as a binding target and set up observers to reprocess templates
-		var target = this._templateObservable = new Observable();
+		// Create an observable as a binding target and set up observers to signal template reprocessing
+		var observerTarget = this._templateObservable = new Observable();
 		util.remove.apply(null, this._observerHandles || []);
 		this._observerHandles = [];
 		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
 			var templates:any[] = sourceMap[property];
-			this._observerHandles.push(target.observe(property, () => {
-				var mediator:data.IMediator = widget.get('mediator');
+			this._observerHandles.push(observerTarget.observe(property, () => {
+				var mediator:data.IMediator = view.get('mediator');
 				for (var i = 0, len = templates.length; i < len; ++i) {
 					widget.set(getProperty(template), this._evaluateBindingTemplate(mediator, templates[i]));	
 				}
 			}));
 		});
 
-		var getProperty = (template:any) => {
+		var getProperty = (template:any):string => {
 			for (var key in bindingTemplates) {
 				if (template === bindingTemplates[key]) {
 					return key;
@@ -213,9 +235,9 @@ class _WidgetBinder {
 
 		// Bind each source binding property with our observable as the target
 		for (var property in sourceMap) {
-			widget.bind({
+			view.bind({
 				sourceBinding: property,
-				target: target,
+				target: observerTarget,
 				targetBinding: property
 			});
 		}
@@ -227,14 +249,14 @@ class _WidgetBinder {
 		}
 		util.remove.apply(null, this._textBindingHandles || []);
 		this._textBindingHandles = [];
-		var widget = <ui.IContentView> this.widget,
+		var view = this.getView(),
 			node:Node,
 			path:string;
 		for (var i = 0, len = this._textBindingNodes.length; i < len; i++) {
 			node = this._textBindingNodes[i];
 			path = this._textBindingPaths[i];
 			if (!node || !path) continue;
-			this._textBindingHandles[i] = widget.bind({
+			this._textBindingHandles[i] = view.bind({
 				sourceBinding: path,
 				target: node,
 				targetBinding: 'nodeValue'
@@ -254,21 +276,30 @@ class _WidgetBinder {
 		}).join('');
 	}
 
+	getView():ui.IView {
+		return this.widget['bind'] ? <ui.IView> this.widget : this.originView;
+	}
+
 	private _placeChildren():void {
 		var childFactories = this.factory.childFactories,
 			factory:WidgetFactory,
-			widget:dom.IContainer = <dom.IContainer> this.widget,
+			container:dom.IContainer = <dom.IContainer> this.widget,
 			markerNodes = this._childMarkerNodes || [],
+			binder:_WidgetBinder,
 			item:dom.IWidget;
 		for (var i = 0, len = childFactories.length; i < len; ++i) {
 			factory = childFactories[i];
 			if (factory) {
-				item = <dom.IWidget> factory.create(); // TODO: child options?
-				widget.add(item, i);
-				// If a marker node exists move child to it
+				// Create and attach bindings to child widget
+				binder = new _WidgetBinder(factory); // TODO: child options?
+				binder.originView = container;
+				binder.attachBindings();
+				item = <dom.IWidget> binder.widget;
+				container.add(item, i);
+				// If a marker node exists for child index use it to place child
 				var node = markerNodes[i];
 				if (node) {
-					widget._renderer.add(widget, item, node);
+					container._renderer.add(container, item, node, PlacePosition.REPLACE);
 				}
 			}
 		}
@@ -330,11 +361,27 @@ class _WidgetBinder {
 		}
 	}
 
-	private _processKwArgWidgets():void {
-		var kwArgFactories = this.factory.kwArgFactories,
-			widgetArgs = this._widgetArgs;
-		for (var key in kwArgFactories) {
-			widgetArgs[key] = kwArgFactories[key].create(); // TODO: child options?
+	private _processPropertyWidgetBinders():void {
+		var propertyWidgetBinders = this.propertyWidgetBinders,
+			view:ui.IView = this.getView(),
+			binder:_WidgetBinder;
+		for (var key in propertyWidgetBinders) {
+			binder = propertyWidgetBinders[key];
+			binder.originView = view;
+			binder.attachBindings();
+		}
+	}
+
+	private _processPropertyWidgetFactories():void {
+		var propertyWidgetFactories = this.factory.propertyWidgetFactories,
+			propertyWidgetBinders = this.propertyWidgetBinders,
+			widgetArgs = this._widgetArgs,
+			factory:WidgetFactory,
+			binder:_WidgetBinder;
+		for (var key in propertyWidgetFactories) {
+			factory = propertyWidgetFactories[key];
+			binder = propertyWidgetBinders[key] = new _WidgetBinder(factory); // TODO: child options?
+			widgetArgs[key] = binder.widget;
 		}
 	}
 }

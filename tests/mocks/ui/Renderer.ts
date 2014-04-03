@@ -2,6 +2,7 @@ import ui = require('../../../ui/interfaces');
 
 class MockRenderer implements ui.IRenderer {
 	callCounts:any = {};
+	className:string;
 	_content:any;
 	_addArgs:any;
 
@@ -66,5 +67,7 @@ class MockRenderer implements ui.IRenderer {
 		this._content = content;
 	}
 }
+
+MockRenderer.prototype.className = '';
 
 export = MockRenderer;
