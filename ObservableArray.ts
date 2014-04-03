@@ -216,7 +216,7 @@ class ObservableArray<T> /* implements Array<T> */ {
 
 	some(callbackfn:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean {
 		if (has('es5')) {
-			return Array.prototype.every.apply(this, arguments);
+			return Array.prototype.some.apply(this, arguments);
 		}
 		else {
 			for (var i = 0, j = this.length; i < j; ++i) {
@@ -240,13 +240,17 @@ class ObservableArray<T> /* implements Array<T> */ {
 	splice(start:number):ObservableArray<T>;
 	splice(start:number, deleteCount:number, ...items:T[]):ObservableArray<T>;
 	splice(start:number, deleteCount:number = 0, ...items:T[]):ObservableArray<T> {
+		if (start < 0) {
+			start = Math.max(0, this.length + start)
+		}
+
 		var additions = items,
 			removals = Array.prototype.slice.call(this, start, start + deleteCount);
 
 		Array.prototype.splice.apply(this, arguments);
 		this._notify(start, removals, additions);
 
-		return new ObservableArray<T>([]);
+		return new ObservableArray<T>(removals);
 	}
 
 	toArray():T[] {
