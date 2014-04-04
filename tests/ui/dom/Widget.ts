@@ -1,48 +1,113 @@
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
+import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import domConstruct = require('dojo/dom-construct');
 import WidgetRenderer = require('../../../ui/dom/Widget');
+import Widget = require('../../../ui/Widget');
 import declare = require('dojo/_base/declare');
+import util = require('../util');
+import domUtil = require('../../../ui/dom/util');
 
 var parentNode:Node,
-	widget:any;
+	renderer:any;
+
+function getChildren(parent:Node) {
+	var children = [];
+	for (var i = 0; i < parent.childNodes.length; i++) {
+		children.push(parent.childNodes[i]);
+	}
+	return children;
+}
 
 
 registerSuite({
 	name: 'ui/dom/Widget',
 
-	beforeEach: function () {
+	setup() {
+		Widget.prototype._renderer = new WidgetRenderer();
 	},
 
-	afterEach: function () {
-		if (widget) {
-			try {
-				widget.destroy();
-			} catch (e) {
-				// ignore
-			}
-			widget = null;
-		}
+	teardown() {
+		Widget.prototype._renderer = undefined;
 	},
 
-	'constructor': function () {
-	    widget = new WidgetRenderer();
-		assert.instanceOf(widget._fragment, DocumentFragment, 'Widget should have a DOM fragment')
-		assert.instanceOf(widget._firstNode, Node, 'Widget should have a first node')
-		assert.instanceOf(widget._lastNode, Node, 'Widget should have a last node')
+	beforeEach() {
+	    renderer = new WidgetRenderer();
 	},
 
-	'#destroy': function () {
-		widget = new WidgetRenderer();
-		assert.doesNotThrow(function () {
-			widget.destroy();
-		}, 'Destroying widget renderer should not throw');
-		assert.isNull(widget._fragment, '_fragment should be null');
-		assert.isNull(widget._firstNode, '_firstNode should be null');
-		assert.isNull(widget._lastNode, '_lastNode should be null');
+	afterEach() {
+		renderer = util.destroy(renderer);
 	},
+
+	'#add': function () {
+		var widget:any = new Widget(),
+			newWidget1:any = new Widget(),
+			newWidget2:any = new Widget(),
+			newWidget3:any = new Widget();
+
+		renderer.add(widget, newWidget1);
+		assert.deepEqual(getChildren(widget._firstNode.parentNode), [
+			widget._firstNode,
+			newWidget1._firstNode,
+			newWidget1._lastNode,
+			widget._lastNode
+		], 'Widget should contain newWidget1 nodes');
+
+		renderer.add(widget, newWidget2);
+		assert.deepEqual(getChildren(widget._firstNode.parentNode), [
+			widget._firstNode,
+			newWidget1._firstNode,
+			newWidget1._lastNode,
+			newWidget2._firstNode,
+			newWidget2._lastNode,
+			widget._lastNode
+		], 'Widget should contain newWidget2 nodes');
+
+		renderer.add(widget, newWidget3, newWidget2);
+		assert.deepEqual(getChildren(widget._firstNode.parentNode), [
+			widget._firstNode,
+			newWidget1._firstNode,
+			newWidget1._lastNode,
+			newWidget3._firstNode,
+			newWidget3._lastNode,
+			newWidget2._firstNode,
+			newWidget2._lastNode,
+			widget._lastNode
+		], 'Widget should contain newWidget3 nodes');
+	},
+
+	'#attachContent': function () {
+		var widget:any = new Widget();
+
+		// give the widget some test content
+		var content:Node = domUtil.toDom('<h1>foo</h1>');
+		widget._innerFragment = content;
+
+		assert.deepEqual(getChildren(widget._firstNode.parentNode), [
+			widget._firstNode,
+			widget._lastNode
+		], 'Widget children should be firstNode and lastNode');
+
+		// attach the content to this renderer
+		renderer.attachContent(widget);
+
+		assert.deepEqual(getChildren(widget._firstNode.parentNode), [
+			widget._firstNode,
+			content,
+			widget._lastNode
+		], 'Widget children should include content');
+	},
+
+	// '#destroy': function () {
+	// 	assert.doesNotThrow(function () {
+	// 		renderer.destroy();
+	// 	}, 'Destroying widget renderer should not throw');
+	// 	assert.isNull(renderer._fragment, '_fragment should be null');
+	// 	assert.isNull(renderer._firstNode, '_firstNode should be null');
+	// 	assert.isNull(renderer._lastNode, '_lastNode should be null');
+	// },
 
 	//it('should assign the widget id to the widget\'s DOM node', function () {
 	//    widget = new Widget();
