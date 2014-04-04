@@ -14,6 +14,6 @@
 		"grunt-wrap": "0.3.0",
 		"intern-geezer": "1.6.0",
 		"lodash": "2.4.1",
-		"typescript": "0.9.7"
+		"typescript": "1.0.0"
 	}
 }
