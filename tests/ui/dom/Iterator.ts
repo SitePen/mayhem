@@ -8,27 +8,16 @@ import WidgetFactory = require('../../../templating/WidgetFactory');
 import ui = require('../../../ui/interfaces');
 import util = require('../util');
 import Observable = require('../../../Observable');
+import ObservableArray = require('../../../ObservableArray');
 import Widget = require('../../../ui/Widget');
+import _Iterator = require('../../../ui/Iterator');
 import MockFactory = require('../../mocks/ui/WidgetFactory');
 import MockRenderer = require('../../mocks/ui/Renderer');
 import Deferred = require('dojo/Deferred');
-
-class MockStore {
-	idProperty = 'id';
-
-	getIdentity() {
-		return 'id';
-	}
-
-	query() {
-		return [
-			{ id: '0', value: 'item 0' },
-			{ id: '1', value: 'item 1' }
-		]
-	}
-}
+import Memory = require('dojo/store/Memory');
 
 var IteratorRenderer:typeof _IteratorRenderer,
+	Iterator:typeof _Iterator,
 	configHandle:any;
 
 registerSuite({
@@ -44,10 +33,13 @@ registerSuite({
 				'dgrid/OnDemandList': 'mayhem/tests/mocks/dgrid/List',
 				'mayhem/templating/WidgetFactory': 'mayhem/tests/mocks/ui/WidgetFactory'
 			},
-			undef: [ 'mayhem/ui/dom/Iterator' ]
+			undef: [ 'mayhem/ui/dom/Iterator', 'mayhem/ui/Iterator' ]
 		});
-		require([ '../../../ui/dom/Iterator' ], function (__IteratorRenderer: typeof _IteratorRenderer) {
+		require([
+			'../../../ui/dom/Iterator', '../../../ui/Iterator'
+		], function (__IteratorRenderer:typeof _IteratorRenderer, __Iterator:typeof _Iterator) {
 			IteratorRenderer = __IteratorRenderer;
+			Iterator = __Iterator;
 			dfd.resolve(true);
 		});
 		return dfd.promise;
@@ -56,17 +48,6 @@ registerSuite({
 	teardown() {
 		Widget.prototype._renderer = undefined;
 		return configHandle.restore();
-	},
-
-	beforeEach() {
-		MockFactory.factoriesCreated = 0;
-	},
-
-	afterEach() {
-		if (configHandle) {
-			configHandle.restore();
-			configHandle = null;
-		}
 	},
 
 	'#destroy': function () {
@@ -82,72 +63,92 @@ registerSuite({
 		assert.isNull(widget._list, 'Widget list should be null');
 	},
 
-	'#initialize (existing list)': function () {
-		var arraySource = [ 'item1', 'item2' ],
-			objectSource = new MockStore(),
-			widget:any = new Widget();
+	'#initialize': function () {
+		var iterator:any = new Iterator(),
+			renderer = new IteratorRenderer();
+		renderer.initialize(iterator);
+		assert.property(iterator._observers, 'source', 'iterator source should be observed');
+		assert.property(iterator._observers, 'template', 'iterator template should be observed');
+	},
 
-		var renderer = new IteratorRenderer();
+	'template observer': function () {
+		var iterator:any = new Iterator();
 
-		renderer.initialize(widget);
-		assert.property(widget.observers, 'source', 'Widget source should be observed');
-		assert.property(widget.observers, 'template', 'Widget template should be observed');
+		// check that iterator doesn't start with a factory
+		assert.isUndefined(iterator._factory, 'New iterator should not have a factory');
 
-		// set the widget source to an array
-		widget.set('source', arraySource);
-		assert.isFalse(widget._listDestroyed, '_list should not have been destroyed');
-		assert.deepPropertyVal(widget, '_list._renderSource', arraySource, 'Expected source should be rendered');
-		assert.deepPropertyVal(widget, '_mediatorIndex[0].source', arraySource[0],
-			'First mediator should have sent notification for source[0]');
-		assert.deepPropertyVal(widget, '_mediatorIndex[1].source', arraySource[1],
-			'Second mediator should have sent notification for source[1]');
-		assert.deepPropertyVal(widget, '_mediatorIndex[0].scopeField', 'scope',
-			'Mediators should have expected scopeField value');
+		// set a template and make sure a factory was created
+		iterator.set('template', '');
+		assert.instanceOf(iterator._factory, MockFactory, 'A new factory should have been created');
+	},
+
+	'source observer': function () {
+		var objectSource = new Memory({
+				data: [
+					{ id: '0', value: 'item 0' },
+					{ id: '1', value: 'item 1' }
+				]
+			}),
+			iterator:any = new Iterator();
+
+		var listRendered = false;
+		aspect.before(iterator._renderer, '_renderList', function () {
+			listRendered = true;
+		});
+
+		var listUpdated = false;
+		aspect.before(iterator._renderer, '_updateList', function () {
+			listUpdated = true;
+		});
 
 		// set source to an object
 		assert.throws(function () {
-			widget.set('source', objectSource);
+			iterator.set('source', objectSource);
 		}, /Cannot call method/, 'Setting source should throw when template has not been set');
 
-		// set a template and make sure a factory was created
-		widget.set('template', '');
-		assert.strictEqual(MockFactory.factoriesCreated, 1, 'A new factory should have been created');
+		// set a template to create a _factory
+		iterator.set('template', '');
 
-		// set source again
-		widget.set('source', objectSource);
-		assert.isTrue(widget._listDestroyed, '_list should have been destroyed');
-		assert.strictEqual(widget.get('classList').className, widget._list.domNode.className, 'widget classlist should have expected value');
-		assert.strictEqual(widget._firstNode, widget._list.domNode, 'widget domNode should be list domNode');
-	},
+		// set source to an object (for real this time)
+		iterator.set('source', objectSource);
+		assert.isTrue(listRendered, 'list should have been rendered when assigned object source');
+		assert.isFalse(listUpdated, 'list should not been updated when assigned object source');
+		assert.strictEqual(iterator._list.get('store'), objectSource, 'list store should be object source');
 
-	'#initialize (new list)': function () {
-		var arraySource = [ 'item1', 'item2' ],
-			objectSource = new MockStore();
+		// set source to an array
+		var arraySource:any = [ 'item0', 'item1' ];
+		listRendered = listUpdated = false;
+		iterator.set('source', arraySource);
+		assert.isTrue(listRendered, 'list should have been rendered when assigned array source');
+		assert.isTrue(listUpdated, 'list should have been updated when assigned array source');
 
-		var renderer = new IteratorRenderer(),
-			widget:any = new Widget();
+		// set source to shorter array
+		arraySource = [ 'item0' ];
+		listRendered = listUpdated = false;
+		var item1Widget = iterator._widgetIndex['1'],
+			item1Detached = false;
+		aspect.before(item1Widget._renderer, 'detach', function () {
+			item1Detached = true;
+		});
+		iterator.set('source', arraySource);
+		assert.isTrue(item1Detached, 'second list item should have been detached');
 
-		widget._list = undefined;
-		renderer.initialize(widget);
+		// set source to an ObservableArray
+		var observableArraySource = new ObservableArray([ 'item0', 'item1' ]);
+		listRendered = listUpdated = false;
+		iterator.set('source', observableArraySource);
+		assert.isTrue(listRendered, 'list should have been rendered when assigned observable array source');
+		assert.isTrue(listUpdated, 'list should have been updated when assigned observable array source');
 
-		// set a template and make sure a factory was created
-		widget.set('template', '');
-		assert.strictEqual(MockFactory.factoriesCreated, 1, 'A new factory should have been created');
+		// push something onto the observable array and see if the iterator observes it
+		listRendered = listUpdated = false;
+		observableArraySource.push('item 3');
+		assert.isTrue(listUpdated, 'list should have been updated when an item was added to the observable array');
 
-		widget.set('source', arraySource);
-		assert.deepPropertyVal(widget, '_mediatorIndex[0].source', arraySource[0],
-			'First mediator should have sent notification for source[0]');
-		assert.deepPropertyVal(widget, '_mediatorIndex[1].source', arraySource[1],
-			'Second mediator should have sent notification for source[1]');
-		assert.deepPropertyVal(widget, '_mediatorIndex[0].scopeField', 'scope',
-			'Mediators should have expected scopeField value');
-		assert.property(widget._widgetIndex, '0', '_widgetIndex should contain index "0"');
-		assert.property(widget._widgetIndex, '1', '_widgetIndex should contain index "1"');
-		assert.isDefined(widget._list.renderArgs, 'List should have been rendered');
-		assert.strictEqual(widget.fragmentReplacedNew, widget._list.domNode,
-			'Should have replaced widget _fragment with list node');
-
-		// set the widget source to an object
-		widget.set('source', objectSource);
+		// push something onto the observable array and check that the iterator isn't paying attention
+		iterator.set('source', arraySource);
+		listRendered = listUpdated = false;
+		observableArraySource.push('item 4');
+		assert.isFalse(listUpdated, 'list should not have been updated when an item was added to the observable array');
 	}
 });

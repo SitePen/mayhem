@@ -5,7 +5,7 @@ import lang = require('dojo/_base/lang');
 import Deferred = require('dojo/Deferred');
 
 export function configureLoader(config:{ map:{ [key:string]: string }; undef?: string[] }, restore?:boolean) {
-	var undefs = [];
+	var undefs:string[] = [];
 	config = lang.clone(config);
 
 	if (config.undef) {
@@ -20,7 +20,7 @@ export function configureLoader(config:{ map:{ [key:string]: string }; undef?: s
 			undefs.push(mid);
 			require.undef(mid);
 			if (restore) {
-				config.map[mid] = undefined;
+				delete config.map[mid];
 			}
 		}
 

@@ -4,6 +4,7 @@ import assert = require('intern/chai!assert');
 import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import domConstruct = require('dojo/dom-construct');
+import ElementRenderer = require('../../../ui/dom/_Element');
 import WidgetRenderer = require('../../../ui/dom/Widget');
 import Widget = require('../../../ui/Widget');
 import Container = require('../../../ui/Container');
@@ -15,8 +16,8 @@ var parentNode:Node,
 	renderer:any;
 
 function getChildren(widget:any) {
-	var parent:any = widget instanceof Widget ? widget._firstNode.parentNode : widget,
-		children = [];
+	var parent:any = widget instanceof Widget ? widget._outerFragment : widget,
+		children:any[] = [];
 	for (var i = 0; i < parent.childNodes.length; i++) {
 		children.push(parent.childNodes[i]);
 	}
@@ -34,10 +35,10 @@ function createFragment(content:any) {
 
 
 registerSuite({
-	name: 'ui/dom/Widget',
+	name: 'ui/dom/_Element',
 
 	setup() {
-		Widget.prototype._renderer = new WidgetRenderer();
+		Widget.prototype._renderer = new ElementRenderer();
 	},
 
 	teardown() {
@@ -45,7 +46,7 @@ registerSuite({
 	},
 
 	beforeEach() {
-	    renderer = new WidgetRenderer();
+	    renderer = new ElementRenderer();
 	},
 
 	afterEach() {
@@ -61,37 +62,36 @@ registerSuite({
 
 		renderer.add(widget, newWidget1);
 		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			newWidget1._firstNode,
-			newWidget1._lastNode,
-			widget._lastNode
+			widget._outerFragment,
+			newWidget1._outerFragment
 		], 'Widget should contain newWidget1 nodes');
 
 		renderer.add(widget, newWidget2);
 		assert.deepEqual(getChildren(widget), [
 			widget._firstNode,
+			widget._lastNode,
 			newWidget1._firstNode,
 			newWidget1._lastNode,
 			newWidget2._firstNode,
-			newWidget2._lastNode,
-			widget._lastNode
+			newWidget2._lastNode
 		], 'Widget should contain newWidget2 nodes');
 
 		renderer.add(widget, newWidget3, newWidget2);
 		assert.deepEqual(getChildren(widget), [
 			widget._firstNode,
+			widget._lastNode,
 			newWidget1._firstNode,
 			newWidget1._lastNode,
 			newWidget3._firstNode,
 			newWidget3._lastNode,
 			newWidget2._firstNode,
-			newWidget2._lastNode,
-			widget._lastNode
+			newWidget2._lastNode
 		], 'Widget should contain newWidget3 nodes');
 
 		renderer.add(widget, newWidget4, newWidget3._firstNode);
 		assert.deepEqual(getChildren(widget), [
 			widget._firstNode,
+			widget._lastNode,
 			newWidget1._firstNode,
 			newWidget1._lastNode,
 			newWidget4._firstNode,
@@ -99,8 +99,7 @@ registerSuite({
 			newWidget3._lastNode,
 			newWidget2._firstNode,
 			newWidget2._lastNode,
-			widget._lastNode
-		], 'newWidget3 _firstNode should have been replace by newWidget4 nodes');
+		], 'newWidget3 _firstNode should have been replaced by newWidget4 nodes');
 	},
 
 	'#attachContent': function () {
@@ -120,33 +119,18 @@ registerSuite({
 
 		assert.deepEqual(getChildren(widget), [
 			widget._firstNode,
-			content,
-			widget._lastNode
+			widget._lastNode,
+			content
 		], 'Widget children should include content');
 	},
 
 	'#attachStyles': function () {
-		var widget:any = new Widget(),
-			action:any = [];
-
+		var widget:any = new Widget();
 		renderer.attachStyles(widget);
 
-		aspect.before(renderer, 'detachContent', function (widget:any) {
-			action.push([ 'detached', widget ]);
-		});
-		aspect.before(renderer, 'attachContent', function (widget:any) {
-			action.push([ 'attached', widget ]);
-		});
-
-		widget.get('style').set('margin', 0);
-		assert.deepEqual(action, [], 'Widget should not have been detached or attached');
-
-		widget.get('style').set('display', 'none');
-		assert.deepEqual(action, [ [ 'detached', widget ] ], 'Widget should have been detached');
-
-		action = [];
-		widget.get('style').set('display', '');
-		assert.deepEqual(action, [ [ 'attached', widget ] ], 'Widget should have been attached');
+		assert.isDefined(widget._outerFragment, 'Widget has outer fragment');
+		widget.get('style').set('margin', '10px');
+		assert.strictEqual(widget._outerFragment.style.margin, '10px', 'Widget node style should have been set');
 	},
 
 	'#attachToWindow': function () {
@@ -165,16 +149,15 @@ registerSuite({
 		container.add(widget1);
 		container.add(widget2);
 		renderer.add(container, widget3);
-		assert.deepEqual(getChildren(container._firstNode.parentNode), [
-			container._firstNode,
+		assert.deepEqual(getChildren(container), [
+			container._firstNode, container._lastNode,
 			widget1._firstNode, widget1._lastNode,
 			widget2._firstNode, widget2._lastNode,
-			widget3._firstNode, widget3._lastNode,
-			container._lastNode
+			widget3._firstNode, widget3._lastNode
 		], 'Container should have expected children');
 
 		renderer.clear(container);
-		assert.deepEqual(getChildren(container._firstNode.parentNode), [
+		assert.deepEqual(getChildren(container), [
 			container._firstNode,
 			container._lastNode
 		], 'Container should no child nodes');
@@ -183,14 +166,14 @@ registerSuite({
 	'#detach': function () {
 		var widget:any = new Widget(); 
 		renderer.detach(widget);
-		assert.deepEqual(getChildren(widget._outerFragment), [ widget._firstNode, widget._lastNode ],
+		assert.deepEqual(getChildren(widget), [ widget._firstNode, widget._lastNode ],
 			'Widget child nodes should have been moved to _outerFragment');
 
 		// check that widget will remake its _outerFragment if necessary
 		renderer.attachContent(widget);
 		widget._outerFragment = null;
 		renderer.detach(widget);
-		assert.deepEqual(getChildren(widget._outerFragment), [ widget._firstNode, widget._lastNode ],
+		assert.deepEqual(getChildren(widget), [ widget._firstNode, widget._lastNode ],
 			'Widget child nodes should have been moved to _outerFragment');
 	},
 
@@ -207,7 +190,7 @@ registerSuite({
 		container.add(widget1);
 		container.add(widget2);
 
-		assert.deepEqual(getChildren(container._firstNode.parentNode), [
+		assert.deepEqual(getChildren(container), [
 			container._firstNode,
 			widget1._firstNode, content1, widget1._lastNode,
 			widget2._firstNode, content2, widget2._lastNode,
@@ -248,7 +231,7 @@ registerSuite({
 	'#remove': function () {
 		var widget:any = new Widget();
 		renderer.remove(null, widget);
-		assert.deepEqual(getChildren(widget._outerFragment), [ widget._firstNode, widget._lastNode ],
+		assert.deepEqual(getChildren(widget), [ widget._firstNode, widget._lastNode ],
 			'Widget child nodes should have been moved to _outerFragment');
 	}
 });

@@ -1,5 +1,12 @@
 /// <reference path="../../dojo" />
 define([
+	'./dom/Conditional',
+	'./dom/ContentView',
+	'./dom/Iterator',
+	'./dom/Placeholder',
+	'./dom/Resolver',
+	'./dom/TextView',
 	'./dom/Widget',
-	'./dom/Iterator'
+	'./dom/_Dijit',
+	'./dom/_Element'
 ]);
