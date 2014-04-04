@@ -245,12 +245,16 @@ class ObservableArray<T> /* implements Array<T> */ {
 		}
 
 		var additions = items,
-			removals = Array.prototype.slice.call(this, start, start + deleteCount);
+			// Create `removals` as an ObservedArray here to avoid side-effects to 
+			// the `removals` array after it is passed to observers
+			removals = new ObservableArray<T>(
+				Array.prototype.slice.call(this, start, start + deleteCount)
+			);
 
 		Array.prototype.splice.apply(this, arguments);
 		this._notify(start, removals, additions);
 
-		return new ObservableArray<T>(removals);
+		return removals;
 	}
 
 	toArray():T[] {

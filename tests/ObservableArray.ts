@@ -209,20 +209,16 @@ registerSuite({
 			observations:any[] = [];
 
 		observableArray.observe((index, removals, additions) => {
+			// convert additions to a vanilla array so we can do a deepEqual assertion with the expected observations
 			observations.push({
-				index: index, removals: removals, additions: additions
+				index: index, removals: removals, additions: additions.toArray()
 			});
 		});
-
 		observableArray.reverse();
-		assert.deepEqual(observableArray, new ObservableArray([ 3, 2, 1 ]));
+		
+		assert.deepEqual(observableArray.toArray(), [ 3, 2, 1 ]);
 		assert.deepEqual(observations, [{
-			index: 0,
-			removals: [ 1, 2, 3 ],
-			// The contract is that additions is an Array, but additions is actually an ObservableArray
-			// (an Array subtype in this case). We cheat a little here for convenience
-			// and make our expected additions an ObservableArray so we can use assert.deepEqual.
-			additions: new ObservableArray([ 3, 2, 1])
+			index: 0, removals: [ 1, 2, 3 ], additions: [ 3, 2, 1 ]
 		}]);
 	},
 
@@ -260,21 +256,18 @@ registerSuite({
 		var observableArray = new ObservableArray([ 3, 2, 1 ]),
 			observations:any[] = [];
 
-		observableArray.observe((index, removals, additions) => {
+		var handle = observableArray.observe((index, removals, additions) => {
+			// convert additions to a vanilla array so we can do a deepEqual assertion with the expected observations
 			observations.push({
-				index: index, removals: removals, additions: additions
+				index: index, removals: removals, additions: additions.toArray()
 			});
 		});
-
 		observableArray.sort((a, b) => (a == b) ? 0 : ((a < b) ? -1 : 1));
+		handle.remove();
+
 		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 3 ]));
 		assert.deepEqual(observations, [{
-			index: 0,
-			removals: [ 3, 2, 1 ],
-			// The contract is that additions is an Array, but additions is actually an ObservableArray
-			// (an Array subtype in this case). We cheat a little here for convenience
-			// and make our expected additions an ObservableArray so we can use assert.deepEqual.
-			additions: new ObservableArray([ 1, 2, 3])
+			index: 0, removals: [ 3, 2, 1 ], additions: [ 1, 2, 3]
 		}]);
 	},
 
@@ -283,48 +276,49 @@ registerSuite({
 			observations:any[] = [];
 
 		observableArray.observe((index, removals, additions) => {
+			// converting removals to Array to allow deepEqual comparison with expected observations
 			observations.push({
-				index: index, removals: removals, additions: additions
+				index: index, removals: removals.toArray(), additions: additions
 			});
 		});
 
 		// remove one item from beginning
-		assert.deepEqual(observableArray.splice(0, 1), new ObservableArray([ 1 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 2, 3, 4, 5, 6, 7, 8, 9 ]));
+		assert.deepEqual(observableArray.splice(0, 1).toArray(), [ 1 ]);
+		assert.deepEqual(observableArray.toArray(), [ 2, 3, 4, 5, 6, 7, 8, 9 ]);
 
 		// remove two items from beginning
-		assert.deepEqual(observableArray.splice(0, 2), new ObservableArray([ 2, 3 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 4, 5, 6, 7, 8, 9 ]));
+		assert.deepEqual(observableArray.splice(0, 2).toArray(), [ 2, 3 ]);
+		assert.deepEqual(observableArray.toArray(), [ 4, 5, 6, 7, 8, 9 ]);
 
 		// remove two items from beginning and add two items
-		assert.deepEqual(observableArray.splice(0, 2, 1, 2), new ObservableArray([ 4, 5 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 6, 7, 8, 9 ]));
+		assert.deepEqual(observableArray.splice(0, 2, 1, 2).toArray(), [ 4, 5 ]);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 6, 7, 8, 9 ]);
 
 		// remove two items from middle
-		assert.deepEqual(observableArray.splice(2, 2), new ObservableArray([ 6, 7 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 8, 9 ]));
+		assert.deepEqual(observableArray.splice(2, 2).toArray(), [ 6, 7 ]);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 8, 9 ]);
 
 		// add two items to middle
-		assert.deepEqual(observableArray.splice(2, 0, 11, 12), new ObservableArray([]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 11, 12, 8, 9 ]));
+		assert.deepEqual(observableArray.splice(2, 0, 11, 12).toArray(), []);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 11, 12, 8, 9 ]);
 
 		// remove two items from middle and add three items
-		assert.deepEqual(observableArray.splice(2, 2, 13, 14, 15), new ObservableArray([ 11, 12 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 13, 14, 15, 8, 9 ]));
+		assert.deepEqual(observableArray.splice(2, 2, 13, 14, 15).toArray(), [ 11, 12 ]);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 13, 14, 15, 8, 9 ]);
 
 		// remove one item from end
-		assert.deepEqual(observableArray.splice(-1, 1), new ObservableArray([ 9 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 13, 14, 15, 8 ]));
+		assert.deepEqual(observableArray.splice(-1, 1).toArray(), [ 9 ]);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 13, 14, 15, 8 ]);
 
 		// remove two items from end
-		assert.deepEqual(observableArray.splice(-2, 2), new ObservableArray([ 15, 8 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 13, 14 ]));
+		assert.deepEqual(observableArray.splice(-2, 2).toArray(), [ 15, 8 ]);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 13, 14 ]);
 
 		// remove two items from end and add two items
-		assert.deepEqual(observableArray.splice(-2, 2, 16, 17), new ObservableArray([ 13, 14 ]));
-		assert.deepEqual(observableArray, new ObservableArray([ 1, 2, 16, 17 ]));
+		assert.deepEqual(observableArray.splice(-2, 2, 16, 17).toArray(), [ 13, 14 ]);
+		assert.deepEqual(observableArray.toArray(), [ 1, 2, 16, 17 ]);
 
-		var expectedObservations = [
+		assert.deepEqual(observations, [
 			{ index: 0, removals: [ 1 ], additions: [] },
 			{ index: 0, removals: [ 2, 3 ], additions: [] },
 			{ index: 0, removals: [ 4, 5 ], additions: [ 1, 2 ] },
@@ -334,12 +328,7 @@ registerSuite({
 			{ index: 6, removals: [ 9 ], additions: [] },
 			{ index: 4, removals: [ 15, 8 ], additions: [] },
 			{ index: 2, removals: [ 13, 14 ], additions: [ 16, 17 ] },
-		];
-		expectedObservations.forEach((observation) => {
-			observation.removals = new ObservableArray(observation.removals);
-		});
-
-		assert.deepEqual(observations, expectedObservations);
+		]);
 	},
 
 	'#toArray' () {
