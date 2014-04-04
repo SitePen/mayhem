@@ -10,7 +10,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-wrap');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-clean');
-	grunt.loadNpmTasks('intern');
+	grunt.loadNpmTasks('intern-geezer');
 
 	grunt.initConfig({
 		all: [ '**/*.ts', '!node_modules/**/*.ts' ],
