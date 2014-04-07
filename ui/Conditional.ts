@@ -21,8 +21,12 @@ class Conditional extends ContentView implements ui.IConditional {
 	/* protected */ _initialize():void {
 		super._initialize();
 
-		this.observe('alternate', this._placeView);
-		this.observe('consequent', this._placeView);
+		this.observe('alternate', (newValue:ui.IWidget, oldValue:ui.IWidget) => {
+			this._placeView(newValue, oldValue);
+		});
+		this.observe('consequent', (newValue:ui.IWidget, oldValue:ui.IWidget) => {
+			this._placeView(newValue, oldValue);
+		});
 
 		this.set('consequent', new ContentView());
 
@@ -40,7 +44,10 @@ class Conditional extends ContentView implements ui.IConditional {
 	}
 
 	remove(index:any):void {
-		// Forward view-specific calls to consequent widget
+		// Forward view-specific calls to success widget unless we're removing one of this Resolver's widgets
+		if (this.getChildIndex(index) !== -1) {
+			return super.remove(index);
+		}
 		return this.get('consequent').remove(index);
 	}
 

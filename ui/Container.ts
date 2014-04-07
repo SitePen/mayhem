@@ -107,7 +107,7 @@ class Container extends View implements ui.IContainer {
 	}
 
 	getChildIndex(item:ui.IWidget):number {
-		return this._children.indexOf(item);
+		return array.indexOf(this._children, item);
 	}
 
 	nextChild(item:ui.IWidget):ui.IWidget {

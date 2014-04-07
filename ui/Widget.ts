@@ -1,4 +1,5 @@
 import ClassList = require('./style/ClassList');
+import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
@@ -77,7 +78,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		for (var i = 0, len = handles.length; i < len; ++i) {
 			handle = handles[i];
 			// List of owned handles is a set
-			if (handle && owned.indexOf(handle) !== -1) {
+			if (handle && array.indexOf(owned, handle) !== -1) {
 				util.spliceMatch(owned, handle);
 			}
 		}
@@ -172,7 +173,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		for (var i = 0, len = handles.length; i < len; ++i) {
 			handle = handles[i];
 			// List of owned handles is a set
-			if (handle && owned.indexOf(handle) === -1) {
+			if (handle && array.indexOf(owned, handle) === -1) {
 				owned.push(handle);
 			}
 		}
