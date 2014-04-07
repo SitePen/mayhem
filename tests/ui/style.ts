@@ -2,4 +2,4 @@
 define([
 	'./style/Style',
 	'./style/ClassList'
-]);
+], function () {});

@@ -9,4 +9,4 @@ define([
 	'./dom/Widget',
 	'./dom/_Dijit',
 	'./dom/_Element'
-]);
+], function () {});

@@ -5,4 +5,4 @@ define([
 	'./binding/proxties/Es5Proxty',
 	'./binding/proxties/MethodProxty',
 	'./binding/proxties/NestedProxty'
-]);
+], function () {});

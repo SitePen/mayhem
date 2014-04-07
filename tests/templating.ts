@@ -4,4 +4,4 @@ define([
 	'./templating/json',
 	'./templating/Template',
 	'./templating/WidgetFactory'
-]);
+], function () {});
