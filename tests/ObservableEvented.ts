@@ -26,6 +26,38 @@ registerSuite({
 		assert.strictEqual(listenerCallCount, 2);
 	},
 
+	'#on supports extension events' () {
+		var observableEvented = new ObservableEvented(),
+			extensionEvent = (object:IEvented, listenerCallback:EventListener) => {
+				var handles = [
+					object.on('foo', listenerCallback),
+					object.on('bar', listenerCallback)
+				];
+				return {
+					remove () {
+						while (handles.length > 0) {
+							handles.pop().remove();
+						}
+					}
+				};
+			},
+			emittedEvent:any,
+			listenerCallCount = 0;
+
+		observableEvented.on(extensionEvent, function (actualEvent) {
+			listenerCallCount++;
+			assert.strictEqual(actualEvent.value, emittedEvent.value);
+		});
+
+		emittedEvent = { value: 'baz' };
+		observableEvented.emit('foo', emittedEvent);
+		assert.strictEqual(listenerCallCount, 1);
+
+		emittedEvent = { value: 'quux' };
+		observableEvented.emit('bar', emittedEvent);
+		assert.strictEqual(listenerCallCount, 2);
+	},
+
 	'#on returns a handle for removing the listener' () {
 		var observableEvented = new ObservableEvented(),
 			listenerCalled = false;
