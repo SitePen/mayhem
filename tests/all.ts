@@ -8,7 +8,7 @@ define([
 	'./binding',
 //	'./Mediator',
 //	'./integration'
-	'./routing',
+//	'./routing',
 //	'./Model',
 	'./auth'
-]);
+], function () {});
