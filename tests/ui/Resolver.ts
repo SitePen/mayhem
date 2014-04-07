@@ -57,17 +57,34 @@ registerSuite({
 	},
 
 	'#destroy': function () {
-		var success = resolver.get('success');
+		var destroyed = {},
+			error = { destroy() {} },
+			during = { destroy() {} };
+
+		function checkDestroy(name:string) {
+			var w = resolver.get(name); 
+			aspect.before(w, 'destroy', function () {
+				destroyed[name] = true;
+			});
+		}
+
+		// check that the success widget is destroyed in a new resolver
+		checkDestroy('success');
 		assert.doesNotThrow(function () {
 			resolver.destroy();
 		}, 'Destroying a resolver should not throw');
-		assert.isTrue(success._destroyed, 'Success view should have been destroyed');
+		assert.isTrue(destroyed['success'], 'success should have been destroyed')
 
-		var target:IDeferred<void> = new Deferred<void>();
+		// check that the target promise is cancelled
+		var target = {
+			cancel() { this._canceled = true; }
+		}
 		resolver = new Resolver();
-		resolver.set('target', target.promise);
+		resolver.set('target', target);
 		resolver.destroy();
-		assert.isTrue(target.isCanceled(), 'Target promise should have been canceled');
+		assert.propertyVal(target, '_canceled', true, 'Target should have been canceled');
+
+		// TODO: assign during and error widgets and destroy with each of them active
 	},
 
 	'#setContent': function () {

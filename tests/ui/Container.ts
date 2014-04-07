@@ -1,6 +1,7 @@
 /// <reference path="../intern" />
 
 import assert = require('intern/chai!assert');
+import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import Container = require('../../ui/Container');
 import Widget = require('../../ui/Widget');
@@ -107,16 +108,18 @@ registerSuite({
 	'#empty': function () {
 		var widget1 = new Widget(),
 			widget2 = new Widget(),
-			widget3 = new Widget();
+			widget3 = new Widget(),
+			removed:any[] = [];
+
+		aspect.before(container, 'remove', function (child:any) {
+			removed.push(child);
+		});
 
 		container.add(widget1);
 		container.add(widget2);
 		container.add(widget3);
-		assert.deepEqual(container.get('children'), [widget1, widget2, widget3],
-			'All widgets should be children of container');
-
 		container.empty();
-		assert.lengthOf(container.get('children'), 0, 'container should have no children');
+		assert.deepEqual(removed, [ widget1, widget2, widget3 ], 'children should have been removed')
 	},
 
 	'#remove': function () {
@@ -134,6 +137,10 @@ registerSuite({
 
 		container.remove(0);
 		assert.deepEqual(container.get('children'), [widget3], 'widget1 should have been removed');
+
+		assert.throws(function () {
+			container.remove(widget2);
+		}, Error, /Attempt to remove/, 'Trying to remove non-child should throw');
 	},
 
 	'#getChild': function () {

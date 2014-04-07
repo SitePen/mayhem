@@ -89,122 +89,110 @@ registerSuite({
 
 	'#placeAt': function () {
 		var parent:any = {
-				_index: null,
 				_added: null,
 				add(widget:any, index:number) {
-					this._added = widget;
-					this._index = index;
+					this._added = [ widget, index ];
 				}
 			},
-			reference:any = {
+			destination:any = {
 				parent: parent,
-				index: 0,
-				_index: null,
+				index: 'foo',
 				_added: null,
-				add(widget:any, index:number) {
-					this._added = widget;
-					this._index = index;
-				},
 				get(key:string) {
 					return this[key];
 				},
+				add(widget:any, index:number) {
+					this._added = [ widget, index ];
+				},
 				_renderer: {
-					detach() {
-						this.detached = true;
+					_detached: null,
+					detach(widget:any) {
+						this._detached = true;
 					}
 				}
 			};
-		widget.placeAt(reference, PlacePosition.BEFORE);
 
-		widget.placeAt(reference, PlacePosition.BEFORE);
-		assert.strictEqual(parent._added, widget, 'Widget should have been added to the parent');
-		assert.strictEqual(parent._index, 0, 'Widget should have been added to the parent at index 0');
+		assert.throws(function () {
+			widget.placeAt(null, null);
+		}, Error, /Cannot place/, 'Placing with no destination should throw');
 
-		parent._added = null;
-		parent.index = null;
-		widget.placeAt(reference, PlacePosition.AFTER);
-		assert.strictEqual(parent._added, widget, 'Widget should have been added to the parent');
-		assert.strictEqual(parent._index, 1, 'Widget should have been added to the parent at index 1');
+		widget.placeAt(destination, PlacePosition.BEFORE);
+		assert.deepEqual(parent._added, [ widget, 'foo' ], 'Widget should have been added to the parent');
 
-		// undefined position -- should be last
-		widget.placeAt(reference, undefined);
-		assert.strictEqual(reference._added, widget, 'Widget should have been added to the reference');
-		assert.strictEqual(reference._index, PlacePosition.LAST, 'Widget should have been added to the reference at index -2');
+		parent.add(null, null)
+		widget.placeAt(destination, PlacePosition.AFTER);
+		assert.deepEqual(parent._added, [ widget, 'foo1' ], 'Widget should have been added to the parent at index + 1');
 
-		// positive position -- should be placed in reference at defined position
-		widget.placeAt(reference, 0);
-		assert.strictEqual(reference._added, widget, 'Widget should have been added to the reference');
-		assert.strictEqual(reference._index, 0, 'Widget should have been added to the reference at index 0');
+		// null position -- should be last
+		widget.placeAt(destination, null);
+		assert.deepEqual(destination._added, [ widget, null ], 'Widget should have been added to the destination');
 
-		widget.placeAt(reference, PlacePosition.REPLACE);
-		assert.isTrue(reference._renderer.detached, 'Destination should have been detached');
+		// undefined position -- should be placed in destination at defined position
+		destination.add(null, null)
+		widget.placeAt(destination, undefined);
+		assert.deepEqual(destination._added, [ widget, PlacePosition.LAST ],
+			'Widget should have been added to the destination at the last position');
+
+		// positive position -- should be placed in destination at defined position
+		destination.add(null, null)
+		widget.placeAt(destination, 0);
+		assert.deepEqual(destination._added, [ widget, 0 ], 'Widget should have been added to the destination at 0');
+
+		// replace -- destination should be replaced
+		parent.add(null, null)
+		widget.placeAt(destination, PlacePosition.REPLACE);
+		assert.isTrue(destination._renderer._detached, 'Destination should have been detached');
+		assert.deepEqual(parent._added, [ widget, 'foo' ], 'Widget should have been added to the parent');
+
+		// try to place adjacent to destination that has no parent
+		destination.parent = null;
+		assert.throws(function () {
+			widget.placeAt(destination, PlacePosition.BEFORE);
+		}, Error, /Destination widget/, 'Placing BEFORE with no destination parent should throw');
+		assert.throws(function () {
+			widget.placeAt(destination, PlacePosition.AFTER);
+		}, Error, /Destination widget/, 'Placing AFTER with no destination parent should throw');
+		assert.throws(function () {
+			widget.placeAt(destination, PlacePosition.REPLACE);
+		}, Error, /Destination widget/, 'REPLACING with no destination parent should throw');
+
+		assert.doesNotThrow(function () {
+			widget.placeAt(destination, 0);
+		}, 'Placing inside a destination with no parent should not throw');
+
 	},
 
 	'#_indexGetter': function () {
 		var parent:any = {
-				children: [],
-				get(key:string) {
-					return this[key];
-				},
-				getChildIndex(widget:any) {
-					return this.children.indexOf(widget);
-				},
+				getChildIndex() { return 'foo' },
 				remove() {}
 			}
-		widget.set('parent', parent);
 
 		assert.strictEqual(widget.get('index'), -1, 'Index for non-child widget should be -1');
-
-		parent.children.push(widget);
-		assert.strictEqual(widget.get('index'), 0, 'Index should be 0');
-
-		parent.children.push('lastChild');
-		assert.strictEqual(widget.get('index'), 0, 'Index should still be 0');
-
-		parent.children.splice(0, 0, 'firstChild');
-		assert.strictEqual(widget.get('index'), 1, 'Index should be 1');
+		widget.set('parent', parent);
+		assert.strictEqual(widget.get('index'), 'foo', 'Widget should have requested index from parent');
 	},
 
 	'#_previousGetter': function () {
 		var parent:any = {
-				children: [],
-				previousChild(item:any):any {
-					var index = this.children.indexOf(item);
-					console.log('index: ' + index);
-					return index === -1 ? null : this.children[index - 1];
-				},
+				previousChild() { return 'foo'; },
 				remove() {}
 			}
 
 		assert.isNull(widget.get('previous'), 'Previous entry for unparented widget should be null');
-
 		widget.set('parent', parent);
-		parent.children.push(widget);
-		assert.isNull(widget.get('previous'), 'Previous entry from first/only widget should be null');
-
-		parent.children.splice(0, 0, 'firstChild');
-		assert.strictEqual(widget.get('previous'), 'firstChild',
-			'Previous entry from second widget should not be null');
+		assert.strictEqual(widget.get('previous'), 'foo', 'Widget should have requested previous child from parent');
 	},
 
 	'#_nextGetter': function () {
 		var parent:any = {
-				children: [],
-				nextChild(item:any):any {
-					var index = this.children.indexOf(item);
-					return index === -1 ? null : this.children[index + 1];
-				},
+				nextChild() { return 'foo' },
 				remove() {}
 			}
 
 		assert.isNull(widget.get('next'), 'Next entry for unparented widget should be null');
-
 		widget.set('parent', parent);
-		parent.children.push(widget);
-		assert.isNull(widget.get('next'), 'Next entry from last/only widget should be null');
-
-		parent.children.push('lastChild');
-		assert.strictEqual(widget.get('next'), 'lastChild', 'Next entry from first widget should not be null');
+		assert.strictEqual(widget.get('next'), 'foo', 'Widget should have requested next child from parent');
 	},
 
 	'#_visibleSetter': function () {
@@ -217,6 +205,11 @@ registerSuite({
 		assert.strictEqual(style.get('display'), 'none', 'display style for visible=0 should be "none"');
 		widget.set('visible', 'foo');
 		assert.strictEqual(style.get('display'), '', 'display style for visible="foo" should be ""');
+	},
+
+	'#_attachedSetter': function () {
+		widget.set('attached', 'foo')
+		assert.strictEqual(widget.get('attached'), 'foo', 'Widget attached property should have expected value')
 	},
 
 	'.byId': function () {
