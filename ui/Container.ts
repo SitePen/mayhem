@@ -111,12 +111,15 @@ class Container extends View implements ui.IContainer {
 
 	nextChild(item:ui.IWidget):ui.IWidget {
 		var index = this.getChildIndex(item);
-		return index === -1 ? null : this._children[index + 1];
+		if (index === -1 || index === this._children.length - 1) {
+			return null;
+		}
+		return this._children[index + 1];
 	}
 
 	previousChild(item:ui.IWidget):ui.IWidget {
 		var index = this.getChildIndex(item);
-		return index === -1 ? null : this._children[index - 1];
+		return index <= 0 ? null : this._children[index - 1];
 	}
 
 	remove(index:number):void;
