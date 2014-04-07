@@ -10,10 +10,19 @@ import MockRenderer = require('../mocks/ui/Renderer');
 import Deferred = require('dojo/Deferred');
 import util = require('./util');
 
-var placeholder:Placeholder;
+var placeholder:Placeholder,
+	placeholderRenderer:any = Placeholder.prototype._renderer;
 
 registerSuite({
 	name: 'ui/Placeholder',
+
+	setup() {
+		Placeholder.prototype._renderer = new MockRenderer();
+	},
+
+	teardown() {
+		Placeholder.prototype._renderer = placeholderRenderer;
+	},
 
 	beforeEach() {
 		placeholder = new Placeholder();
@@ -32,9 +41,9 @@ registerSuite({
 
 		// TODO: this shouldn't work
 		assert.throws(function () {
-			placeholder.add(widget2);
+			placeholder.add(widget2, 1);
 		}, Error, /Placeholder can only have a single child/,
-		'Adding a widget to a placeholder with an existing child should throw');
+		'Adding a widget to a placeholder in a position other than ONLY should throw');
 	},
 
 	'#_currentChildSetter': function () {
@@ -46,6 +55,18 @@ registerSuite({
 
 		// setting a null child should empty the widget
 		placeholder.set('currentChild', null);
-		assert.lengthOf(placeholder.get('children'), 0, 'Widget should be empty');
+		assert.deepEqual(placeholder.get('children'), [], 'Widget should be empty');
+	},
+
+	'#_currentChildGetter': function () {
+		var widget = new Widget();
+
+		// check that the renderer is adding the widget
+		placeholder.set('currentChild', widget);
+		assert.deepEqual(placeholder.get('children'), [ widget ], 'Widget should be only child of placeholder');
+
+		// setting a null child should empty the widget
+		placeholder.set('currentChild', null);
+		assert.deepEqual(placeholder.get('children'), [], 'Widget should be empty');
 	}
 });

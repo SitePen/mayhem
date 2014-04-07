@@ -56,6 +56,21 @@ registerSuite({
 		assert.strictEqual(added, widget, 'Widget should have been added to success view');
 	},
 
+	'#remove': function () {
+		var widget = new Widget(),
+			view = resolver.get('success'),
+			removed:any;
+		aspect.before(view, 'remove', function (item:any) {
+			removed = item;
+		});
+		resolver.add(widget);
+		resolver.remove(widget);
+		assert.strictEqual(removed, widget, 'Widget should have been removed from success view');
+
+		resolver.remove(view);
+		assert.strictEqual(resolver.getChildIndex(view), -1, 'success view should not be a child of widget');
+	},
+
 	'#destroy': function () {
 		var destroyed = {},
 			error = { destroy() {} },

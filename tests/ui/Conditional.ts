@@ -3,15 +3,28 @@
 import assert = require('intern/chai!assert');
 import registerSuite = require('intern!object');
 import Conditional = require('../../ui/Conditional');
+import ContentView = require('../../ui/ContentView');
 import aspect = require('dojo/aspect');
 import Widget = require('../mocks/ui/Widget');
 import MockApplication = require('../mocks/Application');
+import MockRenderer = require('../mocks/ui/Renderer');
 
 var conditional:Conditional,
-	replacedMethods:any;
+	conditionalRenderer:any = Conditional.prototype._renderer,
+	contentViewRenderer:any = ContentView.prototype._renderer;
 
 registerSuite({
 	name: 'ui/Conditional',
+
+	setup() {
+		Conditional.prototype._renderer = new MockRenderer();
+		ContentView.prototype._renderer = new MockRenderer();
+	},
+
+	teardown() {
+		Conditional.prototype._renderer = conditionalRenderer;
+		ContentView.prototype._renderer = contentViewRenderer;
+	},
 
 	beforeEach() {
 		conditional = new Conditional();
@@ -25,13 +38,6 @@ registerSuite({
 				// ignore
 			}
 			conditional = null;
-		}
-
-		if (replacedMethods) {
-			for (var key in replacedMethods) {
-				Conditional.prototype[key] = replacedMethods[key];
-			}
-			replacedMethods = null;
 		}
 	},
 
@@ -50,39 +56,48 @@ registerSuite({
 
 	'#setContent': function () {
 		var widget = new Widget(),
-			consequent:any = conditional.get('consequent');
-		aspect.before(consequent, 'set', function (key:string, value:any) {
-
+			consequent:any = conditional.get('consequent'),
+			content:any;
+		aspect.before(consequent, 'setContent', function (w:any) {
+			content = w;
 		});
 		conditional.setContent(widget);
-		assert.propertyVal(consequent._renderer._content, consequent.get('id'), widget,
-			'Consequent content should be widget');
+		assert.strictEqual(content, widget, 'Consequent content should have been set to be widget');
+	},
+
+	'#remove': function () {
+		var widget = new Widget(),
+			view = conditional.get('consequent'),
+			removed:any;
+		aspect.before(view, 'remove', function (item:any) {
+			removed = item;
+		});
+		conditional.add(widget);
+		conditional.remove(widget);
+		assert.strictEqual(removed, widget, 'Widget should have been removed from consequent view');
+
+		conditional.remove(view);
+		assert.strictEqual(conditional.getChildIndex(view), -1, 'success view should not be a child of widget');
 	},
 
 	'alternate observer': function () {
-		var placed = false,
-			conditionalPlaceView = Conditional.prototype['_placeView'];
-		replacedMethods = { '_placeView': conditionalPlaceView };
-		Conditional.prototype['_placeView'] = function () {
-			placed = true;
-			conditionalPlaceView.apply(this, arguments);
-		}
-		conditional = new Conditional();
-		conditional.set('alternate', new Widget());
-		assert.isTrue(placed, 'Widget should have been placed');
+		var placed:any,
+			widget = new Widget();
+		aspect.before(conditional, '_placeView', function (w:any) {
+			placed = w;
+		});
+		conditional.set('alternate', widget);
+		assert.strictEqual(placed, widget, 'Widget should have been placed');
 	},
 
 	'consequent observer': function () {
-		var placed = false,
-			conditionalPlaceView = Conditional.prototype['_placeView'];
-		replacedMethods = { '_placeView': conditionalPlaceView };
-		Conditional.prototype['_placeView'] = function () {
-			placed = true;
-			conditionalPlaceView.apply(this, arguments);
-		}
-		conditional = new Conditional();
-		conditional.set('consequent', new Widget());
-		assert.isTrue(placed, 'Widget should have been placed');
+		var placed:any,
+			widget = new Widget();
+		aspect.before(conditional, '_placeView', function (w:any) {
+			placed = w;
+		});
+		conditional.set('consequent', widget);
+		assert.strictEqual(placed, widget, 'Widget should have been placed');
 	},
 
 	'condition observer': function () {

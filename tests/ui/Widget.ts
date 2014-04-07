@@ -71,7 +71,7 @@ registerSuite({
 	'#disown': function () {
 		function createHandle() {
 			return {
-				remove () { console.log('removing...'); this._removed = true; }
+				remove () { this._removed = true; }
 			};
 		}
 
