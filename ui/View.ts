@@ -116,7 +116,7 @@ class View extends Widget implements ui.IView {
 		});
 
 		this.observe('parent', (parent:ui.IContainer, previous:ui.IContainer) => {
-			if (!this.get('app')) {
+			if (!this.get('app') && parent) {
 				var parentApp = parent.get('app');
 				if (parentApp) {
 					this.set('app', parentApp);

@@ -91,6 +91,7 @@ class Container extends View implements ui.IContainer {
 	destroy():void {
 		this.empty();
 		this._children = null;
+		super.destroy()
 	}
 
 	empty():void {

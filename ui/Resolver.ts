@@ -30,7 +30,7 @@ class Resolver extends ContentView implements ui.IResolver {
 	destroy():void {
 		// Register destroyables to be sure they're torn down
 		this.own(this.get('success'), this.get('error'), this.get('during'));
-		
+
 		var promise = this.get('target');
 		promise = promise && promise['cancel'] && promise['cancel']();
 
@@ -98,7 +98,10 @@ class Resolver extends ContentView implements ui.IResolver {
 	}
 
 	remove(index:any):void {
-		// Forward view-specific calls to success widget
+		// Forward view-specific calls to success widget unless we're removing one of this Resolver's widgets
+		if (this.getChildIndex(index) !== -1) {
+			return super.remove(index);
+		}
 		return this.get('success').remove(index);
 	}
 
@@ -132,6 +135,7 @@ class Resolver extends ContentView implements ui.IResolver {
 	}
 
 	/* protected */ _targetSetter(target:any) {
+		this._values['target'] = target;
 		this.set('result', undefined);
 		this.set('phase', 'during');
 		when(target).then((result:any):void => {
