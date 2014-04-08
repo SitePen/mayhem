@@ -28,6 +28,13 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 	}
 
 	getMetadata(key:string):data.IProperty<any> {
+		var properties = this._getProperties(),
+			property = properties[key];
+
+		if (property) {
+			return property;
+		}
+
 		var proxy:PropertyProxy<any>,
 			handle:IHandle = this.observe('model', function (newModel:data.IModel):void {
 				var newProperty = newModel ? newModel.getMetadata(key) : null;
@@ -77,7 +84,7 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 						modelPropertyHandle = newModel.observe(key, notifier);
 
 						if (!util.isEqual(oldValue, newValue)) {
-							this._notify(oldValue, newValue, key);
+							this._notify(newValue, oldValue, key);
 						}
 					}),
 					model:data.IModel = this.get('model'),
@@ -177,7 +184,8 @@ lang.mixin(Mediator.prototype, {
 
 Mediator.defaults({
 	app: null,
-	model: null
+	model: null,
+	routeState: null
 });
 
 export = Mediator;

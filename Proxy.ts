@@ -1,14 +1,24 @@
 import core = require('./interfaces');
+import has = require('./has');
 import Observable = require('./Observable');
 
 class Proxy extends Observable implements core.IProxy {
 	private _target:core.IObservable;
-	private _targetHandles:{ [key:string]: IHandle } = {};
+	private _targetHandles:{ [key:string]: IHandle };
 
 	constructor(observable:core.IObservable) {
 		super();
 
 		this._target = observable;
+	}
+
+	_initialize():void {
+		if (has('es5')) {
+			this._targetHandles = Object.create(null);
+		}
+		else {
+			this._targetHandles = {};
+		}
 	}
 
 	destroy():void {
@@ -18,17 +28,17 @@ class Proxy extends Observable implements core.IProxy {
 	}
 
 	observe(key:any, observer:core.IObserver<any>):IHandle {
-		var observers:core.IObserver<any>[] = this._observers['*' + key];
+		var observers:core.IObserver<any>[] = this._observers[key];
 
-		var handleKey = '*' + key;
-		if (!this._targetHandles['*' + key]) {
+		var handleKey = key;
+		if (!this._targetHandles[key]) {
 			if (this._target != null) {
-				this._targetHandles['*' + key] = this._target.observe(key, (newValue:any, oldValue:any, key?:string):void => {
+				this._targetHandles[key] = this._target.observe(key, (newValue:any, oldValue:any, key?:string):void => {
 					this._notify(newValue, oldValue, key);
 				});
 			}
 			else {
-				this._targetHandles['*' + key] = undefined;
+				this._targetHandles[key] = undefined;
 			}
 		}
 
@@ -39,13 +49,18 @@ class Proxy extends Observable implements core.IProxy {
 		var handles = this._targetHandles;
 
 		this._target = observable;
-		this._targetHandles = {};
+		if (has('es5')) {
+			this._targetHandles = Object.create(null);
+		}
+		else {
+			this._targetHandles = {};
+		}
 
 		for (var key in handles) {
-			if (!handles.hasOwnProperty(key)) {
+			if (has('es5') ? !(key in handles) : !handles.hasOwnProperty(key)) {
 				continue;
 			}
-			handles[key].remove();
+			handles[key] && handles[key].remove();
 
 			if (observable != null) {
 				handles[key] = observable.observe(key, (newValue:any, oldValue:any, key?:string):void => {
