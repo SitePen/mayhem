@@ -160,6 +160,10 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 		});
 	}
 
+	_restore(Ctor:new (...args:any[]) => Model):Model {
+		return new Ctor(this);
+	}
+
 	save(skipValidation?:boolean):IPromise<void> {
 		// TODO: Implementation
 

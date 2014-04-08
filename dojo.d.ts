@@ -31,7 +31,7 @@ interface ILoaderPlugin {
 
 interface IPromise<T> {
 	always<U>(callback:(valueOrError:any) => U):IPromise<U>;
-	cancel<U>(reason:U, strict?:boolean):U;
+	cancel<U>(reason?:U, strict?:boolean):U;
 	isCanceled():boolean;
 	isFulfilled():boolean;
 	isRejected():boolean;
@@ -64,6 +64,7 @@ declare var require:{
 	<T>(moduleId:string):T;
 	undef(moduleId:string):void;
 	config(config:Object):void;
+	toUrl(moduleId:string):string;
 };
 
 declare module 'dojo/_base/array' {
@@ -118,7 +119,7 @@ declare module 'dojo/aspect' {
 
 declare module 'dojo/Deferred' {
 	var Deferred:{
-		new (canceler:(reason:any) => any):IDeferred<any>;
+		new <T>(canceler?:(reason:any) => any):IDeferred<T>;
 		when<T>(value:T):IPromise<T>;
 		when<T>(value:IPromise<T>):IPromise<T>;
 		when<T, U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
@@ -186,6 +187,17 @@ declare module 'dojo/promise/all' {
 		(object:Object):IPromise<Object>;
 	};
 	export = all;
+}
+
+declare module 'dojo/request' {
+	var request:{
+		<T>(url:string, options?:Object):IPromise<T>;
+		del<T>(url:string, options?:Object):IPromise<T>;
+		get<T>(url:string, options?:Object):IPromise<T>;
+		post<T>(url:string, options?:Object):IPromise<T>;
+		put<T>(url:string, options?:Object):IPromise<T>;
+	};
+	export = request;
 }
 
 declare module 'dojo/request/util' {
