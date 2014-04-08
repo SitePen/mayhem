@@ -9,5 +9,6 @@ define([
 	'./ui/Iterator',
 	'./ui/Resolver',
 	'./ui/style',
+	'./ui/form',
 	'dojo/has!host-browser?./ui/dom'
 ], function () {});

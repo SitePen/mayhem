@@ -16,7 +16,7 @@ var parentNode:Node,
 
 function getChildren(widget:any) {
 	var parent:any = widget instanceof Widget ? widget._firstNode.parentNode : widget,
-		children = [];
+		children:any[] = [];
 	for (var i = 0; i < parent.childNodes.length; i++) {
 		children.push(parent.childNodes[i]);
 	}

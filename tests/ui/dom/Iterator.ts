@@ -2,57 +2,33 @@
 
 import assert = require('intern/chai!assert');
 import registerSuite = require('intern!object');
-import _IteratorRenderer = require('../../../ui/dom/Iterator');
 import aspect = require('dojo/aspect');
 import WidgetFactory = require('../../../templating/WidgetFactory');
 import ui = require('../../../ui/interfaces');
 import util = require('../util');
 import Observable = require('../../../Observable');
 import ObservableArray = require('../../../ObservableArray');
-import Widget = require('../../../ui/Widget');
-import _Iterator = require('../../../ui/Iterator');
-import MockFactory = require('../../mocks/ui/WidgetFactory');
-import MockRenderer = require('../../mocks/ui/Renderer');
-import Deferred = require('dojo/Deferred');
+import Widget = require('../../mocks/ui/Widget');
+import Iterator = require('../../../ui/Iterator');
 import Memory = require('dojo/store/Memory');
 
-var IteratorRenderer:typeof _IteratorRenderer,
-	Iterator:typeof _Iterator,
-	configHandle:any;
+var iterator:any,
+	renderer:any;
 
 registerSuite({
 	name: 'ui/dom/Iterator',
 
-	setup() {
-		Widget.prototype._renderer = <any> new MockRenderer();
-
-		var dfd:IDeferred<void> = new Deferred<void>();
-		configHandle = util.configureLoader({
-			map: {
-				'dgrid/List': 'mayhem/tests/mocks/dgrid/List',
-				'dgrid/OnDemandList': 'mayhem/tests/mocks/dgrid/List',
-				'mayhem/templating/WidgetFactory': 'mayhem/tests/mocks/ui/WidgetFactory'
-			},
-			undef: [ 'mayhem/ui/dom/Iterator', 'mayhem/ui/Iterator' ]
-		});
-		require([
-			'../../../ui/dom/Iterator', '../../../ui/Iterator'
-		], function (__IteratorRenderer:typeof _IteratorRenderer, __Iterator:typeof _Iterator) {
-			IteratorRenderer = __IteratorRenderer;
-			Iterator = __Iterator;
-			dfd.resolve(true);
-		});
-		return dfd.promise;
+	beforeEach() {
+		iterator = new Iterator()
+		renderer = iterator._renderer;
 	},
 
-	teardown() {
-		Widget.prototype._renderer = undefined;
-		return configHandle.restore();
+	afterEach() {
+		util.destroy(iterator);
 	},
 
 	'#destroy': function () {
-		var renderer = new IteratorRenderer(),
-			destroyed = false,
+		var destroyed = false,
 			widget:any = {
 				_list: { destroy() { destroyed = true; } }
 			}
@@ -63,23 +39,10 @@ registerSuite({
 		assert.isNull(widget._list, 'Widget list should be null');
 	},
 
-	'#initialize': function () {
-		var iterator:any = new Iterator(),
-			renderer = new IteratorRenderer();
-		renderer.initialize(iterator);
-		assert.property(iterator._observers, 'source', 'iterator source should be observed');
-		assert.property(iterator._observers, 'template', 'iterator template should be observed');
-	},
-
 	'template observer': function () {
-		var iterator:any = new Iterator();
-
-		// check that iterator doesn't start with a factory
-		assert.isUndefined(iterator._factory, 'New iterator should not have a factory');
-
 		// set a template and make sure a factory was created
 		iterator.set('template', '');
-		assert.instanceOf(iterator._factory, MockFactory, 'A new factory should have been created');
+		assert.instanceOf(iterator._factory, WidgetFactory, 'A new factory should have been created');
 	},
 
 	'source observer': function () {

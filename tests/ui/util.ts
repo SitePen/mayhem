@@ -1,43 +1,6 @@
 /// <reference path="../../dojo" />
 
 import core = require('../../interfaces');
-import lang = require('dojo/_base/lang');
-import Deferred = require('dojo/Deferred');
-
-export function configureLoader(config:{ map:{ [key:string]: string }; undef?: string[] }, restore?:boolean) {
-	var undefs:string[] = [];
-	config = lang.clone(config);
-
-	if (config.undef) {
-		for (var i = 0; i < config.undef.length; i++) {
-			undefs.push(config.undef[i]);
-			require.undef(config.undef[i]);
-		}
-	}
-
-	if (config.map) {
-		for (var mid in config.map) {
-			undefs.push(mid);
-			require.undef(mid);
-			if (restore) {
-				delete config.map[mid];
-			}
-		}
-
-		require.config({ map: { '*': config.map } });
-	}
-
-	return {
-		restore() {
-			var dfd:IDeferred<void> = new Deferred<void>();
-			configureLoader(config, true);
-			require(undefs, function () {
-				dfd.resolve(true);
-			});
-			return dfd.promise;
-		}
-	}
-}
 
 /**
  * Destroy a given destroyable, silently ignoring any errors

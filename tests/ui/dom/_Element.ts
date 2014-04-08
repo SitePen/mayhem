@@ -13,7 +13,8 @@ import util = require('../util');
 import domUtil = require('../../../ui/dom/util');
 
 var parentNode:Node,
-	renderer:any;
+	widget:any,
+	renderer:any
 
 function getChildren(widget:any) {
 	var parent:any = widget instanceof Widget ? widget._outerFragment : widget,
@@ -46,60 +47,47 @@ registerSuite({
 	},
 
 	beforeEach() {
-	    renderer = new ElementRenderer();
+	    widget = new Widget();
+		renderer = widget._renderer;
 	},
 
 	afterEach() {
-		renderer = util.destroy(renderer);
+	    widget = util.destroy(widget);
+		renderer = null;
 	},
 
 	'#add': function () {
-		var widget:any = new Widget(),
-			newWidget1:any = new Widget(),
-			newWidget2:any = new Widget(),
-			newWidget3:any = new Widget(),
-			newWidget4:any = new Widget();
+		var widgets:any[] = [
+				new Widget(),
+				new Widget(),
+				new Widget(),
+				new Widget(),
+			];
 
-		renderer.add(widget, newWidget1);
+		renderer.add(widget, widgets[0]);
 		assert.deepEqual(getChildren(widget), [
-			widget._outerFragment,
-			newWidget1._outerFragment
-		], 'Widget should contain newWidget1 nodes');
+			widgets[0]._outerFragment
+		], 'Widget should contain fragment for widget 0');
 
-		renderer.add(widget, newWidget2);
+		renderer.add(widget, widgets[1]);
 		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			widget._lastNode,
-			newWidget1._firstNode,
-			newWidget1._lastNode,
-			newWidget2._firstNode,
-			newWidget2._lastNode
-		], 'Widget should contain newWidget2 nodes');
+			widgets[0]._outerFragment,
+			widgets[1]._outerFragment
+		], 'Widget should contain fragments for widgets 0 and 1');
 
-		renderer.add(widget, newWidget3, newWidget2);
+		renderer.add(widget, widgets[2], widgets[1]);
 		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			widget._lastNode,
-			newWidget1._firstNode,
-			newWidget1._lastNode,
-			newWidget3._firstNode,
-			newWidget3._lastNode,
-			newWidget2._firstNode,
-			newWidget2._lastNode
-		], 'Widget should contain newWidget3 nodes');
+			widgets[0]._outerFragment,
+			widgets[2]._outerFragment,
+			widgets[1]._outerFragment
+		], 'Widget should contain fragments for widgets 0, 2, and 1');
 
-		renderer.add(widget, newWidget4, newWidget3._firstNode);
+		renderer.add(widget, widgets[3], widgets[2]._outerFragment);
 		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			widget._lastNode,
-			newWidget1._firstNode,
-			newWidget1._lastNode,
-			newWidget4._firstNode,
-			newWidget4._lastNode,
-			newWidget3._lastNode,
-			newWidget2._firstNode,
-			newWidget2._lastNode,
-		], 'newWidget3 _firstNode should have been replaced by newWidget4 nodes');
+			widgets[0]._outerFragment,
+			widgets[3]._outerFragment,
+			widgets[1]._outerFragment
+		], 'widgets[2] fragment should have been replaced by widgets[3] fragment');
 	},
 
 	'#attachContent': function () {
@@ -109,17 +97,10 @@ registerSuite({
 		var content:Node = domUtil.toDom('<h1>foo</h1>');
 		widget._innerFragment = content;
 
-		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			widget._lastNode
-		], 'Widget children should be firstNode and lastNode');
-
 		// attach the content to this renderer
 		renderer.attachContent(widget);
 
 		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			widget._lastNode,
 			content
 		], 'Widget children should include content');
 	},
@@ -128,110 +109,78 @@ registerSuite({
 		var widget:any = new Widget();
 		renderer.attachStyles(widget);
 
-		assert.isDefined(widget._outerFragment, 'Widget has outer fragment');
+		widget.get('classList').set('foo', 'bar');
+		assert.strictEqual(widget._outerFragment.className, 'foo', 'classname should have been set');
+
 		widget.get('style').set('margin', '10px');
 		assert.strictEqual(widget._outerFragment.style.margin, '10px', 'Widget node style should have been set');
 	},
 
-	'#attachToWindow': function () {
-		var target = document.createElement('div'),
-			widget:any = new Widget();
-		renderer.attachToWindow(widget, target);
-		assert.deepEqual(getChildren(target), [ widget._firstNode, widget._lastNode ]);
-	},
-
 	'#clear': function () {
-		var container:any = new Container(),
-			widget1:any = new Widget(),
-			widget2:any = new Widget(),
-			widget3:any = new Widget();
-
-		container.add(widget1);
-		container.add(widget2);
-		renderer.add(container, widget3);
-		assert.deepEqual(getChildren(container), [
-			container._firstNode, container._lastNode,
-			widget1._firstNode, widget1._lastNode,
-			widget2._firstNode, widget2._lastNode,
-			widget3._firstNode, widget3._lastNode
-		], 'Container should have expected children');
-
-		renderer.clear(container);
-		assert.deepEqual(getChildren(container), [
-			container._firstNode,
-			container._lastNode
-		], 'Container should no child nodes');
+		widget._outerFragment.innerHTML = '<div></div>';
+		widget._innerFragment = document.createElement('div');
+		renderer.clear(widget);
+		assert.strictEqual(widget._outerFragment.innerHTML, '', 'outerFragment should be empty')
+		assert.isNull(widget._innerFragment, 'innerFragment should be null')
 	},
 
 	'#detach': function () {
-		var widget:any = new Widget(); 
+		var node = widget._outerFragment,
+			parent = document.createElement('div');
+		parent.appendChild(node);
 		renderer.detach(widget);
-		assert.deepEqual(getChildren(widget), [ widget._firstNode, widget._lastNode ],
-			'Widget child nodes should have been moved to _outerFragment');
+		assert.strictEqual(parent.childNodes.length, 0, 'fragment should have been removed from parent');
 
-		// check that widget will remake its _outerFragment if necessary
-		renderer.attachContent(widget);
-		widget._outerFragment = null;
-		renderer.detach(widget);
-		assert.deepEqual(getChildren(widget), [ widget._firstNode, widget._lastNode ],
-			'Widget child nodes should have been moved to _outerFragment');
-	},
-
-	'#detachChildren': function () {
-		var container:any = new Container(),
-			widget1:any = new Widget(),
-			widget2:any = new Widget(),
-			content1 = domUtil.toDom('<h1>foo</h1>'),
-			content2 = domUtil.toDom('<h1>bar</h1>');
-
-		renderer.setContent(widget1, content1),
-		renderer.setContent(widget2, content2),
-
-		container.add(widget1);
-		container.add(widget2);
-
-		assert.deepEqual(getChildren(container), [
-			container._firstNode,
-			widget1._firstNode, content1, widget1._lastNode,
-			widget2._firstNode, content2, widget2._lastNode,
-			container._lastNode
-		], 'Container should have expected children');
-
-		// detaching children means to call detach on each child (not detach all the children from the parent)
-		renderer.detachChildren(container);
-		assert.deepEqual(getChildren(container), [
-			container._firstNode,
-			widget1._firstNode, widget1._lastNode,
-			widget2._firstNode, widget2._lastNode,
-			container._lastNode
-		], 'Container should have no child nodes');
+		assert.doesNotThrow(function () {
+			renderer.detach(widget);
+		}, 'detaching widget with no parent should not throw');
 	},
 
 	'#detachContent': function () {
-		var widget:any = new Widget();
-		renderer.setContent(widget, '<h1>foo</h1>');
+		var node1 = document.createElement('ul'),
+			node2 = document.createElement('ol'),
+			outerChildren = getChildren(widget._outerFragment);
+		widget._outerFragment.appendChild(node1);
+		widget._outerFragment.appendChild(node2);
 		renderer.detachContent(widget);
-		assert.deepEqual(getChildren(widget), [
-			widget._firstNode, widget._lastNode
-		], 'Widget should have no child nodes');
-		assert.isNotNull(widget._innerFragment, 'Widget inner fragment should not be null');
+		assert.deepEqual(getChildren(widget._outerFragment), outerChildren, 'outerFragment should be empty')
+		assert.deepEqual(getChildren(widget._innerFragment), [ node1, node2 ],
+			'outerFragment content should have been moved to innerFragment')
 	},
 
-	'#destroy': function () {
-		var widget:any = new Widget();
-		renderer.setContent(widget, '<h1>foo</h1>');
-		renderer.destroy(widget);
-		assert.isNull(widget._classListHandle, '_classListHandle should be null');
-		assert.isNull(widget._styleHandle, '_styleHandle should be null');
-		assert.isNull(widget._innerFragment, '_innerFragment should be null');
-		assert.isNull(widget._firstNode, '_firstNode should be null');
-		assert.isNull(widget._lastNode, '_lastNode should be null');
+	'#render': function () {
+		var widget:any = {};
+		renderer.render(widget);
+		assert.property(widget, '_firstNode', 'widget should have _firstNode');
+		assert.property(widget, '_lastNode', 'widget should have _firstNode');
+		assert.property(widget, '_outerFragment', 'widget should have _outerFragment');
+
+		widget = { _outerFragment: true };
+		assert.doesNotThrow(function () {
+			renderer.render(widget);
+		}, 'Rendering a widget with an outerFragment but no parent should not throw');
+
+
+		var node = document.createElement('div'),
+			parent = document.createElement('div');
+		parent.appendChild(node);
+		widget = { _outerFragment: node };
+		renderer.render(widget);
+		assert.notEqual(widget._outerFragment, node, 'Widget node should have been replaced');
+		assert.deepEqual(getChildren(parent), [ widget._outerFragment ],
+			'Parent should only contain new widget fragment');
 	},
 
-	'#remove': function () {
-		var widget:any = new Widget();
-		renderer.remove(null, widget);
-		assert.deepEqual(getChildren(widget), [ widget._firstNode, widget._lastNode ],
-			'Widget child nodes should have been moved to _outerFragment');
+	'#setContent': function () {
+		var widget:any = { _outerFragment: {} };
+		renderer.setContent(widget, '<span></span>');
+		assert.propertyVal(widget._outerFragment, 'innerHTML', '<span></span>',
+			'Content should have been assigned to widget fragment innerHTML');
+
+		var content = document.createElement('div');
+		widget = { _outerFragment: document.createElement('div') };
+		renderer.setContent(widget, content);
+		assert.deepEqual(getChildren(widget._outerFragment), [ content ],
+			'Content node should be only child of widget fragment');
 	}
 });

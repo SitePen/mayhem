@@ -2,14 +2,12 @@
 
 import assert = require('intern/chai!assert');
 import registerSuite = require('intern!object');
-import Resolver = require('../../../ui/dom/Resolver');
-
-// covered by dom/Widget tests
+import Checkbox = require('../../../ui/form/Checkbox');
 
 registerSuite({
-	name: 'ui/dom/Resolver',
+	name: 'ui/form/Checkbox',
 
 	basic() {
-		var resolver = new Resolver();
+		var checkbox = new Checkbox();
 	}
 });

@@ -2,14 +2,14 @@
 
 import assert = require('intern/chai!assert');
 import registerSuite = require('intern!object');
-import Resolver = require('../../../ui/dom/Resolver');
-
-// covered by dom/Widget tests
+import Button = require('../../../ui/form/Button');
 
 registerSuite({
-	name: 'ui/dom/Resolver',
+	name: 'ui/form/Button',
 
 	basic() {
-		var resolver = new Resolver();
+		assert.doesNotThrow(function () {
+			var button = new Button();
+		});
 	}
 });

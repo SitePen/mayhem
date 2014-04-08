@@ -8,5 +8,6 @@ define([
 	'./dom/TextView',
 	'./dom/Widget',
 	'./dom/_Dijit',
-	'./dom/_Element'
+	'./dom/_Element',
+	'./dom/form'
 ], function () {});
