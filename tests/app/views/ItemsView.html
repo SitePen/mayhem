@@ -1,5 +1,7 @@
 <div class="list">
-	{foo}
+	<for each="item" in="itemsStore">
+		<div>{ item.name }</div>
+	</for>
 </div>
 <div class="content">
 	<placeholder name="default">

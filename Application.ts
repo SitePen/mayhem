@@ -57,6 +57,9 @@ class Application extends ObservableEvented implements core.IApplication {
 // 				router: {
 // 					constructor: 'framework/routing/NullRouter'
 // 				},
+				collections: {
+					constructor: 'framework/data/CollectionManager'
+				},
 				scheduler: {
 					constructor: 'framework/Scheduler'
 				}

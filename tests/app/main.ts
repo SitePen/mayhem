@@ -9,15 +9,27 @@ var app = new WebApplication({
 
 			routes: {
 				items: {
-					view: 'Items'
+					view: 'Items',
+					collections: {
+						itemsStore: 'items'
+					}
 				},
 				'items/item': {
 					view: 'Item',
+					collections: {
+						'itemStore': 'items'
+					},
 					path: '<itemId:\\d+>'
-				},
-				'items/item/edit': {
-					mediator: 'items/Item',
-					view: 'ItemEdit'
+				}
+			}
+		},
+		collections: {
+			defaultStore: 'framework/store/RequestMemory',
+			modelPath: 'app/models',
+			models: {
+				items: {
+					model: 'Item',
+					target: require.toUrl('app/data/items.json')
 				}
 			}
 		},
