@@ -88,7 +88,9 @@ class IteratorRenderer extends DomElementRenderer {
 		else {
 			list = widget._list = new OnDemandList();
 			list.renderRow = (record:any):HTMLElement => {
-				var child = this._getWidgetByKey(widget, record[source.idProperty]);
+				var id = source.idProperty,
+					key = '' + (typeof record.get === 'function' ? record.get(id) : record[id]),
+					child = this._getWidgetByKey(widget, key);
 				return child._outerFragment;
 			};
 		}

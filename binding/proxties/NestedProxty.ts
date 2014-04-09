@@ -6,6 +6,7 @@ import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
 import util = require('../../util');
+import when = require('dojo/when');
 
 /**
  * This property binder adds the ability to bind to arbitrarily deep children of the source object, including
@@ -115,7 +116,7 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 
 		var binding:string,
 			index:number = fromIndex,
-			object:Object = fromObject,
+			object:any = fromObject,
 			proxty:binding.IProxty<any, any>,
 			initialBind:boolean = true;
 
@@ -124,8 +125,8 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 		for (; index < this._binding.length - 1 && object; ++index) {
 			binding = this._binding[index];
 			proxty = this._binder.createProxty(object, binding, { scheduled: false });
-			proxty.bindTo(<core.IProxty<Object>> {
-				set: lang.hitch(this, function (index:number, value:Object):void {
+			proxty.bindTo(<core.IProxty<any>> {
+				set: lang.hitch(this, function (index:number, value:any):void {
 					// The `set` method of this fake target will be immediately called by the source `property` if
 					// a value exists for that property; in order to avoid this causing a premature rebinding in the
 					// middle of an existing rebinding event, the `initialBind` variable is used as a guard to only
@@ -139,6 +140,13 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 			// object will exist here and then binding can continue
 			if ((object = proxty.get()) == null) {
 				break;
+			}
+			// If object is a promise resolve it and rebind
+			if (typeof object.then === 'function') {
+				when(object, (value:any) => {
+					this._rebind(value, index + 1);
+				});
+				return;
 			}
 		}
 

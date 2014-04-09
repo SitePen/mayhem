@@ -6,6 +6,7 @@ import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
+import Mediator = require('../data/Mediator');
 import RouteEvent = require('./RouteEvent');
 import routing = require('./interfaces');
 import ui = require('framework/ui/interfaces');

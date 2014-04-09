@@ -4,10 +4,19 @@ import array = require('dojo/_base/array');
 import ContentView = require('./ContentView');
 import data = require('../data/interfaces');
 import Mediator = require('../data/Mediator');
+import Property = require('../data/Property');
 import ui = require('./interfaces');
 import util = require('../util');
 
 var Renderer:any = require('./renderer!Iterator');
+
+class ScopedMediator extends Mediator {
+	static scope(mediator:data.IMediator, options:any = {}) {
+		options.model = mediator;
+		options.app = mediator.get('app');
+		return new ScopedMediator(options);
+	}
+}
 
 class Iterator extends ContentView implements ui.IIterator {
 	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
@@ -30,25 +39,25 @@ class Iterator extends ContentView implements ui.IIterator {
 	set:ui.IIteratorSet;
 
 	/* protected */ _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
-		mediator || (mediator = this.get('mediator'));
-		var scopedMediator:Mediator = new Mediator({ model: mediator }),
-			_get = scopedMediator.get,
-			_set = scopedMediator.set;
-		scopedMediator.get = (name:string):any => {
-			if (name !== this._each) {
-				return _get.call(scopedMediator, name);
+		var view = this,
+			scoped = ScopedMediator.scope(mediator || this.get('mediator')),
+			valueProperty = new Property<any>({
+			get: function ():any {
+				return view._getSourceKey(key);
+			},
+			set: function (value:any):void {
+				view._setSourceKey(key, value);
 			}
-			return this._getSourceKey(key);
-		};
-		scopedMediator.set = <data.IMediatorSet> ((name:string, value:any):void => {
-			if (name !== this._each) {
-				return _set.call(scopedMediator, name, value);
-			}
-			var oldValue:any = this._getSourceKey(key);
-			this._setSourceKey(key, value);
-			scopedMediator._notify(value, oldValue, this._each);
 		});
-		return scopedMediator;
+
+		// Replace _getProperties to take over property management
+		scoped._getProperties = ():{ [key:string]:data.IProperty<any> } => {
+			var properties = {};
+			properties[view.get('each')] = valueProperty;
+			return properties;
+		}
+
+		return scoped;
 	}
 
 	destroy():void {
@@ -108,17 +117,18 @@ class Iterator extends ContentView implements ui.IIterator {
 	private _setSourceKey(key:string, value:any):void {
 		var source:any = this.get('source');
 		if (source instanceof Array) {
-			if (typeof source.set === 'function') {
+			// Use set method if available
+			if (source.set) {
 				source.set(key, value);
 			}
 			else {
 				source[key] = value;
-				this.get('mediator').set(this.get('in'), (<any[]> []).concat(source));
 			}
 		}
 		else {
-			// source should be a dojo Store
-			source.put(value[source.idProperty], value);
+			// source should be a store, value should be a record
+			//debugger
+			value && source.put && source.put(value);
 		}
 	}
 }
