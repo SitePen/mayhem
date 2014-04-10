@@ -9,14 +9,15 @@ import util = require('../../util');
 class DomElementRenderer extends WidgetRenderer {
 	elementType:string;
 
-	add(widget:dom.IContainer, item:dom.IWidget, reference?:any /* dom.IWidget | Node */):void {
+	add(widget:dom.IContainer, item:dom.IWidget, reference:any /* dom.IWidget | Node */):void {
 		item._renderer.detach(item);
-		if (reference instanceof Node) {
+		if (reference && reference.nodeType) {
 			// Replace provided reference node with item
 			domUtil.place(item._outerFragment, reference, PlacePosition.REPLACE);
 		}
 		else {
-			widget._outerFragment.insertBefore(item._outerFragment, reference && reference._outerFragment);
+			// must pass null instead of undefined for compatibility with insertBefore in old IE
+			widget._outerFragment.insertBefore(item._outerFragment, reference ? reference._outerFragment : null);
 		}
 	}
 
@@ -52,7 +53,7 @@ class DomElementRenderer extends WidgetRenderer {
 
 	detachContent(widget:dom.IElementWidget):void {
 		var node = widget._outerFragment;
-		widget._innerFragment = domUtil.getRange(node.firstChild, node.lastChild).extractContents();
+		widget._innerFragment = domUtil.extractRange(node.firstChild, node.lastChild);
 	}
 
 	render(widget:dom.IElementWidget):void {

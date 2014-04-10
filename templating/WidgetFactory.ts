@@ -191,7 +191,7 @@ class _WidgetBinder {
 
 		// Create an observable as a binding target and set up observers to reprocess templates
 		var target = this._templateObservable = new Observable();
-		util.remove.apply(null, this._observerHandles);
+		util.remove.apply(null, this._observerHandles || []);
 		this._observerHandles = [];
 		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
 			var templates:any[] = sourceMap[property];
@@ -225,7 +225,7 @@ class _WidgetBinder {
 		if (!this._textBindingNodes || !this._textBindingPaths) {
 			return;
 		}
-		util.remove.apply(null, this._textBindingHandles);
+		util.remove.apply(null, this._textBindingHandles || []);
 		this._textBindingHandles = [];
 		var widget = <ui.IContentView> this.widget,
 			node:Node,
@@ -244,7 +244,7 @@ class _WidgetBinder {
 	}
 
 	destroy():void {
-		this._observerHandles = util.remove.apply(null, this._observerHandles) && null;
+		this._observerHandles = util.remove.apply(null, this._observerHandles || []) && null;
 		// TODO: moar
 	}
 

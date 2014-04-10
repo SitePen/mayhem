@@ -7,29 +7,61 @@ export function toDom(value:any /* string | Node */):Node {
 	return typeof value === 'string' ? domConstruct.toDom(value) : value;
 }
 
-export function getRange(start:Node, end:Node, exclusive:boolean = false):Range {
-	var range = document.createRange();
+export function extractRange(start:Node, end:Node, exclusive:boolean = false):DocumentFragment {
+	var fragment = document.createDocumentFragment(),
+		next:Node;
 
-	if (start.parentNode && end.parentNode) {
+	if (start.parentNode && start.parentNode === end.parentNode) {
 		if (exclusive) {
-			range.setStartAfter(start);
-			range.setEndBefore(end);
+			start = start.nextSibling;
 		}
-		else {
-			range.setStartBefore(start);
-			range.setEndAfter(end);
+
+		while (start != end) {
+			next = start.nextSibling;
+			fragment.appendChild(start);
+			start = next;
+		}
+
+		if (!exclusive) {
+			fragment.appendChild(start);
 		}
 	}
 	else {
-		// point range at the end of the document (it has to point within the document nodes can be inserted)
-		range.setStartAfter(document.body.lastChild);
-		range.setEndAfter(document.body.lastChild);
-		range.insertNode(end);
-		range.insertNode(start);
+		fragment.appendChild(start);
+		fragment.appendChild(end);
 	}
 
-	return range;
+	return fragment;
 }
+
+export function deleteRange(start:Node, end:Node, exclusive:boolean = false):void {
+	if (start.parentNode !== end.parentNode) {
+		throw new Error('start and end do not share a parent')
+	}
+
+	if (!start.parentNode) {
+		// return if nodes have no parent
+		return;
+	}
+
+	var parent = start.parentNode,
+		next:Node;
+
+	if (exclusive) {
+		start = start.nextSibling;
+	}
+
+	while (start != end) {
+		next = start.nextSibling;
+		parent.removeChild(start);
+		start = next;
+	}
+
+	if (!exclusive) {
+		parent.removeChild(start);
+	}
+}
+
 export function place(node:any /* Node | string */, refNode:any /* Node | string */, position:PlacePosition = PlacePosition.LAST):Node {
 	return domConstruct.place(node, refNode, PLACE_POSITION_KEYS[position])
 }

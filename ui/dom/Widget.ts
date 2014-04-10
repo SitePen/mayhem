@@ -10,7 +10,7 @@ import util = require('../../util');
 class DomWidgetRenderer implements ui.IRenderer {
 	add(widget:dom.IContainer, item:dom.IWidget, reference?:any /* dom.IWidget | Node */):void {
 		item._renderer.detach(item);
-		if (reference instanceof Node) {
+		if (reference && reference.nodeType) {
 			// Replace provided reference node with item
 			domUtil.place(item._outerFragment, reference, PlacePosition.REPLACE);
 		}
@@ -51,7 +51,7 @@ class DomWidgetRenderer implements ui.IRenderer {
 	clear(widget:dom.IWidget):void {
 		// Give children a chance to preserve their content before blowing them away
 		this.detachChildren(<dom.IContainer> widget);
-		domUtil.getRange(widget._firstNode, widget._lastNode, true).deleteContents();
+		domUtil.deleteRange(widget._firstNode, widget._lastNode, true);
 	}
 
 	destroy(widget:dom.IWidget):void {
@@ -65,7 +65,7 @@ class DomWidgetRenderer implements ui.IRenderer {
 	detach(widget:dom.IWidget):void {
 		var fragment = widget._outerFragment;
 		if (!fragment || !fragment.firstChild) {
-			widget._outerFragment = domUtil.getRange(widget._firstNode, widget._lastNode).extractContents();
+			widget._outerFragment = domUtil.extractRange(widget._firstNode, widget._lastNode);
 		}
 	}
 
@@ -81,7 +81,7 @@ class DomWidgetRenderer implements ui.IRenderer {
 	detachContent(widget:dom.IWidget):void {
 		var content = widget._innerFragment;
 		if (!content || !content.firstChild) {
-			widget._innerFragment = domUtil.getRange(widget._firstNode, widget._lastNode, true).extractContents();
+			widget._innerFragment = domUtil.extractRange(widget._firstNode, widget._lastNode, true);
 		}
 	}
 
