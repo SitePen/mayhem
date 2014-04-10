@@ -11,7 +11,7 @@ import when = require('dojo/when');
  * A router implementation that operates using the window's location hash.
  */
 class HashRouter extends Router {
-	_values:HashRouter.IValues;
+	_pathPrefix:string;
 	private _changeHandle:IHandle;
 
 	/**
@@ -99,15 +99,6 @@ class HashRouter extends Router {
 		}
 
 		return super.normalizeId(id);
-	}
-}
-
-module HashRouter {
-	export interface IValues extends Router.IValues {
-		/**
-		 * A prefix that is expected to exist on all URLs loaded through this router.
-		 */
-		pathPrefix:string;
 	}
 }
 

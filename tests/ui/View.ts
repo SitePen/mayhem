@@ -160,7 +160,7 @@ registerSuite({
 		});
 
 		view.set('parent', parent);
-		view._values.mediator = null;
+		view._mediator = null;
 		newMediator = oldMediator = null;
 
 		view.set('parent', createParent());

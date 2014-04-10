@@ -12,10 +12,14 @@ var Renderer:any = require('./renderer!Iterator');
 class Iterator extends ContentView implements ui.IIterator {
 	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
 	private _sourceBinding:IHandle;
-	/* protected */ _values:ui.IIteratorValues;
 	/* protected */ _widgetIndex:{ [key:string]: ui.IView; };
 
-	constructor(kwArgs:any = {}) {
+	_each:string;
+	_in:string;
+	_source:any;
+	_template:any;
+
+	constructor(kwArgs?:any) {
 		util.deferSetters(this, [ 'source' ], '_render');
 		this._mediatorIndex = {};
 		this._widgetIndex = {};
@@ -31,18 +35,18 @@ class Iterator extends ContentView implements ui.IIterator {
 			_get = scopedMediator.get,
 			_set = scopedMediator.set;
 		scopedMediator.get = (name:string):any => {
-			if (name !== this._values.each) {
+			if (name !== this._each) {
 				return _get.call(scopedMediator, name);
 			}
 			return this._getSourceKey(key);
-		}
+		};
 		scopedMediator.set = <data.IMediatorSet> ((name:string, value:any):void => {
-			if (name !== this._values.each) {
+			if (name !== this._each) {
 				return _set.call(scopedMediator, name, value);
 			}
 			var oldValue:any = this._getSourceKey(key);
 			this._setSourceKey(key, value);
-			scopedMediator._notify(value, oldValue, this._values.each);
+			scopedMediator._notify(value, oldValue, this._each);
 		});
 		return scopedMediator;
 	}
@@ -66,13 +70,13 @@ class Iterator extends ContentView implements ui.IIterator {
 	}
 
 	private _eachSetter(value:string):void {
-		this._values.each = value;
+		this._each = value;
 		var mediator:data.IMediator = this.get('mediator');
 		if (!mediator) {
 			return;
 		}
 		// Recreate our scoped mediators since the name of our value field changed
-		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string) => {
+		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string):void => {
 			var scoped = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
 			this._widgetIndex[key].set('mediator', scoped);
 		});
@@ -93,7 +97,7 @@ class Iterator extends ContentView implements ui.IIterator {
 
 	private _inSetter(value:string):void {
 		// Tells us which field to use to get our source
-		this._values['in'] = value;
+		this._in = value;
 		util.remove(this._sourceBinding);
 		this._sourceBinding = this.bind({
 			sourceBinding: value,

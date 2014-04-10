@@ -48,8 +48,8 @@ class BaseRoute extends Observable {
 	 * using a standard query-string attached to the end of the path (e.g. `foo/bar?baz=true`).
 	 */
 
-	/* protected */ _values:BaseRoute.IValues;
-
+	_isCaseSensitive:boolean;
+	_path:string;
 	_pathPattern:RegExp;
 	_pathParts:Array<any>;
 	_pathKeys:Array<string>;
@@ -79,7 +79,7 @@ class BaseRoute extends Observable {
 				}
 			}
 		}
-		this._values.isCaseSensitive = isCaseSensitive;
+		this._isCaseSensitive = isCaseSensitive;
 	}
 
 	/**
@@ -102,7 +102,7 @@ class BaseRoute extends Observable {
 			lastIndex = 0,
 			match:RegExpExecArray,
 			staticPart:string,
-			regExpFlags = this._values.isCaseSensitive ? '' : 'i';
+			regExpFlags = this._isCaseSensitive ? '' : 'i';
 
 		while ((match = parameterPattern.exec(path))) {
 			pathKeys.push(match[1]);
@@ -124,7 +124,7 @@ class BaseRoute extends Observable {
 		this._pathKeys = pathKeys;
 		this._pathParts = pathParts;
 		this._pathPattern = new RegExp(realPathPattern, regExpFlags);
-		this._values.path = path;
+		this._path = path;
 	}
 
 	/**
@@ -240,13 +240,6 @@ class BaseRoute extends Observable {
 		}
 
 		return path;
-	}
-}
-
-module BaseRoute {
-	export interface IValues {
-		path:string;
-		isCaseSensitive:boolean;
 	}
 }
 

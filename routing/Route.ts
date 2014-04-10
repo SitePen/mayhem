@@ -17,7 +17,53 @@ class Route extends BaseRoute implements routing.IRoute {
 	private _controllerInstance:any /* framework/Controller */;
 	private _viewInstance:any /* ui.IContentView */;
 
-	_values:Route.IValues;
+	/**
+	 * The unique identifier for this route.
+	 */
+	_id:string;
+
+	/**
+	 * The parent route of this route. If no parent route exists, parent will be set to the main Application instance.
+	 */
+	_parent:any /*routing.IRoute, core.IApplication*/;
+
+	/**
+	 * The name of a controller which, when transformed using the expression `router.controllerPath + '/' +
+	 * toUpperCamelCase(route.controller) + 'Controller'`, provides a module ID that points to a module whose value is a
+	 * `framework/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
+	 * transformed. If null, a generic Controller object will be used for this route instead.
+	 */
+	_mediator:string;
+
+	/**
+	 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
+	 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
+	 * `ui.IView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
+	 * transformed. If null, a generic View object will be used for this route instead.
+	 */
+	_view:string;
+
+	/**
+	 * The name of a template which, when transformed using the expression `router.viewPath + '/' +
+	 * toUpperCamelCase(route.template) + 'View.html'`, provides a path to a Mayhem template. If the string starts with
+	 * a '/', it will be treated as an absolute path and not transformed.
+	 */
+	_template:string;
+
+	/**
+	 * The ID of the placeholder in the parent route's view that this route's view should be injected into.
+	 */
+	_placeholder:string;
+
+	/**
+	 * The router to which this route belongs.
+	 */
+	_router:routing.IRouter;
+
+	/**
+	 * @protected
+	 */
+	_app:core.IApplication;
 
 	/**
 	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
@@ -33,15 +79,15 @@ class Route extends BaseRoute implements routing.IRoute {
 
 				var kwArgs = { id: id };
 
-				for (var k in this._values) {
+				for (var k in this) {
 					// Custom properties on the route should be provided to the controller, but not private or default
 					// properties since those are only relevant to the route itself
 					// TODO: is !this.hasOwnProperty(k) equivalent to (k in this.constructor.prototype)?
-					if (!this._values.hasOwnProperty(k)) {
+					if (k.charAt(0) === '_' || !this.hasOwnProperty(k)) {
 						continue;
 					}
 
-					kwArgs[k] = this._values[k];
+					kwArgs[k] = this[k];
 				}
 
 				lang.mixin(kwArgs, this.parse(event.newPath));
@@ -120,59 +166,6 @@ class Route extends BaseRoute implements routing.IRoute {
 		});
 
 		return this._viewInstance;
-	}
-}
-
-module Route {
-	export interface IValues extends BaseRoute.IValues {
-		/**
-		 * The unique identifier for this route.
-		 */
-		id:string;
-
-		/**
-		 * The parent route of this route. If no parent route exists, parent will be set to the main Application instance.
-		 */
-		parent:any /*routing.IRoute, core.IApplication*/;
-
-		/**
-		 * The name of a controller which, when transformed using the expression `router.controllerPath + '/' +
-		 * toUpperCamelCase(route.controller) + 'Controller'`, provides a module ID that points to a module whose value is a
-		 * `framework/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-		 * transformed. If null, a generic Controller object will be used for this route instead.
-		 */
-		mediator:string;
-
-		/**
-		 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
-		 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
-		 * `ui.IView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-		 * transformed. If null, a generic View object will be used for this route instead.
-		 */
-		view:string;
-
-		/**
-		 * The name of a template which, when transformed using the expression `router.viewPath + '/' +
-		 * toUpperCamelCase(route.template) + 'View.html'`, provides a path to a Mayhem template. If the string starts with
-		 * a '/', it will be treated as an absolute path and not transformed.
-		 */
-		template:string;
-
-		/**
-		 * The ID of the placeholder in the parent route's view that this route's view should be injected into.
-		 */
-		placeholder:string;
-
-		/**
-		 * The router to which this route belongs.
-		 */
-		router:routing.IRouter;
-
-		/**
-		 * @protected
-		 */
-		app:core.IApplication;
-
 	}
 }
 

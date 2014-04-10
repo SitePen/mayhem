@@ -5,32 +5,24 @@ import util = require('./util');
 
 class Observable implements core.IObservable {
 	static defaults(kwArgs:any):void {
-		var proto:any = this.prototype;
-		if (!proto.hasOwnProperty('_values')) {
-			proto._values = lang.delegate(proto._values, kwArgs);
-		}
-		else {
-			lang.mixin(proto._values, kwArgs);
+		for (var key in kwArgs) {
+			this.prototype['_' + key] = kwArgs[key];
 		}
 	}
 
 	get:core.IObservableGet;
-	has:(key:string) => boolean;
 	set:core.IObservableSet;
+	// TODO: Do we need this?
+	// has:(key:string) => boolean;
 	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
-	/* protected */ _values:Object;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
-		var defaults = this._values;
 		if (has('es5')) {
 			this._observers = Object.create(null);
-			this._values = Object.create(null);
 		}
 		else {
 			this._observers = {};
-			this._values = {};
 		}
-		this._values = lang.delegate(defaults);
 		this._initialize();
 		kwArgs && this.set(kwArgs);
 	}
@@ -40,7 +32,7 @@ class Observable implements core.IObservable {
 
 	destroy():void {
 		this.destroy = function ():void {};
-		this._observers = this._values = null;
+		this._observers = null;
 	}
 
 	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {
@@ -78,14 +70,13 @@ class Observable implements core.IObservable {
 }
 
 Observable.prototype.get = function (key:string):any {
-	var getter = '_' + key + 'Getter';
+	var privateKey = '_' + key,
+		getter = privateKey + 'Getter';
 
 	if (typeof this[getter] === 'function') {
 		return this[getter]();
 	}
-	if (this.has(key)) {
-		return this._values[key];
-	}
+	return this[privateKey];
 };
 
 Observable.prototype.set = function (key:any, value?:any):void {
@@ -99,13 +90,14 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	}
 
 	var oldValue = this.get(key),
-		setter = '_' + key + 'Setter';
+		privateKey = '_' + key,
+		setter = privateKey + 'Setter';
 
 	if (typeof this[setter] === 'function') {
 		this[setter](value);
 	}
 	else {
-		this._values[key] = value;
+		this[privateKey] = value;
 	}
 
 	var newValue = this.get(key);
@@ -114,8 +106,11 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	}
 };
 
-Observable.prototype.has = function (key:string):boolean {
-	return key in this._values;
-};
+// TODO: Do we need this anymore?
+/*Observable.prototype.has = function (key:string):boolean {
+	var privateKey = '_' + key;
+
+	return (privateKey in this) || ((privateKey + 'Getter') in this) || ((privateKey + 'Setter') in this);
+};*/
 
 export = Observable;

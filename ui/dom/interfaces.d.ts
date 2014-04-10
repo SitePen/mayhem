@@ -48,7 +48,8 @@ export interface IViewWidget extends IElementWidget, IView {
 }
 
 export interface ITextView extends ui.ITextView, IElementWidget {
-	_values:ui.ITextViewValues;
+	_formattedText:string;
+	_text:string;
 
 	get:ui.ITextViewGet;
 	set:ui.ITextViewSet;
@@ -61,13 +62,16 @@ export interface IDijitWidget extends IElementWidget {
 /* Control flow */
 
 export interface IIterator extends ui.IIterator, IElementWidget {
+	_each:string;
 	_factory:any; // TODO: templating.IViewConstructor
 	_getMediatorByKey(key:string):core.data.IMediator;
+	_in:string;
 	_list:List;
 	_listLength:number;
 	_mediatorIndex:{ [key:string]: core.data.IMediator; };
+	_source:any;
 	_sourceObserverHandle:IHandle;
-	_values:ui.IIteratorValues;
+	_template:any;
 	_widgetIndex:{ [key:string]: IViewWidget; };
 
 	get:IIteratorGet;

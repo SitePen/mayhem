@@ -30,7 +30,7 @@ class MockDijit extends Observable {
 		var self = this;
 		this.domNode = document.createElement('div');
 		this.set = function(key:any, value?:any) {
-			var oldValue = self._values[key];
+			var oldValue:any = self['_' + key];
 			Observable.prototype.set.call(self, key, value);
 			if (oldValue !== value) {
 				for (var i = 0; i < self.watchers.length; i++) {

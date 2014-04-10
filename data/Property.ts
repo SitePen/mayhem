@@ -11,27 +11,26 @@ import Proxty = require('../Proxty');
 import when = require('dojo/when');
 
 class Property<T> extends Observable implements data.IProperty<T> {
-	/* protected */ _values:{
-		dependencies:string[];
-		errors:ObservableArray<core.IValidationError>;
-		key:string;
-		model:data.IModel;
-		label:string;
-		validators:core.IValidator[];
-		validateOnSet:boolean;
-		value:T;
-		validatorInProgress:IPromise<void>;
-	};
+	_dependencies:string[];
+	_errors:ObservableArray<core.IValidationError>;
+	_key:string;
+	_model:data.IModel;
+	_label:string;
+	_validators:core.IValidator[];
+	_validateOnSet:boolean;
+	_value:T;
+	_validatorInProgress:IPromise<void>;
+
 	private _valueGetter:() => T;
 
 	get:data.IPropertyGet<T>;
 	set:data.IPropertySet<T>;
 
-	_initialize():void {
-		lang.mixin(this._values, {
-			errors: new ObservableArray<core.IValidationError>(),
-			validators: []
-		});
+	constructor(kwArgs?:any) {
+		this._errors = new ObservableArray<core.IValidationError>();
+		this._validators = [];
+
+		super(kwArgs);
 	}
 
 	observe<T>(key:string, observer:core.IObserver<T>):IHandle {
@@ -40,8 +39,8 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		// TODO: This is a hack to enable observers to be notified whenever the errors array is mutated; there needs
 		// to be a proper way to observe these types of arrays instead in the binding system.
 		if (key === 'errors') {
-			this._values.errors.observe(():void => {
-				var errors:ObservableArray<core.IValidationError> = this._values.errors;
+			this._errors.observe(():void => {
+				var errors:ObservableArray<core.IValidationError> = this._errors;
 				this._notify(errors, errors, 'errors');
 			});
 		}
@@ -51,9 +50,9 @@ class Property<T> extends Observable implements data.IProperty<T> {
 
 	validate():IPromise<boolean> {
 		var dfd:IDeferred<boolean> = new Deferred<boolean>(<T>(reason:T):T => {
-				if (this._values.validatorInProgress) {
-					this._values.validatorInProgress.cancel(reason);
-					this._values.validatorInProgress = null;
+				if (this._validatorInProgress) {
+					this._validatorInProgress.cancel(reason);
+					this._validatorInProgress = null;
 				}
 
 				return reason;
@@ -65,9 +64,9 @@ class Property<T> extends Observable implements data.IProperty<T> {
 			errors = this.get('errors'),
 			i = 0;
 
-		if (this._values.validatorInProgress) {
-			this._values.validatorInProgress.cancel('Validation restarted');
-			this._values.validatorInProgress = null;
+		if (this._validatorInProgress) {
+			this._validatorInProgress.cancel('Validation restarted');
+			this._validatorInProgress = null;
 		}
 
 		errors.splice(0, Infinity);
@@ -100,11 +99,11 @@ class Property<T> extends Observable implements data.IProperty<T> {
 			}
 
 			// If a validator throws an error, validation processing halts
-			self._values.validatorInProgress = when(validator.validate(model, key, value)).then(function ():void {
-				self._values.validatorInProgress = null;
+			self._validatorInProgress = when(validator.validate(model, key, value)).then(function ():void {
+				self._validatorInProgress = null;
 				runNextValidator();
 			}, function (error:Error):void {
-				self._values.validatorInProgress = null;
+				self._validatorInProgress = null;
 				dfd.reject(error);
 			});
 		})();
@@ -121,14 +120,14 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	}
 
 	_valueSetter(value:T):void {
-		this._values.value = value;
-		this._values.validateOnSet && this.validate();
+		this._value = value;
+		this._validateOnSet && this.validate();
 	}
 
 	_valueSetterSetter(setter:(value:T) => void):void {
 		this._valueSetter = function ():void {
 			setter.apply(this, arguments);
-			this._values.validateOnSet && this.validate();
+			this._validateOnSet && this.validate();
 		};
 	}
 }

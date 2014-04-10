@@ -6,7 +6,7 @@ class TextViewRenderer extends DomElementRenderer {
 	render(widget:dom.ITextView):void {
 		super.render(widget);
 
-		widget.observe('formattedText', (value:string) => {
+		widget.observe('formattedText', (value:string):void => {
 			this.setContent(widget, value);
 		});
 
@@ -19,9 +19,9 @@ class TextViewRenderer extends DomElementRenderer {
 		super.setContent(widget, value);
 		// Update text properties silently w/ actual text value of our new content
 		var firstNode = widget._firstNode;
-		widget._values.formattedText = firstNode.innerHTML;
+		widget._formattedText = firstNode.innerHTML;
 		// TODO: has-branch for old IE?
-		widget._values.text = firstNode.textContent || firstNode.innerText;
+		widget._text = firstNode.textContent || firstNode.innerText;
 	}
 }
 

@@ -8,7 +8,10 @@ var Renderer:any = require('./renderer!Conditional');
 
 class Conditional extends ContentView implements ui.IConditional {
 	private _conditionBindHandle:IHandle;
-	/* protected */ _values:ui.IConditionalValues;
+
+	_alternate:ui.IWidget;
+	_condition:string;
+	_result:boolean;
 
 	get:ui.IConditionalGet;
 	set:ui.IConditionalSet;
@@ -21,10 +24,10 @@ class Conditional extends ContentView implements ui.IConditional {
 	/* protected */ _initialize():void {
 		super._initialize();
 
-		this.observe('alternate', (newValue:ui.IWidget, oldValue:ui.IWidget) => {
+		this.observe('alternate', (newValue:ui.IWidget, oldValue:ui.IWidget):void => {
 			this._placeView(newValue, oldValue);
 		});
-		this.observe('consequent', (newValue:ui.IWidget, oldValue:ui.IWidget) => {
+		this.observe('consequent', (newValue:ui.IWidget, oldValue:ui.IWidget):void => {
 			this._placeView(newValue, oldValue);
 		});
 
@@ -52,12 +55,12 @@ class Conditional extends ContentView implements ui.IConditional {
 	}
 
 	private _placeView(view:ui.IWidget, previous:ui.IWidget):void {
-		if(!view && !previous) {
+		if (!view && !previous) {
 			return;
 		}
 		// Defer until rendered
 		if (!this.get('rendered')) {
-			this.observe('rendered', () => {
+			this.observe('rendered', ():void => {
 				this._placeView(view, previous);
 			});
 			return;

@@ -16,12 +16,19 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return registry[id];
 	}
 
+	_attached:boolean;
+	_id:string;
+	_index:number;
+	_next:ui.IWidget;
+	_parent:ui.IContainer;
+	_previous:ui.IWidget;
+	_visible:boolean;
+
 	private __id:string;
 	/* protected */ _renderer:ui.IRenderer;
 	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
-	/* protected */ _values:ui.IWidgetValues;
 
-	constructor(kwArgs:ui.IWidgetValues = {}) {
+	constructor(kwArgs?:any) {
 		util.deferSetters(this, [ 'attached' ], '_render');
 		this._ownHandles = [];
 
@@ -43,7 +50,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	set:ui.IWidgetSet;
 
 	/* protected */ _attachedSetter(attached:boolean):void {
-		this._values.attached = attached;
+		this._attached = attached;
 	}
 
 	destroy():void {

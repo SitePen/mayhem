@@ -8,8 +8,6 @@ import ui = require('./interfaces');
 var Renderer:any = require('./renderer!Placeholder');
 
 class Placeholder extends Container implements ui.IPlaceholder {
-	/* protected */ _values:ui.IPlaceholderValues;
-
 	get:ui.IPlaceholderGet;
 	set:ui.IPlaceholderSet;
 

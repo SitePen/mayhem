@@ -1,4 +1,4 @@
-/// <reference path="../../dojo" />
+/// <reference path="../../../dojo" />
 
 /**
  * Destroy/close/remove a given handle, silently ignoring any errors

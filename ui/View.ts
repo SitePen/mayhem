@@ -16,9 +16,9 @@ class View extends Widget implements ui.IView {
 	private _bindings:binding.IBindingHandle[];
 	private _parentAppHandle:IHandle;
 	private _parentMediatorHandle:IHandle;
-	/* protected */ _values:ui.IViewValues;
+	_mediator:core.data.IMediator;
 
-	constructor(kwArgs?:ui.IViewValues) {
+	constructor(kwArgs?:any) {
 		this._bindings = [];
 		super(kwArgs);
 	}
@@ -115,7 +115,7 @@ class View extends Widget implements ui.IView {
 			}
 		});
 
-		this.observe('parent', (parent:ui.IContainer, previous:ui.IContainer) => {
+		this.observe('parent', (parent:ui.IContainer, previous:ui.IContainer):void => {
 			if (!this.get('app') && parent) {
 				var parentApp = parent.get('app');
 				if (parentApp) {
@@ -133,19 +133,19 @@ class View extends Widget implements ui.IView {
 
 			var mediatorHandler = (mediator:data.IMediator, previous:data.IMediator):void => {
 				// if no mediator has been explicitly set, notify of the parent's mediator change
-				if (!this._values.mediator && !util.isEqual(mediator, previous)) {
+				if (!this._mediator && !util.isEqual(mediator, previous)) {
 					this._notify(mediator, previous, 'mediator');
 				}
 			};
 			util.remove(this._parentMediatorHandle);
 			this._parentMediatorHandle = parent && parent.observe('mediator', mediatorHandler);
 			mediatorHandler(parent && parent.get('mediator'), previous && previous.get('mediator'));
-		})
+		});
 	}
 
 	private _mediatorGetter():data.IMediator {
-		if (this._values.mediator) {
-			return this._values.mediator;
+		if (this._mediator) {
+			return this._mediator;
 		}
 		var parent = this.get('parent');
 		if (parent) {

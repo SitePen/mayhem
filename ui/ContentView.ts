@@ -9,7 +9,6 @@ var Renderer:any = require('./renderer!ContentView');
 
 class ContentView extends Container implements ui.IContentView {
 	placeholders:{ [name:string]: ui.IPlaceholder; };
-	/* protected */ _values:ui.IContentViewValues;
 
 	constructor(kwArgs?:any) {
 		this.placeholders = {};

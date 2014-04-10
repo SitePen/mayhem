@@ -12,7 +12,7 @@ var Renderer:any = require('./renderer!Resolver');
 
 class Resolver extends ContentView implements ui.IResolver {
 	private _promiseFieldBinding:IHandle;
-	/* protected */ _values:ui.IResolverValues;
+	_target:any;
 
 	constructor(kwArgs?:any) {
 		util.deferSetters(this, [ 'target' ], '_render');
@@ -48,7 +48,7 @@ class Resolver extends ContentView implements ui.IResolver {
 			this.set('scopedMediator', mediator ? this._scopeMediator(mediator) : null);
 		});
 
-		this.observe('scopedMediator', (mediator:data.IMediator, previous:data.IMediator) => {
+		this.observe('scopedMediator', (mediator:data.IMediator, previous:data.IMediator):void => {
 			this._updateWidgetMediators(mediator);
 			util.destroy(previous);
 		});
@@ -59,7 +59,7 @@ class Resolver extends ContentView implements ui.IResolver {
 			this._promiseFieldBinding = this.bind({
 				sourceBinding: sourceBinding,
 				targetBinding: 'target'
-			});	
+			});
 		});
 
 		this.observe('phase', this._updateVisibility);
@@ -73,16 +73,16 @@ class Resolver extends ContentView implements ui.IResolver {
 
 	private _notifyScopedMediator(result:any, previous:any):void {
 		var mediator = this.get('scopedMediator');
-		mediator && mediator['_notify'](result, previous, this.get('value'));	
+		mediator && mediator['_notify'](result, previous, this.get('value'));
 	}
 
 	private _placeView(view:ui.IWidget, previous:ui.IWidget):void {
-		if(!view && !previous) {
+		if (!view && !previous) {
 			return;
 		}
 		// Defer until rendered
 		if (!this.get('rendered')) {
-			this.observe('rendered', () => {
+			this.observe('rendered', ():void => {
 				this._placeView(view, previous);
 			});
 			return;
@@ -110,14 +110,14 @@ class Resolver extends ContentView implements ui.IResolver {
 			_get = scopedMediator.get,
 			_set = scopedMediator.set;
 		scopedMediator.get = (name:string):any => {
-			//debugger
+			// debugger
 			if (name === this.get('value')) {
 				return this.get('result');
 			}
 			else {
 				return _get.call(scopedMediator, name);
 			}
-		}
+		};
 		scopedMediator.set = <data.IMediatorGet> ((name:string, value:any):void => {
 			if (name === this.get('value')) {
 				return this.set('result', value);
@@ -134,8 +134,8 @@ class Resolver extends ContentView implements ui.IResolver {
 		this.get('success').setContent(content);
 	}
 
-	/* protected */ _targetSetter(target:any) {
-		this._values['target'] = target;
+	/* protected */ _targetSetter(target:any):void {
+		this._target = target;
 		this.set('result', undefined);
 		this.set('phase', 'during');
 		when(target).then((result:any):void => {

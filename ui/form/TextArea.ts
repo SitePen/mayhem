@@ -6,7 +6,8 @@ import TextField = require('./TextField');
 var Renderer:any = require('../renderer!form/TextArea');
 
 class TextArea extends TextField implements form.ITextArea {
-	/* protected */ _values:form.ITextAreaValues;
+	_columns:number;
+	_rows:number;
 
 	get:form.ITextAreaGet;
 	set:form.ITextAreaSet;

@@ -9,8 +9,6 @@ export interface IError extends form.IError, dom.IElementWidget {
 }
 
 export interface ILabel extends form.ILabel, dom.ITextView {
-	_values:form.ILabelValues;
-
 	get:form.ILabelGet;
 	set:form.ILabelSet;
 }

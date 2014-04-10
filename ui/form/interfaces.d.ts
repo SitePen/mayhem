@@ -16,11 +16,6 @@ export interface IButtonSet extends IControlSet {
 	(name:'type', value:string):void;
 }
 
-export interface IButtonValues extends IControlValues {
-	label?:string;
-	type?:string;
-}
-
 export interface ICheckbox extends IInput, ISwitch {
 	get:ICheckboxGet;
 	set:ICheckboxSet;
@@ -30,9 +25,6 @@ export interface ICheckboxGet extends IInputGet, ISwitchGet {
 }
 
 export interface ICheckboxSet extends IInputSet, ISwitchSet {
-}
-
-export interface ICheckboxValues extends IInputValues, ISwitchValues {
 }
 
 export interface IControl extends ui.IWidget {
@@ -48,10 +40,6 @@ export interface IControlSet extends ui.IWidgetSet {
 	(name:'disabled', value:boolean):void;
 }
 
-export interface IControlValues extends ui.IWidgetValues {
-	disabled?:boolean;
-}
-
 export interface IError extends ui.IWidget {
 	get:IErrorGet;
 	set:IErrorSet;
@@ -63,10 +51,6 @@ export interface IErrorGet extends ui.IWidgetGet {
 
 export interface IErrorSet extends ui.IWidgetSet {
 	(name:'list', value:core.IValidationError[]):void;
-}
-
-export interface IErrorValues extends ui.IWidgetValues {
-	list?:core.IValidationError[];
 }
 
 export interface IInput extends IControl {
@@ -86,16 +70,9 @@ export interface IInputSet extends IControlSet {
 	(name:'value', value:any):void;
 }
 
-export interface IInputValues extends IControlValues {
-	name?:string;
-	readonly?:boolean;
-	value?:any;
-}
-
 export interface ILabel extends ui.IWidget {
 	get:ILabelGet;
 	set:ILabelSet;
-	_values:ILabelValues;
 }
 
 export interface ILabelGet extends ui.IWidgetGet {
@@ -104,10 +81,6 @@ export interface ILabelGet extends ui.IWidgetGet {
 
 export interface ILabelSet extends ui.IWidgetSet {
 	(name:'for', value:string):void;
-}
-
-export interface ILabelValues extends ui.IWidgetValues {
-	for?:string;
 }
 
 export interface IRadioButton extends ICheckbox {
@@ -119,9 +92,6 @@ export interface IRadioButtonGet extends ICheckboxGet {
 }
 
 export interface IRadioButtonSet extends ICheckboxSet {
-}
-
-export interface IRadioButtonValues extends ICheckboxValues {
 }
 
 export interface ISwitch extends IControl {
@@ -139,11 +109,6 @@ export interface ISwitchSet extends IControlSet {
 	(name:'indeterminate', value:boolean):void;
 }
 
-export interface ISwitchValues extends IControlValues {
-	checked?:boolean;
-	indeterminate?:boolean;
-}
-
 export interface ITextArea extends ITextField {
 	get:ITextAreaGet;
 	set:ITextAreaSet;
@@ -157,11 +122,6 @@ export interface ITextAreaGet extends ITextFieldGet {
 export interface ITextAreaSet extends ITextFieldSet {
 	(name:'columns', value:number):void;
 	(name:'rows', value:number):void;
-}
-
-export interface ITextAreaValues extends ITextFieldValues {
-	columns?:number;
-	rows?:number;
 }
 
 export interface ITextField extends IInput {
@@ -183,13 +143,6 @@ export interface ITextFieldSet extends IInputSet {
 	(name:'value', value:string):void;
 }
 
-export interface ITextFieldValues extends IInputValues {
-	maxlength?:number;
-	placeholder?:string;
-	trim?:boolean;
-	value?:string;
-}
-
 export interface IToggleButton extends IButton, ISwitch {
 	get:IToggleButtonGet;
 	set:IToggleButtonSet;
@@ -199,7 +152,4 @@ export interface IToggleButtonGet extends IButtonGet, ISwitchGet {
 }
 
 export interface IToggleButtonSet extends IButtonSet, ISwitchSet {
-}
-
-export interface IToggleButtonValues extends IButtonValues, ISwitchValues {
 }

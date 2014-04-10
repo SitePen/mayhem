@@ -54,11 +54,12 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 	}
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
-		var handle:IHandle = super.observe(key, observer);
+		var handle:IHandle = super.observe(key, observer),
+			privateKey = '_' + key;
 
 		// Keys not pre-defined on the mediator should be delegated to the model, and may change when the model
 		// changes
-		if (!this.has(key) && !(('_' + key + 'Setter') in this) && !(key in this._getProperties())) {
+		if (!(privateKey in this) && !((privateKey + 'Setter') in this) && !(key in this._getProperties())) {
 			var mediator = this,
 				oldRemove = handle.remove;
 
@@ -109,7 +110,8 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 // to allow accessor overrides)
 lang.mixin(Mediator.prototype, {
 	get: function (key:string):any {
-		var getter = '_' + key + 'Getter',
+		var privateKey = '_' + key,
+			getter = privateKey + 'Getter',
 			value:any;
 
 		if (getter in this) {
@@ -120,8 +122,8 @@ lang.mixin(Mediator.prototype, {
 			if (property) {
 				value = property.get('value');
 			}
-			else if (this.has(key)) {
-				value = this._values[key];
+			else if (privateKey in this) {
+				value = this[privateKey];
 			}
 			else {
 				var model = this.get('model');
@@ -145,7 +147,8 @@ lang.mixin(Mediator.prototype, {
 		}
 
 		var oldValue = this.get(key),
-			setter = '_' + key + 'Setter',
+			privateKey = '_' + key,
+			setter = privateKey + 'Setter',
 			notify = false;
 
 		if (setter in this) {
@@ -157,9 +160,9 @@ lang.mixin(Mediator.prototype, {
 			if (property) {
 				property.set('value', value);
 			}
-			else if (this.has(key)) {
+			else if (privateKey in this) {
 				notify = true;
-				this._values[key] = value;
+				this[privateKey] = value;
 			}
 			else {
 				var model = this.get('model');

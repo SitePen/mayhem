@@ -20,11 +20,11 @@ class MockUser extends User {
 	}
 
 	_idGetter():string {
-		return this._values.state['id'];
+		return this._state['id'];
 	}
 
 	_usernameGetter():string {
-		return this._values.state['username'];
+		return this._state['username'];
 	}
 }
 

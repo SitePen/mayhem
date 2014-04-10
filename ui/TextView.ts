@@ -2,7 +2,8 @@ import ContentView = require('./ContentView');
 import ui = require('./interfaces');
 
 class TextView extends ContentView implements ui.ITextView {
-	/* protected */ _values:ui.ITextViewValues;
+	_formattedText:string;
+	_text:string;
 
 	get:ui.ITextViewGet;
 	set:ui.ITextViewSet;

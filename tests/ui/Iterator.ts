@@ -47,7 +47,7 @@ registerSuite({
 			mediator1 = util.createDestroyable(),
 			mediator2 = util.createDestroyable();
 
-		iterator._values = [];
+		// iterator._values = [];
 		iterator._widgetIndex = [ widget1, widget2 ];
 		iterator._mediatorIndex = [ mediator1, mediator2 ];
 

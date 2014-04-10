@@ -39,7 +39,40 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 	get:routing.IRouterGet;
 	set:routing.IRouterSet;
-	_values:Router.IValues;
+	/**
+	 * The app for this router. @protected
+	 */
+	_app:core.IApplication;
+
+	/**
+	 * The routes managed by this router. @protected
+	 */
+	_routes:{ [key:string]:Route };
+
+	/**
+	 * The default location for mediators. @protected
+	 */
+	_mediatorPath:string;
+
+	/**
+	 * The default location for views. @protected
+	 */
+	_viewPath:string;
+
+	/**
+	 * The default location for templates. @protected
+	 */
+	_templatePath:string;
+
+	/**
+	 * The default route when the application is loaded without an existing route. @protected
+	 */
+	_defaultRoute:string;
+
+	/**
+	 * The route to load when an unmatched route is loaded. @protected
+	 */
+	_notFoundRoute:string;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
 		this._activeRoutes = [];
@@ -88,7 +121,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 			route.destroy && route.destroy();
 		}
 
-		this._activeRoutes = this._values.routes = null;
+		this._activeRoutes = this._routes = null;
 	}
 
 	/**
@@ -170,7 +203,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * @returns the routeMap
 	 */
 	_routesSetter(routeMap:{ [id:string]: any }):void {
-		var routes = this._values.routes = {};
+		var routes = this._routes = {};
 
 		if (!routeMap[this.get('notFoundRoute')]) {
 			routeMap[this.get('notFoundRoute')] = { mediator: null, view: '/framework/views/ErrorView', code: 404 };
@@ -376,45 +409,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var notFoundRoute = this.get('routes')[this.get('notFoundRoute')];
 		this._activeRoutes.push(notFoundRoute);
 		return when(notFoundRoute.enter(event));
-	}
-}
-
-module Router {
-	export interface IValues {
-		/**
-		 * The app for this router. @protected
-		 */
-		app:core.IApplication;
-
-		/**
-		 * The routes managed by this router. @protected
-		 */
-		routes:{ [key:string]:Route };
-
-		/**
-		 * The default location for mediators. @protected
-		 */
-		mediatorPath:string;
-
-		/**
-		 * The default location for views. @protected
-		 */
-		viewPath:string;
-
-		/**
-		 * The default location for templates. @protected
-		 */
-		templatePath:string;
-
-		/**
-		 * The default route when the application is loaded without an existing route. @protected
-		 */
-		defaultRoute:string;
-
-		/**
-		 * The route to load when an unmatched route is loaded. @protected
-		 */
-		notFoundRoute:string;
 	}
 }
 

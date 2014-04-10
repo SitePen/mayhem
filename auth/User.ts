@@ -8,17 +8,15 @@ import Observable = require('../Observable');
  * An abstract base class for managing user authentication and authorization.
  */
 class User extends Observable {
-	/* protected */ _values:{
-		/**
-		 * Whether or not the current user is authenticated. @protected
-		 */
-		isAuthenticated:boolean;
+	/**
+	 * Whether or not the current user is authenticated. @protected
+	 */
+	_isAuthenticated:boolean;
 
-		/**
-		 * User-specific data about the currently authenticated user. @protected
-		 */
-		state:Object;
-	};
+	/**
+	 * User-specific data about the currently authenticated user. @protected
+	 */
+	_state:Object;
 
 	/**
 	 * Performs a login for the current user. If successful, the user object is set to authenticated and its state

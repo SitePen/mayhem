@@ -54,9 +54,6 @@ export interface IContainerGet extends IViewGet {
 export interface IContainerSet extends IViewSet {
 }
 
-export interface IContainerValues extends IViewValues {
-}
-
 export interface IContentView extends IContainer {
 	placeholders:{ [name:string]: IPlaceholder; };
 	get:IContentViewGet;
@@ -74,9 +71,6 @@ export interface IContentViewGet extends IContainerGet {
 }
 
 export interface IContentViewSet extends IContainerSet {
-}
-
-export interface IContentViewValues extends IContainerValues {
 }
 
 export interface IMaster extends IContentView {
@@ -98,10 +92,6 @@ export interface IViewSet extends IWidgetSet {
 	(name:'mediator', value:core.data.IMediator):void;
 }
 
-export interface IViewValues extends IWidgetValues {
-	mediator?:core.data.IMediator;
-}
-
 export interface IPlaceholder extends IContainer {
 	get:IPlaceholderGet;
 	set:IPlaceholderSet;
@@ -115,10 +105,6 @@ export interface IPlaceholderGet extends IContainerGet {
 
 export interface IPlaceholderSet extends IContainerSet {
 	(name:'currentChild', value:IWidget):void;
-}
-
-export interface IPlaceholderValues extends IContainerValues {
-	currentChild?:IWidget;
 }
 
 export interface IRenderer {
@@ -152,11 +138,6 @@ export interface ITextViewSet extends IViewSet {
 	(name:'text', value:string):void;
 }
 
-export interface ITextViewValues extends IViewValues {
-	formattedText?:string;
-	text?:string;
-}
-
 export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {
 	get:IWidgetGet;
 	set:IWidgetSet;
@@ -184,16 +165,6 @@ export interface IWidgetSet extends core.IApplicationComponentSet {
 	(name:'visible', value:boolean):void;
 }
 
-export interface IWidgetValues /*extends core.IApplicationComponentValues*/ {
-	attached?:boolean;
-	id?:string;
-	index?:number;
-	next?:IWidget;
-	parent?:IContainer;
-	previous?:IWidget;
-	visible?:boolean;
-}
-
 /* Control flow */
 
 export interface IConditional extends IPlaceholder {
@@ -213,12 +184,6 @@ export interface IConditionalSet extends IPlaceholderSet {
 	(name:'condition', value:string):void;
 	(name:'consequent', value:IContentView):void;
 	(name:'result', value:boolean):void;
-}
-
-export interface IConditionalValues extends IPlaceholderValues {
-	alternate?:IWidget;
-	condition?:string;
-	result?:boolean;
 }
 
 // TODO: IIterator should extend IAdaptiveContainer instead
@@ -241,13 +206,6 @@ export interface IIteratorSet extends IContentViewSet {
 	(name:'template', value:any):void;
 }
 
-export interface IIteratorValues extends IContentViewValues {
-	each?:string;
-	in?:string;
-	source?:any;
-	template?:any;
-}
-
 export interface IResolver extends IPlaceholder {
 	get:IResolverGet;
 	set:IResolverSet;
@@ -257,7 +215,4 @@ export interface IResolverGet extends IPlaceholderGet {
 }
 
 export interface IResolverSet extends IPlaceholderSet {
-}
-
-export interface IResolverValues extends IPlaceholderValues {
 }

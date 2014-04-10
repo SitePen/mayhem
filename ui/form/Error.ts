@@ -7,7 +7,7 @@ import form = require('./interfaces');
 var Renderer:any = require('../renderer!form/Error');
 
 class FormError extends ContentView implements form.IError {
-	/* protected */ _values:form.IErrorValues;
+	_list:core.IValidationError[];
 
 	get:form.IErrorGet;
 	set:form.IErrorSet;

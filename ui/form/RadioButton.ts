@@ -6,7 +6,11 @@ import Control = require('./Control');
 var Renderer:any = require('../renderer!form/RadioButton');
 
 class RadioButton extends Control implements form.IRadioButton {
-	/* protected */ _values:form.IRadioButtonValues;
+	_checked:boolean;
+	_indeterminate:boolean;
+	_name:string;
+	_readonly:boolean;
+	_value:any;
 
 	get:form.IRadioButtonGet;
 	set:form.IRadioButtonSet;

@@ -16,13 +16,14 @@ registerSuite({
 		assert.strictEqual(observable.get('baz'), 'quux');
 	},
 
-	'#has' () {
+	// TODO: Do we still need has?
+	/*'#has' () {
 		var observable = new Observable({
 			foo: 'bar'
 		});
 		assert.isTrue(observable.has('foo'));
 		assert.isFalse(observable.has('baz'));
-	},
+	},*/
 
 	'#get and #set' () {
 		var observable = new Observable();

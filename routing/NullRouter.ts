@@ -7,7 +7,7 @@ import lang = require('dojo/_base/lang');
  * A router implementation with no alternative backing mechanism. Change routes by calling `go`.
  */
 class NullRouter extends Router {
-	_values:NullRouter.IValues;
+	_paused:boolean;
 
 	/**
 	 * Starts the router, using the current hash as the initial route to load. If no hash is set, the `defaultRoute`
@@ -60,12 +60,6 @@ class NullRouter extends Router {
 	 */
 	createPath(routeId:string, kwArgs?:{ [key:string]: any }):string {
 		return JSON.stringify({ id: routeId, kwArgs: kwArgs });
-	}
-}
-
-module NullRouter {
-	export interface IValues extends Router.IValues {
-		paused:boolean;
 	}
 }
 

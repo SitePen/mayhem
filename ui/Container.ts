@@ -11,7 +11,6 @@ import View = require('./View');
 
 class Container extends View implements ui.IContainer {
 	private _children:ui.IWidget[];
-	/* protected */ _values:ui.IContainerValues;
 
 	constructor(kwArgs?:any) {
 		this._children = [];
@@ -78,7 +77,7 @@ class Container extends View implements ui.IContainer {
 
 	/* protected */ _childrenGetter():ui.IWidget[] {
 		// Copy children array to avoid issues with mutation
-		return array.map(this._children, (child:ui.IWidget) => child);
+		return array.map(this._children, (child:ui.IWidget):ui.IWidget => child);
 	}
 
 	/* protected */ _childrenSetter(children:ui.IWidget[]):void {
@@ -91,7 +90,7 @@ class Container extends View implements ui.IContainer {
 	destroy():void {
 		this.empty();
 		this._children = null;
-		super.destroy()
+		super.destroy();
 	}
 
 	empty():void {

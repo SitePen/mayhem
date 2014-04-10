@@ -31,13 +31,11 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	_schema:Model.ISchema;
-	/* protected */ _values:{
-		app:core.IApplication;
-		collection:any /*dstore.Collection*/;
-		isExtensible:boolean;
-		scenario:string;
-		validatorInProgress:IPromise<void>;
-	};
+	_app:core.IApplication;
+	_collection:any /*dstore.Collection*/;
+	_isExtensible:boolean;
+	_scenario:string;
+	_validatorInProgress:IPromise<void>;
 
 	get:data.IModelGet;
 	set:data.IModelSet;
@@ -171,9 +169,9 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 	}
 
 	validate(keysToValidate?:string[]):IPromise<boolean> {
-		if (this._values.validatorInProgress) {
-			this._values.validatorInProgress.cancel('Validation restarted');
-			this._values.validatorInProgress = null;
+		if (this._validatorInProgress) {
+			this._validatorInProgress.cancel('Validation restarted');
+			this._validatorInProgress = null;
 		}
 
 		this.clearErrors();
@@ -189,14 +187,14 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 
 			if (!key) {
 				// all fields have been validated
-				self._values.validatorInProgress = null;
+				self._validatorInProgress = null;
 				dfd.resolve(self.isValid());
 			}
 			else if (keysToValidate && array.indexOf(keysToValidate, key) === -1) {
 				validateNextField();
 			}
 			else {
-				self._values.validatorInProgress = properties[key].validate().then(validateNextField, function (error:Error):void {
+				self._validatorInProgress = properties[key].validate().then(validateNextField, function (error:Error):void {
 					dfd.reject(error);
 				});
 			}
@@ -225,7 +223,7 @@ Model.prototype.set = function(key:any, value?:any):void {
 	if (property) {
 		property.set('value', value);
 	}
-	else if (this.has(key)) {
+	else {
 		Observable.prototype.set.call(this, key, value);
 	}
 };
