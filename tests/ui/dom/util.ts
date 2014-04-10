@@ -12,13 +12,12 @@ var range:any,
 	handle:any,
 	nodeHandles:any[] = [];
 
-function deleteRange() {
-	try {
-		range.deleteContents();
+function getChildren(node:Node) {
+	var children:Node[] = [];
+	for (var i = 0; i < node.childNodes.length; i++) {
+		children.push(node.childNodes[i]);
 	}
-	finally {
-		range = null;
-	}
+	return children;
 }
 
 function appendChild(node:Node) {
@@ -39,9 +38,6 @@ registerSuite({
 	name: 'ui/dom/util',
 
 	afterEach() {
-		if (range) {
-			deleteRange();
-		}
 		for (var i = 0; i < nodeHandles.length; i++) {
 			util.destroy(nodeHandles[i]);
 		}
@@ -51,37 +47,56 @@ registerSuite({
 	toDom() {
 		var node = document.createElement('div');
 		assert.strictEqual(domUtil.toDom(node), node, 'toDom should pass through a node');
-		assert.instanceOf(domUtil.toDom('div'), Node, 'toDom should create a node from a string');
+		assert.property(domUtil.toDom('div'), 'nodeType', 'toDom should create a node from a string');
 	},
 
-	getRange() {
-		var start = domUtil.toDom('<span>start</span>'),
-			end = domUtil.toDom('<span>end</span>');
+	extractRange() {
+		var start = document.createElement('div'),
+			end = document.createElement('div');
 
 		// nodes with no parent
-		range = domUtil.getRange(start, end);
-		assert.strictEqual(range.toString(), 'startend');
-		deleteRange();
+		range = domUtil.extractRange(start, end);
+		assert.deepEqual(getChildren(range), [ start, end ]);
 
 		// non-exclusive range for nodes with a parent
-		start = domUtil.toDom('<span>start</span>');
-		end = domUtil.toDom('<span>end</span>');
+		start = document.createElement('div');
+		end = document.createElement('div');
+		var middle = document.createElement('div');
 		appendChild(start);
-		appendChild(domUtil.toDom('<span>middle</span>'));
+		appendChild(middle);
 		appendChild(end);
-		range = domUtil.getRange(start, end);
-		assert.strictEqual(range.toString(), 'startmiddleend');
-		deleteRange();
+		range = domUtil.extractRange(start, end);
+		assert.deepEqual(getChildren(range), [ start, middle, end ]);
 
 		// exclusive range for nodes with a parent
-		start = domUtil.toDom('<span>start</span>');
-		end = domUtil.toDom('<span>end</span>');
+		start = document.createElement('div');
+		end = document.createElement('div');
+		middle = document.createElement('div');
 		appendChild(start);
-		appendChild(domUtil.toDom('<span>middle</span>'));
+		appendChild(middle);
 		appendChild(end);
-		range = domUtil.getRange(start, end, true);
-		assert.strictEqual(range.toString(), 'middle');
-		deleteRange();
+		range = domUtil.extractRange(start, end, true);
+		assert.deepEqual(getChildren(range), [ middle ]);
+	},
+
+	deleteRange() {
+		var start = document.createElement('div'),
+			end = document.createElement('div');
+
+		// deleting elements that aren't in the DOM shouldn't throw
+		assert.doesNotThrow(() => domUtil.deleteRange(start, end));
+
+		start = document.createElement('div');
+		var middle = document.createElement('div');
+		end = document.createElement('div');
+		appendChild(start);
+		appendChild(middle);
+		appendChild(end);
+		domUtil.deleteRange(start, end);
+		// check for parentElement rather than parentNode for IE8 compatibility
+		assert.isNull(start.parentElement);
+		assert.isNull(middle.parentElement);
+		assert.isNull(end.parentElement);
 	},
 
 	place() {

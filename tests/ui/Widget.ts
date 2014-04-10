@@ -35,7 +35,7 @@ registerSuite({
 		}
 	},
 
-	'constructor': function () {
+	'.constructor': function () {
 		assert.isNotNull(widget.get('id'), 'Widget should have id')
 		assert.strictEqual(widget.get('index'), -1, 'Un-placed widget should have an index of -1')
 		assert.deepPropertyVal(widget._renderer, 'callCounts.render', 1, 'Widget should have been rendered once')

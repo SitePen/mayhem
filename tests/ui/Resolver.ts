@@ -224,30 +224,6 @@ registerSuite({
 		});
 		resolver.set('mediator', {});
 		assert.isTrue(destroyed, 'Previous mediator should have been destroyed');
-
-		// mediator._properties.foo = 'value0';
-		// mediator._properties.bar = 'value1';
-
-		// var value = newMediator.get('foo');
-		// assert.strictEqual(value, 'value0', 'Returned value should be from mediator');
-
-		// // requesting 'foo' on the scoped mediator should cause the reoslver to check its value
-		// resolver.set('value', 'bar');
-		// resolver.set('result', 'baz');
-		// value = newMediator.get('bar');
-		// assert.strictEqual(value, 'baz', 'Returned value should be resolver result');
-
-		// // setting an arbitrary key on the scoped mediator should call the mediators setter
-		// newMediator.set('alpha', 'value alpha');
-		// assert.strictEqual(resolver.get('result'), 'baz', 'Resolver result should be unchanged');
-
-		// // setting the resolver's value key on the scoped mediator should update the resolver's result
-		// newMediator.set('bar', 'value bar');
-		// assert.strictEqual(resolver.get('result'), 'value bar', 'Resolver should have new result');
-
-		// assert.doesNotThrow(function () {
-		// 	resolver.set('mediator')
-		// }, 'Should be able to undefine mediator');
 	},
 
 	'scopedMediator': function () {

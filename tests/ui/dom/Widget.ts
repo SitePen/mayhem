@@ -11,7 +11,7 @@ import declare = require('dojo/_base/declare');
 import util = require('../support/util');
 import domUtil = require('../../../ui/dom/util');
 
-var parentNode:Node,
+var parentNode:any,
 	renderer:any;
 
 function getChildren(widget:any) {
@@ -100,14 +100,14 @@ registerSuite({
 			newWidget2._firstNode,
 			newWidget2._lastNode,
 			widget._lastNode
-		], 'newWidget3 _firstNode should have been replace by newWidget4 nodes');
+		], 'newWidget3 _firstNode should have been replaced by newWidget4 nodes');
 	},
 
 	'#attachContent': function () {
 		var widget:any = new Widget();
 
 		// give the widget some test content
-		var content:Node = domUtil.toDom('<h1>foo</h1>');
+		var content:any = domUtil.toDom('<h1>foo</h1>');
 		widget._innerFragment = content;
 
 		assert.deepEqual(getChildren(widget), [
@@ -177,7 +177,7 @@ registerSuite({
 		assert.deepEqual(getChildren(container._firstNode.parentNode), [
 			container._firstNode,
 			container._lastNode
-		], 'Container should no child nodes');
+		], 'Container should have no child nodes');
 	},
 
 	'#detach': function () {

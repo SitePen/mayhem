@@ -27,7 +27,7 @@ registerSuite({
 		iterator = util.destroy(iterator);
 	},
 
-	'#destroy': function () {
+	'#destroy'() {
 		var destroyed = false,
 			widget:any = {
 				_list: { destroy() { destroyed = true; } }
@@ -39,13 +39,13 @@ registerSuite({
 		assert.isNull(widget._list, 'Widget list should be null');
 	},
 
-	'template observer': function () {
+	'[template observer]'() {
 		// set a template and make sure a factory was created
 		iterator.set('template', '');
 		assert.instanceOf(iterator._factory, WidgetFactory, 'A new factory should have been created');
 	},
 
-	'source observer': function () {
+	'[source observer]': function () {
 		var objectSource = new Memory({
 				data: [
 					{ id: '0', value: 'item 0' },

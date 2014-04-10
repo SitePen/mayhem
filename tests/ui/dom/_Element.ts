@@ -56,7 +56,7 @@ registerSuite({
 		renderer = null;
 	},
 
-	'#add': function () {
+	'#add'() {
 		var widgets:any[] = [
 				new Widget(),
 				new Widget(),
@@ -90,7 +90,7 @@ registerSuite({
 		], 'widgets[2] fragment should have been replaced by widgets[3] fragment');
 	},
 
-	'#attachContent': function () {
+	'#attachContent'() {
 		var widget:any = new Widget();
 
 		// give the widget some test content
@@ -105,7 +105,7 @@ registerSuite({
 		], 'Widget children should include content');
 	},
 
-	'#attachStyles': function () {
+	'#attachStyles'() {
 		var widget:any = new Widget();
 		renderer.attachStyles(widget);
 
@@ -116,7 +116,7 @@ registerSuite({
 		assert.strictEqual(widget._outerFragment.style.margin, '10px', 'Widget node style should have been set');
 	},
 
-	'#clear': function () {
+	'#clear'() {
 		widget._outerFragment.innerHTML = '<div></div>';
 		widget._innerFragment = document.createElement('div');
 		renderer.clear(widget);
@@ -124,7 +124,7 @@ registerSuite({
 		assert.isNull(widget._innerFragment, 'innerFragment should be null')
 	},
 
-	'#detach': function () {
+	'#detach'() {
 		var node = widget._outerFragment,
 			parent = document.createElement('div');
 		parent.appendChild(node);
@@ -136,7 +136,7 @@ registerSuite({
 		}, 'detaching widget with no parent should not throw');
 	},
 
-	'#detachContent': function () {
+	'#detachContent'() {
 		var node1 = document.createElement('ul'),
 			node2 = document.createElement('ol'),
 			outerChildren = getChildren(widget._outerFragment);
@@ -152,7 +152,7 @@ registerSuite({
 			'outerFragment content should have been moved to innerFragment')
 	},
 
-	'#render': function () {
+	'#render'() {
 		var widget:any = {};
 		renderer.render(widget);
 		assert.property(widget, '_firstNode', 'widget should have _firstNode');
@@ -175,7 +175,7 @@ registerSuite({
 			'Parent should only contain new widget fragment');
 	},
 
-	'#setContent': function () {
+	'#setContent'() {
 		var widget:any = { _outerFragment: {} };
 		renderer.setContent(widget, '<span></span>');
 		assert.propertyVal(widget._outerFragment, 'innerHTML', '<span></span>',

@@ -38,7 +38,7 @@ registerSuite({
 		}
 	},
 
-	'constructor'() {
+	'.constructor'() {
 		assert.isDefined(view.placeholders, 'Placeholders object should be defined');
 	},
 
