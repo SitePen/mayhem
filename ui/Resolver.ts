@@ -110,7 +110,6 @@ class Resolver extends ContentView implements ui.IResolver {
 			_get = scopedMediator.get,
 			_set = scopedMediator.set;
 		scopedMediator.get = (name:string):any => {
-			// debugger
 			if (name === this.get('value')) {
 				return this.get('result');
 			}
