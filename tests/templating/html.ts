@@ -7,7 +7,11 @@ import Template = require('../../templating/html');
 registerSuite({
 	name: 'templating/html',
 
-	'#parse simple': function () {
+	'#parse': function () {
+		//
+		// simple tree
+		//
+
 		var tree = Template.parse('<widget is="foo" status="good" name="{name}"><div>{title}</div></widget>');
 
 		// single widget template is collapsed into a View
@@ -19,10 +23,12 @@ registerSuite({
 
 		assert.deepEqual(tree['kwArgs'], { 'status': 'good', 'name': { $bind: [ { $bind: 'name' } ] } },
 			'kwArgs should have expected structure');
-	},
 
-	'#parse': function () {
-		var tree = Template.parse('<widget is="framework/ui/form/Textarea" value="{firstName} {lastName}"></widget>\n' +
+		//
+		// complex tree
+		//
+
+		tree = Template.parse('<widget is="framework/ui/form/Textarea" value="{firstName} {lastName}"></widget>\n' +
 			'First Name: <widget is="framework/ui/form/TextInput" value={firstName} label={firstName}></widget>\n' +
 			'<widget is="framework/ui/form/Error" binding="firstName"></widget>\n' +
 			'Last Name: <widget is="framework/ui/form/TextInput" value={lastName}></widget>\n' +

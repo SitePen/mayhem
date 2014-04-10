@@ -31,7 +31,7 @@ registerSuite({
 			],
 			content: [ '<h1>Testing</h1>' ]
 		});
-		assert.instanceOf(factory.content, Node, 'Content node should have been created in factory');
+		assert.property(factory.content, 'nodeType', 'Content node should have been created in factory');
 		assert.strictEqual(factory.content['innerText'], 'Testing', 'Content node should have correct text content');
 
 		var widget = factory.create();
@@ -128,7 +128,7 @@ registerSuite({
 
 		// check that bindings have actually been established
 		mediator.set('title', 'foo');
-		assert.instanceOf(target, Node, 'Target should be a node');
+		assert.property(target, 'nodeType', 'Target should be a node');
 		assert.strictEqual(targetValue, 'foo', 'Target value should get mediator value');
 
 		mediator.set('region', 'center');

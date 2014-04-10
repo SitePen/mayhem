@@ -294,7 +294,7 @@ class _WidgetBinder {
 			for (var i = 0, len = node.childNodes.length; i < len; ++i) {
 				this._processContentMarkers(node.childNodes[i]);
 			}
-			if (node.nodeType === Node.COMMENT_NODE) {
+			if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
 				this._processContentComment(node);
 			}
 			node = next;

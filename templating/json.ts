@@ -1,5 +1,8 @@
+/// <reference path="../dojo" />
+
 import BaseTemplate = require('./Template');
 import templating = require('./interfaces');
+import json = require('dojo/json');
 
 class Template extends BaseTemplate {
 	static normalize(resourceId:string, normalize:(id:string) => string):string {
@@ -13,7 +16,7 @@ class Template extends BaseTemplate {
 
 Template.prototype.parser = {
 	parse(source:string):templating.IParseTree {
-		return JSON.parse(source);
+		return <any> json.parse(source);
 	}
 }
 

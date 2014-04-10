@@ -3,6 +3,7 @@
 import Deferred = require('dojo/Deferred');
 import dojoText = require('dojo/text');
 import templating = require('./interfaces');
+import array = require('dojo/_base/array');
 import ui = require('../ui/interfaces');
 import View = require('./ui/View');
 import Widget = require('../ui/Widget');
@@ -103,7 +104,7 @@ Template.prototype.scanner = {
 		if (hasDependency(tree)) {
 			var ctor:any = tree.constructor;
 			// Dependency list has set semantics
-			dependencies.indexOf(ctor) === -1 && dependencies.push(ctor);
+			array.indexOf(dependencies, ctor) === -1 && dependencies.push(ctor);
 		}
 		var children:any = tree.children,
 			child:any;

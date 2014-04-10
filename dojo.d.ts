@@ -173,6 +173,14 @@ declare module 'dojo/hash' {
 	export = hash;
 }
 
+declare module 'dojo/json' {
+	var json:{
+		parse(value:string):Object;
+		stringify(value:Object):string;
+	};
+	export = json;
+}
+
 declare module 'dojo/io-query' {
 	var ioQuery:{
 		objectToQuery(map:any):string;
