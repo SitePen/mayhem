@@ -28,7 +28,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _renderer:ui.IRenderer;
 	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
 
-	constructor(kwArgs?:any) {
+	constructor(kwArgs:any = {}) {
 		util.deferSetters(this, [ 'attached' ], '_render');
 		this._ownHandles = [];
 
