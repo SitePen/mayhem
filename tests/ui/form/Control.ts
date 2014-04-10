@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/Control',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var control = new Control();
-		});
+		assert.doesNotThrow(() => new Control());
 	}
 });

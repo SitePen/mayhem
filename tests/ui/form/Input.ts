@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/Input',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var input = new Input();
-		});
+		assert.doesNotThrow(() => new Input());
 	}
 });

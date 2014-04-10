@@ -8,7 +8,7 @@ import PlacePosition = require('../../ui/PlacePosition');
 import MockWidget = require('../mocks/ui/Widget');
 import MockRenderer = require('../mocks/ui/Renderer');
 import Deferred = require('dojo/Deferred');
-import util = require('./util');
+import util = require('./support/util');
 
 var widget:Widget,
 	configHandle:any;

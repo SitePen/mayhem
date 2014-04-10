@@ -10,5 +10,6 @@ define([
 	'./ui/Resolver',
 	'./ui/style',
 	'./ui/form',
+	'./ui/renderer',
 	'dojo/has!host-browser?./ui/dom'
 ], function () {});

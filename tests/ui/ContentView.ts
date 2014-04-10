@@ -38,11 +38,11 @@ registerSuite({
 		}
 	},
 
-	'constructor': function () {
+	'constructor'() {
 		assert.isDefined(view.placeholders, 'Placeholders object should be defined');
 	},
 
-	'#add': function () {
+	'#add'() {
 		var widget:any = new Widget(),
 			parent:any = {
 				children: [],
@@ -75,19 +75,22 @@ registerSuite({
 		var handle = view.add(widget, 'foo');
 		assert.propertyVal(placeholder, 'currentChild', widget, 'Widget should be assigned to placeholder');
 
+		// adding a widget with a null placeholder should throw
+		view.placeholders = {};
+		assert.throws(() => view.add(widget, 'foo'), Error, /.*/,
+			'Adding widget to named position with no matching placeholder should throw');
+
 		handle.remove();
-		assert.doesNotThrow(function () {
-			handle.remove();
-		}, 'Removing handle a second time should not throw');
+		assert.doesNotThrow(() => handle.remove(), 'Removing handle a second time should not throw');
 	},
 
-	'#clear': function () {
+	'#clear'() {
 		var cleared = false;
 		view.clear();
 		assert.deepPropertyVal(view._renderer, 'callCounts.clear', 1, 'ContentView should have cleared its renderer');
 	},
 
-	'#destroy': function () {
+	'#destroy'() {
 		var	placeholder:any = {
 				_emptyCount: 0,
 				_destroyCount: 0,
@@ -109,7 +112,7 @@ registerSuite({
 		view = null;
 	},
 
-	'#_contentSetter': function () {
+	'#_contentSetter'() {
 		var widget = {};
 		view.setContent(widget);
 		assert.deepPropertyVal(view._renderer, 'callCounts.setContent', 1, 'setContent should have been called once');

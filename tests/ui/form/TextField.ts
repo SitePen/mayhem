@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/TextField',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var textfield = new TextField();
-		});
+		assert.doesNotThrow(() => new TextField());
 	}
 });

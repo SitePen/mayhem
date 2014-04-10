@@ -8,7 +8,7 @@ import PlacePosition = require('../../ui/PlacePosition');
 import Widget = require('../mocks/ui/Widget');
 import MockRenderer = require('../mocks/ui/Renderer');
 import Deferred = require('dojo/Deferred');
-import util = require('./util');
+import util = require('./support/util');
 
 var placeholder:Placeholder,
 	placeholderRenderer:any = Placeholder.prototype._renderer;

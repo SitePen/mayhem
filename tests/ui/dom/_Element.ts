@@ -9,7 +9,7 @@ import WidgetRenderer = require('../../../ui/dom/Widget');
 import Widget = require('../../../ui/Widget');
 import Container = require('../../../ui/Container');
 import declare = require('dojo/_base/declare');
-import util = require('../util');
+import util = require('../support/util');
 import domUtil = require('../../../ui/dom/util');
 
 var parentNode:Node,
@@ -142,6 +142,10 @@ registerSuite({
 			outerChildren = getChildren(widget._outerFragment);
 		widget._outerFragment.appendChild(node1);
 		widget._outerFragment.appendChild(node2);
+
+		// append the fragment to the document so range stuff works
+		document.body.appendChild(widget._outerFragment);
+
 		renderer.detachContent(widget);
 		assert.deepEqual(getChildren(widget._outerFragment), outerChildren, 'outerFragment should be empty')
 		assert.deepEqual(getChildren(widget._innerFragment), [ node1, node2 ],

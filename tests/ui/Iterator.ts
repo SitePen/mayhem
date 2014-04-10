@@ -8,7 +8,7 @@ import Mediator = require('../../data/Mediator');
 import aspect = require('dojo/aspect');
 import MockRenderer = require('../mocks/ui/Renderer');
 import Observable = require('../../Observable');
-import util = require('./util');
+import util = require('./support/util');
 
 var iterator:Iterator,
 	iteratorRenderer = Iterator.prototype._renderer;

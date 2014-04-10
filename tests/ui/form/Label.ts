@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/Label',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var label = new Label();
-		});
+		assert.doesNotThrow(() => new Label());
 	}
 });

@@ -1,3 +1,5 @@
+/// <reference path="../../dojo" />
+
 import domConstruct = require('dojo/dom-construct');
 import PlacePosition = require('../PlacePosition');
 
@@ -19,6 +21,9 @@ export function getRange(start:Node, end:Node, exclusive:boolean = false):Range 
 		}
 	}
 	else {
+		// point range at the end of the document (it has to point within the document nodes can be inserted)
+		range.setStartAfter(document.body.lastChild);
+		range.setEndAfter(document.body.lastChild);
 		range.insertNode(end);
 		range.insertNode(start);
 	}

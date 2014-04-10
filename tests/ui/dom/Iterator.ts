@@ -5,7 +5,7 @@ import registerSuite = require('intern!object');
 import aspect = require('dojo/aspect');
 import WidgetFactory = require('../../../templating/WidgetFactory');
 import ui = require('../../../ui/interfaces');
-import util = require('../util');
+import util = require('../support/util');
 import Observable = require('../../../Observable');
 import ObservableArray = require('../../../ObservableArray');
 import Widget = require('../../mocks/ui/Widget');
@@ -24,7 +24,7 @@ registerSuite({
 	},
 
 	afterEach() {
-		util.destroy(iterator);
+		iterator = util.destroy(iterator);
 	},
 
 	'#destroy': function () {
@@ -52,22 +52,27 @@ registerSuite({
 					{ id: '1', value: 'item 1' }
 				]
 			}),
-			iterator:any = new Iterator();
+			arraySource:any = [ 'item0', 'item1' ];
+
+		// set source to an array -- this will call _updateList immediately rather than deferring it, so we should see
+		// an exception
+		var origUpdateList = renderer._updateList;
+		renderer._updateList = function () {
+			assert.throws(() => origUpdateList.apply(this, arguments));
+		}
+		iterator.set('source', arraySource);
+
+		renderer._updateList = origUpdateList;
 
 		var listRendered = false;
-		aspect.before(iterator._renderer, '_renderList', function () {
+		aspect.before(renderer, '_renderList', function () {
 			listRendered = true;
 		});
 
 		var listUpdated = false;
-		aspect.before(iterator._renderer, '_updateList', function () {
+		aspect.before(renderer, '_updateList', function () {
 			listUpdated = true;
 		});
-
-		// set source to an object
-		assert.throws(function () {
-			iterator.set('source', objectSource);
-		}, /Cannot call method/, 'Setting source should throw when template has not been set');
 
 		// set a template to create a _factory
 		iterator.set('template', '');
@@ -79,7 +84,6 @@ registerSuite({
 		assert.strictEqual(iterator._list.get('store'), objectSource, 'list store should be object source');
 
 		// set source to an array
-		var arraySource:any = [ 'item0', 'item1' ];
 		listRendered = listUpdated = false;
 		iterator.set('source', arraySource);
 		assert.isTrue(listRendered, 'list should have been rendered when assigned array source');

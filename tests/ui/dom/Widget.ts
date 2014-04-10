@@ -8,7 +8,7 @@ import WidgetRenderer = require('../../../ui/dom/Widget');
 import Widget = require('../../../ui/Widget');
 import Container = require('../../../ui/Container');
 import declare = require('dojo/_base/declare');
-import util = require('../util');
+import util = require('../support/util');
 import domUtil = require('../../../ui/dom/util');
 
 var parentNode:Node,

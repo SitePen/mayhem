@@ -3,7 +3,7 @@
 import assert = require('intern/chai!assert');
 import registerSuite = require('intern!object');
 import ClassList = require('../../../ui/style/ClassList');
-import util = require('../util');
+import util = require('../support/util');
 
 var classList:ClassList;
 

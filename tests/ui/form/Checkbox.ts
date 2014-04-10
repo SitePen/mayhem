@@ -8,6 +8,6 @@ registerSuite({
 	name: 'ui/form/Checkbox',
 
 	basic() {
-		var checkbox = new Checkbox();
+		assert.doesNotThrow(() => new Checkbox());
 	}
 });

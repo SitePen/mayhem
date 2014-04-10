@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/ToggleButton',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var togglebutton = new ToggleButton();
-		});
+		assert.doesNotThrow(() => new ToggleButton());
 	}
 });

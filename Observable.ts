@@ -114,15 +114,8 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	}
 };
 
-if (has('es5')) {
-	Observable.prototype.has = function (key:string):boolean {
-		return key in this._values;
-	};
-}
-else {
-	Observable.prototype.has = function (key:string):boolean {
-		return this._values.hasOwnProperty(key);
-	};
-}
+Observable.prototype.has = function (key:string):boolean {
+	return key in this._values;
+};
 
 export = Observable;

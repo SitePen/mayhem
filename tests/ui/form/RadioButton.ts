@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/RadioButton',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var radiobutton = new RadioButton();
-		});
+		assert.doesNotThrow(() => new RadioButton());
 	}
 });

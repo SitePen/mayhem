@@ -1,6 +1,7 @@
 /// <reference path="../intern" />
 
 import assert = require('intern/chai!assert');
+import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import Container = require('../../ui/Container');
@@ -10,7 +11,7 @@ import PlacePosition = require('../../ui/PlacePosition');
 import ui = require('../../ui/interfaces');
 import MockRenderer = require('../mocks/ui/Renderer');
 import Deferred = require('dojo/Deferred');
-import util = require('./util');
+import util = require('./support/util');
 
 var container:Container;
 
@@ -55,7 +56,7 @@ registerSuite({
 				},
 				observe() {},
 				getChildIndex(widget:any) {
-					return this.children.indexOf(widget);
+					return array.indexOf(this.children, widget);
 				}
 			};
 

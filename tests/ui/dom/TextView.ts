@@ -7,7 +7,7 @@ import TextView = require('../../../ui/dom/TextView');
 import Widget = require('../../../ui/Widget');
 import MockRenderer = require('../../mocks/ui/Renderer');
 import Observable = require('../../../Observable');
-import util = require('../util');
+import util = require('../support/util');
 
 var renderer:any;
 

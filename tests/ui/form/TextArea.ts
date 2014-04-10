@@ -8,8 +8,6 @@ registerSuite({
 	name: 'ui/form/TextArea',
 
 	basic() {
-		assert.doesNotThrow(function () {
-			var textarea = new TextArea();
-		});
+		assert.doesNotThrow(() => new TextArea());
 	}
 });
