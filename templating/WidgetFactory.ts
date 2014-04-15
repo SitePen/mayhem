@@ -38,6 +38,12 @@ class WidgetFactory {
 	constructor(tree:templating.IParseTree, WidgetCtor?:typeof Widget) {
 		// TODO: for widgets with ids to be cloned multiple times we need a way to transform child ids
 		this.WidgetCtor = WidgetCtor || <typeof Widget> require(tree.constructor);
+
+		if (has('debug') && !(this.WidgetCtor instanceof Widget)) {
+			console.warn('Invalid widget constructor:', this.WidgetCtor);
+			throw new Error('Invalid widget constructor provided');
+		}
+
 		this.tree = tree;
 		this._initializeArgs();
 		this._initializeContent();
