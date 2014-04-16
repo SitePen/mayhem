@@ -68,6 +68,12 @@ declare module dstore {
 		(value:T, oldValue:T):void;
 	}
 
+	export interface IQueryEngine {
+		filter(query:any):(data:any[]) => any[];
+		sort(sorted:any):(data:any[]) => any[];
+		range(range:any):(data:any[]) => any[];
+	}
+
 	export interface IModel {
 		additionalProperties:boolean;
 		scenario:string;
@@ -121,10 +127,9 @@ declare module 'dstore/legacy/DstoreAdapter' {
 }
 
 declare module 'dstore/Memory' {
-	import SimpleQuery = require('dstore/SimpleQuery');
-	import Model = require('dstore/Model');
+	import Store = require('dstore/Store');
 
-	class Memory<T> extends SimpleQuery<T> implements dstore.ISyncCollection<T> {
+	class Memory<T> extends Store<T> implements dstore.ISyncCollection<T> {
 		data:any[];
 		get(id:any):T;
 		put(object:T, options?:Object):T;
@@ -170,6 +175,12 @@ declare module 'dstore/Model' {
 	export = Model;
 }
 
+declare module 'dstore/objectQueryEngine' {
+	var engine:dstore.IQueryEngine;
+
+	export = engine;
+}
+
 declare module 'dstore/Observable' {
 	class Observable<T> {
 		currentRange:any[];
@@ -199,10 +210,8 @@ declare module 'dstore/Request' {
 declare module 'dstore/RequestMemory' {
 	import Request = require('dstore/Request');
 	import Cache = require('dstore/Cache');
-	import SimpleQuery = require('dstore/SimpleQuery');
 
-	class RequestMemory<T> extends Request<T> implements Cache<T>, SimpleQuery<T> {
-		queryer:Function;
+	class RequestMemory<T> extends Request<T> implements Cache<T> {
 		cachingStore:dstore.ICollection<T>;
 		evict(id:any):void;
 	}
@@ -225,20 +234,8 @@ declare module 'dstore/Rest' {
 	export = Rest;
 }
 
-declare module 'dstore/SimpleQuery' {
-	import Store = require('dstore/Store');
-	import Model = require('dstore/Model');
-
-	class SimpleQuery<T> extends Store<T> {
-		queryer:Function;
-	}
-
-	export = SimpleQuery;
-}
-
 declare module 'dstore/Store' {
 	import Evented = require('dojo/Evented');
-	import Model = require('dstore/Model');
 
 	class Store<T> extends Evented {
 		model:new (...args:any[]) => T;
@@ -250,8 +247,8 @@ declare module 'dstore/Store' {
 		filter(filter:any):dstore.ICollection<T>;
 		sort(property:any, descending?:boolean):dstore.ICollection<T>;
 		range(start:number, end?:number):dstore.ICollection<T>;
-		forEach(callback:(item:T, index:number) => void, thisObject?:any):any; /* void, IPromise<void> */
-		map<U>(callback:(item:T, index:number) => U, thisObject?:any):dstore.ICollection<U>;
+		forEach(callback:(item:T, index:number, collection:dstore.ICollection<T>) => void, thisObject?:any):any; /* void, IPromise<void> */
+		map<U>(callback:(item:T, index:number, collection:dstore.ICollection<T>) => U, thisObject?:any):dstore.ICollection<U>;
 		fetch():any;
 	}
 
