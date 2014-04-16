@@ -4,8 +4,7 @@ import assert = require('intern/chai!assert');
 import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import domConstruct = require('dojo/dom-construct');
-import ElementRenderer = require('../../../ui/dom/_Element');
-import WidgetRenderer = require('../../../ui/dom/Widget');
+import _ElementRenderer = require('../../../ui/dom/_Element');
 import Widget = require('../../../ui/Widget');
 import Container = require('../../../ui/Container');
 import declare = require('dojo/_base/declare');
@@ -39,7 +38,7 @@ registerSuite({
 	name: 'ui/dom/_Element',
 
 	setup() {
-		Widget.prototype._renderer = new ElementRenderer();
+		Widget.prototype._renderer = new _ElementRenderer();
 	},
 
 	teardown() {

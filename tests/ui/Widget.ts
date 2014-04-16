@@ -195,18 +195,6 @@ registerSuite({
 		assert.strictEqual(widget.get('next'), 'foo', 'Widget should have requested next child from parent');
 	},
 
-	'#_visibleSetter': function () {
-		var style = widget.get('style');
-		widget.set('visible', true);
-		assert.strictEqual(style.get('display'), '', 'display style for visible=true should be ""');
-		widget.set('visible', false);
-		assert.strictEqual(style.get('display'), 'none', 'display style for visible=false should be "none"');
-		widget.set('visible', 0);
-		assert.strictEqual(style.get('display'), 'none', 'display style for visible=0 should be "none"');
-		widget.set('visible', 'foo');
-		assert.strictEqual(style.get('display'), '', 'display style for visible="foo" should be ""');
-	},
-
 	'#_attachedSetter': function () {
 		widget.set('attached', 'foo')
 		assert.strictEqual(widget.get('attached'), 'foo', 'Widget attached property should have expected value')

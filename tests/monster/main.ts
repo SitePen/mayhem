@@ -1,3 +1,8 @@
+/// <reference path="../../dojo" />
+/// <reference path="../../xstyle" />
+
+import array = require('dojo/_base/array');
+import hasClass = require('xstyle/has-class');
 import WebApplication = require('framework/WebApplication');
 
 var app = new WebApplication({
@@ -45,6 +50,7 @@ var app = new WebApplication({
 });
 
 app.startup().then(function ():void {
+	hasClass('tablet', 'phone');
 	console.log('ready');
 });
 

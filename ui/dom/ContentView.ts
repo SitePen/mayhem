@@ -1,7 +1,7 @@
 import dom = require('./interfaces');
-import DomWidgetRenderer = require('./Widget');
+import _FragmentRenderer = require('./_Fragment');
 
-class ContentViewRenderer extends DomWidgetRenderer {
+class ContentViewRenderer extends _FragmentRenderer {
 }
 
 export = ContentViewRenderer;

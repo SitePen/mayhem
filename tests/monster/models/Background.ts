@@ -1,3 +1,5 @@
+/// <reference path="../../../dojo" />
+
 import dojoString = require('dojo/string');
 import Model = require('framework/data/Model');
 

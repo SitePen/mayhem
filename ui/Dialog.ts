@@ -6,16 +6,14 @@ import ui = require('./interfaces');
 
 var Renderer:any = require('./renderer!Dialog');
 
-class Dialog extends /*Widget*/ ContentView implements ui.IDialog {
-	constructor(kwArgs?:any) {
-		this._deferProperty('closable', '_render');
-		super(kwArgs);
-	}
+class Dialog extends ContentView implements ui.IDialog {
 	get:ui.IDialogGet;
 	set:ui.IDialogSet;
 }
 
-Dialog.prototype.className = 'dialog';
+Dialog.defaults({ role: 'dialog' });
+Dialog.set('hidden', true);
+
 Dialog.prototype._renderer = new Renderer();
 
 export = Dialog;

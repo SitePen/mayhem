@@ -43,14 +43,6 @@ class MonsterMediator extends Mediator {
 		this._saveConfirmation();
 	}
 
-	_initialize():void {
-		super._initialize();
-
-		this.observe('monster', () => {
-			this.set('editable', false);
-		});
-	}
-
 	private _isDirty():boolean {
 		// debugger
 		return true
@@ -94,6 +86,10 @@ class MonsterMediator extends Mediator {
 		this._navToGallery();
 	}
 
+	_monstersChange():void {
+		this.set('readonly', true);
+	}
+
 	_monstersSetter(store:any):void {
 		this._monsters = store;
 	}
@@ -114,6 +110,12 @@ class MonsterMediator extends Mediator {
 
 MonsterMediator.schema(():any => {
 	return {
+		editable: MonsterMediator.property<boolean>({
+			get: function ():boolean {
+				return !this.get('model').get('readonly');
+			},
+			dependencies: [ 'readonly' ]
+		}),
 		shareLink: MonsterMediator.property<string>({
 			get: function ():string {
 				// TODO: make real
@@ -142,7 +144,7 @@ MonsterMediator.defaults({
 	backgrounds: undefined,
 	monsters: undefined,
 	monster: undefined,
-	editable: undefined,
+	readonly: true,
 	dialog: undefined,
 	pickMonsterPart: undefined,
 	routeState: undefined

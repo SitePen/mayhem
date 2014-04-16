@@ -2,12 +2,12 @@
 /// <reference path="../../dijit" />
 
 import dom = require('./interfaces');
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
 import lang = require('dojo/_base/lang');
 import util = require('../../util');
 import _WidgetBase = require('dijit/_WidgetBase');
 
-class DijitRenderer extends DomElementRenderer {
+class _DijitRenderer extends _ElementRenderer {
 	_ImplCtor:{ new (kwArgs?:any, node?:HTMLElement):_WidgetBase; };
 	_implNameMap:{ [key:string]:string; };
 	_implDefaults:{ [key:string]:any; };
@@ -97,10 +97,10 @@ class DijitRenderer extends DomElementRenderer {
 	}
 }
 
-DijitRenderer.implementation({
+_DijitRenderer.implementation({
 	nameMap: {
 		tabindex: 'tabIndex'
 	}
 });
 
-export = DijitRenderer;
+export = _DijitRenderer;

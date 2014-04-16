@@ -1,10 +1,14 @@
 import form = require('./interfaces');
+import roles = require('../roles');
 import TextRenderer = require('../Text');
 import util = require('../../../util');
 
 class ButtonRenderer extends TextRenderer {
+	_buttonActions:any = roles.button;
+	_checkboxActions:any = roles.checkbox;
+	_radioAction:any = roles.radio;
 }
 
-ButtonRenderer.prototype.elementType = 'button';
+ButtonRenderer.prototype.tagName = 'button';
 
 export = ButtonRenderer;

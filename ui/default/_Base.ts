@@ -1,6 +1,6 @@
 import ui = require('../interfaces');
 
-class DefaultWidgetRenderer implements ui.IRenderer {
+class _BaseRenderer implements ui.IRenderer {
 	className:string;
 	_content:{ [key:string]: any } = <any> {};
 
@@ -10,6 +10,10 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 
 	attachContent(widget:ui.IWidget):void {
 		console.debug('#attachContent');
+	}
+
+	attachRole(widget:ui.IWidget):void {
+		console.debug('#attachRole');
 	}
 
 	attachStyles(widget:ui.IWidget):void {
@@ -36,8 +40,8 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 		console.debug('#detachContent');
 	}
 
-	detachStyles(widget:ui.IWidget):void {
-		console.debug('#detachStyles');
+	handleAction(widget:ui.IWidget, name:string, source?:any):void {
+		console.debug('#handleAction');
 	}
 
 	initialize(widget:ui.IWidget):void {
@@ -56,6 +60,10 @@ class DefaultWidgetRenderer implements ui.IRenderer {
 		console.debug('#setContent');
 		this._content[widget.get('id')] = value;
 	}
+
+	updateVisibility(widget:ui.IWidget, value:boolean):void {
+		console.debug('#updateVisibility');
+	}
 }
 
-export = DefaultWidgetRenderer;
+export = _BaseRenderer;

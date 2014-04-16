@@ -1,20 +1,12 @@
 import dom = require('./interfaces');
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
+import roles = require('./roles');
 import util = require('../../util');
 
-class DialogRenderer extends DomElementRenderer {
-	initialize(widget:dom.IDialog):void {
-		super.initialize(widget);
-
-		widget.observe('closable', (value:boolean) => {
-			// TODO: add or remove close button
-		});
-	}
-	render(widget:dom.IDialog):void {
-		super.render(widget);
-
-		widget._firstNode.setAttribute('role', 'dialog');
-	}
+class DialogRenderer extends _ElementRenderer {
+	_dialogActions:any = roles.dialog;
 }
+
+DialogRenderer.prototype.className = 'dialog';
 
 export = DialogRenderer;

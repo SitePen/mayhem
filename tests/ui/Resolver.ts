@@ -166,27 +166,27 @@ registerSuite({
 	},
 
 	'phase observer': function () {
-		var during = new Observable({ visible: false }),
-			error = new Observable({ visible: false }),
-			success = new Observable({ visible: false });
+		var during = new Observable({ hidden: false }),
+			error = new Observable({ hidden: false }),
+			success = new Observable({ hidden: false });
 		resolver.set('during', during)
 		resolver.set('error', error)
 		resolver.set('success', success)
 
 		resolver.set('phase', 'during')
-		assert.isTrue(during.get('visible'));
-		assert.isFalse(error.get('visible'));
-		assert.isFalse(success.get('visible'));
+		assert.isFalse(during.get('hidden'));
+		assert.isTrue(error.get('hidden'));
+		assert.isTrue(success.get('hidden'));
 
 		resolver.set('phase', 'error')
-		assert.isFalse(during.get('visible'));
-		assert.isTrue(error.get('visible'));
-		assert.isFalse(success.get('visible'));
+		assert.isTrue(during.get('hidden'));
+		assert.isTrue(error.get('hidden'));
+		assert.isTrue(success.get('hidden'));
 
 		resolver.set('phase', 'success')
-		assert.isFalse(during.get('visible'));
-		assert.isFalse(error.get('visible'));
-		assert.isTrue(success.get('visible'));
+		assert.isTrue(during.get('hidden'));
+		assert.isTrue(error.get('hidden'));
+		assert.isFalse(success.get('hidden'));
 	},
 
 	'result observer': function () {

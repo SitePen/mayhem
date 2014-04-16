@@ -1,3 +1,4 @@
+import core = require('../../interfaces');
 import routing = require('../../routing/interfaces');
 
 class MockRouter implements routing.IRouter {
@@ -5,12 +6,8 @@ class MockRouter implements routing.IRouter {
 	path:string = null;
 	pathReplaced:boolean = false;
 
-	get(key:string):any {
-		return null;
-	}
-
-	set(key:string, value:any):void {
-	}
+	get:routing.IRouterGet;
+	set:routing.IRouterSet;
 
 	createPath(routeId:string, kwArgs?:Object):string {
 		return null;
@@ -23,6 +20,10 @@ class MockRouter implements routing.IRouter {
 	}
 
 	normalizeId(routeId:string):string {
+		return null;
+	}
+
+	observe(key:any, observer:core.IObserver<any>):IHandle {
 		return null;
 	}
 
@@ -41,5 +42,8 @@ class MockRouter implements routing.IRouter {
 		return null;
 	}
 }
+
+MockRouter.prototype.get = (key:string):any => null;
+MockRouter.prototype.set = (key:any, value?:any):void => {};
 
 export = MockRouter;

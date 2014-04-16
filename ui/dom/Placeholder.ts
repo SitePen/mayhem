@@ -1,5 +1,5 @@
-import DomWidgetRenderer = require('./Widget');
+import _FragmentRenderer = require('./_Fragment');
 
-class PlaceholderRenderer extends DomWidgetRenderer {}
+class PlaceholderRenderer extends _FragmentRenderer {}
 
 export = PlaceholderRenderer;

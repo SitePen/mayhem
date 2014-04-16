@@ -4,7 +4,7 @@ import assert = require('intern/chai!assert');
 import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import domConstruct = require('dojo/dom-construct');
-import WidgetRenderer = require('../../../ui/dom/Widget');
+import _BaseRenderer = require('../../../ui/dom/_Base');
 import Widget = require('../../../ui/Widget');
 import Container = require('../../../ui/Container');
 import declare = require('dojo/_base/declare');
@@ -34,10 +34,10 @@ function createFragment(content:any) {
 
 
 registerSuite({
-	name: 'ui/dom/Widget',
+	name: 'ui/dom/_Base',
 
 	setup() {
-		Widget.prototype._renderer = new WidgetRenderer();
+		Widget.prototype._renderer = new _BaseRenderer();
 	},
 
 	teardown() {
@@ -45,7 +45,7 @@ registerSuite({
 	},
 
 	beforeEach() {
-	    renderer = new WidgetRenderer();
+	    renderer = new _BaseRenderer();
 	},
 
 	afterEach() {
@@ -194,7 +194,7 @@ registerSuite({
 			'Widget child nodes should have been moved to _outerFragment');
 	},
 
-	'#detachChildren': function () {
+	'#_detachChildren': function () {
 		var container:any = new Container(),
 			widget1:any = new Widget(),
 			widget2:any = new Widget(),
@@ -215,7 +215,7 @@ registerSuite({
 		], 'Container should have expected children');
 
 		// detaching children means to call detach on each child (not detach all the children from the parent)
-		renderer.detachChildren(container);
+		renderer._detachChildren(container);
 		assert.deepEqual(getChildren(container), [
 			container._firstNode,
 			widget1._firstNode, widget1._lastNode,
@@ -243,12 +243,5 @@ registerSuite({
 		assert.isNull(widget._innerFragment, '_innerFragment should be null');
 		assert.isNull(widget._firstNode, '_firstNode should be null');
 		assert.isNull(widget._lastNode, '_lastNode should be null');
-	},
-
-	'#remove': function () {
-		var widget:any = new Widget();
-		renderer.remove(null, widget);
-		assert.deepEqual(getChildren(widget._outerFragment), [ widget._firstNode, widget._lastNode ],
-			'Widget child nodes should have been moved to _outerFragment');
 	}
 });

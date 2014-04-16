@@ -77,12 +77,10 @@ export interface IDialog extends IContentView {
 	set:IDialogSet;
 }
 
-export interface IDialogGet extends IWidgetGet {
-	(name:'closable'):boolean;
+export interface IDialogGet extends IContentViewGet {
 }
 
-export interface IDialogSet extends IWidgetSet {
-	(name:'closable', value:boolean):void;
+export interface IDialogSet extends IContentViewSet {
 }
 
 export interface IImage extends IView {
@@ -91,10 +89,12 @@ export interface IImage extends IView {
 }
 
 export interface IImageGet extends IViewGet {
+	(name:'alt'):string;
 	(name:'src'):string;
 }
 
 export interface IImageSet extends IViewSet {
+	(name:'alt', value:string):void;
 	(name:'src', value:string):void;
 }
 
@@ -134,16 +134,18 @@ export interface IRenderer {
 	add(widget:IContainer, item:IWidget, reference?:any, position?:PlacePosition):void;
 	attachContent(widget:IWidget):void;
 	attachStyles(widget:IWidget):void;
+	attachRole(widget:IWidget):void;
 	attachToWindow(widget:IWidget, target:any):void;
 	clear(widget:IWidget):void;
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
 	detachContent(widget:IWidget):void;
-	detachStyles(widget:IWidget):void;
+	handleAction(widget:IWidget, name:string, source?:any):void;
 	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget):void;
 	setContent(widget:IWidget, content:any):void;
+	updateVisibility(widget:IWidget, value:boolean):void;
 }
 
 export interface IText extends IView {
@@ -193,23 +195,24 @@ export interface IWidget extends core.IApplicationComponent, core.IEvented, core
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IContainer, position:number):IHandle;
 	placeAt(destination:IContainer, placeholder:string):IHandle;
+	trigger(action:string, event?:Event):void;
 }
 
 export interface IWidgetGet extends core.IApplicationComponentGet {
 	(name:'attached'):boolean;
 	(name:'id'):string;
-	(name:'parent'):IContainer;
+	(name:'hidden'):boolean;
 	(name:'index'):number;
 	(name:'next'):IWidget;
+	(name:'parent'):IContainer;
 	(name:'previous'):IWidget;
-	(name:'visible'):boolean;
 }
 
 export interface IWidgetSet extends core.IApplicationComponentSet {
 	(name:'attached', value:boolean):void;
+	(name:'hidden', value:boolean):void;
 	(name:'id', value:string):void;
 	(name:'parent', value:IContainer):void;
-	(name:'visible', value:boolean):void;
 }
 
 /* Control flow */

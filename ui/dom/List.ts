@@ -2,11 +2,11 @@
 
 import core = require('../../interfaces');
 import dom = require('./interfaces');
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
 import util = require('../../util');
 
-class ListRenderer extends DomElementRenderer {
-	listElementType:string;
+class ListRenderer extends _ElementRenderer {
+	itemTagName:string;
 
 	destroy(widget:dom.IList):void {
 		widget._observerHandle = util.remove(widget._observerHandle) && null;
@@ -34,7 +34,7 @@ class ListRenderer extends DomElementRenderer {
 	}
 
 	/* protected */ _renderItem(item:any):Node {
-		var element = document.createElement(this.listElementType);
+		var element = document.createElement(this.itemTagName);
 		element.appendChild(document.createTextNode(item ? item.toString() : ''));
 		return element;
 	}
@@ -51,7 +51,7 @@ class ListRenderer extends DomElementRenderer {
 	}
 }
 
-ListRenderer.prototype.elementType = 'ul';
-ListRenderer.prototype.listElementType = 'li';
+ListRenderer.prototype.tagName = 'ul';
+ListRenderer.prototype.itemTagName = 'li';
 
 export = ListRenderer;

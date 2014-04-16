@@ -154,7 +154,7 @@ class Resolver extends ContentView implements ui.IResolver {
 			widget:ui.IWidget;
 		for (var i = 0; (phase = phases[i]); ++i) {
 			widget = this.get(phase);
-			widget && widget.set('visible', phase === current);
+			widget && widget.set('hidden', phase !== current);
 		}
 	}
 

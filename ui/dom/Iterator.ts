@@ -6,12 +6,12 @@ import ContentView = require('../ContentView');
 import declare = require('dojo/_base/declare');
 import Deferred = require('dojo/Deferred');
 import dom = require('./interfaces');
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
 import Template = require('../../templating/Template');
 import util = require('../../util');
 import when = require('dojo/when');
 
-class IteratorRenderer extends DomElementRenderer {
+class IteratorRenderer extends _ElementRenderer {
 	destroy(widget:dom.IIterator):void {
 		widget._impl && widget._impl.destroy();
 		widget._impl = null;

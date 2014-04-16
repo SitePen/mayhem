@@ -34,10 +34,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	/* protected */ _previous:ui.IWidget;
 	/* protected */ _renderer:ui.IRenderer;
 	style:Style;
-	/* protected */ _visible:boolean;
+
+	get:ui.IWidgetGet;
+	set:ui.IWidgetSet;
 
 	constructor(kwArgs:any = {}) {
-		this._deferProperty('on', '_render');
+		this._deferProperty('hidden', '_render');
+		this._deferProperty('role', '_render');
 		this._ownHandles = [];
 
 		// Capture id as provided before transforming
@@ -46,15 +49,9 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		// TODO: check registry for duplicate id and throw?
 		registry[id] = this;
 
-		// Always set class to roll in className values of widget and renderer
-		kwArgs['class'] || (kwArgs['class'] = '');
-
 		super(kwArgs);
 		this._render();
 	}
-
-	get:ui.IWidgetGet;
-	set:ui.IWidgetSet;
 
 	/* protected */ _classSetter(value:any):void {
 		// Reset a widget's classList, incorporating in existing widget and renderer classNames
@@ -65,6 +62,16 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this._renderer.className && classes.push(this._renderer.className);
 
 		this.classList.add(classes.concat(ClassList.parse(value)).join(' '));
+	}
+
+	// Returns the whole class list, not just the bits explicitly set on class
+	private _classNameGetter():string {
+		return this.classList.get();
+	}
+
+	// Sets the class list completely, overriding className defined by widget or renderer
+	private _classNameSetter(value:string):void {
+		this.classList.set(value);
 	}
 
 	/* protected */ _deferProperty(name:string, ...untilMethods:string[]):void {
@@ -137,14 +144,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
+	/* protected */ _hiddenChanged(value:boolean):void {
+		this._renderer.updateVisibility(this, !value);
+	}
+
 	private _indexGetter():number {
 		var parent = this.get('parent');
-
-		if (!parent) {
-			return -1;
-		}
-
-		return parent.getChildIndex(this);
+		return parent ? parent.getChildIndex(this) : -1;
 	}
 
 	/* protected */ _initialize():void {
@@ -222,13 +228,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.set('rendered', true);
 	}
 
-	/* protected */ _renderedChanged(value:boolean, previous:boolean):void {
-		if (value) {
-			this.emit(previous === false ? 'rerendered' : 'rendered');
-		}
-		else {
-			this.emit('unrendered');
-		}
+	/* protected */ _roleChanged(value:string):void {
+		this._renderer.attachRole(this);
 	}
 
 	own(...handles:any[]):void {
@@ -243,32 +244,41 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
-	/* protected */ _selectedChanged(value:boolean, previous:boolean):void {
-		if (value === true) {
-			this.emit('selected');
-		}
-		if (value === false && previous === true) {
-			this.emit('unselected');
-		}
-		if (typeof value === 'boolean' && previous !== null) {
-			this.emit('toggled');
-		}
-	}
-
 	/* protected */ _styleSetter(value:string) {
 		// Adds any manually set styles to widget's Style
+		// TODO: should we blow away any previously set styles instead?
 		this.style.set(Style.parse(value));
 	}
 
-	// /* protected */ _visibleGetter():boolean {
-	// 	return this.style.get('display') !== 'none';
-	// }
+	trigger(action:string, source?:Event):void {
+		// Invoke handler, if available, then action
+		var handler:any = this.get(action + 'Handler'),
+			NOCALL = {},
+			result:any = NOCALL;
 
-	/* protected */ _visibleSetter(visible:boolean):void {
-		this.style.set('display', visible ? '' : 'none');
+		// Trigger widget handler
+		if (typeof handler === 'function') {
+			// If handler is a function call with this widget as context
+			result = handler.call(this, source);
+		}
+		else if (typeof handler === 'string') {
+			// If handler is a string call named method on mediator if available
+			var mediator = this.get('mediator');
+			if (mediator && mediator[handler]) {
+				result = mediator[handler](source);
+			}
+		}
+		has('debug') && result === NOCALL && console.log('No action handler available for ' + action);
+
+		// Handler on widget can cancel action
+		if (result !== false) {
+			// Call action handler on renderer
+			this._renderer.handleAction(this, action, source);
+		}
 	}
 }
 
+Widget.set('class', '');
 Widget.prototype.className = '';
 
 export = Widget;

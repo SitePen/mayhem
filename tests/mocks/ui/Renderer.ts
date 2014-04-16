@@ -22,6 +22,9 @@ class MockRenderer implements ui.IRenderer {
 		this.updateCallCount('attachContent');
 	}
 
+	attachRole(widget:ui.IWidget):void {
+		this.updateCallCount('attachRole');
+	}
 	attachStyles(widget:ui.IWidget):void {
 		this.updateCallCount('attachStyles');
 	}
@@ -46,8 +49,8 @@ class MockRenderer implements ui.IRenderer {
 		this.updateCallCount('detachContent');
 	}
 
-	detachStyles(widget:ui.IWidget):void {
-		this.updateCallCount('detachContent');
+	handleAction(widget:ui.IWidget, name:string, source?:any):void {
+		this.updateCallCount('handleAction');
 	}
 
 	initialize(widget:ui.IWidget):void {
@@ -65,6 +68,10 @@ class MockRenderer implements ui.IRenderer {
 	setContent(widget:ui.IWidget, content:Node):void {
 		this.updateCallCount('setContent');
 		this._content = content;
+	}
+
+	updateVisibility(widget:ui.IWidget, value:boolean):void {
+		this.updateCallCount('updateVisibility');
 	}
 }
 

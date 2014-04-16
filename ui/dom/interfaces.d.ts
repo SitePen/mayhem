@@ -7,6 +7,7 @@ import ui = require('../interfaces');
 import _WidgetBase = require('dijit/_WidgetBase');
 
 export interface IWidget extends ui.IWidget {
+	_actionHandles:IHandle[];
 	_classListHandle:IHandle;
 	_innerFragment:Node;
 	_firstNode:Node;
@@ -21,7 +22,7 @@ export interface IContainer extends ui.IContainer, IView {
 	set:ui.IContainerSet;
 }
 
-export interface IPlaceholdingWidget extends IContainer {
+export interface IFragmentWidget extends IContainer {
 	_firstNode:Comment;
 	_lastNode:Comment;
 	_outerFragment:DocumentFragment;

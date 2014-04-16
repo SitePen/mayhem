@@ -1,16 +1,17 @@
+import aria = require('./util/aria');
 import array = require('dojo/_base/array');
+import _BaseRenderer = require('./_Base');
 import dom = require('./interfaces');
 import domUtil = require('./util');
+import has = require('../../has');
 import on = require('dojo/on');
 import PlacePosition = require('../PlacePosition');
 import style = require('../style/interfaces');
 import touch = require('dojo/touch');
-import ui = require('../interfaces');
 import util = require('../../util');
-import WidgetRenderer = require('./Widget');
 
-class DomElementRenderer extends WidgetRenderer {
-	elementType:string;
+class _ElementRenderer extends _BaseRenderer {
+	tagName:string;
 
 	attachContent(widget:dom.IElementWidget):void {
 		var content = widget._innerFragment;
@@ -20,8 +21,24 @@ class DomElementRenderer extends WidgetRenderer {
 		widget._innerFragment = null;
 	}
 
+	attachRole(widget:dom.IElementWidget):void {
+		this._detachRole(widget);
+
+		widget._outerFragment.setAttribute('role', widget.get('role'));
+
+		var role = widget.get('role'),
+			actions = this['_' + role + 'Actions'];
+		if (!actions) {
+			return has('debug') && console.warn('Renderer missing actions config for role: ' + role);
+		}
+
+		for (var key in actions) {
+			actions[key].attach(widget);
+		}
+	}
+
 	attachStyles(widget:dom.IElementWidget):void {
-		this.detachStyles(widget);
+		this._detachStyles(widget);
 
 		widget._classListHandle = widget.classList.observe((value:string):void => {
 			widget._outerFragment.className = value;
@@ -61,23 +78,8 @@ class DomElementRenderer extends WidgetRenderer {
 		widget._innerFragment = domUtil.extractRange(node.firstChild, node.lastChild);
 	}
 
-	initialize(widget:dom.IElementWidget):void {
-		super.initialize(widget);
-
-		widget.observe('on', (subscriptions:any):void => {
-			// TODO: handle more than one set call sanely
-			array.forEach(util.getObjectKeys(subscriptions), (type:string) => {
-				on(widget._firstNode, touch[type], (event:Event):void => {
-					var method = subscriptions[type],
-						mediator = widget.get('mediator');
-					mediator && mediator[method] && mediator[method](event);
-				});
-			});
-		});
-	}
-
 	render(widget:dom.IElementWidget):void {
-		var node = document.createElement(this.elementType);
+		var node = document.createElement(this.tagName);
 		node.id = widget.get('id');
 		// If widget is already attached to a parent swap out the new widget
 		var previousNode = widget._outerFragment;
@@ -85,10 +87,9 @@ class DomElementRenderer extends WidgetRenderer {
 			previousNode.parentNode.replaceChild(node, previousNode);
 		}
 		widget._firstNode = widget._lastNode = widget._outerFragment = node;
+
 		this.attachStyles(widget);
 
-		this._bindAttribute(widget, 'accesskey');
-		this._bindAttribute(widget, 'role');
 		this._bindAttribute(widget, 'spellcheck');
 		this._bindAttribute(widget, 'tabindex');
 		this._bindAttribute(widget, 'title');
@@ -103,8 +104,13 @@ class DomElementRenderer extends WidgetRenderer {
 			value && widget._outerFragment.appendChild(value);
 		}
 	}
+
+	updateVisibility(widget:dom.IFragmentWidget, value:boolean):void {
+		// TODO: preserve previously set display style?
+		widget.style.set('display', value ? '' : 'none');
+	}
 }
 
-DomElementRenderer.prototype.elementType = 'div';
+_ElementRenderer.prototype.tagName = 'div';
 
-export = DomElementRenderer;
+export = _ElementRenderer;

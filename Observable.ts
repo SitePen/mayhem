@@ -4,17 +4,26 @@ import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 class Observable implements core.IObservable {
+	static _initialValues:any;
+
 	static defaults(kwArgs:any):void {
 		for (var key in kwArgs) {
 			this.prototype['_' + key] = kwArgs[key];
 		}
 	}
 
-	get:core.IObservableGet;
-	set:core.IObservableSet;
-	// TODO: Do we need this?
-	// has:(key:string) => boolean;
-	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
+	static set(key:any, value?:any):void {
+		// Sets defaults that fire change notifications on construction
+		var kwArgs:{ [key:string]: any; };
+		if (util.isObject(key)) {
+			kwArgs = key;
+		}
+		else {
+			kwArgs = {};
+			kwArgs[key] = value;
+		}
+		this._initialValues = lang.mixin({}, this._initialValues, kwArgs);
+	}
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
 		if (has('es5')) {
@@ -24,15 +33,22 @@ class Observable implements core.IObservable {
 			this._observers = {};
 		}
 		this._initialize();
-		kwArgs && this.set(kwArgs);
+		kwArgs && this.set(lang.mixin({}, (<typeof Observable> this.constructor)._initialValues, kwArgs));
 	}
 
-	/* protected */ _initialize():void {
-	}
+
+	get:core.IObservableGet;
+	set:core.IObservableSet;
+	// TODO: Do we need this?
+	// has:(key:string) => boolean;
+	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
 
 	destroy():void {
 		this.destroy = function ():void {};
 		this._observers = null;
+	}
+
+	/* protected */ _initialize():void {
 	}
 
 	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {

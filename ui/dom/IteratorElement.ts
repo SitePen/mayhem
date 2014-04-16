@@ -1,5 +1,5 @@
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
 
-class IteratorElementRenderer extends DomElementRenderer {}
+class IteratorElementRenderer extends _ElementRenderer {}
 
 export = IteratorElementRenderer;

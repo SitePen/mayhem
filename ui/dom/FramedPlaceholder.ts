@@ -1,5 +1,5 @@
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
 
-class PlaceholderRenderer extends DomElementRenderer {}
+class PlaceholderRenderer extends _ElementRenderer {}
 
 export = PlaceholderRenderer;

@@ -10,7 +10,7 @@ class MonstersMediator extends Mediator {
 		var app = this.get('app');
 
 		app.observe('selectedMonster', (id) => {
-			var router:any = <any> this.get('routeState').route.get('router');
+			var router:any = (<any> this.get('routeState')).route.get('router');
 			if (id !== null) {
 				router.go('monsters/monster', { monsterId: id });
 			}

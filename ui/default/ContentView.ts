@@ -1,3 +1,3 @@
-import DefaultWidgetRenderer = require('./Widget');
-class ContentViewRenderer extends DefaultWidgetRenderer {}
+import _FragmentRenderer = require('./_Fragment');
+class ContentViewRenderer extends _FragmentRenderer {}
 export = ContentViewRenderer;

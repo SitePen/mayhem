@@ -3,17 +3,17 @@
 import assert = require('intern/chai!assert');
 import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
-import DijitRenderer = require('../../../ui/dom/_Dijit');
+import _DijitRenderer = require('../../../ui/dom/_Dijit');
 import Widget = require('../../../ui/Widget');
 import Observable = require('../../../Observable');
 
 function resetDijit() {
-	var proto = DijitRenderer.prototype;
+	var proto = _DijitRenderer.prototype;
 	proto._implNameMap = undefined;
 	proto._implDefaults = undefined;
 	proto._ImplCtor = undefined;
 
-	DijitRenderer.implementation({
+	_DijitRenderer.implementation({
 		nameMap: {
 			tabindex: 'tabIndex'
 		}
@@ -53,7 +53,7 @@ registerSuite({
 	name: 'ui/dom/_Dijit',
 
 	setup() {
-		Widget.prototype._renderer = new DijitRenderer();
+		Widget.prototype._renderer = new _DijitRenderer();
 	},
 
 	teardown() {
@@ -65,14 +65,14 @@ registerSuite({
 	},
 
 	'.implementation'() {
-		var proto = DijitRenderer.prototype;
+		var proto = _DijitRenderer.prototype;
 		assert.property(proto, '_implNameMap', 'Dijit should have _implNameMap property');
 		assert.notProperty(proto, '_implDefaults', 'Dijit should not have _implDefaults property');
 		assert.notProperty(proto, '_ImplCtor', 'Dijit should not have _ImplCtor property');
 
 		var map:any = proto._implNameMap;
 
-		DijitRenderer.implementation({
+		_DijitRenderer.implementation({
 			nameMap: { foo: 'bar' }
 		});
 		var newMap:any = proto._implNameMap;
@@ -82,10 +82,10 @@ registerSuite({
 
 		resetDijit();
 
-		DijitRenderer.implementation({ defaults: { foo: 'bar' } });
+		_DijitRenderer.implementation({ defaults: { foo: 'bar' } });
 		assert.property(proto, '_implDefaults', 'Dijit should have _implDefaults property');
 		var defaults:any = proto._implDefaults;
-		DijitRenderer.implementation({ defaults: { baz: 'gob' } });
+		_DijitRenderer.implementation({ defaults: { baz: 'gob' } });
 		var newDefaults:any = proto._implDefaults;
 		defaults.foo = 'cat';
 		assert.strictEqual(newDefaults.baz, 'gob', '_implDefaults should have foo property');
@@ -93,22 +93,22 @@ registerSuite({
 
 		resetDijit();
 
-		DijitRenderer.implementation({ constructor: 'foo' });
+		_DijitRenderer.implementation({ constructor: 'foo' });
 		assert.strictEqual(proto._ImplCtor, 'foo', '_ImplCtor should have assigned constructor');
 
-		DijitRenderer.implementation({ constructor: null });
+		_DijitRenderer.implementation({ constructor: null });
 		assert.strictEqual(proto._ImplCtor, null, '_ImplCtor should have assigned null constructor');
 	},
 
 	'#render'() {
-		DijitRenderer.implementation({ constructor: MockDijit, });
+		_DijitRenderer.implementation({ constructor: MockDijit, });
 
 		var widget:any = new Observable({
 				foo: 'bar',
 				baz: 'gob',
 				classList: new Observable()
 			}),
-			renderer = new DijitRenderer();
+			renderer = new _DijitRenderer();
 
 		renderer.render(widget);
 
@@ -136,7 +136,7 @@ registerSuite({
 
 	'#_getProperty'() {
 		var widget:any = new Observable({ foo: 'bar' }),
-			renderer = new DijitRenderer();
+			renderer = new _DijitRenderer();
 		assert.strictEqual(renderer._getProperty(widget, 'foo'), 'bar', 'Expected property should have been returned');
 	}
 });

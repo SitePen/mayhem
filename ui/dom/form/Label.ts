@@ -8,6 +8,6 @@ class LabelRenderer extends TextRenderer {
 	}
 }
 
-LabelRenderer.prototype.elementType = 'label';
+LabelRenderer.prototype.tagName = 'label';
 
 export = LabelRenderer;

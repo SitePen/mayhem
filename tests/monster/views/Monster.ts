@@ -1,6 +1,6 @@
 import array = require('dojo/_base/array');
 import ContentView = require('framework/ui/ContentView');
-import DomElementRenderer = require('framework/ui/dom/_Element');
+import _ElementRenderer = require('framework/ui/dom/_Element');
 import Image = require('framework/ui/Image');
 import util = require('framework/util');
 import when = require('dojo/when');
@@ -28,7 +28,7 @@ class Monster extends ContentView {
 			});
 
 			this[part].on('press', () => {
-				this.get('editable') && this.get('mediator').set('pickMonsterPart', part);
+				this.get('readonly') || this.get('mediator').set('pickMonsterPart', part);
 			});
 		});
 
@@ -46,6 +46,6 @@ class Monster extends ContentView {
 }
 
 Monster.prototype.className = 'monster';
-Monster.prototype._renderer = new DomElementRenderer();
+Monster.prototype._renderer = new _ElementRenderer();
 
 export = Monster;

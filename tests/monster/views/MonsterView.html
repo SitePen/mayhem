@@ -1,24 +1,24 @@
 <div class="nav">
-	<widget is="framework/ui/form/Button" class="close" on={ "press": "closeMonster" }></widget>
-	<widget is="framework/ui/form/ToggleButton" class="edit" activated={{ editable }}></widget>
-	<widget is="framework/ui/form/Button" text="Share" class="share" on={ "press": "shareMonster" }></widget>
+	<widget is="framework/ui/form/Button" class="close" press-handler="closeMonster"></widget>
+	<widget is="framework/ui/form/Button" class="edit" selected={{ editable }}></widget>
+	<widget is="framework/ui/form/Button" text="Share" class="share" press-handler="shareMonster"></widget>
 </div>
 
-<widget is="app/views/Monster" monster={ monster } editable={ editable } background={ app.selectedBackground }></widget>
+<widget is="app/views/Monster" monster={ monster } readonly={ readonly } background={ app.selectedBackground }></widget>
 <widget is="app/views/Picker" part={ pickMonsterPart }></widget>
 
-<widget is="framework/ui/Dialog" class="save dialog" closable visible={ showSaveDialog }>
+<widget is="framework/ui/Dialog" class="save">
 	<div class="content">Save Monster?</div>
-	<widget is="framework/ui/form/Button" class="save" on={ "press": "saveMonster" }>Save Monster</widget>
-	<widget is="framework/ui/form/Button" class="cancel" on={ "press": "cancelMonster" }>Don't Save</widget>
+	<widget is="framework/ui/form/Button" class="save" press-handler="saveMonster">Save Monster</widget>
+	<widget is="framework/ui/form/Button" class="cancel" press-handler="cancelMonster">Don't Save</widget>
 </widget>
 
-<widget is="framework/ui/Dialog" class="share" closable visible={ showShareDialog }>
+<widget is="framework/ui/Dialog" class="share">
 	<div class="content">
-		<widget is="framework/ui/form/TextField" value={ shareLink } editable=false></widget>
+		<widget is="framework/ui/form/TextField" value={ shareLink } readonly=true></widget>
 	</div>
-	<widget is="framework/ui/form/Button" class="twitter" on={ "press": "sendToTwitter" }>Twitter</widget>
-	<widget is="framework/ui/form/Button" class="facebook" on={ "press": "sendToFacebook" }>Facebook</widget>
+	<widget is="framework/ui/form/Button" class="twitter" press-handler="sendToTwitter">Twitter</widget>
+	<widget is="framework/ui/form/Button" class="facebook" press-handler="sendToFacebook">Facebook</widget>
 </widget>
 
 <widget is="framework/ui/Text" xxx="app/views/Notification" class="notification" source={ notification }></widget>

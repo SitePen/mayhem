@@ -87,8 +87,8 @@ class Conditional extends ContentView implements ui.IConditional {
 		}
 		var consequent = this.get('consequent'),
 			alternate = this.get('alternate');
-		consequent && consequent.set('visible', result);
-		alternate && alternate.set('visible', !result);
+		consequent && consequent.set('hidden', !result);
+		alternate && alternate.set('hidden', !!result);
 	}
 }
 

@@ -1,8 +1,13 @@
 import dom = require('./interfaces');
-import DomElementRenderer = require('./_Element');
+import _ElementRenderer = require('./_Element');
+import roles = require('./roles');
 import util = require('../../util');
 
-class TextRenderer extends DomElementRenderer {
+class TextRenderer extends _ElementRenderer {
+	_buttonActions:any = roles.button;
+	_checkboxActions:any = roles.checkbox;
+	_radioActions:any = roles.radio;
+
 	initialize(widget:dom.IText):void {
 		super.initialize(widget);
 

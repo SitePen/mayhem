@@ -1,3 +1,3 @@
-import DefaultWidgetRenderer = require('./Widget');
-class IteratorRenderer extends DefaultWidgetRenderer {}
+import _ElementRenderer = require('./_Element');
+class IteratorRenderer extends _ElementRenderer {}
 export = IteratorRenderer;

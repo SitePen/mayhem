@@ -1,14 +1,12 @@
-import ContentView = require('framework/ui/ContentView');
-import DomElementRenderer = require('framework/ui/dom/_Element');
+import Dialog = require('framework/ui/Dialog');
 import Image = require('framework/ui/Image');
 import Iterator = require('framework/ui/Iterator');
 import Template = require('framework/templating/Template');
 import Text = require('framework/ui/Text');
-import util = require('framework/util');
 
 class Sprite extends Image {}
 
-class Picker extends ContentView {
+class Picker extends Dialog {
 	header:Text;
 	gallery:Iterator;
 
@@ -44,14 +42,11 @@ class Picker extends ContentView {
 			// Get source for parts gallery from mediator
 			this.gallery.set('source', this.get('mediator').get(part + 'Store'));
 		}
-		this.set('visible', !!part);
+		this.set('hidden', !part);
 	}
 
 	_render():void {
 		super._render();
-
-		// Start out invisible until we know which body part to pick
-		this.set('visible', false);
 
 		this.add(this.header);
 		this.add(this.gallery);
@@ -59,6 +54,5 @@ class Picker extends ContentView {
 }
 
 Picker.prototype.className = 'picker';
-Picker.prototype._renderer = new DomElementRenderer();
 
 export = Picker;

@@ -1,7 +1,7 @@
-import DefaultWidgetRenderer = require('./Widget');
+import _FragmentRenderer = require('./_Fragment');
 import ui = require('../interfaces');
 
-class PlaceholderRenderer extends DefaultWidgetRenderer {
+class PlaceholderRenderer extends _FragmentRenderer {
 	add(widget:ui.IPlaceholder, item:ui.IWidget):void {
 		item.detach();
 		super.setContent(widget, item);	

@@ -1,3 +1,3 @@
-import DefaultWidgetRenderer = require('./Widget');
-class ResolverRenderer extends DefaultWidgetRenderer {}
+import _BaseRenderer = require('./_Base');
+class ResolverRenderer extends _BaseRenderer {}
 export = ResolverRenderer;

@@ -14,7 +14,7 @@ class Button extends /*Widget*/ ContentView implements form.IButton {
 	set:form.IButtonSet;
 }
 
-Button.prototype.className = 'button';
+Button.set('role', 'button');
 Button.prototype._renderer = new Renderer();
 
 export = Button;

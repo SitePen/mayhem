@@ -1,3 +1,4 @@
+/// <reference path="../dojo" />
 /// <amd-dependency path="./renderer!Iterator" />
 
 import array = require('dojo/_base/array');
@@ -78,7 +79,7 @@ class Iterator extends ContentView implements ui.IIterator {
 		if (!mediator) {
 			return;
 		}
-		debugger
+
 		// Recreate our scoped mediators since the name of our value field changed
 		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string):void => {
 			var scoped = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);

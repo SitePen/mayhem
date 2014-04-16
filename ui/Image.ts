@@ -5,11 +5,12 @@ import ui = require('./interfaces');
 
 var Renderer:any = require('./renderer!Image');
 
-class ImageView extends View implements ui.IImage {
+class Image extends View implements ui.IImage {
 	get:ui.IImageGet;
 	set:ui.IImageSet;
 }
 
-ImageView.prototype._renderer = new Renderer();
+Image.set('role', 'img');
+Image.prototype._renderer = new Renderer();
 
-export = ImageView;
+export = Image;

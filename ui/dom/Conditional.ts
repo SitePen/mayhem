@@ -1,7 +1,6 @@
-import dom = require('./interfaces');
-import DomWidgetRenderer = require('./Widget');
+import _FragmentRenderer = require('./_Fragment');
 
-class ConditionalRenderer extends DomWidgetRenderer {
+class ConditionalRenderer extends _FragmentRenderer {
 }
 
 export = ConditionalRenderer;

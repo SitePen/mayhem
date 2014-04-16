@@ -115,13 +115,13 @@ registerSuite({
 			alternateVisible = false,
 			alternate = new Widget();
 		aspect.before(conditional.get('consequent'), 'set', function (key:string, value:any) {
-			if (key === 'visible') {
-				consequentVisible = true;
+			if (key === 'hidden') {
+				consequentVisible = !value;
 			}
 		});
 		aspect.before(alternate, 'set', function (key:string, value:any) {
-			if (key === 'visible') {
-				alternateVisible = true;
+			if (key === 'hidden') {
+				alternateVisible = !value;
 			}
 		});
 		conditional.set('alternate', alternate);

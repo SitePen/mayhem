@@ -181,6 +181,12 @@ declare module 'dojo/json' {
 	export = json;
 }
 
+declare module 'dojo/keys' {
+	var keyCodeMap:any;
+
+	export = keyCodeMap;
+}
+
 declare module 'dojo/io-query' {
 	var ioQuery:{
 		objectToQuery(map:any):string;
