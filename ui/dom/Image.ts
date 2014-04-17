@@ -8,6 +8,7 @@ class ImageRenderer extends _ElementRenderer {
 	_buttonActions:any = roles.button;
 	_checkboxActions:any = roles.checkbox;
 	_dialogActions:any = roles.dialog;
+	_linkActions:any = roles.link;
 	_radioAction:any = roles.radio;
 
 	render(widget:dom.IImage):void {

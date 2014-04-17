@@ -6,6 +6,7 @@ import util = require('../../util');
 class TextRenderer extends _ElementRenderer {
 	_buttonActions:any = roles.button;
 	_checkboxActions:any = roles.checkbox;
+	_linkActions:any = roles.link;
 	_radioActions:any = roles.radio;
 
 	initialize(widget:dom.IText):void {

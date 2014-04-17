@@ -126,10 +126,6 @@ body {
 	z-index: 1;
 }
 
-.has-phone .remix .nav {
-	background-color: rgb(187,55,70);
-}
-
 .remix .nav, .remix button, .remix button {
 	font-family: 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial;
 	font-size: 20px;
@@ -291,4 +287,40 @@ body {
 
 .picker .dgrid-row.dgrid-selected {
 	background: #efefef;
+}
+
+@media only screen and (max-width : 1000px) {
+	.gallery {
+		width: 400px;
+	}
+
+	.remix {
+		left: 400px;
+	}
+}
+
+@media only screen and (max-width : 800px) {
+	.gallery {
+		width: 200px;
+	}
+
+	.remix {
+		left: 200px;
+	}
+}
+
+@media only screen and (max-width : 600px) {
+	.gallery {
+		width: 100%;
+	}
+
+	.remix {
+		left: 0;
+		width: 100%;
+		z-index: 1;
+	}
+
+	.remix .nav {
+		background-color: rgb(187,55,70);
+	}
 }

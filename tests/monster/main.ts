@@ -1,7 +1,6 @@
-/// <reference path="../../dojo" />
-/// <reference path="../../xstyle" />
+/// <reference path="../../dojo.d.ts" />
+/// <reference path="../../xstyle.d.ts" />
 
-import array = require('dojo/_base/array');
 import hasClass = require('xstyle/has-class');
 import WebApplication = require('framework/WebApplication');
 
