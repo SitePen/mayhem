@@ -49,10 +49,6 @@ class MockRenderer implements ui.IRenderer {
 		this.updateCallCount('detachContent');
 	}
 
-	handleAction(widget:ui.IWidget, name:string, source?:any):void {
-		this.updateCallCount('handleAction');
-	}
-
 	initialize(widget:ui.IWidget):void {
 		this.updateCallCount('initialize');
 	}
@@ -68,6 +64,10 @@ class MockRenderer implements ui.IRenderer {
 	setContent(widget:ui.IWidget, content:Node):void {
 		this.updateCallCount('setContent');
 		this._content = content;
+	}
+
+	trigger(widget:ui.IWidget, actionName:string, source?:any):void {
+		this.updateCallCount('trigger');
 	}
 
 	updateVisibility(widget:ui.IWidget, value:boolean):void {

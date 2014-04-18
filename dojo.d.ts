@@ -29,6 +29,11 @@ interface ILoaderPlugin {
 	normalize?(resourceId:string, normalize:(id:string) => string):string;
 }
 
+interface IPausableHandle extends IHandle {
+	pause:() => void;
+	resume:() => void;
+}
+
 interface IPromise<T> {
 	always<U>(callback:(valueOrError:any) => U):IPromise<U>;
 	cancel<U>(reason?:U, strict?:boolean):U;
@@ -107,6 +112,13 @@ declare module 'dojo/_base/lang' {
 		clone(object:any):any;
 	};
 	export = lang;
+}
+
+declare module 'dojo/_base/window' {
+	var window:{
+		body(document?:HTMLDocument):HTMLBodyElement;
+	};
+	export = window;
 }
 
 declare module 'dojo/aspect' {
@@ -196,9 +208,20 @@ declare module 'dojo/io-query' {
 	export = ioQuery;
 }
 
+declare module 'dojo/mouse' {
+	var mouse:{
+		enter:IExtensionEvent;
+		leave:IExtensionEvent;
+		wheel:IExtensionEvent;
+	};
+	export = mouse;
+}
+
 declare module 'dojo/on' {
 	var on:{
 		(target:Node, type:string, listener:EventListener, dontFix?:boolean):IHandle;
+
+		pausable:{ (target:Node, type:string, listener:EventListener, dontFix?:boolean):IPausableHandle; };
 	};
 	export = on;
 }
@@ -329,14 +352,21 @@ declare module 'dojo/text' {
 declare module 'dojo/topic' {
 	var topic:{
 		publish(topic:string, event:Object):void;
-		subscribe(topic:string, listener:() => void):{ remove: () => void };
+		subscribe(topic:string, listener:(...args:any[]) => void):IHandle;
 	};
 	export = topic;
 }
 
 declare module 'dojo/touch' {
 	var touch:{
-		press(node:Node, handler:EventListener):IHandle;
+		cancel:IExtensionEvent;
+		enter:IExtensionEvent;
+		leave:IExtensionEvent;
+		move:IExtensionEvent;
+		press:IExtensionEvent;
+		release:IExtensionEvent;
+		out:IExtensionEvent;
+		over:IExtensionEvent;
 	};
 	export = touch;
 }

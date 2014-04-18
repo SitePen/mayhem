@@ -2,7 +2,6 @@
 
 import ContentView = require('./ContentView');
 import ui = require('./interfaces');
-//import Widget = require('./Widget');
 
 var Renderer:any = require('./renderer!Dialog');
 
@@ -11,8 +10,10 @@ class Dialog extends ContentView implements ui.IDialog {
 	set:ui.IDialogSet;
 }
 
-Dialog.defaults({ role: 'dialog' });
-Dialog.set('hidden', true);
+Dialog.set({
+	role: 'dialog',
+	hidden: true
+});
 
 Dialog.prototype._renderer = new Renderer();
 

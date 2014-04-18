@@ -1,39 +1,15 @@
-import dojoString = require('dojo/string');
 import Model = require('framework/data/Model');
+import RequestMemory = require('framework/store/RequestMemory');
 
-class MonsterModel extends Model {
-	private _getSrcPath(type:string):string {
-		var id:number = this.get(type + 'Id');
-		return id == null ? '' : './images/' + type + '/' + type + dojoString.pad(id + 1, 2) + '.svg';
-	}
-}
+class MonsterModel extends Model {}
 
 MonsterModel.schema(():any => {
 	return {
-		id: Model.property<number>({
-			label: 'ID'
-		}),
+		id: Model.property<number>({}),
 		bodyId: Model.property<number>({}),
-		bodySrc: Model.property<string>({
-			get: function ():string {
-				return this.get('model')._getSrcPath('body');
-			},
-			dependencies: [ 'bodyId' ]
-		}),
 		eyesId: Model.property<number>({}),
-		eyesSrc: Model.property<string>({
-			get: function ():string {
-				return this.get('model')._getSrcPath('eyes');
-			},
-			dependencies: [ 'eyesId' ]
-		}),
 		mouthId: Model.property<number>({}),
-		mouthSrc: Model.property<string>({
-			get: function ():string {
-				return this.get('model')._getSrcPath('mouth');
-			},
-			dependencies: [ 'mouthId' ]
-		})
+		shareLink: Model.property<string>({})
 	};
 });
 

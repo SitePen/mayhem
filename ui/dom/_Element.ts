@@ -24,16 +24,30 @@ class _ElementRenderer extends _BaseRenderer {
 	attachRole(widget:dom.IElementWidget):void {
 		this._detachRole(widget);
 
-		widget._outerFragment.setAttribute('role', widget.get('role'));
-
-		var role = widget.get('role'),
+		var element = widget._outerFragment,
+			role = widget.get('role'),
 			actions = this['_' + role + 'Actions'];
+
+		element.setAttribute('role', widget.get('role'));
+
 		if (!actions) {
 			return has('debug') && console.warn('Renderer missing actions config for role: ' + role);
 		}
 
 		for (var key in actions) {
 			actions[key].attach(widget);
+		}
+
+		// Patch up element tabindex depending on whether focus action is available
+		if (actions.focus) {
+			if (!(element.tabIndex >= 0)) {
+				element.tabIndex = 0;
+			}
+		}
+		else {
+			if (element.tabIndex >= 0) {
+				element.tabIndex = -1;
+			}
 		}
 	}
 

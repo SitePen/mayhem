@@ -40,10 +40,6 @@ class _BaseRenderer implements ui.IRenderer {
 		console.debug('#detachContent');
 	}
 
-	handleAction(widget:ui.IWidget, name:string, source?:any):void {
-		console.debug('#handleAction');
-	}
-
 	initialize(widget:ui.IWidget):void {
 		console.debug('#initialize');
 	}
@@ -59,6 +55,10 @@ class _BaseRenderer implements ui.IRenderer {
 	setContent(widget:ui.IWidget, value:any):void {
 		console.debug('#setContent');
 		this._content[widget.get('id')] = value;
+	}
+
+	trigger(widget:ui.IWidget, actionName:string, source?:any):void {
+		console.debug('#trigger');
 	}
 
 	updateVisibility(widget:ui.IWidget, value:boolean):void {

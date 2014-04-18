@@ -98,6 +98,17 @@ export interface IImageSet extends IViewSet {
 	(name:'src', value:string):void;
 }
 
+export interface ILayout extends IContentView {
+	get:ILayoutGet;
+	set:ILayoutSet;
+}
+
+export interface ILayoutGet extends IContentViewGet {
+}
+
+export interface ILayoutSet extends IContentViewSet {
+}
+
 export interface IList extends IView {
 	get:IListGet;
 	set:IListSet;
@@ -140,11 +151,11 @@ export interface IRenderer {
 	destroy(widget:IWidget):void;
 	detach(widget:IWidget):void;
 	detachContent(widget:IWidget):void;
-	handleAction(widget:IWidget, name:string, source?:any):void;
 	initialize(widget:IWidget):void;
 	remove(widget:IContainer, item:IWidget):void;
 	render(widget:IWidget):void;
 	setContent(widget:IWidget, content:any):void;
+	trigger(widget:IWidget, actionName:string, source?:any):void;
 	updateVisibility(widget:IWidget, value:boolean):void;
 }
 

@@ -10,6 +10,7 @@ import PlacePosition = require('./PlacePosition');
 import Style = require('./style/Style');
 import ui = require('./interfaces');
 import util = require('../util');
+import when = require('dojo/when');
 
 var registry:{ [id:string]:ui.IWidget } = {},
 	uid = 0;
@@ -230,6 +231,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	/* protected */ _roleChanged(value:string):void {
 		this._renderer.attachRole(this);
+
+		// TODO: set focusable based on role?
 	}
 
 	own(...handles:any[]):void {
@@ -250,35 +253,39 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.style.set(Style.parse(value));
 	}
 
-	trigger(action:string, source?:Event):void {
-		// Invoke handler, if available, then action
-		var handler:any = this.get(action + 'Handler'),
-			NOCALL = {},
-			result:any = NOCALL;
-
-		// Trigger widget handler
-		if (typeof handler === 'function') {
-			// If handler is a function call with this widget as context
-			result = handler.call(this, source);
-		}
-		else if (typeof handler === 'string') {
-			// If handler is a string call named method on mediator if available
-			var mediator = this.get('mediator');
-			if (mediator && mediator[handler]) {
-				result = mediator[handler](source);
-			}
-		}
-		has('debug') && result === NOCALL && console.log('No action handler available for ' + action);
-
-		// Handler on widget can cancel action
-		if (result !== false) {
-			// Call action handler on renderer
-			this._renderer.handleAction(this, action, source);
-		}
+	trigger(actionName:string, source?:Event):void {
+		this._renderer.trigger(this, actionName, source);
 	}
 }
 
 Widget.set('class', '');
 Widget.prototype.className = '';
+
+Widget.prototype.emit = function (type:any, event?:any):boolean {
+	console.log('emitting', type)
+	if (typeof type === 'string') {
+		// Look up event handler on widget (first transforming hyphenated event name to camelcased property name)
+		var key = ('on-' + type).toLowerCase().replace(/-([a-z])/g, function () {
+				return arguments[1].toUpperCase();
+			}),
+			handler = this.get(key);
+
+		// If handler is a function call with this widget as context
+		if (typeof handler === 'function') {
+			handler.call(this, event);
+		}
+		// If handler is a string call named method on mediator if available
+		else if (typeof handler === 'string') {
+			var mediator = this.get('mediator');
+			if (mediator && mediator[handler]) {
+				mediator[handler](event);
+			}
+		}
+		// TODO: capture result from handler and allow it to cancel event
+	}
+
+	return ObservableEvented.prototype.emit.apply(this, arguments);
+};
+
 
 export = Widget;

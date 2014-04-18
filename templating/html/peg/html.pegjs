@@ -360,7 +360,6 @@ For '<for/>'
 	= kwArgs:ForTagOpen body:Element ForTagClose {
 		validate(kwArgs, {
 			type: '<for>',
-			required: [ 'in' ],
 			extensible: true
 		});
 

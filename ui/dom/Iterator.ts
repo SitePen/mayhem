@@ -1,15 +1,15 @@
-/// <reference path="../../dgrid" />
 /// <reference path="../../dojo" />
 
 import array = require('dojo/_base/array');
 import ContentView = require('../ContentView');
-import declare = require('dojo/_base/declare');
 import Deferred = require('dojo/Deferred');
+import dgrid = require('./util/dgrid');
 import dom = require('./interfaces');
 import _ElementRenderer = require('./_Element');
 import Template = require('../../templating/Template');
 import util = require('../../util');
 import when = require('dojo/when');
+
 
 class IteratorRenderer extends _ElementRenderer {
 	destroy(widget:dom.IIterator):void {
@@ -17,26 +17,11 @@ class IteratorRenderer extends _ElementRenderer {
 		widget._impl = null;
 	}
 
-	private _getImplCtor(widget:dom.IIterator):IPromise<any> {
-		var base = this._sourceIsArray(widget) ? 'dgrid/List' : 'dgrid/OnDemandList',
-			dfd:any = new Deferred<any>();
-
-		require([ base, 'dgrid/Keyboard', 'dgrid/Selection' ], (...modules:any[]):void => {
-			dfd.resolve(declare(modules));
-		});
-
-		return dfd;
-	}
-
 	private _getSelectionMode(value:any):string {
-		// Use 'single' selection mode when truthy but not a string
+		// Use 'single' selection mode when truthy but not specified
 		if (value) {
 			return typeof value === 'string' ? value : 'single';
 		}
-	}
-
-	private _sourceIsArray(widget:dom.IIterator):boolean {
-		return widget.get('source') instanceof Array;
 	}
 
 	private _implIsOnDemand(widget:dom.IIterator):boolean {
@@ -77,22 +62,22 @@ class IteratorRenderer extends _ElementRenderer {
 			// for (var i = 0, len = items.length; i < len; ++i) {
 			// 	list._select(items[i] || '', null, true);
 			// }
-			item !== null && list._select(item, null, true);
+			item != null && list._select(item, null, true);
 		});
 
 		widget.observe('allowSelectAll', (value:boolean) => {
-			widget._impl && widget._impl.set('allowSelectAll', false);
+			widget._impl && widget._impl.set('allowSelectAll', value);
 		});
 
 		widget.observe('allowTextSelection', (value:boolean) => {
-			widget._impl && widget._impl.set('allowTextSelection', false);
+			widget._impl && widget._impl.set('allowTextSelection', value);
 		});
 
 		widget.observe('source', (source:any, previous:any) => {
 			widget._sourceObserverHandle && widget._sourceObserverHandle.remove();
 
 			when(this._renderList(widget), ():void => {
-				if (this._sourceIsArray(widget)) {
+				if (source instanceof Array) {
 					// Resize and force refresh on the list
 					var lastLength = widget._sourceLength || 0,
 						sourceLength = widget._sourceLength = source.length;
@@ -142,53 +127,52 @@ class IteratorRenderer extends _ElementRenderer {
 		});
 
 		list && list.destroy();
-		return when(this._getImplCtor(widget), (ImplCtor:any) => {
-			list = widget._impl = new ImplCtor({ id: widget.get('id') });
-			list._onNotification = function() {
-				console.log('list notification:', arguments)
+
+		var ImplCtor = source instanceof Array ? dgrid.EagerList : dgrid.LazyList;
+		list = widget._impl = new ImplCtor({ id: widget.get('id') });
+		list._onNotification = function() {
+			console.log('list notification:', arguments)
+		}
+
+		if (arraySource) {
+			var _insertRow:any = list.insertRow;
+			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
+				var child = this._getWidgetByKey(widget, '' + i);
+				child._renderer.detach(child);
+				return _insertRow.call(list, child._outerFragment, parent, beforeNode, i, options);
+			};
+			list.renderRow = (element:any):HTMLElement => element;
+		}
+		else {
+			list.renderRow = (record:any):HTMLElement => {
+				var idProperty = source.idProperty,
+					id = record.get ? record.get(idProperty) : record[idProperty];
+				return this._getWidgetByKey(widget, id)._outerFragment;
+			};
+		}
+
+		// Initialize some list properties and add event listeners
+		list.set('selectionMode', this._getSelectionMode(widget.get('selection')));
+		list.set('allowSelectAll', widget.get('allowSelectAll'));
+		list.set('allowTextSelection', widget.get('allowTextSelection'));
+
+
+		// TODO: widget selected property as ObservableArray?
+		list.on('dgrid-select,dgrid-deselect', util.debounce(() => {
+			var selection = widget._impl.selection,
+				items:string[] = [];
+			for (var key in selection) {
+				selection[key] && items.push(key);
 			}
+			widget.set('selectedItem', items.length === 1 ? items[0] : null);
+		}));
 
-			if (arraySource) {
-				var _insertRow:any = list.insertRow;
-				list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
-					var child = this._getWidgetByKey(widget, '' + i);
-					child._renderer.detach(child);
-					return _insertRow.call(list, child._outerFragment, parent, beforeNode, i, options);
-				};
-				list.renderRow = (element:any):HTMLElement => element;
-			}
-			else {
-				list.renderRow = (record:any):HTMLElement => {
-					var idProperty = source.idProperty,
-						id = record.get ? record.get(idProperty) : record[idProperty];
-					return this._getWidgetByKey(widget, id)._outerFragment;
-				};
-			}
+		var className = list.domNode.className;
+		this._replace(widget, list.domNode);
+		widget.classList.add(className);
 
-			// Initialize some list properties and add event listeners
-			list.set('selectionMode', this._getSelectionMode(widget.get('selection')));
-			list.set('allowSelectAll', widget.get('allowSelectAll'));
-			list.set('allowTextSelection', widget.get('allowTextSelection'));
-
-
-			// TODO: widget selected property as ObservableArray?
-			list.on('dgrid-select,dgrid-deselect', util.debounce(() => {
-				var selection = widget._impl.selection,
-					items:string[] = [];
-				for (var key in selection) {
-					selection[key] && items.push(key);
-				}
-				console.log('updating selected...', items)
-				widget.set('selectedItem', items.length === 1 ? items[0] : null);
-			}));
-
-			var className = list.domNode.className;
-			this._replace(widget, list.domNode);
-			widget.classList.add(className);
-
-			// Also wait on iterator's template which could be a promise
-			return when(widget.get('template'));
-		});
+		// Wait on iterator's template which could be a promise
+		return when(widget.get('template'));
 	}
 
 	private _replace(widget:dom.IIterator, newRoot:HTMLElement):void {

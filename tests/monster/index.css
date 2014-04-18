@@ -13,6 +13,7 @@ body {
 	background-image: -o-linear-gradient(133deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
 	background-image: -ms-linear-gradient(133deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
 	background-image: linear-gradient(-43deg, #9f1163 0%, #ce5031 100%, #ce5031 100%);
+	overflow-x: hidden;
 }
 
 .gallery {
@@ -24,7 +25,7 @@ body {
 	left: 0;
 	position: absolute;
 	top: 0;
-	width: 600px;
+	width: 512px;
 	z-index: 1;
 }
 
@@ -39,21 +40,22 @@ body {
 }
 
 .gallery .dgrid-content {
-	background: url(images/monsterMayhem.svg) no-repeat top center;
-	background-size: 50%;
-	margin-top: 0;
+	background: url(images/monsterMayhem.svg) no-repeat 50% 7px;
+	background-size: 300px;
+	padding-top: 100px;
 }
 
-/* TODO: ask Ken about a better way to do this */
-.gallery .dgrid-content .dgrid-preload {
-	height: 90px !important;
+.gallery .dgrid-content:after {
+	content: '';
+	display: inline-block;
+	width: 100%;
 }
 
 .gallery .dgrid-row {
-	float: left;
+	display: inline-block;
 	height: 150px;
 	opacity: 0.8;
-	padding: 20px;
+	padding: 10px;
 	width: 150px;
 }
 
@@ -83,25 +85,26 @@ body {
 	position: relative;
 }
 
-.monster img {
+.monster .part {
 	height: 100%;
 	position: absolute;
 	width: 100%;
 }
 
-.monster img.body {
+.monster .part.body {
 	height: 80%;
+	left: 0;
 	margin-top: 7%;
 }
 
-.monster img.mouth {
+.monster .part.mouth {
 	height: 10%;
 	left: 35%;
 	top: 39%;
 	width: 30%;
 }
 
-.monster img.eyes {
+.monster .part.eyes {
 	height: 10%;
 	left: 40%;
 	top: 25%;
@@ -109,10 +112,11 @@ body {
 }
 
 .remix {
+	background: white;
 	bottom: 0;
-	left: 600px;
+	left: 512px;
 	min-height: 320px;
-	min-width: 420px;
+	min-width: 320px;
 	position: absolute;
 	right: 0;
 	top: 0;
@@ -126,7 +130,7 @@ body {
 	z-index: 1;
 }
 
-.remix .nav, .remix button, .remix button {
+.remix .nav, .remix button {
 	font-family: 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial;
 	font-size: 20px;
 	font-weight: 400;
@@ -135,70 +139,44 @@ body {
 .remix button {
 	background: none;
 	border: none;
-}
-
-.remix .nav button {
-	bottom: 0;
-	color: white;
+	color: rgb(174,213,56);
+	padding: 5px 10px;
 	position: absolute;
-	margin: 0;
-	padding: 0;
-	top: 0;
 }
 
 .remix .nav button.close {
-	background: url(images/galleryButton.svg) no-repeat center;
-	background-size: 75%;
-	height: 40px;
-	left: 0;
-	width: 40px;
+	display: none;
 }
 
 .remix .nav button.edit {
-	background: url(images/remixButtonBg.svg) no-repeat top center;
-	-webkit-background-size: contain;
-	-moz-background-size: contain;
-	background-size: contain;
-	height: 75px;
-	left: 37.5%;
-	-webkit-transition: top 0.1s linear;
-	-moz-transition: top 0.1s linear;
-	-o-transition: top 0.1s linear;
-	-ms-transition: top 0.1s linear;
-	transition: top 0.25s linear;
-	top: -4px;
-	width: 25%;
-}
-
-.remix .nav button.edit:hover {
-	top: -1px;
+	left: 0;
 }
 
 .remix .nav button.edit:after {
-	content: url(images/remixButtonLabel.svg);
-	zoom: 0.5;
-}
-
-.remix .nav button.edit.selected {
-	background: url(images/saveButtonBg.svg) no-repeat top center;
-	-webkit-background-size: contain;
-	-moz-background-size: contain;
-	background-size: contain;
+	content: 'Remix';
 }
 
 .remix .nav button.edit.selected:after {
-	content: url(images/saveButtonLabel.svg);
+	content: 'Save';
 }
 
-.remix button.share {
-	padding: 5px 10px;
+.remix .nav button.share {
 	right: 0;
+}
+
+.remix .nav button.share:after {
+	content: 'Share';
 }
 
 .remix .monster {
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	background-size: cover;
+}
+
+.remix .monster .body, .remix .monster .eyes, .remix .monster .mouth {
+	-webkit-transform: translateY(20px);
+	transform: translateY(20px);
 }
 
 .dialog.share input {
@@ -249,18 +227,19 @@ body {
 	right: 0;
 }
 
-.picker {
+.part-editor {
 	height: 300px;
 	margin-left: -200px;
 	margin-top: -150px;
 	width: 400px;
+	z-index: 1;
 }
 
-.picker .title {
+.part-editor .title {
 	padding: 5px;
 }
 
-.picker .dgrid {
+.part-editor .dgrid {
 	border: 0;
 	bottom: 0;
 	height:100%;
@@ -269,58 +248,157 @@ body {
 	width: 100%;
 }
 
-.picker .dgrid-content {
+.part-editor .dgrid-content {
 	top: 60px;
 }
 
-.picker .dgrid-row {
+.part-editor .dgrid-row {
 	float: left;
 	height: 75px;
 	padding: 12px;
+	position: relative;
 	width: 75px;
 }
 
-.picker .dgrid-row.dgrid-focus {
+.part-editor .dgrid-row.dgrid-focus {
 	outline-width: 0px;
 	opacity: 0.9;
 }
 
-.picker .dgrid-row.dgrid-selected {
+.part-editor .dgrid-row.dgrid-selected {
 	background: #efefef;
 }
 
-@media only screen and (max-width : 1000px) {
-	.gallery {
-		width: 400px;
-	}
+.notification {
+	bottom: 0;
+	color: white;
+	font-family: 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial;
+	list-style-type: none;
+	margin: 0 15%;
+	padding: 0;
+	position: absolute;
+	text-align: center;
+	width: 75%;
+	z-index: 2;
+}
 
-	.remix {
-		left: 400px;
+.notification > li {
+	animation-duration: 0.5s;
+	animation-name: notification-slideup;
+	background: rgba(0,0,0,0.6);
+	border: 1px solid black;
+	border-bottom: none;
+	border-top: 1px dotted rgba(255,255,255,0.2);
+	padding: 6px;
+}
+
+@keyframes notification-slideup {
+	from {
+		-webkit-transform: translateY(100%);
+		transform: translateY(100%);
+	}
+	to {
+		-webkit-transform: translateY(0);
+		transform: translateY(0);
 	}
 }
 
-@media only screen and (max-width : 800px) {
+.notification > li:first-child {
+	-moz-border-radius: 5px 5px 0 0;
+	border-radius: 5px 5px 0 0;
+	border-top: 1px solid black;
+}
+
+@media only screen and (max-width : 1023px) {
 	.gallery {
-		width: 200px;
+		width: 342px;
 	}
 
 	.remix {
-		left: 200px;
+		left: 342px;
 	}
 }
 
-@media only screen and (max-width : 600px) {
+@media only screen and (max-width : 683px) {
 	.gallery {
 		width: 100%;
+	}
+
+	.gallery .dgrid-content {
+		text-align: center;
 	}
 
 	.remix {
 		left: 0;
+    	transition-duration: 0.5s;
+    	-webkit-transition-property: -webkit-tranform;
+    	transition-property: tranform;
 		width: 100%;
 		z-index: 1;
 	}
 
+	.remix.inactive {
+		-webkit-transform: translate3d(-100%,0,0);
+		transform: translate3d(-100%,0,0);
+	}
+
 	.remix .nav {
-		background-color: rgb(187,55,70);
+		background: rgb(187,55,70);
+	}
+
+	.remix .nav button.close {
+		background: url(images/galleryButton.svg) no-repeat center;
+		background-size: 75%;
+		height: 40px;
+		left: 0;
+		display: block;
+		width: 40px;
+	}
+
+	.remix .nav button.edit {
+		background: url(images/remixButtonBg.svg) no-repeat top center;
+		-webkit-background-size: contain;
+		-moz-background-size: contain;
+		background-size: contain;
+		height: 75px;
+		left: 37.5%;
+		-webkit-transition: top 0.1s linear;
+		-moz-transition: top 0.1s linear;
+		-o-transition: top 0.1s linear;
+		-ms-transition: top 0.1s linear;
+		transition: top 0.25s linear;
+		top: -4px;
+		width: 25%;
+	}
+
+	.remix .nav button.edit:hover {
+		top: -1px;
+	}
+
+	.remix .nav button.edit:after {
+		content: url(images/remixButtonLabel.svg);
+		zoom: 0.5;
+	}
+
+	.remix .nav button.edit.selected {
+		background: url(images/saveButtonBg.svg) no-repeat top center;
+		-webkit-background-size: contain;
+		-moz-background-size: contain;
+		background-size: contain;
+	}
+
+	.remix .nav button.edit.selected:after {
+		content: url(images/saveButtonLabel.svg);
+	}
+
+	.notification {
+		color: black;
+		margin: 0;
+		width: 100%;
+	}
+
+	.notification > li {
+		background: rgba(255,248,100,0.6);
+		border: none;
 	}
 }

@@ -107,11 +107,11 @@ export interface IResolverSet extends ui.IResolverSet {}
 
 /* Actions */
 
-export interface IActionConfig {
+export interface IAction {
 	name:string;
 	role:string;
 	triggers:any[];
 
 	attach(widget:IElementWidget):IHandle;
-	invoke(widget:IElementWidget):void;
+	perform(widget:IElementWidget):void;
 }

@@ -41,10 +41,10 @@ class Iterator extends ContentView implements ui.IIterator {
 			scoped = ScopedMediator.scope(mediator || this.get('mediator')),
 			valueProperty = new Property<any>({
 				get: function ():any {
-					return view._getSourceKey(key);
+					return view._getSourceItem(key);
 				},
 				set: function (value:any):void {
-					view._setSourceKey(key, value);
+					view._setSourceItem(key, value);
 				}
 			});
 
@@ -73,8 +73,7 @@ class Iterator extends ContentView implements ui.IIterator {
 		super.destroy();
 	}
 
-	private _eachSetter(value:string):void {
-		this._each = value;
+	private _eachChanged(value:string):void {
 		var mediator:data.IMediator = this.get('mediator');
 		if (!mediator) {
 			return;
@@ -87,7 +86,7 @@ class Iterator extends ContentView implements ui.IIterator {
 		});
 	}
 
-	private _getSourceKey(key:string):any {
+	private _getSourceItem(key:string):any {
 		var source:any = this.get('source');
 		if (source instanceof Array) {
 			return source[key];
@@ -105,7 +104,7 @@ class Iterator extends ContentView implements ui.IIterator {
 		return this._mediatorIndex[key] = this._createScopedMediator(key);
 	}
 
-	private _setSourceKey(key:string, value:any):void {
+	private _setSourceItem(key:string, value:any):void {
 		var source:any = this.get('source');
 		if (source instanceof Array) {
 			// Use set method if available

@@ -224,11 +224,11 @@ declare module 'dstore/Rest' {
 	import Model = require('dstore/Model');
 
 	class Rest<T> extends Request<T> implements dstore.IAsyncCollection<T> {
-		stringify:(object:Object) => string;
+		add(object:T, options?:Object):IPromise<T>;
 		get(id:any, options?:Object):IPromise<T>;
 		put(object:T, options?:Object):IPromise<T>;
-		add(object:T, options?:Object):IPromise<T>;
 		remove(id:any, options?:Object):IPromise<any>;
+		stringify:(object:Object) => string;
 	}
 
 	export = Rest;
@@ -238,18 +238,23 @@ declare module 'dstore/Store' {
 	import Evented = require('dojo/Evented');
 
 	class Store<T> extends Evented {
-		model:new (...args:any[]) => T;
 		constructor(options?:Object);
-		getIdentity(object:T):any;
-		_setIdentity(object:T, identity:any):any;
-		_restore(object:Object):any;
+
+		add(object:T, options?:Object):any /* T | IPromise<T> */;
 		create(properties:Object):T;
+		get(id:any, options?:Object):any /* T | Promise<T> */;
+		getIdentity(object:T):any;
+		fetch():any;
 		filter(filter:any):dstore.ICollection<T>;
-		sort(property:any, descending?:boolean):dstore.ICollection<T>;
-		range(start:number, end?:number):dstore.ICollection<T>;
 		forEach(callback:(item:T, index:number, collection:dstore.ICollection<T>) => void, thisObject?:any):any; /* void, IPromise<void> */
 		map<U>(callback:(item:T, index:number, collection:dstore.ICollection<T>) => U, thisObject?:any):dstore.ICollection<U>;
-		fetch():any;
+		model:new (...args:any[]) => T;
+		put(object:T, options?:Object):any /* T | Promise<T> */;
+		range(start:number, end?:number):dstore.ICollection<T>;
+		remove(id:any, options?:Object):any /* any | IPromise<any> */;
+		_restore(object:Object):any;
+		_setIdentity(object:T, identity:any):any;
+		sort(property:any, descending?:boolean):dstore.ICollection<T>;
 	}
 
 	export = Store;

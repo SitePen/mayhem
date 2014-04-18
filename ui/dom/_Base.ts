@@ -91,15 +91,15 @@ class _BaseRenderer implements ui.IRenderer {
 		}
 	}
 
-	handleAction(widget:dom.IWidget, name:string, source?:Event):void {
+	trigger(widget:dom.IElementWidget, actionName:string, source?:Event):void {
 		var roleConfig = this['_' + widget.get('role') + 'Actions'],
-			action = roleConfig && roleConfig[name];
+			action = roleConfig && roleConfig[actionName];
 
 		if (action) {
-			action.invoke(widget, source);
+			action.trigger(widget, source);
 		}
 		else if (has('debug')) {
-			console.log('Renderer has no action handler for ' + name);
+			console.warn('No action handler for: ' + actionName);
 		}
 	}
 
