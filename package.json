@@ -12,7 +12,7 @@
 		"grunt-peg": "1.2.0",
 		"grunt-ts": "1.7.2-2",
 		"grunt-wrap": "0.3.0",
-		"intern-geezer": "1.6.0",
+		"intern-geezer": "1.6.2",
 		"lodash": "2.4.1",
 		"typescript": "1.0.0"
 	}
