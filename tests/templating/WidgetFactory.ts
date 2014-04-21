@@ -62,7 +62,6 @@ registerSuite({
 		assert.strictEqual((<any> widget.get('children')).length, 1, 'Widget should have 1 child');
 		assert.instanceOf((<any> widget.get('children'))[0], Button, 'Widget child should be a Widget');
 
-		// was broken, may be fixed, but can't test until widget creation issue is fixed
 		assert.doesNotThrow(function () {
 			try {
 				widget.destroy();

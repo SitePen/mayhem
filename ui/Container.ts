@@ -122,26 +122,26 @@ class Container extends View implements ui.IContainer {
 		return index <= 0 ? null : this._children[index - 1];
 	}
 
-	remove(index:number):void;
-	remove(widget:ui.IWidget):void;
-	remove(index:any):void {
+	remove(value:number):void;
+	remove(value:ui.IWidget):void;
+	remove(value:any):void {
 		var children = this._children,
 			widget:ui.IWidget;
 
-		if (typeof index !== 'number') {
-			widget = index;
-			index = widget.get('index');
+		if (typeof value !== 'number') {
+			widget = value;
+			value = widget.get('index');
 
-			if (has('debug') && widget !== children[index]) {
+			if (has('debug') && widget !== children[value]) {
 				throw new Error('Attempt to remove widget ' + widget.get('id') + ' from non-parent ' + this.get('id'));
 			}
 		}
 		else {
-			widget = children[index];
+			widget = children[value];
 		}
 
 		this._renderer.remove(this, widget);
-		children.splice(index, 1);
+		children.splice(value, 1);
 		widget.set('parent', null);
 	}
 }

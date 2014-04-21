@@ -69,10 +69,27 @@ class ContentView extends Container implements ui.IContentView {
 		this._renderer.setContent(this, content);
 	}
 
+	remove(value:number):void;
+	remove(value:ui.IWidget):void;
+	remove(value:any):void {
+		var placeholders = this.placeholders;
+		if (value instanceof Placeholder) {
+			this._renderer.remove(this, value);
+			value.set('parent', null);
+			for (var name in placeholders) {
+				if (placeholders[name] === value) {
+					delete placeholders[name];
+					break;
+				}
+			}
+		} else {
+			super.remove(value);
+		}
+	}
+
 	destroy():void {
 		for (var name in this.placeholders) {
 			var placeholder = this.placeholders[name];
-			placeholder.empty();
 			placeholder.destroy();
 		}
 
