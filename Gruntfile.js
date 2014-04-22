@@ -137,6 +137,12 @@ module.exports = function (grunt) {
 					reporters: [ 'lcovhtml' ]
 				}
 			},
+			data: {
+				options: {
+					config: 'tests/intern',
+					suites: [ 'mayhem/tests/data' ]
+				}
+			},
 			client: {
 				options: {
 					config: 'tests/intern'
