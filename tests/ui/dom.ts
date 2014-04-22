@@ -6,7 +6,7 @@ define([
 	'./dom/Placeholder',
 	'./dom/Resolver',
 	'./dom/Text',
-	'./dom/Widget',
+	'./dom/_Base',
 	'./dom/_Dijit',
 	'./dom/_Element',
 	'./dom/util',

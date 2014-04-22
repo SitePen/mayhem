@@ -121,6 +121,22 @@ module.exports = function (grunt) {
 					reporters: [ 'lcovhtml' ]
 				}
 			},
+			ui: {
+				options: {
+					runType: 'runner',
+					config: 'tests/intern-local',
+					suites: [ 'mayhem/tests/ui' ],
+					reporters: [ 'console' ]
+				}
+			},
+			uiCoverage: {
+				options: {
+					runType: 'runner',
+					config: 'tests/intern-local',
+					suites: [ 'mayhem/tests/ui' ],
+					reporters: [ 'lcovhtml' ]
+				}
+			},
 			client: {
 				options: {
 					config: 'tests/intern'
