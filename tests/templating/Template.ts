@@ -7,9 +7,19 @@ import Template = require('../../templating/Template');
 import JsonTemplate = require('../../templating/json');
 import WidgetFactory = require('../../templating/WidgetFactory');
 import json = require('dojo/json');
+import MockRenderer = require('../mocks/ui/Renderer');
+import Widget = require('../../ui/Widget');
 
 registerSuite({
 	name: 'templating/Template',
+
+	setup: function () {
+		Widget.prototype._renderer = <any> new MockRenderer();
+	},
+
+	teardown: function () {
+		Widget.prototype._renderer = undefined;
+	},
 
 	'.parse': function () {
 		var dfd = this.async(2000);
@@ -24,13 +34,8 @@ registerSuite({
 	'.load': function () {
 		var dfd = this.async(4000);
 		// base Template loads the template data as text and performs no processing, so we have to use a JsonTemplate
-		JsonTemplate.load('./data/template3.json', require, dfd.callback(function (factory:any) {
-			assert.property(factory, 'create', 'Factory should have a create property');
-			assert.property(factory, 'destroy', 'Factory should have a destroy property');
-			assert.deepPropertyVal(factory, 'childFactories[0].tree.constructor', 'mayhem/ui/View',
-				'Child factory should have expected type');
-			assert.deepPropertyVal(factory, 'childFactories[0].childFactories[0].tree.constructor',
-				'mayhem/ui/form/Button', 'Child child factory should have expected type');
+		JsonTemplate.load('./data/template3.json', require, dfd.callback(function (factory:templating.IWidgetConstructor) {
+			assert.isFunction(factory);
 		}));
 	},
 
