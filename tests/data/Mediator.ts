@@ -80,15 +80,6 @@ OuterTestMediator.schema(():any => {
 	};
 });
 
-// Tests
-// * Mediators can be nested
-// * Composing multiple models with a mediator
-// * Getting metadata
-// * Validation
-// * Setting computed properties
-// * A mediator property masks a property of the same name on the nested model
-// * Test isExtensible property
-
 var model:TestModel,
 	mediator:TestMediator;
 
@@ -193,8 +184,7 @@ registerSuite({
 			]);
 		},
 
-		// TODO: Does this test still apply?
-		/*'model should be nullable'() {
+		'model should be nullable'() {
 			mediator.set('model', null);
 			assert.isNull(mediator.get('model'));
 
@@ -203,7 +193,7 @@ registerSuite({
 				mediator.get('firstName'),
 				'Non-mediator property should not be defined when model is null'
 			);
-		}*/
+		}
 	},
 
 	'computed properties': {
@@ -268,9 +258,14 @@ registerSuite({
 			]);
 		},
 
-		// TODO: Is this something we should support?
-		/*'model should be nullable'() {
-		}*/
+		'model should be nullable'() {
+			mediator.set('model', null);
+			assert.isNull(mediator.get('model'));
+
+			assert.isUndefined(mediator.get('fullName'));
+			mediator.set('fullName', 'Mark Twain');
+			assert.isUndefined(mediator.get('fullName'));
+		}
 	},
 
 	'nesting Mediators'() {
@@ -305,5 +300,6 @@ registerSuite({
 		assert.strictEqual(outerMediator.get('fullName'), 'Mark Hamill');
 	}
 
-	// TODO: Do we need to support a mediator that wraps multiple models? This doesn't appear to be implemented yet.
+	// TODO: Test validation
+	// TODO: Test metadata access
 });
