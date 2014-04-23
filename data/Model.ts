@@ -148,7 +148,9 @@ class Model extends Observable implements data.IModel, core.IHasMetadata {
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
 		var property = this._getProperty(key);
-		return property ? property.observe('value', observer) : super.observe(key, observer);
+		return property
+			? property.observe('value', (newValue, oldValue) => observer(newValue, oldValue, key))
+			: super.observe(key, observer);
 	}
 
 	remove():IPromise<any> {
