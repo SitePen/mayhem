@@ -6,7 +6,7 @@ define([
 	'./util',
 	'./Scheduler',
 	'./binding',
-//	'./Mediator',
+	'./data/Mediator',
 //	'./integration'
 //	'./routing',
 //	'./Model',
