@@ -1,46 +1,9 @@
 import WebApplication = require('framework/WebApplication');
+import config = require('./config');
 
-var app = new WebApplication({
-	modules: {
-		router: {
-			mediatorPath: 'app/mediators',
-			viewPath: 'framework/templating/html!app/views',
-			defaultRoute: 'items',
+declare var exports:any;
 
-			routes: {
-				items: {
-					view: 'Items',
-					collections: {
-						itemsStore: 'items'
-					}
-				},
-				'items/item': {
-					view: 'Item',
-					collections: {
-						'itemStore': 'items'
-					},
-					path: '<itemId:\\d+>'
-				}
-			}
-		},
-		collections: {
-			defaultStore: 'framework/store/RequestMemory',
-			modelPath: 'app/models',
-			models: {
-				items: {
-					model: 'Item',
-					target: require.toUrl('app/data/items.json')
-				}
-			}
-		},
-		ui: {
-			constructor: 'app/views/ApplicationView'
-		}
-	}
-});
-
-app.startup().then(function ():void {
+WebApplication.start(config).then((app:WebApplication):void => {
 	console.log('ready');
+	exports.app = app;
 });
-
-export = app;
