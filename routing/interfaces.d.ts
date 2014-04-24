@@ -6,9 +6,10 @@ import RouteEvent = require('./RouteEvent');
  */
 export interface IRoute {
 	get:IRouteGet;
-	enter(event:RouteEvent):IPromise<void>;
+	enter(event:RouteEvent):void;
 	exit():void;
 	set:IRouteSet;
+	startup():IPromise<IRoute>;
 }
 
 export interface IRouteGet extends core.IObservableGet {

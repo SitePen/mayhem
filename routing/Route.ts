@@ -1,5 +1,6 @@
 /// <reference path="../dojo" />
 
+import all = require('dojo/promise/all');
 import array = require('dojo/_base/array');
 import BaseRoute = require('./BaseRoute');
 import core = require('../interfaces');
@@ -14,12 +15,11 @@ import util = require('framework/util');
 import when = require('dojo/when');
 
 /**
- * A Route is a BaseRoute that binds a Mediator and View to a particular route.
+ * A Route is a BaseRoute that binds a Controller to a particular route.
  */
 class Route extends BaseRoute implements routing.IRoute {
 	private _subViewHandles:Array<{ remove:() => void}> = [];
-	private _mediatorInstance:any /* framework/data/Mediator */;
-	private _viewInstance:any /* ui.IContentView, IPromise<ui.IContentView> */;
+	private _controllerInstance:any /* framework/Controller */;
 
 	/**
 	 * The unique identifier for this route.
@@ -37,22 +37,8 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * `framework/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
 	 * transformed. If null, a generic Controller object will be used for this route instead.
 	 */
-	_mediator:string;
-
-	/**
-	 * The name of a view which, when transformed using the expression `router.viewPath + '/' +
-	 * toUpperCamelCase(route.view) + 'View'`, provides a module ID that points to a module whose value is a
-	 * `ui.IView`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-	 * transformed. If null, a generic View object will be used for this route instead.
-	 */
-	_view:string;
-
-	/**
-	 * The name of a template which, when transformed using the expression `router.viewPath + '/' +
-	 * toUpperCamelCase(route.template) + 'View.html'`, provides a path to a Mayhem template. If the string starts with
-	 * a '/', it will be treated as an absolute path and not transformed.
-	 */
-	_template:string;
+	_controller:string;
+	_controllerFor:string;
 
 	/**
 	 * The ID of the placeholder in the parent route's view that this route's view should be injected into.
@@ -70,62 +56,36 @@ class Route extends BaseRoute implements routing.IRoute {
 	_app:core.IApplication;
 
 	/**
-	 * Activates this route, instantiating view and mediator components and placing them into any parent route's view.
-	 * Whenever a route is activated, state information from the route is provided to the mediator by setting its
+	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
+	 * Whenever a route is activated, state information from the route is provided to the controller by setting its
 	 * `routeState` property.
 	 */
-	enter(event:RouteEvent):IPromise<void> {
-		var id = this.get('id'),
-			setRouteState = (event:RouteEvent):IPromise<void> => {
-				return when(this.get('parent').place(this._viewInstance, this.get('placeholder'))).then((handle:IHandle):IPromise<void> => {
-					this._subViewHandles.push(handle);
+	enter(event:RouteEvent):void {
+		var id = this.get('id');
 
-					has('debug') && console.log('entering', id);
+		if (!this._controllerFor) {
+			this._subViewHandles.push(this.get('parent').place(this._controllerInstance, this.get('placeholder')));
+		}
 
-					var kwArgs = { id: id };
+		has('debug') && console.log('entering', id);
 
-					for (var k in this) {
-						// Custom properties on the route should be provided to the controller, but not private or default
-						// properties since those are only relevant to the route itself
-						// TODO: is !this.hasOwnProperty(k) equivalent to (k in this.constructor.prototype)?
-						if (k.charAt(0) === '_' || !this.hasOwnProperty(k)) {
-							continue;
-						}
+		var kwArgs = { id: id };
 
-						kwArgs[k] = this[k];
-					}
+		for (var k in this) {
+			// Custom properties on the route should be provided to the controller, but not private or default
+			// properties since those are only relevant to the route itself
+			// TODO: is !this.hasOwnProperty(k) equivalent to (k in this.constructor.prototype)?
+			if (k.charAt(0) === '_' || !this.hasOwnProperty(k) || k === 'startup') {
+				continue;
+			}
 
-					lang.mixin(kwArgs, this.parse(event.newPath), { route: this });
+			kwArgs[k] = this[k];
+		}
 
-					has('debug') && console.log('new route state for', id, kwArgs);
-					this._mediatorInstance.set('routeState', kwArgs);
-					return dfd.promise;
-				});
-			};
+		lang.mixin(kwArgs, this.parse(event.newPath));
 
-		has('debug') && console.log('preparing', id);
-
-		var self = this,
-			dfd:IDeferred<void> = new Deferred<void>();
-
-		var viewDfd:IDeferred<ui.IContentView> = new Deferred<ui.IContentView>();
-		this._viewInstance = viewDfd.promise;
-
-		require([
-			this.get('view'),
-			this.get('mediator')
-		], function (View:any, Mediator:any, TemplateConstructor:any):void {
-			when(self._instantiateComponents(viewDfd, View, Mediator)).then(function ():void {
-				setRouteState(event);
-				dfd.resolve(null);
-			}, function ():void {
-				dfd.reject(null);
-			});
-		});
-
-		this.enter = setRouteState;
-
-		return dfd.promise;
+		has('debug') && console.log('new route state for', id, kwArgs);
+		this._controllerInstance.set('routeState', kwArgs);
 	}
 
 	/**
@@ -141,12 +101,14 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	/**
-	 * Destroy the view and mediator associated with this route.
+	 * Destroy the controller associated with this route.
 	 */
 	destroy():void {
-		if (this._viewInstance) {
-			this._viewInstance.destroyRecursive();
-			this._mediatorInstance.destroy && this._mediatorInstance.destroy();
+		if (this._controllerInstance) {
+			when(this._controllerInstance).then((controller:any):void => {
+				controller.destroy();
+				this._controllerInstance = null;
+			});
 		}
 	}
 
@@ -156,27 +118,57 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * @param view - The sub-view to place.
 	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
 	 */
-	place(view:any /* ui.IContentView */, placeholderId?:string):IPromise<IHandle> {
-		return when(this._viewInstance).then((viewInstance:ui.IContentView):IHandle => {
-			return viewInstance.add(view, placeholderId);
+	place(controller:any /* ui.IContentView */, placeholderId?:string):IPromise<IHandle> {
+		return this._controllerInstance.add(controller, placeholderId);
+	}
+
+	startup():IPromise<Route> {
+		has('debug') && console.log('preparing', this.get('id'));
+
+		var dfd = new Deferred<Route>(),
+			controllerDfd = new Deferred<any>();
+
+		this._controllerInstance = controllerDfd.promise.then((controller:any):void => {
+			this._controllerInstance = controller;
+			dfd.resolve(this);
+		}).otherwise((error:any):void => {
+			dfd.reject(error);
 		});
+
+		if (this._controllerFor) {
+			this.get('router').get('routes')[this._controllerFor]._controllerInstance.then(controllerDfd.resolve, controllerDfd.reject);
+		}
+		else {
+			require([
+				this.get('controller')
+			], (Controller:any):void => {
+				try {
+					var controller = this._controllerInstance = new Controller({
+						app: this.get('app'),
+						modules: this.get('modules')
+					});
+					controller.startup().then(controllerDfd.resolve, controllerDfd.reject);
+				}
+				catch (e) {
+					controllerDfd.reject(e);
+				}
+			});
+		}
+
+		this.startup = ():IPromise<Route> => dfd.promise;
+
+		return dfd.promise;
 	}
 
 	/**
 	 * Instantiate the view and mediator components this route manages.
 	 * @protected
 	 */
-	_instantiateComponents(viewDfd:IDeferred<ui.IContentView>, View:any, Mediator:any):void {
-		var mediator = this._mediatorInstance = new Mediator({
-			app: this.get('app')
-		});
-
-		viewDfd.resolve(this._viewInstance = new View({
+	_instantiateComponents(Controller:any):any {
+		return this._controllerInstance = new Controller({
 			app: this.get('app'),
-			mediator: mediator
-		}));
-
-		return this._viewInstance;
+			parent: this.get('parent').get('controllerInstance')
+		});
 	}
 }
 

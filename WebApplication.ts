@@ -10,23 +10,23 @@ class WebApplication extends Application {
 		return util.deepCopy(super._getDefaultConfig(), {
 			modules: {
 				router: {
-					constructor: 'framework/routing/HashRouter'
+					constructor: '/framework/routing/HashRouter'
 				},
-				ui: {
-					constructor: 'app/views/ApplicationView',
+				view: {
+					constructor: 'ApplicationView',
 					mediator: this
 				}
 			}
 		});
 	}
 
-	place(widget:ui.IWidget, placeholder?:string):IHandle {
-		return this.get('ui').add(widget, placeholder);
+	place(controller:any, placeholder?:string):IHandle {
+		return this.get('view').add(controller.get('view'), placeholder);
 	}
 
 	startup():IPromise<WebApplication> {
 		var promise = super.startup().then(():WebApplication => {
-			this.get('ui').attachToWindow(document.body);
+			this.get('view').attachToWindow(document.body);
 			return this;
 		});
 

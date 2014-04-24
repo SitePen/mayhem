@@ -12,6 +12,12 @@ import routing = require('./interfaces');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
+function resolve(value:string):string {
+	return value.replace(/(^|\/)([a-z])([^\/]*)$/, function ():string {
+		return arguments[1] + arguments[2].toUpperCase() + arguments[3];
+	});
+}
+
 /**
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
  * URL.
@@ -278,13 +284,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 		 * Converts a shorthand reference to a valid constructor-style module ID. e.g. `foo -> Foo`, `foo/bar ->
 		 * foo/Bar`
 		 */
-		function resolve(value:string):string {
-			return value.replace(/(^|\/)([a-z])([^\/]*)$/, function ():string {
-				return arguments[1] + arguments[2].toUpperCase() + arguments[3];
-			});
-		}
 
 		var suffixes = {
+			controller: '',
 			view: 'View',
 			template: 'View.html',
 			mediator: 'Mediator'
@@ -293,24 +295,21 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var routeId = kwArgs.id,
 			resolvedRouteId = resolve(routeId);
 
-		for (var key in { mediator: 1, view: 1, template: 1 }) {
-			var value = kwArgs[key];
+		for (var key in { controller: 1, controllerFor: 1 }) {
+			var value = kwArgs[key],
+				tmp:any;
 
-			// undefined mediator and template default to computing the ID based on the route ID
-			if (value === undefined && key !== 'view') {
-				kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId + suffixes[key];
+			if (key === 'controller') {
+				if (value && value.charAt(0) === '/') {
+					// values starting with a forward-slash are treated ad pre-computed IDs
+					kwArgs[key] = value.slice(1);
+				}
+				else {
+					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId + suffixes[key];
+				}
 			}
-			// undefined view, or null values for any property, default to a generic component ID
-			else if (value == null) {
-				kwArgs[key] = 'framework/' + suffixes[key];
-			}
-			// values starting with a forward-slash are treated as pre-computed IDs
-			else if (value.charAt(0) === '/') {
-				kwArgs[key] = value.slice(1);
-			}
-			// all other values are transformed into an absolute module ID using the value as-is
-			else {
-				kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolve(value) + suffixes[key];
+			else if (key === 'controllerFor') {
+				// TODO: anything?
 			}
 		}
 	}
@@ -384,14 +383,14 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * @returns A promise that is resolved once all matching routes have finished activating.
 	 */
 	_enterRoutes(event:RouteEvent):IPromise<any> {
-		var entrances:Array<IPromise<void>> = [],
+		var startups:IPromise<Route>[] = [],
 			route:Route;
 
 		var routes = this.get('routes');
 		for (var id in routes) {
 			route = routes[id];
 			if (route.test(event.newPath)) {
-				entrances.push(route.enter(event));
+				startups.push(route.startup());
 
 				if (array.indexOf(this._activeRoutes, route) === -1) {
 					this._activeRoutes.push(route);
@@ -399,7 +398,11 @@ class Router extends ObservableEvented implements routing.IRouter {
 			}
 		}
 
-		return whenAll(entrances);
+		return whenAll(startups).then((routes:Route[]):void => {
+			for (var i = 0; i < routes.length; i++) {
+				routes[i].enter(event);
+			}
+		});
 	}
 
 	/**
