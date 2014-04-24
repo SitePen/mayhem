@@ -3,10 +3,12 @@
 import array = require('dojo/_base/array');
 import lang = require('dojo/_base/lang');
 import objectQueryEngine = require('dstore/objectQueryEngine');
+import QueryResults = require('dojo/store/util/QueryResults');
 
 class ModelMixin {
 	idProperty:string;
 	queryEngine:dstore.IQueryEngine;
+	filter:(query:any)=>dstore.ICollection<any>;
 
 	static load(id:string, contextRequire:Function, loaded:Function):void {
 		var ParentCtor = (<any>this).result;
@@ -41,6 +43,31 @@ class ModelMixin {
 
 	getIdentity(item:any):any {
 		return item.get(this.idProperty);
+	}
+
+	query(query?:any, options?:any):any {
+		var results = this.filter(query);
+		if (options) {
+			// Apply sorting
+			var sort = options.sort;
+			if (sort) {
+				if (Object.prototype.toString.call(sort) === '[object Array]') {
+					var sortOptions:any;
+					while ((sortOptions = sort.pop())) {
+						results = results.sort(sortOptions.attribute, sortOptions.descending);
+					}
+				} else {
+					results = results.sort(sort);
+				}
+			}
+			// Apply a range
+			var start = options.start;
+			var end = start != null && options.count && (start + options.count);
+			results = results.range(start, end);
+		}
+		return new QueryResults(results.map(function (object:any):any {
+			return object;
+		}));
 	}
 
 	_setIdentity(item:any, identity:any):any {

@@ -204,6 +204,7 @@ declare module 'dojo/on' {
 
 declare module 'dojo/promise/all' {
 	var all:{
+		<T>(array:IPromise<T>[]):IPromise<T[]>;
 		<T>(array:T[]):IPromise<T[]>;
 		(object:Object):IPromise<Object>;
 	};
@@ -282,6 +283,37 @@ declare module 'dojo/store/Observable' {
 	}
 
 	export = ObservableStore;
+}
+
+declare module 'dojo/store/util/QueryResults' {
+	var QueryResults:{
+		new <T>(results:any):QueryResults<T>;
+		<T>(results:any):QueryResults<T>;
+	};
+	interface QueryResults<T> {
+		total:any;
+		forEach(callback:(value:T, index:number, array:T[]) => void, thisArg?:any):any;
+		filter(callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):QueryResults<T>;
+		map<U>(callback:(value:T, index:number, array:T[]) => U, thisArg?:any):QueryResults<T>;
+		always?<U>(callback:(valueOrError:any) => U):IPromise<U>;
+		cancel?<U>(reason?:U, strict?:boolean):U;
+		isCanceled?():boolean;
+		isFulfilled?():boolean;
+		isRejected?():boolean;
+		isResolved?():boolean;
+		otherwise?<U>(errback:(reason:any) => IPromise<U>):IPromise<U>;
+		otherwise?<U>(errback:(reason:any) => U):IPromise<U>;
+		then?<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
+		then?<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
+		then?<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => IPromise<U>):IPromise<U>;
+		then?<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => IPromise<U>):IPromise<U>;
+		then?<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
+		then?<U>(callback:(value:T) => IPromise<U>, errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
+		then?<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
+		then?<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
+	}
+
+	export = QueryResults;
 }
 
 declare module 'dojo/text' {
