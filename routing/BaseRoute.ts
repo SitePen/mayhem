@@ -118,7 +118,7 @@ class BaseRoute extends Observable {
 		}
 
 		staticPart = getStaticPart(lastIndex);
-		realPathPattern += staticPart + '(?:\\?(.*))?';
+		realPathPattern += staticPart + '(?:(?:\\?(.*))|\\/.*|$)';
 		pathParts.push(staticPart);
 
 		this._pathKeys = pathKeys;
