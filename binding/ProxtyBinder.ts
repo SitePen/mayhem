@@ -193,32 +193,31 @@ class ProxtyBinder implements binding.IProxtyBinder {
 		return metadata;
 	}
 
-	// TODO: This method does nothing since there's currently no way to get strings into the proxties array.
-	//
-	//startup():IPromise<any[]> {
-	//	var proxties = this._proxties;
+	startup():IPromise<any[]> {
+		// This is needed because proxties can be set up in the configuration of the app
+		var proxties = this._proxties;
 
-	//	function loadProxty(index:number, moduleId:string):IPromise<void> {
-	//		var dfd:IDeferred<void> = new Deferred<void>();
+		function loadProxty(index:number, moduleId:string):IPromise<void> {
+			var dfd:IDeferred<void> = new Deferred<void>();
 
-	//		require([ moduleId ], function (Proxty:binding.IProxtyConstructor):void {
-	//			proxties.splice(index, 1, Proxty);
-	//			dfd.resolve(null);
-	//		});
+			require([ moduleId ], function (Proxty:binding.IProxtyConstructor):void {
+				proxties.splice(index, 1, Proxty);
+				dfd.resolve(null);
+			});
 
-	//		return dfd.promise;
-	//	}
+			return dfd.promise;
+		}
 
-	//	var promises:IPromise<void>[] = [];
+		var promises:IPromise<void>[] = [];
 
-	//	for (var i = 0, proxtyCtor:any; (proxtyCtor = this._proxties[i]); ++i) {
-	//		if (typeof proxtyCtor === 'string') {
-	//			promises.push(loadProxty(i, proxtyCtor));
-	//		}
-	//	}
+		for (var i = 0, proxtyCtor:any; (proxtyCtor = this._proxties[i]); ++i) {
+			if (typeof proxtyCtor === 'string') {
+				promises.push(loadProxty(i, proxtyCtor));
+			}
+		}
 
-	//	return whenAll(promises);
-	//}
+		return whenAll(promises);
+	}
 
 	test(kwArgs:binding.IBindArguments):boolean {
 		var sourceBindingValid = false,
