@@ -108,45 +108,6 @@ class View extends Widget implements ui.IView {
 		super.destroy();
 	}
 
-	/* protected */ _initialize():void {
-		super._initialize();
-
-		this.observe('mediator', (mediator:data.IMediator):void => {
-			if (!mediator) { return; }
-			// when the mediator changes, update any bindings
-			for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); i++) {
-				binding.setSource(mediator);
-			}
-		});
-
-		this.observe('parent', (parent:ui.IContainer, previous:ui.IContainer):void => {
-			if (!this.get('app') && parent) {
-				var parentApp = parent.get('app');
-				if (parentApp) {
-					this.set('app', parentApp);
-				}
-				else {
-					// Wait for parent's app (only once)
-					this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
-						this._parentAppHandle.remove();
-						this._parentAppHandle = null;
-						this.set('app', parentApp);
-					});
-				}
-			}
-
-			var mediatorHandler = (mediator:data.IMediator, previous:data.IMediator):void => {
-				// if no mediator has been explicitly set, notify of the parent's mediator change
-				if (!this._mediator && !util.isEqual(mediator, previous)) {
-					this._notify(mediator, previous, 'mediator');
-				}
-			};
-			util.remove(this._parentMediatorHandle);
-			this._parentMediatorHandle = parent && parent.observe('mediator', mediatorHandler);
-			mediatorHandler(parent && parent.get('mediator'), previous && previous.get('mediator'));
-		});
-	}
-
 	private _mediatorGetter():data.IMediator {
 		if (this._mediator) {
 			return this._mediator;
@@ -158,5 +119,42 @@ class View extends Widget implements ui.IView {
 		return null;
 	}
 }
+
+View.observers({
+	mediator: function (mediator:data.IMediator):void {
+		if (!mediator) { return; }
+		// when the mediator changes, update any bindings
+		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); i++) {
+			binding.setSource(mediator);
+		}
+	},
+
+	parent: function (parent:ui.IContainer, previous:ui.IContainer):void {
+		if (!this.get('app') && parent) {
+			var parentApp = parent.get('app');
+			if (parentApp) {
+				this.set('app', parentApp);
+			}
+			else {
+				// Wait for parent's app (only once)
+				this._parentAppHandle = parent.observe('app', (parentApp:core.IApplication):void => {
+					this._parentAppHandle.remove();
+					this._parentAppHandle = null;
+					this.set('app', parentApp);
+				});
+			}
+		}
+
+		var mediatorHandler = (mediator:data.IMediator, previous:data.IMediator):void => {
+			// if no mediator has been explicitly set, notify of the parent's mediator change
+			if (!this._mediator && !util.isEqual(mediator, previous)) {
+				this._notify(mediator, previous, 'mediator');
+			}
+		};
+		util.remove(this._parentMediatorHandle);
+		this._parentMediatorHandle = parent && parent.observe('mediator', mediatorHandler);
+		mediatorHandler(parent && parent.get('mediator'), previous && previous.get('mediator'));
+	}
+});
 
 export = View;
