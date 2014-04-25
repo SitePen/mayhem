@@ -98,6 +98,8 @@ class Route extends BaseRoute implements routing.IRoute {
 		while ((handle = this._subViewHandles.pop())) {
 			handle.remove();
 		}
+
+		this._controllerInstance.set('routeState', null);
 	}
 
 	/**
@@ -144,6 +146,7 @@ class Route extends BaseRoute implements routing.IRoute {
 			], (Controller:any):void => {
 				try {
 					var controller = this._controllerInstance = new Controller({
+						id: this.get('id'),
 						app: this.get('app'),
 						modules: this.get('modules')
 					});
