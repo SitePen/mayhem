@@ -82,7 +82,9 @@ class Mediator extends Model implements data.IMediator, core.IHasMetadata {
 							newValue:any = newModel && newModel.get(key);
 
 						modelPropertyHandle && modelPropertyHandle.remove();
-						modelPropertyHandle = newModel.observe(key, notifier);
+						if (newModel) {
+							modelPropertyHandle = newModel.observe(key, notifier);
+						}
 
 						if (!util.isEqual(oldValue, newValue)) {
 							this._notify(newValue, oldValue, key);
@@ -140,6 +142,9 @@ lang.mixin(Mediator.prototype, {
 		if (util.isObject(key)) {
 			var kwArgs:{ [key:string]: any; } = key;
 			for (key in kwArgs) {
+				if (key === 'constructor') {
+					continue;
+				}
 				this.set(key, kwArgs[key]);
 			}
 
