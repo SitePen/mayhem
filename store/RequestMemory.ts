@@ -7,7 +7,10 @@ import _RequestMemory = require('dstore/RequestMemory');
 
 class RequestMemory<T extends data.IModel> extends _RequestMemory<T> {
 	constructor(kwArgs:any = {}) {
-		kwArgs.cachingStore || (kwArgs.cachingStore = new Memory<T>());
+		if (!kwArgs.cachingStore) {
+			// We don't pass the model because it is assigned later on
+			this.cachingStore = new Memory<T>();
+		}
 
 		super(kwArgs);
 	}
