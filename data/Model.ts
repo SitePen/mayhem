@@ -215,6 +215,9 @@ Model.prototype.set = function(key:any, value?:any):void {
 	if (util.isObject(key)) {
 		var kwArgs:{ [key:string]: any; } = key;
 		for (key in kwArgs) {
+			if (key === 'constructor') {
+				continue;
+			}
 			this.set(key, kwArgs[key]);
 		}
 
