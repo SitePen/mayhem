@@ -20,7 +20,11 @@ var config = {
 				'quotes/quote': {
 					path: '<quoteId:\\d+>',
 					modules: {
-						view: '!Quote.html'
+						view: '!Quote.html',
+						store: {
+							constructor: '/framework/store/RequestMemory!app/models/Quote',
+							target: 'data/quotes.json'
+						}
 					}
 				},
 				shipments: {

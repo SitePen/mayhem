@@ -1,21 +1,26 @@
-import Controller = require('framework/Controller');
-import Mediator = require('framework/data/Mediator');
+import ListController = require('framework/ListController');
 import util = require('framework/util');
 
-class Quote extends Controller {
-	constructor(kwArgs:any = {}) {
-		util.deferSetters(this, ['model'], '_viewSetter');
+class Quotes extends ListController {}
+Quotes.observers({
+	routeState: function (routeState:any):void {
+		console.log('ROUTE STATE', routeState);
+	},
+	viewModel: function (viewModel:any):void {
+		this._viewModelHandle && this._viewModelHandle.remove();
+		this._viewModelHandle = null;
 
-		super(kwArgs);
+		if (viewModel) {
+			this._viewModelHandle = viewModel.observe('selectedItem', (selectedItem:any):void => {
+				if (selectedItem == null) {
+					this.get('app').get('router').go('quotes', {});
+				}
+				else {
+					this.get('app').get('router').go('quotes/quote', { quoteId: selectedItem });
+				}
+			});
+		}
 	}
+});
 
-	_modelSetter(value:any):void {
-		super._modelSetter(value);
-
-		this.get('view').set('mediator', new Mediator({
-			model: value
-		}));
-	}
-}
-
-export = Quote;
+export = Quotes;

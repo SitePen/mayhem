@@ -1,1 +1,8 @@
 <h1>Quote</h1>
+
+<label>{ name!label }</label>
+<if condition="editing">
+	<widget is="framework/ui/form/TextField" value={{ name }}></widget>
+<else>
+	<span>{ name }</span>
+</if>
