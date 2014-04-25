@@ -105,7 +105,7 @@ registerSuite({
 			args = [ node, ref, position ];
 		});
 		var content = '<div></div>',
-			ref = document.body.lastChild;
+			ref = document.body;
 
 		domUtil.place(content, ref);
 		assert.deepEqual(args, [ content, ref, domUtil.PLACE_POSITION_KEYS[PlacePosition.LAST] ]);
