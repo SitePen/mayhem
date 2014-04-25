@@ -39,3 +39,5 @@ class ListController extends Controller {
 		}
 	}
 }
+
+export = ListController;
