@@ -103,7 +103,7 @@ registerSuite({
 	'#render'() {
 		_DijitRenderer.implementation({ constructor: MockDijit, });
 
-		var widget:any = new Observable({
+		var widget:any = new Widget({
 				foo: 'bar',
 				baz: 'gob',
 				classList: new Observable()
