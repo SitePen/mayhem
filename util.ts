@@ -192,3 +192,30 @@ export function spliceMatch<T>(haystack:T[], needle:T):boolean {
 
 	return false;
 }
+
+export function deepMixin<T extends Object>(target:T, source:any):T;
+export function deepMixin<T extends Object>(target:any, source:any):T;
+export function deepMixin(target:any, source:any):any {
+	if (source && typeof source === 'object') {
+		if (source instanceof Array) {
+			(<any>target).length = source.length;
+		}
+		for (var name in source) {
+			var targetValue = target[name],
+				sourceValue = source[name];
+
+			if (targetValue !== sourceValue) {
+				if (sourceValue && typeof sourceValue === 'object') {
+					if (!targetValue || typeof targetValue !== 'object') {
+						target[name] = targetValue = (sourceValue instanceof Array) ? [] : {};
+					}
+					deepMixin(targetValue, sourceValue);
+				}
+				else {
+					target[name] = sourceValue;
+				}
+			}
+		}
+	}
+	return target;
+}

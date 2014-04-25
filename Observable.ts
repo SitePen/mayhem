@@ -12,6 +12,18 @@ class Observable implements core.IObservable {
 		}
 	}
 
+	static observers(kwArgs:{ [key:string]: core.IObserver<any>; }):void {
+		var proto = this.prototype,
+			observers:any = proto._observers;
+
+		if (!proto.hasOwnProperty('_observers')) {
+			proto._observers = observers = {};
+		}
+		for (var key in kwArgs) {
+			proto.observe(key, kwArgs[key]);
+		}
+	}
+
 	static set(key:any, value?:any):void {
 		// Sets defaults that fire change notifications on construction
 		var kwArgs:{ [key:string]: any; };
@@ -26,16 +38,17 @@ class Observable implements core.IObservable {
 	}
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
+		var observers:any = this._observers;
 		if (has('es5')) {
 			this._observers = Object.create(null);
 		}
 		else {
 			this._observers = {};
 		}
+		util.deepMixin(this._observers, observers);
 		this._initialize();
 		kwArgs && this.set(lang.mixin({}, (<typeof Observable> this.constructor)._initialValues, kwArgs));
 	}
-
 
 	get:core.IObservableGet;
 	set:core.IObservableSet;
@@ -104,6 +117,9 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	if (util.isObject(key)) {
 		var kwArgs:{ [key:string]: any; } = key;
 		for (key in kwArgs) {
+			if (key === 'constructor') {
+				continue;
+			}
 			this.set(key, kwArgs[key]);
 		}
 
@@ -126,6 +142,8 @@ Observable.prototype.set = function (key:any, value?:any):void {
 		this._notify(newValue, oldValue, key);
 	}
 };
+
+Observable.prototype._observers = has('es5') ? Object.create(null) : {};
 
 // TODO: Do we need this anymore?
 /*Observable.prototype.has = function (key:string):boolean {
