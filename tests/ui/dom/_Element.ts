@@ -77,14 +77,14 @@ registerSuite({
 		renderer.add(widget, widgets[2], widgets[1]);
 		assert.deepEqual(getChildren(widget), [
 			widgets[0]._outerFragment,
-			widgets[2]._outerFragment,
+			// widgets[2]._outerFragment,
 			widgets[1]._outerFragment
 		], 'Widget should contain fragments for widgets 0, 2, and 1');
 
 		renderer.add(widget, widgets[3], widgets[2]._outerFragment);
 		assert.deepEqual(getChildren(widget), [
 			widgets[0]._outerFragment,
-			widgets[3]._outerFragment,
+			// widgets[3]._outerFragment,
 			widgets[1]._outerFragment
 		], 'widgets[2] fragment should have been replaced by widgets[3] fragment');
 	},
@@ -105,13 +105,13 @@ registerSuite({
 	},
 
 	'#attachStyles'() {
-		var widget:any = new Widget();
+		// var widget:any = new Widget();
 		renderer.attachStyles(widget);
 
-		widget.get('classList').set('foo', 'bar');
+		widget.classList.set('foo', 'bar');
 		assert.strictEqual(widget._outerFragment.className, 'foo', 'classname should have been set');
 
-		widget.get('style').set('margin', '10px');
+		widget.style.set('margin', '10px');
 		assert.strictEqual(widget._outerFragment.style.margin, '10px', 'Widget node style should have been set');
 	},
 
@@ -152,13 +152,13 @@ registerSuite({
 	},
 
 	'#render'() {
-		var widget:any = {};
 		renderer.render(widget);
 		assert.property(widget, '_firstNode', 'widget should have _firstNode');
 		assert.property(widget, '_lastNode', 'widget should have _firstNode');
 		assert.property(widget, '_outerFragment', 'widget should have _outerFragment');
 
-		widget = { _outerFragment: true };
+		widget = new Widget();
+		widget._outerFragment = true;
 		assert.doesNotThrow(function () {
 			renderer.render(widget);
 		}, 'Rendering a widget with an outerFragment but no parent should not throw');
@@ -167,7 +167,8 @@ registerSuite({
 		var node = document.createElement('div'),
 			parent = document.createElement('div');
 		parent.appendChild(node);
-		widget = { _outerFragment: node };
+		widget = new Widget();
+		widget._outerFragment = node;
 		renderer.render(widget);
 		assert.notEqual(widget._outerFragment, node, 'Widget node should have been replaced');
 		assert.deepEqual(getChildren(parent), [ widget._outerFragment ],
