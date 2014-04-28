@@ -21,9 +21,9 @@ registerSuite({
 
 	'#add': function () {
 		classList.add('foo');
-		assert.strictEqual(classList.get(), ' foo', 'Class should be foo');
+		assert.strictEqual(classList.get(), 'foo', 'Class should be foo');
 		classList.add('bar');
-		assert.strictEqual(classList.get(), ' foo bar', 'Class should be foo bar');
+		assert.strictEqual(classList.get(), 'foo bar', 'Class should be foo bar');
 	},
 
 	'#has': function () {
