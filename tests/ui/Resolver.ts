@@ -180,7 +180,7 @@ registerSuite({
 
 		resolver.set('phase', 'error')
 		assert.isTrue(during.get('hidden'));
-		assert.isTrue(error.get('hidden'));
+		assert.isFalse(error.get('hidden'));
 		assert.isTrue(success.get('hidden'));
 
 		resolver.set('phase', 'success')
