@@ -46,19 +46,19 @@ registerSuite({
 
 		renderer.initialize(widget);
 
-		widget.set('list', [ {} ]);
+		widget.set('source', [ {} ]);
 		assert.strictEqual(rendered, widget, 'widget should have been rendered');
 
 		var array = new ObservableArray();
 		widget._observerHandle = null;
-		widget.set('list', array);
+		widget.set('source', array);
 		assert.isNotNull(widget._observerHandle, 'Observer handle should have beens set');
 
 		rendered = null;
 		array.push(5);
 		assert.strictEqual(rendered, widget, 'widget should have been rendered');
 
-		widget.set('list', null);
+		widget.set('source', null);
 		assert.strictEqual(cleared, widget, 'widget should have been cleared');
 	}
 });
