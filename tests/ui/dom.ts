@@ -10,5 +10,6 @@ define([
 	'./dom/_Dijit',
 	'./dom/_Element',
 	'./dom/util',
+	'./dom/util/aria',
 	'./dom/form'
 ], function () {});
