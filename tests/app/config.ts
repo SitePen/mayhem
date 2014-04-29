@@ -1,6 +1,6 @@
 /// <reference path="../../dojo.d.ts"/>
 
-var config = {
+var config:any = {
 	modules: {
 		router: {
 			defaultRoute: 'index',

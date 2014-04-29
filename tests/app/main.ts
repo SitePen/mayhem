@@ -1,9 +1,10 @@
 import WebApplication = require('framework/WebApplication');
+import has = require('framework/has');
 import config = require('./config');
-
-declare var exports:any;
 
 WebApplication.start(config).then((app:WebApplication):void => {
 	console.log('ready');
-	exports.app = app;
+	if (has('debug')) {
+		window['app'] = app;
+	}
 });
