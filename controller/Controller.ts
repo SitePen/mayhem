@@ -1,5 +1,5 @@
 import BaseController = require('./BaseController');
-import util = require('framework/util');
+import util = require('../util');
 import whenAll = require('dojo/promise/all');
 
 class Controller extends BaseController {

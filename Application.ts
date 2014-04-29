@@ -46,27 +46,27 @@ class Application extends BaseController implements core.IApplication {
 
 			modules: {
 				binder: {
-					constructor: 'framework/binding/ProxtyBinder',
+					constructor: require.toAbsMid('./binding/ProxtyBinder'),
 					proxties: [
-						'framework/binding/proxties/MetadataProxty',
-						'framework/binding/proxties/NestedProxty',
-						'framework/binding/proxties/ObservableProxty',
-						'framework/binding/proxties/StatefulProxty',
-						'framework/binding/proxties/NodeTargetProxty',
+						require.toAbsMid('./binding/proxties/MetadataProxty'),
+						require.toAbsMid('./binding/proxties/NestedProxty'),
+						require.toAbsMid('./binding/proxties/ObservableProxty'),
+						require.toAbsMid('./binding/proxties/StatefulProxty'),
+						require.toAbsMid('./binding/proxties/NodeTargetProxty'),
 						// TODO: Es5Proxty is necessary to support bidi nested binding...what should we do?
-						// 'framework/binding/proxties/Es5Proxty',
-						'framework/binding/proxties/ObjectTargetProxty'
+						// require.toAbsMid('./binding/proxties/Es5Proxty'),
+						require.toAbsMid('./binding/proxties/ObjectTargetProxty')
 					]
 				},
 // TODO: Fix-up and re-enable
 // 				router: {
-// 					constructor: 'framework/routing/NullRouter'
+// 					constructor: require.toAbsMid('./routing/NullRouter')
 // 				},
 				scheduler: {
-					constructor: 'framework/Scheduler'
+					constructor: require.toAbsMid('./Scheduler')
 				},
 				stores: {
-					constructor: 'framework/store/Manager',
+					constructor: require.toAbsMid('./store/Manager'),
 					modelPath: 'app/models',
 					storePath: 'app/store'
 				}

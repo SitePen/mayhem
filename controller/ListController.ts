@@ -1,11 +1,11 @@
 import Controller = require('./Controller');
-import util = require('framework/util');
+import util = require('../util');
 
 class ListController extends Controller {
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepMixin(super._getDefaultConfig(), {
 			modules: {
-				viewModel: 'framework/data/Model'
+				viewModel: require.toAbsMid('../data/Model')
 			}
 		});
 	}

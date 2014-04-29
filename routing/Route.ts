@@ -10,8 +10,8 @@ import lang = require('dojo/_base/lang');
 import Mediator = require('../data/Mediator');
 import RouteEvent = require('./RouteEvent');
 import routing = require('./interfaces');
-import ui = require('framework/ui/interfaces');
-import util = require('framework/util');
+import ui = require('../ui/interfaces');
+import util = require('../util');
 import when = require('dojo/when');
 
 /**

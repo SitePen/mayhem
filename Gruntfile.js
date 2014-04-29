@@ -55,7 +55,7 @@ module.exports = function (grunt) {
 				},
 				options: {
 					indent: '  ',
-					wrapper: [ 'define([\'module\'], function (module) {\n', '\n});' ]
+					wrapper: [ 'define([\'require\', \'module\'], function (require, module) {\n', '\n});' ]
 				}
 			}
 		},

@@ -39,7 +39,7 @@ class BaseController extends ObservableEvented implements core.IController {
 			modelPath: 'app/models',
 			viewPath: 'app/views',
 			viewModelPath: 'app/viewModels',
-			templatePlugin: 'framework/templating/html',
+			templatePlugin: require.toAbsMid('../templating/html'),
 
 			modules: {}
 		};

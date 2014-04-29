@@ -1,5 +1,3 @@
-/// <reference path="./dojo" />
-
 import Application = require('./Application');
 import routing = require('./routing/interfaces');
 import ui = require('./ui/interfaces');
@@ -10,7 +8,7 @@ class WebApplication extends Application {
 		return util.deepCopy(super._getDefaultConfig(), {
 			modules: {
 				router: {
-					constructor: 'framework/routing/HashRouter'
+					constructor: require.toAbsMid('./routing/HashRouter')
 				},
 				view: {
 					constructor: './ApplicationView',

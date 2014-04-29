@@ -155,11 +155,11 @@ Template
 				root = root.children[0];
 			}
 			else {
-				root.constructor = 'framework/templating/ui/View';
+				root.constructor = require.toAbsMid('../../ui/View');
 			}
 		}
 		else {
-			root = { constructor: 'framework/templating/ui/View' };
+			root = { constructor: require.toAbsMid('../../ui/View') };
 		}
 		aliases.validate();
 		aliases.resolve(root);
@@ -291,18 +291,18 @@ If '<if/>'
 	body:Element?
 	alternates:(
 		kwArgs:ElseIfTagOpen body:Element? (ElseIfTagClose S*)? {
-			body.constructor = 'framework/templating/ui/Conditional';
+			body.constructor = require.toAbsMid('../../ui/Conditional');
 			body.kwArgs = kwArgs;
 			return body;
 		}
 	)*
 	finalAlternate:(kwArgs:ElseTagOpen body:Element? (ElseTagClose S*)? {
-		body.constructor = 'framework/templating/ui/View';
+		body.constructor = require.toAbsMid('../../ui/View');
 		body.kwArgs = kwArgs;
 		return body;
 	})?
 	IfTagClose {
-		body.constructor = 'framework/templating/ui/Conditional';
+		body.constructor = require.toAbsMid('../../ui/Conditional');
 		body.kwArgs = kwArgs;
 
 		// Loop over our alternates and turn them into a recursive list of conditional widgets
@@ -365,7 +365,7 @@ For '<for/>'
 		});
 
 		// Add a constructor and wrap in signal object to just get a ctor instead of a constructed instance
-		body.constructor = 'framework/templating/ui/IteratorElement';
+		body.constructor = require.toAbsMid('../../ui/IteratorElement');
 		kwArgs.template = { $ctor: body };
 		
 		// Convert "in" attribute into a one-way "source" binding
@@ -375,7 +375,7 @@ For '<for/>'
 		}
 
 		return {
-			constructor: 'framework/templating/ui/Iterator',
+			constructor: require.toAbsMid('../../ui/Iterator'),
 			kwArgs: kwArgs
 		};
 	}
@@ -405,7 +405,7 @@ When '<when/>'
 		// TODO: process bindings within content, and within during and error content
 		kwArgs.during = during;
 		kwArgs.error = error;
-		widget.constructor = 'framework/templating/ui/Resolver';
+		widget.constructor = require.toAbsMid('../../ui/Resolver');
 		widget.kwArgs = kwArgs;
 		return widget;
 	}
@@ -430,7 +430,7 @@ DuringTagOpen '<during>'
 			optional: [ 'id' ]
 		});
 		return {
-			constructor: 'framework/templating/ui/View',
+			constructor: require.toAbsMid('../../ui/View'),
 			kwArgs: kwArgs
 		};
 	}
@@ -445,7 +445,7 @@ ErrorTagOpen '<error>'
 			optional: [ 'id' ]
 		});
 		return {
-			constructor: 'framework/templating/ui/View',
+			constructor: require.toAbsMid('../../ui/View'),
 			kwArgs: kwArgs
 		};
 	}
