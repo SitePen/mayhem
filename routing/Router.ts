@@ -300,6 +300,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 						kwArgs[key] = require.toAbsMid(this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId.replace(/\/[^\/]*?$/, '/') + value);
 					}
 				}
+				else if (value === null) {
+					kwArgs[key] = require.toAbsMid('../controller/Controller');
+				}
 				else {
 					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId;
 				}

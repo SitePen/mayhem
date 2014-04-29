@@ -3,12 +3,6 @@ import util = require('../util');
 import whenAll = require('dojo/promise/all');
 
 class Controller extends BaseController {
-	constructor(kwArgs:any = {}) {
-		util.deferSetters(this, ['model', 'view'], '_viewModelSetter');
-
-		super(kwArgs);
-	}
-
 	_loadModule(key:string, config:any, modules:any):IPromise<any> {
 		if (key !== 'store') {
 			return super._loadModule(key, config, modules);

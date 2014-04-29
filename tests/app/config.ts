@@ -7,7 +7,12 @@ var config = {
 			controllerPath: 'app/controllers',
 
 			routes: {
-				index: {},
+				index: {
+					controller: null,
+					modules: {
+						view: '!./Index.html'
+					}
+				},
 				quotes: {
 					modules: {
 						store: 'quote',
