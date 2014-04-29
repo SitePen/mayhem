@@ -1,13 +1,12 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
-import Controller = require('./Controller');
+import BaseController = require('./BaseController');
 import core = require('./interfaces');
 import routing = require('./routing/interfaces');
 import util = require('dojo/request/util');
 
-class Application extends Controller implements core.IApplication {
-	_controllers:any;
+class Application extends BaseController implements core.IApplication {
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		var start = (config?:any):void => {
 			this.start(config).then(load);
@@ -28,10 +27,11 @@ class Application extends Controller implements core.IApplication {
 	get:core.IApplicationGet;
 
 	constructor(kwArgs:any = {}) {
-		this._controllers = {};
 		super(kwArgs);
+	}
 
-		this.set('app', this);
+	_appGetter():core.IApplication {
+		return this;
 	}
 
 	/**
@@ -46,7 +46,7 @@ class Application extends Controller implements core.IApplication {
 
 			modules: {
 				binder: {
-					constructor: '/framework/binding/ProxtyBinder',
+					constructor: 'framework/binding/ProxtyBinder',
 					proxties: [
 						'framework/binding/proxties/MetadataProxty',
 						'framework/binding/proxties/NestedProxty',
@@ -60,10 +60,15 @@ class Application extends Controller implements core.IApplication {
 				},
 // TODO: Fix-up and re-enable
 // 				router: {
-// 					constructor: '/framework/routing/NullRouter'
+// 					constructor: 'framework/routing/NullRouter'
 // 				},
 				scheduler: {
-					constructor: '/framework/Scheduler'
+					constructor: 'framework/Scheduler'
+				},
+				stores: {
+					constructor: 'framework/store/Manager',
+					modelPath: 'app/models',
+					storePath: 'app/store'
 				}
 			}
 		});

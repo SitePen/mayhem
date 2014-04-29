@@ -1,10 +1,14 @@
 import ListController = require('framework/ListController');
 import util = require('framework/util');
 
-class Quotes extends ListController {}
+class Quotes extends ListController {
+}
 Quotes.observers({
 	routeState: function (routeState:any):void {
 		console.log('ROUTE STATE', routeState);
+	},
+	store: function (store:any):void {
+		this.set('model', store);
 	},
 	viewModel: function (viewModel:any):void {
 		this._viewModelHandle && this._viewModelHandle.remove();

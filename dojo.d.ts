@@ -65,6 +65,7 @@ declare var require:{
 	undef(moduleId:string):void;
 	config(config:Object):void;
 	toUrl(moduleId:string):string;
+	toAbsMid(moduleId:string):string;
 };
 
 declare module 'dojo/_base/array' {

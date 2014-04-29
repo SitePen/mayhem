@@ -1,5 +1,7 @@
 import array = require('dojo/_base/array');
 import core = require('./interfaces');
+import data = require('./data/interfaces');
+import decl = require('dojo/_base/declare');
 import Deferred = require('dojo/Deferred');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
@@ -8,22 +10,21 @@ import requestUtil = require('dojo/request/util');
 import util = require('./util');
 import whenAll = require('dojo/promise/all');
 
-class Controller extends ObservableEvented {
+class BaseController extends ObservableEvented implements core.IController {
 	private _app:core.IApplication;
-	private _model:any;
+	private _model:data.IModel;
 	/* protected */ _routeState:any;
 	private _view:any;
-	private _viewModel:any;
+	private _viewModel:data.IMediator;
 
-	get:Controller.IGet;
-	set:Controller.ISet;
+	get:core.IControllerGet;
+	set:core.IControllerSet;
 
 	constructor(kwArgs?:any) {
-		// util.deferMethods(this, ['add'], '_instantiateComponents');
 		super(requestUtil.deepCopy(this._getDefaultConfig(), kwArgs));
 	}
 
-	add(controller:Controller):IHandle {
+	add(controller:BaseController):IHandle {
 		return this._view.add(controller._view, 'default');
 	}
 
@@ -61,74 +62,71 @@ class Controller extends ObservableEvented {
 		var dfd:IDeferred<void> = new Deferred<void>(),
 			lazyConstructors:{ [key:string]: number; } = {},
 			moduleIdsToLoad:string[] = [],
-			modules:Object = this.get('modules');
+			modules:Object = this.get('modules'),
+			promises:{ [key:string]:IPromise<void> } = {};
 
 		for (var key in modules) {
-			var module:any = modules[key],
-				isTemplate = false,
-				ctor:string;
-			if (typeof module === 'string') {
-				modules[key] = module = { constructor: module };
-			}
-			if (typeof module.constructor === 'string') {
-				ctor = module.constructor;
-
-				if (isTemplate = ctor.charAt(0) === '!') {
-					ctor = ctor.slice(1);
-				}
-
-				if (ctor.charAt(0) === '/') {
-					ctor = ctor.slice(1);
-				}
-				else if (this.get(key + 'Path')) {
-					ctor = this.get(key + 'Path') + '/' + ctor;
-				}
-
-				if (isTemplate) {
-					ctor = this.get('templatePlugin') + '!' + ctor;
-				}
-				lazyConstructors[key] = moduleIdsToLoad.push(module.constructor = ctor) - 1;
-			}
+			promises[key] = this._loadModule(key, modules[key], modules);
 		}
 
-		require(moduleIdsToLoad, (...loadedModules:Function[]):void => {
-			try {
-				for (var key in modules) {
-					if (modules[key] == null) {
-						continue;
-					}
-
-					// want to keep original config intact to avoid any confusing changes in original configuration;
-					// also want to add a reference to the app first (so it is set before others)
-					var config:any = lang.mixin({ app: this.get('app') }, modules[key]);
-
-					if (key in lazyConstructors) {
-						config.constructor = loadedModules[lazyConstructors[key]];
-					}
-
-					var Module = config.constructor;
-
-					this.set(key, new Module(config));
-				}
-
-				dfd.resolve(undefined);
-			}
-			catch (error) {
-				dfd.reject(error);
-			}
-		});
-
-		return dfd.promise;
+		return whenAll(promises).then((modules:any):void => this._instantiateModules(modules));
 	}
 
-	/* protected */ _instantiateComponents(modules:any):void {
-		this._viewModel = new modules.viewModel({
-			app: this.get('app')
-		});
+	_instantiateModules(modules:any):void {
+		var configs:Object = this.get('modules');
+		for (var key in modules) {
+			var config:any = configs[key];
+			config && this._instantiateModule(key, modules[key], config);
+		}
+	}
 
-		this._view = new modules.view({
-			mediator: this._viewModel
-		});
+	_instantiateModule(key:string, Module:any, config:any):void {
+		if (!Module) {
+			return;
+		}
+		config.constructor = Module;
+		this.set(key, new Module(decl.safeMixin({ app: this.get('app') }, config)));
+	}
+
+	_loadModule(key:string, config:any, modules:any):IPromise<any> {
+		var dfd = new Deferred<any>(),
+			isTemplate = false,
+			ctor:string;
+
+		if (typeof config === 'string') {
+			modules[key] = config = { constructor: config };
+		}
+		if (typeof config.constructor === 'string') {
+			ctor = config.constructor;
+
+			if (isTemplate = ctor.charAt(0) === '!') {
+				ctor = ctor.slice(1);
+			}
+
+			if (ctor.charAt(0) === '.') {
+				// normalize relative paths
+				if (this.get(key + 'Path')) {
+					ctor = require.toAbsMid(this.get(key + 'Path') + '/' + ctor);
+				}
+			}
+
+			if (isTemplate) {
+				ctor = this.get('templatePlugin') + '!' + ctor;
+			}
+
+			config.constructor = ctor;
+		}
+
+		if (ctor) {
+			require([ctor], (Module:any):void => {
+				dfd.resolve(Module);
+			});
+		}
+		else {
+			dfd.resolve(config);
+		}
+
+		return dfd.promise;
 	}
 
 	/**
@@ -136,14 +134,14 @@ class Controller extends ObservableEvented {
 	 *
 	 * @returns A promise that is resolved once all modules have been loaded.
 	 */
-	startup():IPromise<Controller> {
+	startup():IPromise<core.IController> {
 		if (has('debug')) {
 			this.on('error', function (event:ErrorEvent):void {
 				console.error(event.message);
 			});
 		}
 
-		var dfd = new Deferred<Controller>();
+		var dfd = new Deferred<core.IController>();
 
 		this._loadModules().then(():void => {
 			var promises:IPromise<any>[] = [],
@@ -164,21 +162,10 @@ class Controller extends ObservableEvented {
 			});
 		}, lang.hitch(dfd, 'reject'));
 
-		this.startup = ():IPromise<Controller> => dfd.promise;
+		this.startup = ():IPromise<core.IController> => dfd.promise;
 
 		return dfd.promise;
 	}
 }
 
-module Controller {
-	export interface IGet extends core.IObservableGet {
-		(name:'app'):core.IApplication;
-		(name:'model'):any;
-		(name:'view'):any;
-		(name:'viewModel'):any;
-	}
-	export interface ISet extends core.IObservableSet {
-	}
-}
-
-export = Controller;
+export = BaseController;

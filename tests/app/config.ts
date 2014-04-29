@@ -10,42 +10,48 @@ var config = {
 				index: {},
 				quotes: {
 					modules: {
-						view: '!Quotes.html',
-						model: {
-							constructor: '/framework/store/RequestMemory!app/models/Quote',
-							target: 'data/quotes.json'
-						}
+						store: 'quote',
+						view: '!./Quotes.html'
 					}
 				},
 				'quotes/quote': {
 					path: '<quoteId:\\d+>',
 					modules: {
-						view: '!Quote.html',
 						store: {
-							constructor: '/framework/store/RequestMemory!app/models/Quote',
-							target: 'data/quotes.json'
-						}
+							store: 'quote',
+							foo: 'shipment'
+						},
+						view: '!./Quote.html'
 					}
 				},
 				shipments: {
 					modules: {
-						view: '!Shipments.html',
-						model: {
-							constructor: '/framework/store/RequestMemory!app/models/Shipment',
-							target: 'data/shipments.json'
-						}
+						store: 'shipment',
+						view: '!./Shipments.html'
 					}
 				},
 				'shipments/shipment': {
 					path: '<shipmentId:\\d+>',
 					modules: {
-						view: '!Shipment.html'
+						store: 'shipment',
+						view: '!./Shipment.html'
 					}
 				}
 			}
 		},
+		stores: {
+			defaultStore: 'framework/store/RequestMemory',
+			models: {
+				quote: {
+					target: 'data/quotes.json'
+				},
+				shipment: {
+					target: 'data/shipments.json'
+				}
+			}
+		},
 		view: {
-			constructor: '!Application.html'
+			constructor: '!./Application.html'
 		}
 	}
 };

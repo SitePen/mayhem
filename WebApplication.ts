@@ -10,10 +10,10 @@ class WebApplication extends Application {
 		return util.deepCopy(super._getDefaultConfig(), {
 			modules: {
 				router: {
-					constructor: '/framework/routing/HashRouter'
+					constructor: 'framework/routing/HashRouter'
 				},
 				view: {
-					constructor: 'ApplicationView',
+					constructor: './ApplicationView',
 					mediator: this
 				}
 			}

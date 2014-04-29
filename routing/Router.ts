@@ -285,13 +285,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 		 * foo/Bar`
 		 */
 
-		var suffixes = {
-			controller: '',
-			view: 'View',
-			template: 'View.html',
-			mediator: 'Mediator'
-		};
-
 		var routeId = kwArgs.id,
 			resolvedRouteId = resolve(routeId);
 
@@ -300,12 +293,15 @@ class Router extends ObservableEvented implements routing.IRouter {
 				tmp:any;
 
 			if (key === 'controller') {
-				if (value && value.charAt(0) === '/') {
-					// values starting with a forward-slash are treated ad pre-computed IDs
-					kwArgs[key] = value.slice(1);
+				if (value) {
+					if (value.charAt(0) === '.') {
+						// values starting with a period are treated as relative to their parent
+						// route or `controllerPath`
+						kwArgs[key] = require.toAbsMid(this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId.replace(/\/[^\/]*?$/, '/') + value);
+					}
 				}
 				else {
-					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId + suffixes[key];
+					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId;
 				}
 			}
 			else if (key === 'controllerFor') {

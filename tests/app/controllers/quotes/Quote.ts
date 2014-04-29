@@ -1,17 +1,14 @@
 import ItemController = require('framework/ItemController');
-import Mediator = require('framework/data/Mediator');
-import util = require('framework/util');
 
 class Quote extends ItemController {}
 Quote.observers({
 	routeState: function (routeState:any):void {
+		this.get('viewModel').set('editing', false);
 		if (!routeState) {
 			this.set('model', null);
 		}
 		else {
-			this.get('store').get(routeState.quoteId).then((quote:any):void => {
-				this.set('model', quote);
-			});
+			this.set('model', this.get('store').get(routeState.quoteId));
 		}
 	},
 	viewModel: function (viewModel:any):void {

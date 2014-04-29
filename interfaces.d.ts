@@ -6,21 +6,23 @@ export import IEvented = require('dojo/Evented');
 export import IValidationError = require('./validation/ValidationError');
 export import IObservableArray = require('./ObservableArray');
 export import routing = require('./routing/interfaces');
+import store = require('./store/interfaces');
 export import templating = require('./templating/interfaces');
 export import ui = require('./ui/interfaces');
 
-export interface IApplication extends IObservable {
+export interface IApplication extends IController {
 	get:IApplicationGet;
 	set:IApplicationSet;
 }
 
-export interface IApplicationGet extends IObservableGet {
+export interface IApplicationGet extends IControllerGet {
 	(key:'binder'):binding.IBinder;
 	(key:'router'):routing.IRouter;
 	(key:'scheduler'):IScheduler;
+	(key:'stores'):store.IManager;
 }
 
-export interface IApplicationSet extends IObservableSet {
+export interface IApplicationSet extends IControllerSet {
 }
 
 export interface IArrayObserver<T> {
@@ -37,6 +39,21 @@ export interface IApplicationComponentGet extends IObservableGet {
 }
 
 export interface IApplicationComponentSet extends IObservableSet {
+}
+
+export interface IController extends IObservableEvented {
+	add(controller:IController):IHandle;
+	startup():IPromise<IController>;
+}
+
+export interface IControllerGet extends IObservableGet {
+	(name:'app'):IApplication;
+	(name:'model'):data.IModel;
+	(name:'view'):any;
+	(name:'viewModel'):data.IMediator;
+}
+
+export interface IControllerSet extends IObservableSet {
 }
 
 export interface IDestroyable {
