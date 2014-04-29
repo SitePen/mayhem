@@ -1,4 +1,4 @@
-import ItemController = require('framework/ItemController');
+import ItemController = require('framework/controller/ItemController');
 
 class Quote extends ItemController {}
 Quote.observers({

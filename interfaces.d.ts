@@ -42,7 +42,7 @@ export interface IApplicationComponentSet extends IObservableSet {
 }
 
 export interface IController extends IObservableEvented {
-	add(controller:IController):IHandle;
+	add(controller:IController, placeholder?:string):IHandle;
 	startup():IPromise<IController>;
 }
 

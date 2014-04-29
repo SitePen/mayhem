@@ -1,5 +1,5 @@
 /// <amd-dependency path="framework/templating/html!../views/Index.html" />
-import Controller = require('framework/Controller');
+import Controller = require('framework/controller/Controller');
 var IndexView:any = require('framework/templating/html!../views/Index.html');
 
 class Index extends Controller {

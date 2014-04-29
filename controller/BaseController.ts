@@ -1,13 +1,13 @@
 import array = require('dojo/_base/array');
-import core = require('./interfaces');
-import data = require('./data/interfaces');
+import core = require('../interfaces');
+import data = require('../data/interfaces');
 import decl = require('dojo/_base/declare');
 import Deferred = require('dojo/Deferred');
-import has = require('./has');
+import has = require('../has');
 import lang = require('dojo/_base/lang');
-import ObservableEvented = require('./ObservableEvented');
+import ObservableEvented = require('../ObservableEvented');
 import requestUtil = require('dojo/request/util');
-import util = require('./util');
+import util = require('../util');
 import whenAll = require('dojo/promise/all');
 
 class BaseController extends ObservableEvented implements core.IController {
@@ -24,8 +24,8 @@ class BaseController extends ObservableEvented implements core.IController {
 		super(requestUtil.deepCopy(this._getDefaultConfig(), kwArgs));
 	}
 
-	add(controller:BaseController):IHandle {
-		return this._view.add(controller._view, 'default');
+	add(controller:BaseController, placeholder:string = 'default'):IHandle {
+		return this._view.add(controller._view, placeholder);
 	}
 
 	/**

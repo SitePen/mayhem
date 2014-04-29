@@ -1,7 +1,7 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
-import BaseController = require('./BaseController');
+import BaseController = require('./controller/BaseController');
 import core = require('./interfaces');
 import routing = require('./routing/interfaces');
 import util = require('dojo/request/util');

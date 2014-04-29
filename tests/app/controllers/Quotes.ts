@@ -1,4 +1,4 @@
-import ListController = require('framework/ListController');
+import ListController = require('framework/controller/ListController');
 import util = require('framework/util');
 
 class Quotes extends ListController {

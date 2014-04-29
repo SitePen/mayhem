@@ -1,4 +1,4 @@
-import Controller = require('framework/Controller');
+import Controller = require('framework/controller/Controller');
 
 class Shipment extends Controller {
 }

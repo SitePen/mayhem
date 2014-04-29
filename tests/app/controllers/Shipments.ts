@@ -1,21 +1,25 @@
-import Controller = require('framework/Controller');
-import Mediator = require('framework/data/Mediator');
-import util = require('framework/util');
+import ListController = require('framework/controller/ListController');
 
-class Shipment extends Controller {
-	constructor(kwArgs:any = {}) {
-		util.deferSetters(this, ['model'], '_viewSetter');
+class Shipments extends ListController {}
+Shipments.observers({
+	store: function (store:any):void {
+		this.set('model', store);
+	},
+	viewModel: function (viewModel:any):void {
+		this._viewModelHandle && this._viewModelHandle.remove();
+		this._viewModelHandle = null;
 
-		super(kwArgs);
+		if (viewModel) {
+			this._viewModelHandle = viewModel.observe('selectedItem', (selectedItem:any):void => {
+				if (selectedItem == null) {
+					this.get('app').get('router').go('shipments', {});
+				}
+				else {
+					this.get('app').get('router').go('shipments/shipment', { shipmentId: selectedItem });
+				}
+			});
+		}
 	}
+});
 
-	_modelSetter(value:any):void {
-		super._modelSetter(value);
-
-		this.get('view').set('mediator', new Mediator({
-			model: value
-		}));
-	}
-}
-
-export = Shipment;
+export = Shipments;

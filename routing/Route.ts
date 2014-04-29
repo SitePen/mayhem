@@ -19,7 +19,7 @@ import when = require('dojo/when');
  */
 class Route extends BaseRoute implements routing.IRoute {
 	private _subViewHandles:Array<{ remove:() => void}> = [];
-	private _controllerInstance:any /* framework/Controller */;
+	private _controllerInstance:any /* core.IController */;
 
 	/**
 	 * The unique identifier for this route.
@@ -120,7 +120,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * @param view - The sub-view to place.
 	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
 	 */
-	place(controller:any /* ui.IContentView */, placeholderId?:string):IPromise<IHandle> {
+	place(controller:core.IController, placeholderId?:string):IHandle {
 		return this._controllerInstance.add(controller, placeholderId);
 	}
 
