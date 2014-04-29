@@ -5,5 +5,5 @@ import registerSuite = require('intern!object');
 
 registerSuite({
 	name: 'ui/dom/Placeholder',
-	// covered by dom/Widget
+	// covered by dom/_Base
 });
