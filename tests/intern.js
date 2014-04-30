@@ -47,7 +47,6 @@ define({
 		baseUrl: typeof process !== 'undefined' ? '.' : '../../',
 		// Packages that should be registered with the loader in each testing environment
 		packages: [
-			{ name: 'framework', location: '.' },
 			{ name: 'mayhem', location: '.' },
 			{ name: 'dojo', location: 'third-party/dojo' },
 			{ name: 'dijit', location: 'third-party/dijit' }

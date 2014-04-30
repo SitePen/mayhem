@@ -2,21 +2,22 @@
 <html>
 <head>
 	<title>Mayhem Widget Test</title>
-	<link rel='stylesheet' href='../../../dijit/themes/claro/claro.css'
+	<link rel='stylesheet' href='../../../dijit/themes/claro/claro.css'>
 </head>
 <body class='claro'>
 	<script>
-
 	var dojoConfig = {
-		baseUrl: '../../..',
+		async: true,
+		baseUrl: '../../third-party',
 		packages: [
 			'dojo',
 			'dijit',
-			{
-				name: 'widget',
-				location: 'framework/widget'
-			},
-			'framework'
+			'dgrid',
+			'xstyle',
+			'put-selector',
+			'dstore',
+			{ name: 'mayhem', location: '../' },
+			{ name: 'widget', location: '../widget' }
 		]
 	};
 

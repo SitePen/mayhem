@@ -11,17 +11,18 @@
 		}
 	</style>
 	<script>
-
 	var dojoConfig = {
-		baseUrl: '../../..',
+		async: true,
+		baseUrl: '../../third-party',
 		packages: [
 			'dojo',
 			'dijit',
-			{
-				name: 'widget',
-				location: 'framework/widget'
-			},
-			'framework'
+			'dgrid',
+			'xstyle',
+			'put-selector',
+			'dstore',
+			{ name: 'mayhem', location: '../' },
+			{ name: 'widget', location: '../widget' }
 		]
 	};
 
@@ -72,8 +73,8 @@
 		'dojo/store/Memory',
 		'widget/Label',
 		'widget/Error',
-		'framework/Model',
-		'framework/validators/RequiredValidator',
+		'mayhem/Model',
+		'mayhem/validators/RequiredValidator',
 		'dojo/domReady!'
 	], function(declare, Button, Checkbox, RadioButton, TextField, TextArea, Select, FilteringSelect, Memory, Label, Error, Model, RequiredValidator) {
 		var body = document.body;
