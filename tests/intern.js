@@ -44,12 +44,13 @@ define({
 	// Configuration options for the module loader; any AMD configuration options supported by the Dojo loader can be
 	// used here
 	loader: {
-		baseUrl: typeof process !== 'undefined' ? '../' : '../../../',
+		baseUrl: typeof process !== 'undefined' ? '.' : '../../',
 		// Packages that should be registered with the loader in each testing environment
 		packages: [
-			{ name: 'mayhem', location: 'framework' },
-			{ name: 'dojo', location: 'dojo' },
-			{ name: 'dijit', location: 'dijit' }
+			{ name: 'framework', location: '.' },
+			{ name: 'mayhem', location: '.' },
+			{ name: 'dojo', location: 'third-party/dojo' },
+			{ name: 'dijit', location: 'third-party/dijit' }
 		]
 	},
 
@@ -60,5 +61,5 @@ define({
 	functionalSuites: [ ],
 
 	// A regular expression matching URLs to files that should not be included in code coverage analysis
-	excludeInstrumentation: /^(?:dojo|dijit|dgrid|xstyle|put-selector|framework\/tests|framework\/node_modules)\//
+	excludeInstrumentation: /^(?:third-party|node_modules|tests)\//
 });
