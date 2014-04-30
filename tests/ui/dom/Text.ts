@@ -2,21 +2,18 @@
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
-import aspect = require('dojo/aspect');
-import MockRenderer = require('../../mocks/ui/Renderer');
-import Observable = require('../../../Observable');
 import registerSuite = require('intern!object');
-import TextView = require('../../../ui/dom/Text');
+import TextRenderer = require('../../../ui/dom/Text');
 import util = require('../support/util');
 import Widget = require('../../../ui/Widget');
 
-var renderer:any;
+var renderer:any, widget:any;
 
 registerSuite({
 	name: 'ui/dom/Text',
 
 	setup() {
-		Widget.prototype._renderer = new MockRenderer();
+		Widget.prototype._renderer = new TextRenderer();
 	},
 
 	teardown() {
@@ -24,35 +21,16 @@ registerSuite({
 	},
 
 	beforeEach() {
-		renderer = new TextView();
+		widget = new Widget();
+		renderer = new TextRenderer();
 	},
 
 	afterEach() {
-		renderer = util.destroy(renderer);
-	},
-
-	'render'() {
-		var widget:any = new Widget(),
-			content:any,
-			contentValue:any;
-
-		aspect.before(renderer, 'setContent', function (widget:any, value:any) {
-			content = widget;
-			contentValue = value;
-		});
-
-		renderer.render(widget);
-		widget.set('formattedText', 'foo');
-		assert.strictEqual(content, widget, 'content should have been set on widget');
-		assert.strictEqual(contentValue, 'foo');
-
-		widget.set('text', 'bar&');
-		assert.strictEqual(content, widget, 'content should have been set on widget');
-		assert.strictEqual(contentValue, 'bar&amp;');
+		widget = util.destroy(widget);
+		renderer = null;
 	},
 
 	'setContent'() { 
-		var widget:any = new Observable();
 		widget._firstNode = {
 			innerHTML: '<span>foo</span>',
 			textContent: 'foo'

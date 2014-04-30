@@ -1,18 +1,20 @@
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
-import aspect = require('dojo/aspect');
 import registerSuite = require('intern!object');
 import domConstruct = require('dojo/dom-construct');
-import _BaseRenderer = require('../../../ui/dom/_Base');
+import _FragmentRenderer = require('../../../ui/dom/_Fragment');
+import _ElementRenderer = require('../../../ui/dom/_Element');
 import Widget = require('../../../ui/Widget');
 import Container = require('../../../ui/Container');
-import declare = require('dojo/_base/declare');
 import util = require('../support/util');
 import domUtil = require('../../../ui/dom/util');
 
 var parentNode:any,
 	renderer:any;
+
+class ElementWidget extends Widget { }
+ElementWidget.prototype._renderer = new _ElementRenderer();
 
 function getChildren(widget:any) {
 	var parent:any = widget instanceof Widget ? widget._firstNode.parentNode : widget,
@@ -23,21 +25,11 @@ function getChildren(widget:any) {
 	return children;
 }
 
-function createFragment(content:any) {
-	var fragment = document.createDocumentFragment();
-	if (typeof content === 'string') {
-		content = domUtil.toDom(content);
-	}
-	fragment.appendChild(content);
-	return fragment;
-}
-
-
 registerSuite({
 	name: 'ui/dom/_Base',
 
 	setup() {
-		Widget.prototype._renderer = new _BaseRenderer();
+		Widget.prototype._renderer = new _FragmentRenderer();
 	},
 
 	teardown() {
@@ -45,7 +37,7 @@ registerSuite({
 	},
 
 	beforeEach() {
-	    renderer = new _BaseRenderer();
+	    renderer = new _FragmentRenderer();
 	},
 
 	afterEach() {
@@ -55,9 +47,7 @@ registerSuite({
 	'#add': function () {
 		var widget:any = new Widget(),
 			newWidget1:any = new Widget(),
-			newWidget2:any = new Widget(),
-			newWidget3:any = new Widget(),
-			newWidget4:any = new Widget();
+			newWidget2:any = new Widget();
 
 		renderer.add(widget, newWidget1);
 		assert.deepEqual(getChildren(widget), [
@@ -76,31 +66,6 @@ registerSuite({
 			newWidget2._lastNode,
 			widget._lastNode
 		], 'Widget should contain newWidget2 nodes');
-
-		renderer.add(widget, newWidget3, newWidget2);
-		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			newWidget1._firstNode,
-			newWidget1._lastNode,
-			newWidget3._firstNode,
-			newWidget3._lastNode,
-			newWidget2._firstNode,
-			newWidget2._lastNode,
-			widget._lastNode
-		], 'Widget should contain newWidget3 nodes');
-
-		renderer.add(widget, newWidget4, newWidget3._firstNode);
-		assert.deepEqual(getChildren(widget), [
-			widget._firstNode,
-			newWidget1._firstNode,
-			newWidget1._lastNode,
-			newWidget4._firstNode,
-			newWidget4._lastNode,
-			newWidget3._lastNode,
-			newWidget2._firstNode,
-			newWidget2._lastNode,
-			widget._lastNode
-		], 'newWidget3 _firstNode should have been replaced by newWidget4 nodes');
 	},
 
 	'#attachContent': function () {
@@ -126,27 +91,19 @@ registerSuite({
 	},
 
 	'#attachStyles': function () {
-		var widget:any = new Widget(),
-			action:any = [];
+		var widget:any = new ElementWidget(),
+			renderer = widget._renderer;
 
 		renderer.attachStyles(widget);
 
-		aspect.before(renderer, 'detachContent', function (widget:any) {
-			action.push([ 'detached', widget ]);
-		});
-		aspect.before(renderer, 'attachContent', function (widget:any) {
-			action.push([ 'attached', widget ]);
-		});
+		widget.style.set('margin', 0);
+		assert.strictEqual(widget._outerFragment.style.margin, '0px');
 
-		widget.get('style').set('margin', 0);
-		assert.deepEqual(action, [], 'Widget should not have been detached or attached');
+		widget.style.set('display', 'none');
+		assert.strictEqual(widget._outerFragment.style.display, 'none');
 
-		widget.get('style').set('display', 'none');
-		assert.deepEqual(action, [ [ 'detached', widget ] ], 'Widget should have been detached');
-
-		action = [];
-		widget.get('style').set('display', '');
-		assert.deepEqual(action, [ [ 'attached', widget ] ], 'Widget should have been attached');
+		widget.style.set('display', '');
+		assert.strictEqual(widget._outerFragment.style.display, '');
 	},
 
 	'#attachToWindow': function () {
