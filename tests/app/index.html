@@ -10,7 +10,7 @@
 	<script>
 		var dojoConfig = {
 			async: true,
-			baseUrl: '../../../',
+			baseUrl: '../../third-party/',
 			packages: [
 				'dojo',
 				'dijit',
@@ -18,12 +18,12 @@
 				'put-selector',
 				'dgrid',
 				'dstore',
-				'framework',
-				{ name: 'app', location: 'framework/tests/app' }
+				{ name: 'framework', location: '../' },
+				{ name: 'app', location: '../tests/app/' }
 			],
 			deps: [ 'app' ]
 		};
 	</script>
-	<script src="../../../dojo/dojo.js" async></script>
+	<script src="../../third-party/dojo/dojo.js" async></script>
 </body>
 </html>
