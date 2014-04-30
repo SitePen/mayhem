@@ -3,7 +3,7 @@
 
 import config = require('./config');
 import hasClass = require('xstyle/has-class');
-import WebApplication = require('framework/WebApplication');
+import WebApplication = require('mayhem/WebApplication');
 
 declare var exports:any;
 

@@ -1,5 +1,5 @@
-import Model = require('framework/data/Model');
-import RequestMemory = require('framework/store/RequestMemory');
+import Model = require('mayhem/data/Model');
+import RequestMemory = require('mayhem/store/RequestMemory');
 
 class MonsterModel extends Model {}
 

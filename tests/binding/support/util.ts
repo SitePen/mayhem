@@ -5,7 +5,7 @@ import Scheduler = require('../../../Scheduler');
 
 export function createProxtyBinder():ProxtyBinder {
 	return new ProxtyBinder({
-		app: <core.IApplication> new Observable({
+		app:<core.IApplication><any> new Observable({
 			scheduler: new Scheduler()
 		})
 	});

@@ -1,27 +1,27 @@
 <div class="nav">
-	<widget is="framework/ui/form/Button" class="close" on-press="close"></widget>
-	<widget is="framework/ui/form/Button" class="edit" selected={{ editing }} on-press="commit"></widget>
-	<widget is="framework/ui/form/Button" class="share" on-press="share"></widget>
+	<widget is="mayhem/ui/form/Button" class="close" on-press="close"></widget>
+	<widget is="mayhem/ui/form/Button" class="edit" selected={{ editing }} on-press="commit"></widget>
+	<widget is="mayhem/ui/form/Button" class="share" on-press="share"></widget>
 </div>
 
 <widget is="app/views/MonsterEditor" editing={{ editing }} background={{ app.background }}></widget>
 
-<widget is="framework/ui/Dialog" class="part-editor" hidden hidden-TODO={{ partEditorHidden }}>
+<widget is="mayhem/ui/Dialog" class="part-editor" hidden hidden-TODO={{ partEditorHidden }}>
 	<for each="model" source={{ partSource }} selection on-select="updateMonsterPart">
-		<widget is="framework/ui/Image" src={{ model.src }}></widget>
+		<widget is="mayhem/ui/Image" src={{ model.src }}></widget>
 	</for>
 </widget>
 
-<widget is="framework/ui/Dialog" class="save" hidden={{ saveDialogHidden }}>
+<widget is="mayhem/ui/Dialog" class="save" hidden={{ saveDialogHidden }}>
 	<div class="content">Save Monster?</div>
-	<widget is="framework/ui/form/Button" class="save" on-press="saveAndClose">Save Monster</widget>
-	<widget is="framework/ui/form/Button" class="cancel" on-press="cancel">Don't Save</widget>
+	<widget is="mayhem/ui/form/Button" class="save" on-press="saveAndClose">Save Monster</widget>
+	<widget is="mayhem/ui/form/Button" class="cancel" on-press="cancel">Don't Save</widget>
 </widget>
 
-<widget is="framework/ui/Dialog" class="share" hidden={{ shareDialogHidden }}>
+<widget is="mayhem/ui/Dialog" class="share" hidden={{ shareDialogHidden }}>
 	<div class="content">
-		<widget is="framework/ui/form/TextField" value={{ source.shareLink }} readonly=true></widget>
+		<widget is="mayhem/ui/form/TextField" value={{ source.shareLink }} readonly=true></widget>
 	</div>
-	<widget is="framework/ui/form/Button" class="twitter" on-press="sendToTwitter">Twitter</widget>
-	<widget is="framework/ui/form/Button" class="facebook" on-press="sendToFacebook">Facebook</widget>
+	<widget is="mayhem/ui/form/Button" class="twitter" on-press="sendToTwitter">Twitter</widget>
+	<widget is="mayhem/ui/form/Button" class="facebook" on-press="sendToFacebook">Facebook</widget>
 </widget>

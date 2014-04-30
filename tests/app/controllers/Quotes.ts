@@ -1,5 +1,5 @@
-import ListController = require('framework/controller/ListController');
-import util = require('framework/util');
+import ListController = require('mayhem/controller/ListController');
+import util = require('mayhem/util');
 
 class Quotes extends ListController {
 }

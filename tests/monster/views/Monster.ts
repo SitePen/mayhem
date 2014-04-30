@@ -1,7 +1,7 @@
 import array = require('dojo/_base/array');
-import ContentView = require('framework/ui/ContentView');
-import Image = require('framework/ui/Image');
-import Layout = require('framework/ui/Layout');
+import ContentView = require('mayhem/ui/ContentView');
+import Image = require('mayhem/ui/Image');
+import Layout = require('mayhem/ui/Layout');
 import when = require('dojo/when');
 
 class Sprite extends Image {}

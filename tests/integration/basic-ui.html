@@ -30,7 +30,7 @@
 		<script>
 var dojoConfig = {
     async: true,
-    baseUrl: '../../../',
+    baseUrl: '../../third-party',
     packages: [
         'dojo',
         'dijit',
@@ -38,17 +38,17 @@ var dojoConfig = {
         'xstyle',
         'put-selector',
         'dstore',
-        'framework'
+		{ name: 'mayhem', location: '../' }
     ]
 };
 		</script>
 		<script src="../../../dojo/dojo.js"></script>
 		<script>
 require([
-	'framework/Application',
-	'framework/tests/integration/MyModel',
-	'framework/tests/integration/MyMediator',
-	'framework/tests/integration/MyView'
+	'mayhem/Application',
+	'mayhem/tests/integration/MyModel',
+	'mayhem/tests/integration/MyMediator',
+	'mayhem/tests/integration/MyView'
 ], function (Application, MyModel, MyMediator, MyView) {
 	var app = new Application({
 		modules: { router: null }

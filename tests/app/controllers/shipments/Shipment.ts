@@ -1,4 +1,4 @@
-import Controller = require('framework/controller/Controller');
+import Controller = require('mayhem/controller/Controller');
 
 class Shipment extends Controller {
 }

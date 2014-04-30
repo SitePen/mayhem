@@ -1,4 +1,4 @@
-import Model = require('framework/data/Model');
+import Model = require('mayhem/data/Model');
 
 class Quote extends Model {
 }

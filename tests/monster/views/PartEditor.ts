@@ -1,9 +1,9 @@
 import array = require('dojo/_base/array');
-import Dialog = require('framework/ui/Dialog');
-import Image = require('framework/ui/Image');
-import Iterator = require('framework/ui/Iterator');
-import Template = require('framework/templating/Template');
-import Text = require('framework/ui/Text');
+import Dialog = require('mayhem/ui/Dialog');
+import Image = require('mayhem/ui/Image');
+import Iterator = require('mayhem/ui/Iterator');
+import Template = require('mayhem/templating/Template');
+import Text = require('mayhem/ui/Text');
 import when = require('dojo/when');
 
 class Sprite extends Image {}

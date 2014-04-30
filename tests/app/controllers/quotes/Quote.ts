@@ -1,4 +1,4 @@
-import ItemController = require('framework/controller/ItemController');
+import ItemController = require('mayhem/controller/ItemController');
 
 class Quote extends ItemController {}
 Quote.observers({

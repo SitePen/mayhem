@@ -1,22 +1,22 @@
-<widget is="framework/ui/form/TextArea" value='{ firstName } { lastName }'></widget>
-First Name: <widget is="framework/ui/form/TextField" value={{ firstName }} label={{ firstName }}></widget>
-<widget is="framework/ui/form/Error" binding="firstName"></widget>
-Last Name: <widget is="framework/ui/form/TextField" value={{ lastName }}></widget>
-<widget is="framework/ui/form/Error" binding="lastName"></widget>
-fullName bound input: <widget is="framework/ui/form/TextField" value={{ fullName }}></widget>
+<widget is="mayhem/ui/form/TextArea" value='{ firstName } { lastName }'></widget>
+First Name: <widget is="mayhem/ui/form/TextField" value={{ firstName }} label={{ firstName }}></widget>
+<widget is="mayhem/ui/form/Error" binding="firstName"></widget>
+Last Name: <widget is="mayhem/ui/form/TextField" value={{ lastName }}></widget>
+<widget is="mayhem/ui/form/Error" binding="lastName"></widget>
+fullName bound input: <widget is="mayhem/ui/form/TextField" value={{ fullName }}></widget>
 <br>
 fullName computed field: { fullName }<br>
 firstName lastName: { firstName } { lastName }<br>
 
 <p>
-<label>Enabled: <widget is="framework/ui/form/Checkbox" checked={{ enabled }}></widget></label><br>
-<label for='cb2'>Enabled:</label> <widget is="framework/ui/form/Checkbox" checked={{ enabled }} id='cb2'></widget>
+<label>Enabled: <widget is="mayhem/ui/form/Checkbox" checked={{ enabled }}></widget></label><br>
+<label for='cb2'>Enabled:</label> <widget is="mayhem/ui/form/Checkbox" checked={{ enabled }} id='cb2'></widget>
 </p><p>
 Name preference: { firstName }
 <fieldset>
-	<label><widget is="framework/ui/form/RadioButton" group='name-pref'></widget> first name</label>
-	<label><widget is="framework/ui/form/RadioButton" group='name-pref'></widget> last name</label>
-	<label><widget is="framework/ui/form/RadioButton" group='name-pref' checked disabled></widget> full name</label>
+	<label><widget is="mayhem/ui/form/RadioButton" group='name-pref'></widget> first name</label>
+	<label><widget is="mayhem/ui/form/RadioButton" group='name-pref'></widget> last name</label>
+	<label><widget is="mayhem/ui/form/RadioButton" group='name-pref' checked disabled></widget> full name</label>
 </fieldset>
 </p>
 
@@ -31,33 +31,33 @@ Name preference: { firstName }
 <elseif condition="fullNameIsBoeBlogger">
 	(4) transformed fullName should be Boe Blogger (is: { fullName }).<br>
 <elseif condition="firstName">
-	<widget is="framework/ui/form/TextField" value={{ firstName }}></widget>
-	<widget is="framework/ui/form/TextField" value={{ lastName }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstName }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ lastName }}></widget>
 <else>
 	(X) No match... here's a read-only widget binding for fun:
-	<widget is="framework/ui/form/TextField" value='{ firstName } { lastName }'></widget>
+	<widget is="mayhem/ui/form/TextField" value='{ firstName } { lastName }'></widget>
 </if>
 
 <h3>Iterators</h3>
 
 <h4>Hobbies (observable array): { hobbies }</h4>
 <for id='hobby-iter' each='hobby' in="hobbies">
-	<span style="background-color:yellow"><em>{ firstName }</span> likes</em> <widget is="framework/ui/form/TextField" value={{ hobby }}></widget></span>
+	<span style="background-color:yellow"><em>{ firstName }</span> likes</em> <widget is="mayhem/ui/form/TextField" value={{ hobby }}></widget></span>
 </for>
 
 <h4>Phone numbers (store): { phone_numbers }</h4>
 <for id='phone-iter' each='phone' in="phone_numbers">
 	<span style="background-color:cyan"><em>{ phone.type }</span> (type)</em> { phone.value }</span>
-	<widget is="framework/ui/form/TextField" value={{ phone.value }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ phone.value }}></widget>
 </for>
 
 <h4>Colors (array): { colors }</h4>
 <p>(label: { colors_string!label })</p>
 <for id='color-iter' each='color' in="colors">
-	<widget is="framework/ui/form/TextField" value={{ firstName }}></widget> likes color:
-	<widget is="framework/ui/form/TextField" value={{ color }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstName }}></widget> likes color:
+	<widget is="mayhem/ui/form/TextField" value={{ color }}></widget>
 </for>
-Edit colors: <widget is="framework/ui/form/TextField" value={{ colors_string }} style="width:20em"></widget>
+Edit colors: <widget is="mayhem/ui/form/TextField" value={{ colors_string }} style="width:20em"></widget>
 
 <placeholder name="interstitial">
 
@@ -69,10 +69,10 @@ Edit colors: <widget is="framework/ui/form/TextField" value={{ colors_string }} 
 	Resolved (syncronously):
 	<br>
 	firstName (scoped): { firstNameScoped }
-	<widget is="framework/ui/form/TextField" value={{ firstNameScoped }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstNameScoped }}></widget>
 	<br>
 	firstName: { firstName }
-	<widget is="framework/ui/form/TextField" value={{ firstName }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstName }}></widget>
 <during>
 	I SHOULD NOT BE VISIBLE
 <error>
@@ -85,10 +85,10 @@ Edit colors: <widget is="framework/ui/form/TextField" value={{ colors_string }} 
 	Resolved remoteString:
 	<br>
 	str: { str }
-	<widget is="framework/ui/form/TextField" value={{ str }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ str }}></widget>
 	<br>
 	firstName: { firstName }
-	<widget is="framework/ui/form/TextField" value={{ firstName }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstName }}></widget>
 <during>
 	remoteString: loading...
 </during>
@@ -103,13 +103,13 @@ Edit colors: <widget is="framework/ui/form/TextField" value={{ colors_string }} 
 	Resolved remoteObject:
 	<br>
 	obj.foo: { obj.foo }
-	<widget is="framework/ui/form/TextField" value={{ obj.foo }}></widget><br>
+	<widget is="mayhem/ui/form/TextField" value={{ obj.foo }}></widget><br>
 	<br>
 	obj.bar: { obj.bar }
-	<widget is="framework/ui/form/TextField" value={{ obj.bar }}></widget><br>
+	<widget is="mayhem/ui/form/TextField" value={{ obj.bar }}></widget><br>
 	<br>
 	firstName: { firstName }
-	<widget is="framework/ui/form/TextField" value={{ firstName }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstName }}></widget>
 <during>
 	remoteObject: loading...
 <error>
@@ -126,11 +126,11 @@ Edit colors: <widget is="framework/ui/form/TextField" value={{ colors_string }} 
 	err.message: { err.message }
 	<br>
 	firstName: { firstName }
-	<widget is="framework/ui/form/TextField" value={{ firstName }}></widget>
+	<widget is="mayhem/ui/form/TextField" value={{ firstName }}></widget>
 </when>
 
 <hr>
 
 <placeholder name='bottom'>
-<widget is="framework/ui/form/Button" on-click='save' label='My Save Button'></widget>
-<widget is="framework/ui/form/Button" on-click='save'>Another <strong>Save</strong> Button</widget>
+<widget is="mayhem/ui/form/Button" on-click='save' label='My Save Button'></widget>
+<widget is="mayhem/ui/form/Button" on-click='save'>Another <strong>Save</strong> Button</widget>

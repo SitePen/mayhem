@@ -28,7 +28,7 @@ var config = {
 			}
 		},
 		stores: {
-			defaultStore: 'framework/store/RequestMemory',
+			defaultStore: 'mayhem/store/RequestMemory',
 			models: {
 				Background: {
 					target: 'data/backgrounds.json'

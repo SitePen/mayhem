@@ -1,12 +1,12 @@
 <h1>Quote</h1>
 
 <div>
-	<label>Editable</label> <widget is="framework/ui/form/Checkbox" checked={{ editing }}></widget>
+	<label>Editable</label> <widget is="mayhem/ui/form/Checkbox" checked={{ editing }}></widget>
 </div>
 <div>
 	<label>{ name!label }</label>
 	<if condition="editing">
-		<widget is="framework/ui/form/TextField" value={{ name }}></widget>
+		<widget is="mayhem/ui/form/TextField" value={{ name }}></widget>
 	<else>
 		<span>{ name }</span>
 	</if>

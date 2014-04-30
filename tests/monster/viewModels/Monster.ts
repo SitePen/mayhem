@@ -1,6 +1,6 @@
 /// <reference path="../../../dojo.d.ts" />
 
-import Mediator = require('framework/data/Mediator');
+import Mediator = require('mayhem/data/Mediator');
 import topic = require('dojo/topic');
 
 class MonsterViewModel extends Mediator {

@@ -1,8 +1,8 @@
 /// <reference path="../../../../dojo.d.ts" />
 
-import ItemController = require('framework/controller/ItemController');
+import ItemController = require('mayhem/controller/ItemController');
 import MonsterModel = require('../../models/Monster');
-import Observable = require('framework/Observable');
+import Observable = require('mayhem/Observable');
 import when = require('dojo/when');
 
 // Hack to allow transactional monster editing

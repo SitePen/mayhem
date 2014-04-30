@@ -7,30 +7,33 @@
 	<body class="claro">
 		<script>
 var dojoConfig = {
-	async: true,
-	baseUrl: '../../../',
-	packages: [
-		'dojo',
-		'dijit',
-		'dstore',
-		'framework'
-	]
+    async: true,
+    baseUrl: '../../third-party',
+    packages: [
+        'dojo',
+        'dijit',
+        'dgrid',
+        'xstyle',
+        'put-selector',
+        'dstore',
+		{ name: 'mayhem', location: '../' }
+    ]
 };
 	</script>
 	<script src="../../../dojo/dojo.js"></script>
 	<script>
 require([
-	'framework/Application',
-	'framework/ui/Master',
-	'framework/tests/integration/MyMediator',
-	'framework/tests/integration/MyModel',
-	'framework/templating/Template',
+	'mayhem/Application',
+	'mayhem/ui/Master',
+	'mayhem/tests/integration/MyMediator',
+	'mayhem/tests/integration/MyModel',
+	'mayhem/templating/Template',
 	// './parse-tree.js',
 	// 'dojo/text!./parse-tree-tmpl.js',
-	// 'framework/templating/Template!./parse-tree-tmpl.js',
-	// 'framework/templating/Template!./parse-tree-tmpl.json',
-	// 'framework/templating/json!./parse-tree-tmpl',
-	'framework/templating/json!./test-tmpl',
+	// 'mayhem/templating/Template!./parse-tree-tmpl.js',
+	// 'mayhem/templating/Template!./parse-tree-tmpl.json',
+	// 'mayhem/templating/json!./parse-tree-tmpl',
+	'mayhem/templating/json!./test-tmpl',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dojo/resources/dojo.css'
 ], function (

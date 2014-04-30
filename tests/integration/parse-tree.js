@@ -1,29 +1,29 @@
 define([], function() {
 	return {
-		constructor: "framework/ui/dijit/layout/ContentPane",
+		constructor: "mayhem/ui/dijit/layout/ContentPane",
 		kwArgs: {
 			title: "Basic Form Widgets",
 			selected: true
 		},
 		children: [
 			{
-				constructor: "framework/ui/dijit/form/Button",
+				constructor: "mayhem/ui/dijit/form/Button",
 				kwArgs: {
 					label: "Simple",
 					iconClass: "dijitIconTask"
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/DropDownButton",
+				constructor: "mayhem/ui/dijit/form/DropDownButton",
 				kwArgs: {
 					dropDown: {
-						constructor: "framework/ui/dijit/DropDownMenu",
+						constructor: "mayhem/ui/dijit/DropDownMenu",
 						kwArgs: {
 							id: "dd-menu"
 						},
 						children: [
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Cut",
 									onClick: "cut",
@@ -31,7 +31,7 @@ define([], function() {
 								}
 							},
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Copy",
 									onClick: "copy",
@@ -39,7 +39,7 @@ define([], function() {
 								}
 							},
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Paste",
 									onClick: "paste",
@@ -53,16 +53,16 @@ define([], function() {
 				content: "Drop Down"
 			},
 			{
-				constructor: "framework/ui/dijit/form/ComboButton",
+				constructor: "mayhem/ui/dijit/form/ComboButton",
 				kwArgs: {
 					dropDown: {
-						constructor: "framework/ui/dijit/DropDownMenu",
+						constructor: "mayhem/ui/dijit/DropDownMenu",
 						kwArgs: {
 							id: "combo-menu"
 						},
 						children: [
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Save",
 									onClick: "save",
@@ -70,7 +70,7 @@ define([], function() {
 								}
 							},
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Save As",
 									onClick: "save-as"
@@ -84,7 +84,7 @@ define([], function() {
 				content: "Combo"
 			},
 			{
-				constructor: "framework/ui/dijit/form/ToggleButton",
+				constructor: "mayhem/ui/dijit/form/ToggleButton",
 				kwArgs: {
 					label: "Toggle",
 					checked: true,
@@ -92,7 +92,7 @@ define([], function() {
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/Button",
+				constructor: "mayhem/ui/dijit/form/Button",
 				kwArgs: {
 					disabled: true,
 					label: "Simple",
@@ -100,17 +100,17 @@ define([], function() {
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/DropDownButton",
+				constructor: "mayhem/ui/dijit/form/DropDownButton",
 				kwArgs: {
 					disabled: true,
 					dropDown: {
-						constructor: "framework/ui/dijit/DropDownMenu",
+						constructor: "mayhem/ui/dijit/DropDownMenu",
 						kwArgs: {
 							id: "disabled-dd-menu"
 						},
 						children: [
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Cut",
 									iconClass: "dijitEditorIcon dijitEditorIconCut",
@@ -118,7 +118,7 @@ define([], function() {
 								}
 							},
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Copy",
 									iconClass: "dijitEditorIcon dijitEditorIconCopy",
@@ -126,7 +126,7 @@ define([], function() {
 								}
 							},
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Paste",
 									iconClass: "dijitEditorIcon dijitEditorIconPaste",
@@ -140,17 +140,17 @@ define([], function() {
 				content: "<strong>Drop</strong> Down"
 			},
 			{
-				constructor: "framework/ui/dijit/form/ComboButton",
+				constructor: "mayhem/ui/dijit/form/ComboButton",
 				kwArgs: {
 					disabled: true,
 					dropDown: {
-						constructor: "framework/ui/dijit/DropDownMenu",
+						constructor: "mayhem/ui/dijit/DropDownMenu",
 						kwArgs: {
 							id: "disabled-combo-menu"
 						},
 						children: [
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Save",
 									onClick: "save",
@@ -158,7 +158,7 @@ define([], function() {
 								}
 							},
 							{
-								constructor: "framework/ui/dijit/MenuItem",
+								constructor: "mayhem/ui/dijit/MenuItem",
 								kwArgs: {
 									label: "Save As",
 									onClick: "save-as"
@@ -172,7 +172,7 @@ define([], function() {
 				content: "Combo"
 			},
 			{
-				constructor: "framework/ui/dijit/form/ToggleButton",
+				constructor: "mayhem/ui/dijit/form/ToggleButton",
 				kwArgs: {
 					disabled: true,
 					label: "Toggle",
@@ -181,20 +181,20 @@ define([], function() {
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/CheckBox",
+				constructor: "mayhem/ui/dijit/form/CheckBox",
 				kwArgs: {
 					id: "check1"
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/CheckBox",
+				constructor: "mayhem/ui/dijit/form/CheckBox",
 				kwArgs: {
 					id: "check2",
 					checked: true
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/CheckBox",
+				constructor: "mayhem/ui/dijit/form/CheckBox",
 				kwArgs: {
 					id: "check3",
 					checked: "",
@@ -202,7 +202,7 @@ define([], function() {
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/CheckBox",
+				constructor: "mayhem/ui/dijit/form/CheckBox",
 				kwArgs: {
 					id: "check4",
 					checked: true,
@@ -210,20 +210,20 @@ define([], function() {
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/RadioButton",
+				constructor: "mayhem/ui/dijit/form/RadioButton",
 				kwArgs: {
 					id: "g1rb1"
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/RadioButton",
+				constructor: "mayhem/ui/dijit/form/RadioButton",
 				kwArgs: {
 					id: "g1rb2",
 					checked: true
 				}
 			},
 			{
-				constructor: "framework/ui/dijit/form/RadioButton",
+				constructor: "mayhem/ui/dijit/form/RadioButton",
 				kwArgs: {
 					id: "g1rb3",
 					disabled: true

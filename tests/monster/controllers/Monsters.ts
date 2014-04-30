@@ -1,12 +1,12 @@
 /// <reference path="../../../dojo.d.ts" />
 
 import array = require('dojo/_base/array');
-import ListController = require('framework/controller/ListController');
-import Mediator = require('framework/data/Mediator');
+import ListController = require('mayhem/controller/ListController');
+import Mediator = require('mayhem/data/Mediator');
 import MonsterModel = require('../models/Monster');
-import ObservableArray = require('framework/ObservableArray');
+import ObservableArray = require('mayhem/ObservableArray');
 import topic = require('dojo/topic');
-import util = require('framework/util');
+import util = require('mayhem/util');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 

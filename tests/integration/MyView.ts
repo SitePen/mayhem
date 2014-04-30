@@ -1,7 +1,7 @@
-import FormError = require('framework/ui/form/Error');
-import FormLabel = require('framework/ui/form/Label');
-import Master = require('framework/ui/Master');
-import TextField = require('framework/ui/form/TextField');
+import FormError = require('mayhem/ui/form/Error');
+import FormLabel = require('mayhem/ui/form/Label');
+import Master = require('mayhem/ui/Master');
+import TextField = require('mayhem/ui/form/TextField');
 
 class MyView extends Master {
 	private _input:TextField;

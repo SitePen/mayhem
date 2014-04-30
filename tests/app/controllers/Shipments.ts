@@ -1,4 +1,4 @@
-import ListController = require('framework/controller/ListController');
+import ListController = require('mayhem/controller/ListController');
 
 class Shipments extends ListController {}
 Shipments.observers({

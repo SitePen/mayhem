@@ -1,6 +1,6 @@
-@import "../../../dijit/themes/claro/claro.css";
-@import "../../../dgrid/css/dgrid.css";
-@import "../../../dgrid/css/skins/claro.css";
+@import "../../third-party/dijit/themes/claro/claro.css";
+@import "../../third-party/dgrid/css/dgrid.css";
+@import "../../third-party/dgrid/css/skins/claro.css";
 
 html, body {
 	height: 100%;

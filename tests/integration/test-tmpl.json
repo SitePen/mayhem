@@ -1,12 +1,12 @@
 {
-    "constructor": "framework/ui/ContentView",
+    "constructor": "mayhem/ui/ContentView",
     "kwArgs": {
         "title": "Simple widget",
         "selected": true
     },
     "children": [
         {
-            "constructor": "framework/ui/form/Button",
+            "constructor": "mayhem/ui/form/Button",
             "kwArgs": {
                 "label": "foo"
             }

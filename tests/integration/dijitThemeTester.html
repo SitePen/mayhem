@@ -108,27 +108,27 @@
 	<body class="claro">
 		<script>
 var dojoConfig = {
-	async: true,
-	baseUrl: '../../../',
-	packages: [
+    async: true,
+    baseUrl: '../../third-party',
+    packages: [
         'dojo',
         'dijit',
         'dgrid',
         'xstyle',
         'put-selector',
         'dstore',
-        'framework'
-	]
+		{ name: 'mayhem', location: '../' }
+    ]
 };
 	</script>
 	<script src="../../../dojo/dojo.js"></script>
 	<script>
 require([
-	'framework/Application',
-	'framework/ui/Master',
-	'framework/tests/integration/MyMediator',
-	'framework/tests/integration/MyModel',
-	'framework/templating/html!./dijitthemeTester.tmpl.html',
+	'mayhem/Application',
+	'mayhem/ui/Master',
+	'mayhem/tests/integration/MyMediator',
+	'mayhem/tests/integration/MyModel',
+	'mayhem/templating/html!./dijitthemeTester.tmpl.html',
 	'xstyle/css!dijit/themes/claro/claro.css',
 	'xstyle/css!dojo/resources/dojo.css'
 ], function (Application, Master, MyMediator, MyModel, factory) {

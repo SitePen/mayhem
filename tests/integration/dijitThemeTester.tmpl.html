@@ -1,184 +1,184 @@
-<widget is='framework/ui/dijit/layout/BorderContainer' id='main' live-splitters=false design='sidebar'>
-	<widget id='leftAccordion' is='framework/ui/dijit/layout/AccordionContainer' region='leading' splitter>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Popups and Alerts'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Tree'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Rootless Tree'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Calendar' selected>
-			<widget is='framework/ui/dijit/Calendar'></widget>
+<widget is='mayhem/ui/dijit/layout/BorderContainer' id='main' live-splitters=false design='sidebar'>
+	<widget id='leftAccordion' is='mayhem/ui/dijit/layout/AccordionContainer' region='leading' splitter>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Popups and Alerts'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Tree'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Rootless Tree'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Calendar' selected>
+			<widget is='mayhem/ui/dijit/Calendar'></widget>
 		</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Color Picker'>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Color Picker'>
 			<p>Selecting a color will change the background color of the page. Use this to test how tooltips and drop downs appear with different backgrounds.</p>
 
 			<h2 class='testHeader'>3x4</h2>
-			<widget is='framework/ui/dijit/ColorPalette' palette='3x4'></widget>
+			<widget is='mayhem/ui/dijit/ColorPalette' palette='3x4'></widget>
 
 			<h2 class='testHeader'>7x10</h2>
-			<widget is='framework/ui/dijit/ColorPalette'></widget>
+			<widget is='mayhem/ui/dijit/ColorPalette'></widget>
 		</widget>
 	</widget>
-	<widget is='framework/ui/dijit/MenuBar' region='top'>
-		<widget id='file' is='framework/ui/dijit/PopupMenuBarItem' popup=#fileMenu label='File'>
-			<widget id='fileMenu' is='framework/ui/dijit/Menu'>
-				<widget id='globals' is='framework/ui/dijit/MenuItem'>Log globals</widget>
-				<widget id='widgets' is='framework/ui/dijit/MenuItem'>Log widgets</widget>
-				<widget id='destroy' is='framework/ui/dijit/MenuItem' icon-class='dijitIconDelete'>Destroy All</widget>
+	<widget is='mayhem/ui/dijit/MenuBar' region='top'>
+		<widget id='file' is='mayhem/ui/dijit/PopupMenuBarItem' popup=#fileMenu label='File'>
+			<widget id='fileMenu' is='mayhem/ui/dijit/Menu'>
+				<widget id='globals' is='mayhem/ui/dijit/MenuItem'>Log globals</widget>
+				<widget id='widgets' is='mayhem/ui/dijit/MenuItem'>Log widgets</widget>
+				<widget id='destroy' is='mayhem/ui/dijit/MenuItem' icon-class='dijitIconDelete'>Destroy All</widget>
 			</widget>
 		</widget>
-		<widget id='edit' is='framework/ui/dijit/PopupMenuBarItem' popup=#editMenu label='Edit'>
-			<widget id='editMenu' is='framework/ui/dijit/Menu'>
-				<widget id='cut' is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
-				<widget id='copy' is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
-				<widget id='paste' is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
-				<widget id='separator' is='framework/ui/dijit/MenuSeparator' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
-				<widget id='undo' is='framework/ui/dijit/MenuItem' label='Undo' on-click='undo' icon-class='dijitIconUndo'></widget>
+		<widget id='edit' is='mayhem/ui/dijit/PopupMenuBarItem' popup=#editMenu label='Edit'>
+			<widget id='editMenu' is='mayhem/ui/dijit/Menu'>
+				<widget id='cut' is='mayhem/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
+				<widget id='copy' is='mayhem/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
+				<widget id='paste' is='mayhem/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
+				<widget id='separator' is='mayhem/ui/dijit/MenuSeparator' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
+				<widget id='undo' is='mayhem/ui/dijit/MenuItem' label='Undo' on-click='undo' icon-class='dijitIconUndo'></widget>
 			</widget>
 		</widget>
-		<widget id='view' is='framework/ui/dijit/PopupMenuBarItem' popup=#viewMenu label='View'>
-			<widget id='viewMenu' is='framework/ui/dijit/Menu'>
-				<widget is='framework/ui/dijit/MenuItem' label='Normal'></widget>
-				<widget is='framework/ui/dijit/MenuItem' label='Outline'></widget>
-				<widget id='zoom' is='framework/ui/dijit/PopupMenuItem' popup=#zoomMenu>
+		<widget id='view' is='mayhem/ui/dijit/PopupMenuBarItem' popup=#viewMenu label='View'>
+			<widget id='viewMenu' is='mayhem/ui/dijit/Menu'>
+				<widget is='mayhem/ui/dijit/MenuItem' label='Normal'></widget>
+				<widget is='mayhem/ui/dijit/MenuItem' label='Outline'></widget>
+				<widget id='zoom' is='mayhem/ui/dijit/PopupMenuItem' popup=#zoomMenu>
 					Zoom
-					<widget id='zoomMenu' is='framework/ui/dijit/Menu'>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='50%' group='zoom'></widget>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='75%' group='zoom'></widget>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='100%' group='zoom' checked></widget>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='150%' group='zoom'></widget>
-						<widget is='framework/ui/dijit/RadioMenuItem' label='200%' group='zoom'></widget>
+					<widget id='zoomMenu' is='mayhem/ui/dijit/Menu'>
+						<widget is='mayhem/ui/dijit/RadioMenuItem' label='50%' group='zoom'></widget>
+						<widget is='mayhem/ui/dijit/RadioMenuItem' label='75%' group='zoom'></widget>
+						<widget is='mayhem/ui/dijit/RadioMenuItem' label='100%' group='zoom' checked></widget>
+						<widget is='mayhem/ui/dijit/RadioMenuItem' label='150%' group='zoom'></widget>
+						<widget is='mayhem/ui/dijit/RadioMenuItem' label='200%' group='zoom'></widget>
 					</widget>
 				</widget>
 			</widget>
 		</widget>
-		<widget is='framework/ui/dijit/MenuBarItem' label='Themes'></widget>
-		<widget is='framework/ui/dijit/MenuBarItem' label='Dialogs'></widget>
-		<widget id='inputPadding' is='framework/ui/dijit/PopupMenuBarItem' popup=#inputPaddingMenu label='TextBox Padding'>
-			<widget id='inputPaddingMenu' is='framework/ui/dijit/Menu'>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='theme default' group='padding' checked></widget>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='0px' group='padding'></widget>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='1px' group='padding'></widget>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='2px' group='padding'></widget>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='3px' group='padding'></widget>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='4px' group='padding'></widget>
-				<widget is='framework/ui/dijit/RadioMenuItem' label='5px' group='padding'></widget>
+		<widget is='mayhem/ui/dijit/MenuBarItem' label='Themes'></widget>
+		<widget is='mayhem/ui/dijit/MenuBarItem' label='Dialogs'></widget>
+		<widget id='inputPadding' is='mayhem/ui/dijit/PopupMenuBarItem' popup=#inputPaddingMenu label='TextBox Padding'>
+			<widget id='inputPaddingMenu' is='mayhem/ui/dijit/Menu'>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='theme default' group='padding' checked></widget>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='0px' group='padding'></widget>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='1px' group='padding'></widget>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='2px' group='padding'></widget>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='3px' group='padding'></widget>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='4px' group='padding'></widget>
+				<widget is='mayhem/ui/dijit/RadioMenuItem' label='5px' group='padding'></widget>
 			</widget>
 		</widget>
-		<widget id='help' is='framework/ui/dijit/PopupMenuBarItem' popup=#helpMenu label='Help'>
-			<widget id='helpMenu' is='framework/ui/dijit/Menu'>
-				<widget is='framework/ui/dijit/MenuItem'>Help Topics</widget>
-				<widget is='framework/ui/dijit/MenuItem'>About Dijit</widget>
+		<widget id='help' is='mayhem/ui/dijit/PopupMenuBarItem' popup=#helpMenu label='Help'>
+			<widget id='helpMenu' is='mayhem/ui/dijit/Menu'>
+				<widget is='mayhem/ui/dijit/MenuItem'>Help Topics</widget>
+				<widget is='mayhem/ui/dijit/MenuItem'>About Dijit</widget>
 			</widget>
 		</widget>
-		<widget is='framework/ui/dijit/PopupMenuBarItem' popup=#disabledMenu label='Disabled' disabled>
-			<widget id='disabledMenu' is='framework/ui/dijit/Menu'>
-				<widget is='framework/ui/dijit/MenuItem'>You should not see this</widget>
+		<widget is='mayhem/ui/dijit/PopupMenuBarItem' popup=#disabledMenu label='Disabled' disabled>
+			<widget id='disabledMenu' is='mayhem/ui/dijit/Menu'>
+				<widget is='mayhem/ui/dijit/MenuItem'>You should not see this</widget>
 			</widget>
 		</widget>
 	</widget>
-	<widget id='topTabs' is='framework/ui/dijit/layout/TabContainer' region='center'>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Basic Form Widgets' selected>
+	<widget id='topTabs' is='mayhem/ui/dijit/layout/TabContainer' region='center'>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Basic Form Widgets' selected>
 
 			<h2>Buttons</h2>
 			<p>Buttons can do an action, display a menu, or both:</p>
 			<div>
 				Enabled:
-				<widget is='framework/ui/dijit/form/Button' label='Simple' icon-class='dijitIconTask'></widget>
-				<widget is='framework/ui/dijit/form/DropDownButton' drop-down=#dd-menu icon-class='dijitIconEdit'>
+				<widget is='mayhem/ui/dijit/form/Button' label='Simple' icon-class='dijitIconTask'></widget>
+				<widget is='mayhem/ui/dijit/form/DropDownButton' drop-down=#dd-menu icon-class='dijitIconEdit'>
 					Drop Down
-					<widget id='dd-menu' is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
-						<widget is='framework/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
-						<widget is='framework/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
+					<widget id='dd-menu' is='mayhem/ui/dijit/DropDownMenu'>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Cut' on-click='cut' icon-class='dijitIconCut'></widget>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Copy' on-click='copy' icon-class='dijitIconCopy'></widget>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Paste' on-click='paste' icon-class='dijitIconPaste'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ComboButton' drop-down=#combo-menu label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='mayhem/ui/dijit/form/ComboButton' drop-down=#combo-menu label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
-					<widget id='combo-menu' is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
-						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
+					<widget id='combo-menu' is='mayhem/ui/dijit/DropDownMenu'>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ToggleButton' label='Toggle' checked icon-class='dijitCheckBoxIcon'></widget>
+				<widget is='mayhem/ui/dijit/form/ToggleButton' label='Toggle' checked icon-class='dijitCheckBoxIcon'></widget>
 			</div>
 			<div>
 				Disabled:
-				<widget is='framework/ui/dijit/form/Button' disabled label='Simple' icon-class='dijitIconTask'></widget>
-				<widget is='framework/ui/dijit/form/DropDownButton' disabled drop-down=#disabled-dd-menu icon-class='dijitIconEdit'>
+				<widget is='mayhem/ui/dijit/form/Button' disabled label='Simple' icon-class='dijitIconTask'></widget>
+				<widget is='mayhem/ui/dijit/form/DropDownButton' disabled drop-down=#disabled-dd-menu icon-class='dijitIconEdit'>
 					<strong>Drop</strong> Down
-					<widget id='disabled-dd-menu' is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Cut' icon-class='dijitEditorIcon dijitEditorIconCut' on-click='cut'></widget>
-						<widget is='framework/ui/dijit/MenuItem' label='Copy' icon-class='dijitEditorIcon dijitEditorIconCopy' on-click='copy'></widget>
-						<widget is='framework/ui/dijit/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'></widget>
+					<widget id='disabled-dd-menu' is='mayhem/ui/dijit/DropDownMenu'>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Cut' icon-class='dijitEditorIcon dijitEditorIconCut' on-click='cut'></widget>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Copy' icon-class='dijitEditorIcon dijitEditorIconCopy' on-click='copy'></widget>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Paste' icon-class='dijitEditorIcon dijitEditorIconPaste' on-click='paste'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ComboButton' disabled drop-down=#disabled-combo-menu label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
+				<widget is='mayhem/ui/dijit/form/ComboButton' disabled drop-down=#disabled-combo-menu label='Combo' icon-class='dijitEditorIcon dijitEditorIconSave'>
 					Combo
-					<widget id='disabled-combo-menu' is='framework/ui/dijit/DropDownMenu'>
-						<widget is='framework/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
-						<widget is='framework/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
+					<widget id='disabled-combo-menu' is='mayhem/ui/dijit/DropDownMenu'>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Save' on-click='save' icon-class='dijitEditorIcon dijitEditorIconSave'></widget>
+						<widget is='mayhem/ui/dijit/MenuItem' label='Save As' on-click='save-as'></widget>
 					</widget>
 				</widget>
-				<widget is='framework/ui/dijit/form/ToggleButton' disabled label='Toggle' checked icon-class='dijitCheckBoxIcon'></widget>
+				<widget is='mayhem/ui/dijit/form/ToggleButton' disabled label='Toggle' checked icon-class='dijitCheckBoxIcon'></widget>
 			</div>
 
 			<hr class='spacer'></hr>
 
 			<h2>Check Boxes</h2>
 			<fieldset>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check1'></widget>
+				<widget is='mayhem/ui/dijit/form/CheckBox' id='check1'></widget>
 				<label for='check1'>unchecked</label>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check2' checked></widget>
+				<widget is='mayhem/ui/dijit/form/CheckBox' id='check2' checked></widget>
 				<label for='check2'>checked</label>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check3' checked='' disabled></widget>
+				<widget is='mayhem/ui/dijit/form/CheckBox' id='check3' checked='' disabled></widget>
 				<label for='check3'>disabled</label>
-				<widget is='framework/ui/dijit/form/CheckBox' id='check4' checked disabled></widget>
+				<widget is='mayhem/ui/dijit/form/CheckBox' id='check4' checked disabled></widget>
 				<label for='check4'>disabled and checked</label>
 			</fieldset>
 
 			<h2>Radio Buttons</h2>
 			<fieldset>
-				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb1'></widget>
+				<widget is='mayhem/ui/dijit/form/RadioButton' id='g1rb1'></widget>
 				<label for='g1rb1'>news</label>
-				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb2' checked></widget>
+				<widget is='mayhem/ui/dijit/form/RadioButton' id='g1rb2' checked></widget>
 				<label for='g1rb2'>talk</label>
-				<widget is='framework/ui/dijit/form/RadioButton' id='g1rb3' disabled></widget>
+				<widget is='mayhem/ui/dijit/form/RadioButton' id='g1rb3' disabled></widget>
 				<label for='g1rb3'>weather (disabled)</label>
 			</fieldset>
 		</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Text Input Widgets'>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Text Input Widgets'>
 
 			<h2>DateTextBox</h2>
 			<label for='date1'>Enabled w/placeHolder:</label>
-			<widget id='date1' is='framework/ui/dijit/form/DateTextBox' place-holder='Birthday'></widget>
+			<widget id='date1' is='mayhem/ui/dijit/form/DateTextBox' place-holder='Birthday'></widget>
 			<label for='date2'>Disabled w/placeHolder:</label>
-			<widget id='date2' is='framework/ui/dijit/form/DateTextBox' disabled place-holder='Birthday'></widget>
+			<widget id='date2' is='mayhem/ui/dijit/form/DateTextBox' disabled place-holder='Birthday'></widget>
 			<label for='date3'>Disabled w/value:</label>
-			<widget id='date3' is='framework/ui/dijit/form/DateTextBox' disabled value='2008-12-25'></widget>
+			<widget id='date3' is='mayhem/ui/dijit/form/DateTextBox' disabled value='2008-12-25'></widget>
 
 			<h2>TimeTextBox</h2>
 			<label for='time1'>Enabled w/placeHolder:</label>
-			<widget id='time1' is='framework/ui/dijit/form/TimeTextBox' value='T17:45'></widget>
+			<widget id='time1' is='mayhem/ui/dijit/form/TimeTextBox' value='T17:45'></widget>
 			<label for='time2'>Enabled w/placeHolder:</label>
-			<widget id='time2' is='framework/ui/dijit/form/TimeTextBox' disabled value='T17:45'></widget>
+			<widget id='time2' is='mayhem/ui/dijit/form/TimeTextBox' disabled value='T17:45'></widget>
 
 			<h2>CurrencyTextBox</h2>
 			<label for='currency1'>Enabled:</label>
-			<widget id='currency1' is='framework/ui/dijit/form/CurrencyTextBox' value='54775.53' currency='USD'></widget>
+			<widget id='currency1' is='mayhem/ui/dijit/form/CurrencyTextBox' value='54775.53' currency='USD'></widget>
 			<label for='currency2'>Disabled:</label>
-			<widget id='currency2' is='framework/ui/dijit/form/CurrencyTextBox' disabled value='54775.53' currency='USD'></widget>
+			<widget id='currency2' is='mayhem/ui/dijit/form/CurrencyTextBox' disabled value='54775.53' currency='USD'></widget>
 
 			<h2>NumberSpinner</h2>
 			<label for='spinner1'>Enabled:</label>
-			<widget id='spinner1' is='framework/ui/dijit/form/NumberSpinner' value='10'></widget>
+			<widget id='spinner1' is='mayhem/ui/dijit/form/NumberSpinner' value='10'></widget>
 			<label for='spinner2'>Disabled:</label>
-			<widget id='spinner2' is='framework/ui/dijit/form/NumberSpinner' disabled value='10'></widget>
+			<widget id='spinner2' is='mayhem/ui/dijit/form/NumberSpinner' disabled value='10'></widget>
 		</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Select Widgets'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Textarea'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Editor'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Sliders'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Various Dijits'>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Select Widgets'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Textarea'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Editor'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Sliders'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Various Dijits'>
 			<h2>TitlePane</h2>
-			<widget is='framework/ui/dijit/TitlePane' title='my pane'>
+			<widget is='mayhem/ui/dijit/TitlePane' title='my pane'>
 				<p>This is a title pane. It can be expanded and collapsed.</p>
 				<p>Sed sollicitudin suscipit risus. Nam ullamcorper. Sed nisl lectus, pellentesque nec, malesuada eget, ornare a, libero. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>
 			</widget>
@@ -186,27 +186,27 @@
 			<hr class='spacer'></hr>
 
 			<h2>ProgressBar</h2>
-			<widget id='setTestBar' is='framework/ui/dijit/ProgressBar' value='10%'></widget>
+			<widget id='setTestBar' is='mayhem/ui/dijit/ProgressBar' value='10%'></widget>
 			Indeterminate:
-			<widget id='indTestBar' is='framework/ui/dijit/ProgressBar' indeterminate></widget>
+			<widget id='indTestBar' is='mayhem/ui/dijit/ProgressBar' indeterminate></widget>
 		</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='InlineEditBox'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='DnD'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Nested TabContainer'>TODO</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Closable' closable>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='InlineEditBox'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='DnD'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Nested TabContainer'>TODO</widget>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Closable' closable>
 			 This pane is closable, just for the icon ...
 		</widget>
 	</widget>
-	<widget id='bottomTabs' is='framework/ui/dijit/layout/TabContainer' region='bottom' tab-position='bottom' splitter='splitter'>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Info' selected>
+	<widget id='bottomTabs' is='mayhem/ui/dijit/layout/TabContainer' region='bottom' tab-position='bottom' splitter='splitter'>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Info' selected>
 			<p>You can explore this single page after applying a Theme for use in creation of your own theme.</p>
 			<p>I am whole slew of Widgets on a page. Jump to <a href='/dijit/tests/'>dijit tests</a> to test individual components.</p>
 			<p>There is a right-click [context] pop-up menu here, as well.</p>
 		</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Alternate Themes'>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Alternate Themes'>
 			TODO
 		</widget>
-		<widget is='framework/ui/dijit/layout/ContentPane' title='Bottom 3' closable>
+		<widget is='mayhem/ui/dijit/layout/ContentPane' title='Bottom 3' closable>
 			I am the last Tab
 		</widget>
 	</widget>

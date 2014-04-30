@@ -45,7 +45,7 @@ var config:any = {
 			}
 		},
 		stores: {
-			defaultStore: 'framework/store/RequestMemory',
+			defaultStore: 'mayhem/store/RequestMemory',
 			models: {
 				quote: {
 					target: 'data/quotes.json'
