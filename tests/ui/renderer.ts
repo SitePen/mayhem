@@ -21,8 +21,8 @@ registerSuite({
 	normalize() {
 		// check that renderer normalizes resource IDs as expected
 		var platform = has('host-browser') ? 'dom/' : 'default/',
-			expected = 'framework/ui/' + platform + 'Widget',
+			expected = new RegExp('(framework|mayhem)\/ui\/' + platform + 'Widget'),
 			normalized = renderer.normalize('../../ui/dom/Widget', null);
-		assert.strictEqual(expected, normalized);
+		assert.match(normalized, expected);
 	}
 });
