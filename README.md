@@ -2,10 +2,10 @@
 
 ## Setup
 
-* Clone the repo from the demo branch, `git clone --branch demo --recursive git@github.com:SitePen/mayhem.git`
-* Check out the framework submodule to track master, since this is where development will actually occur,
-  `cd src/framework && git checkout master`
-* Compile TypeScript with `find . -name '*.ts' -exec tsc --sourcemap --noImplicitAny --target ES5 --module amd {} +`
+* Install `bower` and `grunt-cli` globally, `npm install -g bower grunt-cli`
+* Clone the repo, `git clone git@github.com:SitePen/mayhem.git`
+* Setup development dependencies, `npm install`
+* Compile TypeScript and PEG parser with `grunt build`
 
 ## Conventions
 
@@ -22,15 +22,6 @@
 	* constructor
 	* instance methods
 
-# TODO: The below information is old
 # Regenerating the PEG parser
-this requires PEGJS to be installed globally
-TODO: add PEGJS to `devDependencies` and use `npm install` to install it
-```
-npm install -g pegjs
-```
 
-once pegjs is installed then from the root of this repo:
-```
-make parser
-```
+Run `grunt parser` from within the repo
