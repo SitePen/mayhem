@@ -51,20 +51,10 @@ registerSuite({
 		iterator._widgetIndex = [ widget1, widget2 ];
 		iterator._mediatorIndex = [ mediator1, mediator2 ];
 
-		var binding:any;
-		aspect.before(iterator, 'bind', function (kwArgs:any) {
-			binding = kwArgs;
-		});
-
-		// create a sourcebinding
-		iterator.set('in', 'foo');
-		assert.propertyVal(binding, 'sourceBinding', 'foo', 'source binding should have been created');
-
 		assert.doesNotThrow(function () {
 			iterator.destroy();
 		}, 'Destroying iterator should not throw');
 
-		assert.propertyVal(iterator, '_sourceBinding', null, 'binding should have been removed');
 		assert.isTrue(widget1._destroyed, 'widget1 should have been destroyed');
 		assert.isTrue(widget2._destroyed, 'widget2 should have been destroyed');
 		assert.isTrue(mediator1._destroyed, 'mediator1 should have been destroyed');
@@ -92,22 +82,27 @@ registerSuite({
 	},
 
 	'scopedMediator (object source)': function () {
+		var index = 0;
 		var source = {
-				'0': 'item0',
-				'1': 'item1',
 				idProperty: 'id',
 				get(key:string):any {
 					return this[key];
 				},
-				put(key:string, value:any) {
-					this[key] = value;
+				put(value:any) {
+					this[index++] = value;
 				}
 			},
 			mediator:any = {
 				set(key:string, value:any) {
 					this[key] = value;
+				},
+				get(key:string) {
+					return this[key];
 				}
 			};
+
+		source[index++] = 'item0';
+		source[index++] = 'item1';
 
 		// create mediators
 		iterator._widgetIndex = <any> {
@@ -184,6 +179,8 @@ registerSuite({
 		var mediator:any = new Mediator();
 		iterator._mediatorIndex = <any> { '0': mediator }
 		assert.strictEqual(iterator._getMediatorByKey('0'), mediator, 'Should have gotten expected mediator for key 0');
+
+		iterator.set('mediator', mediator);
 
 		mediator = iterator._getMediatorByKey('1');
 		assert.propertyVal(iterator._mediatorIndex, '1', mediator, 'Should have gotten new mediator for key 1');
