@@ -65,7 +65,8 @@ module.exports = function (grunt) {
 				target: 'es5',
 				module: 'amd',
 				sourceMap: true,
-				noImplicitAny: true
+				noImplicitAny: true,
+				fast: 'never'
 			},
 			framework: {
 				src: [ '<%= ignoreDefinitions %>' ]
