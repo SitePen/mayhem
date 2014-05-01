@@ -49,7 +49,11 @@ define({
 		packages: [
 			{ name: 'mayhem', location: '.' },
 			{ name: 'dojo', location: 'third-party/dojo' },
-			{ name: 'dijit', location: 'third-party/dijit' }
+			{ name: 'dijit', location: 'third-party/dijit' },
+			{ name: 'put-selector', location: 'third-party/put-selector' },
+			{ name: 'xstyle', location: 'third-party/xstyle' },
+			{ name: 'dgrid', location: 'third-party/dgrid' },
+			{ name: 'dstore', location: 'third-party/dstore' }
 		]
 	},
 
