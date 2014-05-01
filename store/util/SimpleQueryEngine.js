@@ -2,7 +2,7 @@ define([
 	'dojo/_base/array'
 ], function (arrayUtil) {
 	// module:
-	//		framework/store/util/SimpleQueryEngine
+	//		mayhem/store/util/SimpleQueryEngine
 
 	return function (query, options) {
 		// summary:

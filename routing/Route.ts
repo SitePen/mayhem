@@ -34,7 +34,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	/**
 	 * The name of a controller which, when transformed using the expression `router.controllerPath + '/' +
 	 * toUpperCamelCase(route.controller) + 'Controller'`, provides a module ID that points to a module whose value is a
-	 * `framework/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
+	 * `mayhem/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
 	 * transformed. If null, a generic Controller object will be used for this route instead.
 	 */
 	_controller:string;

@@ -284,7 +284,7 @@ If the root isn't a single widget it uses the `View` templating widget for its c
 
 ```javascript
 {
-	constructor: 'framework/templating/ui/View',
+	constructor: 'mayhem/templating/ui/View',
 	children: [{ constructor: 'foo' }, { constructor: 'bar' }],
 	content: [ { $child: 0 }, '<br>', { $child: 1 } ]
 }
@@ -300,7 +300,7 @@ In this case we don't need to track the locations of children with placeholders 
 
 ```javascript
 {
-	constructor: 'framework/templating/ui/View',
+	constructor: 'mayhem/templating/ui/View',
 	children: [{ constructor: 'foo' }, { constructor: 'bar' }]
 }
 ```
@@ -312,7 +312,7 @@ Foo <em>bar.
 ```
 ```javascript
 {
-	constructor: 'framework/templating/ui/View',
+	constructor: 'mayhem/templating/ui/View',
 	content: [ { $child: 0 }, '<br>', { $child: 1 } ]
 }
 ```
@@ -324,7 +324,7 @@ Foo <em>{bar}.<placeholder name="trailer">
 ```
 ```javascript
 {
-	constructor: 'framework/templating/ui/View',
+	constructor: 'mayhem/templating/ui/View',
 	content: [ 'Foo <em>', { $bind: 'bar' }, '.', { $named: 'trailer' } ]
 }
 ```
@@ -333,7 +333,7 @@ When there's just whitespace in a template, or no content at all, we still get a
 
 ```javascript
 {
-	constructor: 'framework/templating/ui/View'
+	constructor: 'mayhem/templating/ui/View'
 }
 ```
 
@@ -518,24 +518,24 @@ When it encounters attribute values which are functions the processor wraps them
 We could allow custom elements to be registered right inside a template (just like `<alias>`).
 
 ```html
-<register-widget tag="af-button" is="framework/ui/form/Button"/>
+<register-widget tag="af-button" is="mayhem/ui/form/Button"/>
 <af-button label="Click Me"></af-button>
 ```
 This would be equivalent to:
 ```html
-<widget is="framework/ui/form/Button" label="Click Me"></widget>
+<widget is="mayhem/ui/form/Button" label="Click Me"></widget>
 ```
 
 Widgets can also be denoted as void:
 ```html
-<register-widget tag="af-input" is="framework/ui/form/TextField" void/>
+<register-widget tag="af-input" is="mayhem/ui/form/TextField" void/>
 ```
 The following are all equivalent:
 ```html
 <af-input value={field}></dijit-textbox>
 <af-input value={field}/>
 <af-input value={field}>
-<widget is="framework/ui/form/TextField" value={field}></widget>
+<widget is="mayhem/ui/form/TextField" value={field}></widget>
 ```
 
 Ideally we could limit the scope of widget registrations to the enclosing widget, which would make it possible to support redeclaring tag registrations in child scopes.
@@ -547,15 +547,15 @@ Alternative widget sets could provide a template full of custom element definiti
 
 ```html
 ...
-<register-widget tag="dijit-button" is="framework/ui/dijit/form/Button"/>
-<register-widget tag="dijit-toggle-button" is="framework/ui/dijit/form/ToggleButton"/>
-<register-widget tag="dijit-tabs" is="framework/ui/dijit/layout/TabContainer"/>
+<register-widget tag="dijit-button" is="mayhem/ui/dijit/form/Button"/>
+<register-widget tag="dijit-toggle-button" is="mayhem/ui/dijit/form/ToggleButton"/>
+<register-widget tag="dijit-tabs" is="mayhem/ui/dijit/layout/TabContainer"/>
 ...
 ```
 
 Templates using dijit widgets could be prefixed with this definition template. Eventually we could add template import functionality similar to HTML `<import>` which could load up a whole set of widget registration definitions from within a dependent template:
 
 ```html
-<template-import path="framework/ui/dijit/definitions.html"/>
+<template-import path="mayhem/ui/dijit/definitions.html"/>
 <dijit-button label="Click Me"></dijit-button>
 ```

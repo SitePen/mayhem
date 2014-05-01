@@ -10,15 +10,15 @@ define([
 ], function (require, array, lang, domConstruct, on, aspect, string, compiler) {
 	// in addition to this plugin, there should be a counterpart for the build system that will
 	// compile the strings, output an AMD module that exports the compiled template, and updates
-	// module ids in the reference module to replace the whole "framework/template!./some/module"
+	// module ids in the reference module to replace the whole "mayhem/template!./some/module"
 	// dependency with "./some/module".
 
 	// during development, if you're using a module that is already compiled, just don't provide
 	// an extension for the module id and it will be assumed to be compiled eg:
 	//	not compiled:
-	//		'framework/template!./template/View.html'
+	//		'mayhem/template!./template/View.html'
 	//	compiled:
-	//		'framework/template!./template/View'
+	//		'mayhem/template!./template/View'
 
 	var includesExtension = /\..*$/,
 		templateCache = {};

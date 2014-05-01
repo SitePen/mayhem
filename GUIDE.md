@@ -137,13 +137,13 @@ define([
 
 				// The application's routes. The resolved controller, view, and template MIDs are displayed above each route.
                 routes: {
-					// app/controllers/IndexController, app/views/IndexView, framework/template!app/views/IndexView.html
+					// app/controllers/IndexController, app/views/IndexView, mayhem/template!app/views/IndexView.html
                     'index': {},
 
-					// framework/Controller, framework/View, framework/template!app/views/ContactsView.html
+					// mayhem/Controller, mayhem/View, mayhem/template!app/views/ContactsView.html
                     'contacts': { view: null, controller: null },
 
-					// framework/Controller, framework/View, framework/template!app/views/ContactView.html					
+					// mayhem/Controller, mayhem/View, mayhem/template!app/views/ContactView.html					
 					// This route has a numeric id argument for its path
                     'contacts/contact': {
                         view: null,
@@ -151,7 +151,7 @@ define([
                         path: '<id:\\d+>'
                     },
 
-					// framework/Controller, framework/View, framework/template!app/views/CategoryView.html					
+					// mayhem/Controller, mayhem/View, mayhem/template!app/views/CategoryView.html					
 					// This route has a category argument for its path. The value of category may be friends, relatives, or business.
                     'contacts/contact/category': {
                         view: null,
@@ -264,9 +264,9 @@ Example:
 ```javascript
 define([
 	'dojo/_base/declare',
-	'framework/Model',
-	'framework/validators/RequiredValidator'
-	'framework/validators/DateValidator'
+	'mayhem/Model',
+	'mayhem/validators/RequiredValidator'
+	'mayhem/validators/DateValidator'
 ], function (declare, Model, RequiredValidator, DateValidator) {
 	return declare(Model, {
 		_schema: {

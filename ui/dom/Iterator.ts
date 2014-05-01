@@ -26,7 +26,7 @@ class IteratorRenderer extends _ElementRenderer {
 
 	private _implIsOnDemand(widget:dom.IIterator):boolean {
 		// Duck test based on a property specific to OnDemandList
-		return widget._impl && widget._impl['farOffRemoval'];
+		return !!(widget._impl && widget._impl['farOffRemoval']);
 	}
 
 	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IContentWidget {
@@ -63,6 +63,7 @@ class IteratorRenderer extends _ElementRenderer {
 			// 	list._select(items[i] || '', null, true);
 			// }
 			item != null && list._select(item, null, true);
+			widget.emit('selection');
 		});
 
 		widget.observe('allowSelectAll', (value:boolean) => {
@@ -145,7 +146,7 @@ class IteratorRenderer extends _ElementRenderer {
 		}
 		else {
 			list.renderRow = (record:any):HTMLElement => {
-				var idProperty = source.idProperty,
+				var idProperty = widget.get('source').idProperty,
 					id = record.get ? record.get(idProperty) : record[idProperty];
 				return this._getWidgetByKey(widget, id)._outerFragment;
 			};

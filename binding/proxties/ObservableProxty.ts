@@ -8,7 +8,7 @@ import lang = require('dojo/_base/lang');
 import util = require('../../util');
 
 /**
- * This property binder enables the ability to bind to framework Observable objects.
+ * This property binder enables the ability to bind to mayhem Observable objects.
  */
 class ObservableProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {

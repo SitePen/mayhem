@@ -26,7 +26,7 @@ define([
 			//		The function that must be implemented by all validators
 			//		which is called to validate a field of a data model. This
 			//		function accepts up to three arguments.
-			//	model: framework/model/_Model
+			//	model: mayhem/model/_Model
 			//		The object being validated.
 			//	key: string
 			//		The name of the field being validated.

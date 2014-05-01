@@ -34,7 +34,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * child routes are not currently activated when a child is activated. Route nesting in this manner is necessary to
 	 * load sub-views into parent views.
 	 *
-	 * See `framework/routing/Route` for more information on available Route properties. By default, Router will set the
+	 * See `mayhem/routing/Route` for more information on available Route properties. By default, Router will set the
 	 * `path`, `view`, and `mediator` properties to the ID of the route if they are not explicitly set.
 	 *
 	 * For the moment, routes must only be set after the `mediatorPath`, `viewPath`, and `templatePath` have been set

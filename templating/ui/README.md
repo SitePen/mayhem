@@ -14,7 +14,7 @@ The templating language has a few widgets baked in to make it easier to express 
 ```
 ```javascript
 {
-	constructor: 'framework/templating/ui/Iteration',
+	constructor: 'mayhem/templating/ui/Iteration',
 	kwArgs: {
 		each: 'fieldValue',
 		in: 'iterable'
@@ -29,7 +29,7 @@ The templating language has a few widgets baked in to make it easier to express 
 The `<for>` tag is just a convenience -- you could also build up an iterator just from `<widget>` tags. This template yields a parse tree that's essentially equivalent to the one above:
 
 ```html
-<widget is="framework/templating/ui/Iteration" each="fieldValue" in="iterable" >
+<widget is="mayhem/templating/ui/Iteration" each="fieldValue" in="iterable" >
 	This is a template for each item in the iterable, including its value: {fieldValue}.
 </widget>
 ```
@@ -61,20 +61,20 @@ The `<elseif>` and `<else>` elements are represented in the parse tree as nested
 
 ```javascript
 {
-	constructor: 'framework/templating/ui/Conditional',
+	constructor: 'mayhem/templating/ui/Conditional',
 	kwArgs: {
 		condition: 'firstCondition',
 		alternate: {
-			constructor: 'framework/templating/ui/Conditional',
+			constructor: 'mayhem/templating/ui/Conditional',
 			kwArgs: {
 				condition: 'secondCondition',
 				id: 'first-alternative',
 				alternate: {
-					constructor: 'framework/templating/ui/Conditional',
+					constructor: 'mayhem/templating/ui/Conditional',
 					kwArgs: {
 						condition: 'thirdCondition',
 						alternate: {
-							constructor: 'framework/templating/ui/View',
+							constructor: 'mayhem/templating/ui/View',
 							content: 'Fallback content...'
 						}
 					},
@@ -94,13 +94,13 @@ If a statement has a `condition` an `alternative` is optional -- no `condition` 
 Here's a nearly-equivalent template done manually (the only difference is that we had to create ids for all alternative widgets to be able to reference them):
 
 ```html
-<widget is="framework/templating/ui/Conditional" condition="firstCondition" alternate=#first-alternative>
+<widget is="mayhem/templating/ui/Conditional" condition="firstCondition" alternate=#first-alternative>
 	Content for when first condition matches...
-	<widget is="framework/templating/ui/Conditional" condition="secondCondition" id="first-alternative" alternate=#alt2>
+	<widget is="mayhem/templating/ui/Conditional" condition="secondCondition" id="first-alternative" alternate=#alt2>
 		Content for when second condition matches...
-		<widget is="framework/templating/ui/Conditional" condition="thirdCondition" id="alt3" alternate=#alt4>
+		<widget is="mayhem/templating/ui/Conditional" condition="thirdCondition" id="alt3" alternate=#alt4>
 			Content for when third condition matches...
-			<widget is="framework/templating/ui/View" id="alt4">
+			<widget is="mayhem/templating/ui/View" id="alt4">
 				Fallback content...
 			</widget>
 		</widget>
@@ -127,16 +127,16 @@ The closing tags `</during>` and `</error>` are optional.
 
 ```javascript
 {
-	constructor: 'framework/templating/ui/Resolver',
+	constructor: 'mayhem/templating/ui/Resolver',
 	kwArgs: {
 		promise: 'remoteField',
 		value: 'resolvedValue',
 		during: {
-			constructor: 'framework/templating/ui/View',
+			constructor: 'mayhem/templating/ui/View',
 			content: 'Content for promise progress...'
 		},
 		error: {
-			constructor: 'framework/templating/ui/View',
+			constructor: 'mayhem/templating/ui/View',
 			kwArgs: { id: 'custom-id' },
 			content: 'Content for promise rejection...'
 		}
@@ -148,9 +148,9 @@ The closing tags `</during>` and `</error>` are optional.
 We could build this template purely from `<widget>` composition too:
 
 ```html
-<widget is="framework/templating/ui/Resolver" promise="remoteField" value="resolvedValue" during=#dur error=#custom-id>
+<widget is="mayhem/templating/ui/Resolver" promise="remoteField" value="resolvedValue" during=#dur error=#custom-id>
 	Content for when promise resolves...
-	<widget is="framework/templating/ui/View" id="dur">Content for promise promise...</widget>
-	<widget is="framework/templating/ui/View" id="custom-id">Content for promise rejection...</widget>
+	<widget is="mayhem/templating/ui/View" id="dur">Content for promise promise...</widget>
+	<widget is="mayhem/templating/ui/View" id="custom-id">Content for promise rejection...</widget>
 </widget>
 ```
