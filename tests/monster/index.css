@@ -1,4 +1,4 @@
-@import "../../../dgrid/css/dgrid.css";
+@import "../../third-party/dgrid/css/dgrid.css";
 
 html, body {
 	height: 100%;
