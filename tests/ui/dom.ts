@@ -11,5 +11,6 @@ define([
 	'./dom/_Element',
 	'./dom/util',
 	'./dom/util/aria',
-	'./dom/form'
-], function () {});
+	'./dom/form',
+	'./dom/actions'
+], function ():void {});

@@ -96,7 +96,7 @@ function changeTrigger(widget:dom.IElementWidget, actionName:string, config:any 
 		resume: ():void => {
 			paused = false;
 		}
-	}
+	};
 }
 
 export class Action implements dom.IAction {
@@ -106,7 +106,7 @@ export class Action implements dom.IAction {
 	triggers:any[];
 
 	attach(widget:dom.IElementWidget):IPausableHandle {
-		var name = this.name;;
+		var name = this.name;
 		!name && has('debug') && console.warn('Action config must have a name property');
 		var id = widget.get('id'),
 			_pausedIds = this._pausedIds,
@@ -140,7 +140,7 @@ export class Action implements dom.IAction {
 				_pausedIds[id] = false;
 				array.forEach(triggerHandles, (handle:IPausableHandle):void => handle.resume());
 			}
-		}
+		};
 	}
 
 	perform(widget:dom.IElementWidget):void {}
@@ -179,8 +179,8 @@ export class Press extends Action {
 	attach(widget:dom.IElementWidget):IPausableHandle {
 		var handle = super.attach(widget),
 			stateName = aria.getStateName(this.role, 'selected'),
-			observerHandle = widget.observe('selected', (value:boolean) => {
-				//aria.setState(widget._outerFragment, stateName, value);
+			observerHandle = widget.observe('selected', (value:boolean):void => {
+				// aria.setState(widget._outerFragment, stateName, value);
 				// TODO: this belongs on the widget
 				widget.classList.toggle('selected', value);
 			});
@@ -192,7 +192,7 @@ export class Press extends Action {
 			_remove.call(handle);
 			widget._outerFragment.removeAttribute(stateName);
 			widget = observerHandle = handle = _remove = null;
-		}
+		};
 
 		return handle;
 	}
@@ -215,7 +215,7 @@ export class RadioPress extends Press {
 		widget.set('selected', true);
 	}
 
-	trigger(widget:dom.IElementWidget, event:Event):void {
+	trigger(widget:dom.IElementWidget, event?:Event):void {
 		if (!widget.get('selected')) {
 			super.trigger(widget, event);
 		}
@@ -294,7 +294,6 @@ export class DialogShow extends Action {
 DialogShow.prototype.name = 'show';
 DialogShow.prototype.role = 'dialog';
 DialogShow.prototype.triggers = [ { type: 'change', name: 'hidden', to: false } ];
-
 
 import SyntheticEvent = require('../../SyntheticEvent');
 
