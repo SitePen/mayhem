@@ -206,7 +206,7 @@ export interface IWidget extends core.IObservableEvented, core.IApplicationCompo
 	placeAt(destination:IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:IContainer, position:number):IHandle;
 	placeAt(destination:IContainer, placeholder:string):IHandle;
-	trigger(action:string, event?:Event):void;
+	trigger(action:string, event?:core.IEvent):void;
 }
 
 export interface IWidgetGet extends core.IApplicationComponentGet {

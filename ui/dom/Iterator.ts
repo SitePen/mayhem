@@ -6,7 +6,7 @@ import Deferred = require('dojo/Deferred');
 import dgrid = require('./util/dgrid');
 import dom = require('./interfaces');
 import _ElementRenderer = require('./_Element');
-import SyntheticEvent = require('../../SyntheticEvent');
+import Event = require('../../Event');
 import Template = require('../../templating/Template');
 import util = require('../../util');
 import when = require('dojo/when');
@@ -64,7 +64,7 @@ class IteratorRenderer extends _ElementRenderer {
 			// 	list._select(items[i] || '', null, true);
 			// }
 			item != null && list._select(item, null, true);
-			widget.emit(new SyntheticEvent({
+			widget.emit(new Event({
 				type: 'selection',
 				cancelable: true,
 				bubbles: true,

@@ -1,8 +1,14 @@
 /// <reference path="./intern" />
 
+import core = require('../interfaces');
+import Event = require('../Event');
 import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
 import ObservableEvented = require('../ObservableEvented');
+
+class TestEvent extends Event {
+	value:string;
+}
 
 registerSuite({
 	name: 'ObservableEvented',
@@ -12,17 +18,17 @@ registerSuite({
 			emittedEvent:any,
 			listenerCallCount = 0;
 
-		observableEvented.on('test', function (actualEvent) {
+		observableEvented.on('test', function (actualEvent:TestEvent) {
 			listenerCallCount++;
 			assert.strictEqual(actualEvent.value, emittedEvent.value);
 		});
 
-		emittedEvent = { value: 'foo' };
-		observableEvented.emit('test', emittedEvent);
+		emittedEvent = new TestEvent({ type: 'test', value: 'foo' });
+		observableEvented.emit(emittedEvent);
 		assert.strictEqual(listenerCallCount, 1);
 
-		emittedEvent = { value: 'bar' };
-		observableEvented.emit('test', emittedEvent);
+		emittedEvent = new TestEvent({ type: 'test', value: 'bar' });
+		observableEvented.emit(emittedEvent);
 		assert.strictEqual(listenerCallCount, 2);
 	},
 
@@ -44,17 +50,17 @@ registerSuite({
 			emittedEvent:any,
 			listenerCallCount = 0;
 
-		observableEvented.on(extensionEvent, function (actualEvent) {
+		observableEvented.on(extensionEvent, function (actualEvent:TestEvent) {
 			listenerCallCount++;
 			assert.strictEqual(actualEvent.value, emittedEvent.value);
 		});
 
-		emittedEvent = { value: 'baz' };
-		observableEvented.emit('foo', emittedEvent);
+		emittedEvent = new TestEvent({ type: 'foo', value: 'baz' });
+		observableEvented.emit(emittedEvent);
 		assert.strictEqual(listenerCallCount, 1);
 
-		emittedEvent = { value: 'quux' };
-		observableEvented.emit('bar', emittedEvent);
+		emittedEvent = new TestEvent({ type: 'bar', value: 'quux' });
+		observableEvented.emit(emittedEvent);
 		assert.strictEqual(listenerCallCount, 2);
 	},
 
@@ -67,7 +73,7 @@ registerSuite({
 		});
 		handle.remove();
 
-		observableEvented.emit('test', { value: 'foo' });
+		observableEvented.emit(new TestEvent({ type: 'test', value: 'foo' }));
 		assert.isFalse(listenerCalled);
 	},
 
@@ -85,7 +91,7 @@ registerSuite({
 			order.push(3);
 		});
 
-		observableEvented.emit('testevent', {});
+		observableEvented.emit(new TestEvent({ type: 'testevent' }));
 		assert.deepEqual(order, [ 1, 2, 3 ]);
 	}
 });

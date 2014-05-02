@@ -136,7 +136,7 @@ class BaseController extends ObservableEvented implements core.IController {
 	 */
 	startup():IPromise<core.IController> {
 		if (has('debug')) {
-			this.on('error', function (event:ErrorEvent):void {
+			this.on('error', function (event:any):void {
 				console.error(event.message);
 			});
 		}

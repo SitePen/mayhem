@@ -1,7 +1,7 @@
-import SyntheticEvent = require('../SyntheticEvent');
+import Event = require('../Event');
 import routing = require('./interfaces');
 
-class RouteEvent extends SyntheticEvent {
+class RouteEvent extends Event {
 	/** @readonly */
 	oldPath:string;
 

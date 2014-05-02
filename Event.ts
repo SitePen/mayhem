@@ -4,55 +4,45 @@ import has = require('./has');
 /**
  * This is a base class for synthetic (non-DOM) events.
  */
-class SyntheticEvent implements core.ISyntheticEvent {
-    timeStamp:number = new Date().getTime();
-    defaultPrevented:boolean;
+class Event implements core.IEvent {
+	bubbles:boolean;
+	cancelable:boolean;
+	currentTarget:any;
+	defaultPrevented:boolean;
 	propagationStopped:boolean;
-    isTrusted:boolean;
-    currentTarget:any;
-    cancelBubble:boolean;
-    target:any;
-    eventPhase:number;
-    cancelable:boolean;
-    type:string;
-    srcElement:Element;
-    bubbles:boolean;
-    CAPTURING_PHASE:number;
-    AT_TARGET:number;
-    BUBBLING_PHASE:number;
+	target:any;
+	timeStamp:number = new Date().getTime();
+	type:string;
 
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs?:any) {
 		if (kwArgs) {
 			for (var k in kwArgs) {
+				if (k === 'constructor') {
+					continue;
+				}
 				this[k] = kwArgs[k];
 			}
 		}
 	}
 
-	initEvent(type:string, bubbles:boolean, cancelable:boolean):void {
-		this.type = type;
-		this.bubbles = bubbles;
-		this.cancelable = cancelable;
-	}
-
-    preventDefault():void {
+	preventDefault():void {
 		if (this.cancelable) {
 			this.defaultPrevented = true;
 		}
 	}
 
-    stopImmediatePropagation():void {
+	stopImmediatePropagation():void {
 		// TODO: implement this
 		if (has('debug')) {
 			throw new Error('Abstract method "stopImmediatePropagation" not implemented');
 		}
 	}
 
-    stopPropagation():void {
+	stopPropagation():void {
 		if (this.bubbles) {
 			this.propagationStopped = true;
 		}
 	}
 }
 
-export = SyntheticEvent;
+export = Event;

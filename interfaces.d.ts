@@ -59,6 +59,20 @@ export interface IDestroyable {
 	destroy():void;
 }
 
+export interface IEvent {
+	bubbles:boolean;
+	cancelable:boolean;
+	currentTarget:any;
+	defaultPrevented:boolean;
+	propagationStopped:boolean;
+	target:any;
+	timeStamp:number;
+	type:string;
+
+	preventDefault():void;
+	stopPropagation():void;
+}
+
 export interface IHasMetadata {
 	getMetadata(key:string):IObservable;
 }
@@ -87,9 +101,9 @@ export interface IObservableSet {
 }
 
 export interface IObservableEvented extends IObservable {
-	emit(event:ISyntheticEvent):boolean;
-	on(type:IExtensionEvent, listener:(event:any) => void):IHandle;
-	on(type:string, listener:(event:any) => void):IHandle;
+	emit(event:IEvent):boolean;
+	on(type:IExtensionEvent, listener:(event:IEvent) => void):IHandle;
+	on(type:string, listener:(event:IEvent) => void):IHandle;
 }
 
 export interface IObserver<T> {
@@ -150,8 +164,6 @@ export interface IScheduler {
 	dispatch():void;
 	schedule(id:string, callback:Function):void;
 }
-
-export interface ISyntheticEvent extends Event { }
 
 export interface IValidatorOptions {
 	allowEmpty?:boolean;

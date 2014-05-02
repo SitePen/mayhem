@@ -169,9 +169,9 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return parent ? parent.nextChild(this) : null;
 	}
 
-	on(type:IExtensionEvent, listener:(event:Event) => void):IHandle;
-	on(type:string, listener:(event:Event) => void):IHandle;
-	on(type:any, listener:(event:Event) => void):IHandle {
+	on(type:IExtensionEvent, listener:(event:core.IEvent) => void):IHandle;
+	on(type:string, listener:(event:core.IEvent) => void):IHandle;
+	on(type:any, listener:(event:core.IEvent) => void):IHandle {
 		var handle = super.on.apply(this, arguments);
 		this._ownHandles.push(handle);
 		return handle;
@@ -260,7 +260,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.style.set(Style.parse(value));
 	}
 
-	trigger(actionName:string, source?:Event):void {
+	trigger(actionName:string, source?:core.IEvent):void {
 		this._renderer.trigger(this, actionName, source);
 	}
 }

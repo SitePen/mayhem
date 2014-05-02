@@ -1,5 +1,6 @@
 /// <reference path="../intern" />
 
+import core = require('../../interfaces');
 import Route = require('../../routing/Route');
 import NullRouter = require('../../routing/NullRouter');
 import assert = require('intern/chai!assert');
@@ -15,7 +16,7 @@ registerSuite({
 	},
 
 	'#startup': function () {
-		function handleChangeEvent (event:Event):void {
+		function handleChangeEvent (event:core.IEvent):void {
 			changeHappened = true;
 		}
 
@@ -37,7 +38,7 @@ registerSuite({
 	},
 
 	'#go': function () {
-		function handleChangeEvent (event:Event):void {
+		function handleChangeEvent (event:core.IEvent):void {
 			changeHappened = true;
 		}
 

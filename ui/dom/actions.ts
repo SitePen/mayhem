@@ -2,7 +2,9 @@
 
 import aria = require('./util/aria');
 import array = require('dojo/_base/array');
+import core = require('../../interfaces');
 import dom = require('./interfaces');
+import MayhemEvent = require('../../Event');
 import keys = require('dojo/keys');
 import has = require('../../has');
 import lang = require('dojo/_base/lang');
@@ -11,6 +13,14 @@ import on = require('dojo/on');
 import touch = require('dojo/touch');
 import util = require('../../util');
 import win = require('dojo/_base/window');
+
+class ActionEvent extends MayhemEvent {
+	bubbles:boolean = true;
+	cancelable:boolean = true;
+	sourceEvent:core.IEvent;
+
+	// TODO: implement propagation events (if it makes sense to bubble action to widget parent)
+}
 
 var body:HTMLBodyElement = win.body();
 
@@ -121,7 +131,7 @@ export class Action implements dom.IAction {
 					triggerConfig = filter(triggerConfig.type, triggerConfig);
 				}
 				return on.pausable(widget._outerFragment, triggerConfig, (event:Event):void => {
-					widget.trigger(name, event);
+					widget.trigger(name, <any>event);
 				});
 			});
 
@@ -145,7 +155,7 @@ export class Action implements dom.IAction {
 
 	perform(widget:dom.IElementWidget):void {}
 
-	trigger(widget:dom.IElementWidget, source?:Event):void {
+	trigger(widget:dom.IElementWidget, source?:core.IEvent):void {
 		var id = widget.get('id');
 		if (this._pausedIds[id]) {
 			return;
@@ -166,10 +176,11 @@ export class Action implements dom.IAction {
 		}
 
 		this._pausedIds[id] = false;
-		widget.emit(new ActionEvent({
+		var afterEvent = new ActionEvent({
 			type: 'after-' + this.name,
 			target: widget
-		}));
+		});
+		widget.emit(afterEvent);
 	}
 }
 
@@ -220,7 +231,7 @@ export class RadioPress extends Press {
 		widget.set('selected', true);
 	}
 
-	trigger(widget:dom.IElementWidget, event?:Event):void {
+	trigger(widget:dom.IElementWidget, event?:core.IEvent):void {
 		if (!widget.get('selected')) {
 			super.trigger(widget, event);
 		}
@@ -268,7 +279,7 @@ export class DialogDismiss extends Action {
 		widget.set('hidden', true);
 	}
 
-	trigger(widget:dom.IElementWidget, event:Event):void {
+	trigger(widget:dom.IElementWidget, event:core.IEvent):void {
 		if (!widget.get('hidden')) {
 			super.trigger(widget, event);
 		}
@@ -289,7 +300,7 @@ export class DialogShow extends Action {
 		widget.set('hidden', false);
 	}
 
-	trigger(widget:dom.IElementWidget, event:Event):void {
+	trigger(widget:dom.IElementWidget, event:core.IEvent):void {
 		if (widget.get('hidden')) {
 			super.trigger(widget, event);
 		}
@@ -299,13 +310,3 @@ export class DialogShow extends Action {
 DialogShow.prototype.name = 'show';
 DialogShow.prototype.role = 'dialog';
 DialogShow.prototype.triggers = [ { type: 'change', name: 'hidden', to: false } ];
-
-import SyntheticEvent = require('../../SyntheticEvent');
-
-class ActionEvent extends SyntheticEvent {
-	bubbles:boolean = true;
-	cancelable:boolean = true;
-	sourceEvent:Event;
-
-	// TODO: implement propagation events (if it makes sense to bubble action to widget parent)
-};

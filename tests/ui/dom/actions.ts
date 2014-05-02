@@ -40,7 +40,7 @@ registerSuite({
 				eventEmitted = true;
 			});
 
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isTrue(eventEmitted);
 		},
 
@@ -51,7 +51,7 @@ registerSuite({
 			});
 
 			handle.pause();
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isFalse(eventEmitted);
 		},
 
@@ -62,11 +62,11 @@ registerSuite({
 			});
 
 			handle.pause();
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isFalse(eventEmitted);
 
 			handle.resume();
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isTrue(eventEmitted);
 		},
 
@@ -124,11 +124,11 @@ registerSuite({
 			});
 
 			widget.set('selected', true);
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isFalse(eventEmitted);
 
 			widget.set('selected', false);
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isTrue(eventEmitted);
 		}
 	},
@@ -171,11 +171,11 @@ registerSuite({
 			});
 
 			widget.set('hidden', true);
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isFalse(eventEmitted);
 
 			widget.set('hidden', false);
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isTrue(eventEmitted);
 		}
 	},
@@ -196,11 +196,11 @@ registerSuite({
 			});
 
 			widget.set('hidden', false);
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isFalse(eventEmitted);
 
 			widget.set('hidden', true);
-			action.trigger(widget);
+			action.trigger(widget, null);
 			assert.isTrue(eventEmitted);
 		}
 	}

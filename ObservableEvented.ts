@@ -6,28 +6,8 @@ import lang = require('dojo/_base/lang');
 import Evented = require('dojo/Evented');
 import Observable = require('./Observable');
 import on = require('dojo/on');
-import SyntheticEvent = require('./SyntheticEvent');
+import Event = require('./Event');
 import util = require('./util');
-
-class ObservableEvent extends SyntheticEvent {
-	initEvent(type:string, bubbles:boolean, cancelable:boolean):void {
-		this.type = type;
-		this.bubbles = bubbles;
-		this.cancelable = cancelable;
-	}
-
-	stopPropagation():void {
-		if (this.bubbles) {
-			this.propagationStopped = true;
-		}
-	}
-
-	preventDefault():void {
-		if (this.cancelable) {
-			this.defaultPrevented = true;
-		}
-	}
-}
 
 // TODO: Define an Event interface for Mayhem and use it as the type for events in this class
 class ObservableEvented extends Observable implements core.IObservableEvented {
@@ -40,7 +20,7 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 		return 'on' + type;
 	}
 
-	emit(event:SyntheticEvent):boolean {
+	emit(event:Event):boolean {
 		var type = event.type,
 			oldCurrentTarget = event.currentTarget;
 
@@ -58,6 +38,9 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 			}
 		}
 
+		// TODO: The default mechanism actually runs in reverse order (parent first,
+		// then child) which seems kind of backwards since bubbling happens the other
+		// way
 		method = this['_' + method];
 		if (!event.defaultPrevented && method) {
 			if (typeof method === 'function') {
@@ -65,7 +48,7 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 				func.call(this, event);
 			}
 			else if (typeof method === 'string') {
-				var newEvent = new ObservableEvent({
+				var newEvent = new Event({
 					bubbles: true,
 					cancelable: true,
 					type: method,
@@ -81,10 +64,8 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 		return !event.defaultPrevented;
 	}
 
-	on(type:IExtensionEvent, listener:(event:any) => void):IHandle;
-	on(type:string, listener:(event:any) => void):IHandle;
-	on(type:any, listener:(event:any) => void):IHandle {
-		return on.parse(this, type, listener, (target:any, type:string):IHandle => {
+	on(type:any, listener:(event:core.IEvent) => void):IHandle {
+		return on.parse(this, type, <any>listener, (target:any, type:string):IHandle => {
 			return aspect.after(target, this._getEventedMethodName(type), listener, true);
 		});
 	}
