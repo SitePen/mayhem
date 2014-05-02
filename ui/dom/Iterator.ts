@@ -35,9 +35,9 @@ class IteratorRenderer extends _ElementRenderer {
 		if (child) {
 			return child;
 		}
-		var mediator = widget._getMediatorByKey(key);
+		var model = widget._getModelByKey(key);
 		child = widget._widgetIndex[key] = <dom.IContentWidget> new widget._ViewCtor();
-		child.set('mediator', mediator);
+		child.set('model', model);
 		child.set('parent', widget);
 		return child;
 	}
@@ -108,7 +108,7 @@ class IteratorRenderer extends _ElementRenderer {
 			when(template, (ViewCtor:any) => {
 				widget._ViewCtor = ViewCtor;
 			});
-			// TODO: reinstantiate and replace all widgets with new templates (reusing old mediators)
+			// TODO: reinstantiate and replace all widgets with new templates (reusing old models)
 		});
 
 		// TODO: two-way bind property to impl list
@@ -207,9 +207,9 @@ class IteratorRenderer extends _ElementRenderer {
 				child._renderer.detach(child);
 			}
 		}
-		// Notify all scoped mediators of their current values
+		// Notify all scoped models of their current values
 		for (var i = 0, len = sourceLength; i < len; ++i) {
-			widget._mediatorIndex[i]['_notify'](source[i], null, scopeField);
+			widget._modelIndex[i]['_notify'](source[i], null, scopeField);
 		}
 	}
 }

@@ -21,7 +21,7 @@ class WidgetFactory {
 		var factory = new WidgetFactory(tree, CtorOverride);
 		return <templating.IWidgetConstructor> function(options?:any):ui.IWidget {
 			return factory.create(options);
-		}
+		};
 	}
 
 	bidirectionalBindings:{ [key:string]: boolean; } = {};
@@ -142,7 +142,7 @@ class _WidgetBinder {
 	private _childMarkerNodes:Node[];
 	private _childOptions:any;
 	factory:WidgetFactory;
-	private _mediatorHandle:IHandle;
+	private _modelHandle:IHandle;
 	private _observerHandles:IHandle[];
 	originView:ui.IView;
 	propertyWidgetBinders:{ [key:string]:_WidgetBinder } = {};
@@ -224,9 +224,9 @@ class _WidgetBinder {
 		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
 			var templates:any[] = sourceMap[property];
 			this._observerHandles.push(observerTarget.observe(property, () => {
-				var mediator:data.IMediator = view.get('mediator');
+				var model:data.IMediator = view.get('model');
 				for (var i = 0, len = templates.length; i < len; ++i) {
-					widget.set(getProperty(template), this._evaluateBindingTemplate(mediator, templates[i]));	
+					widget.set(getProperty(template), this._evaluateBindingTemplate(model, templates[i]));	
 				}
 			}));
 		});
@@ -276,9 +276,9 @@ class _WidgetBinder {
 		// TODO: moar
 	}
 
-	private _evaluateBindingTemplate(mediator:data.IMediator, template:any[]):string {
+	private _evaluateBindingTemplate(model:data.IMediator, template:any[]):string {
 		return array.map(template, (item:any):any => {
-			return item.$bind ? mediator.get(item.$bind) : item;
+			return item.$bind ? model.get(item.$bind) : item;
 		}).join('');
 	}
 

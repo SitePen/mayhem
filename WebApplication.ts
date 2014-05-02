@@ -12,7 +12,7 @@ class WebApplication extends Application {
 				},
 				view: {
 					constructor: './ApplicationView',
-					mediator: this
+					model: this
 				}
 			}
 		});

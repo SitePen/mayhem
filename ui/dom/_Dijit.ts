@@ -30,7 +30,7 @@ class _DijitRenderer extends _ElementRenderer {
 
 	_getProperty(widget:dom.IDijitWidget, key:string):any {
 		var value:any = widget.get(key);
-		// TODO: if prop expects a function, pull from mediator and/or wrap
+		// TODO: if prop expects a function, pull from model and/or wrap
 		// also: if prop.dijit, return dijit
 		return value;
 	}
@@ -61,7 +61,7 @@ class _DijitRenderer extends _ElementRenderer {
 
 		for (key in keys) {
 			args[nameMap[key] || key] = this._getProperty(widget, key);
-			// TODO: if prop expects a function, pull from mediator and/or wrap
+			// TODO: if prop expects a function, pull from model and/or wrap
 		}
 
 		var dijit = widget._impl = new this._ImplCtor(args);

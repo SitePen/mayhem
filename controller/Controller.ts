@@ -94,21 +94,21 @@ class Controller extends BaseController {
 		};
 	}
 
-	_viewSetter(value:any):void {
-		this['_view'] = value;
+	_viewSetter(view:any):void {
+		this['_view'] = view;
 
 		var viewModel:any = this.get('viewModel');
 		if (viewModel) {
-			value.set('mediator', viewModel);
+			view.set('model', viewModel);
 		}
 	}
 
-	_viewModelSetter(value:any):void {
-		this['_viewModel'] = value;
+	_viewModelSetter(viewModel:any):void {
+		this['_viewModel'] = viewModel;
 
 		var view:any = this.get('view');
 		if (view) {
-			view.set('mediator', value);
+			view.set('model', viewModel);
 		}
 	}
 }

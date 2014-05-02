@@ -7,7 +7,6 @@ import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
-import Mediator = require('../data/Mediator');
 import RouteEvent = require('./RouteEvent');
 import routing = require('./interfaces');
 import ui = require('../ui/interfaces');
@@ -164,7 +163,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	/**
-	 * Instantiate the view and mediator components this route manages.
+	 * Instantiate the controller this route manages.
 	 * @protected
 	 */
 	_instantiateComponents(Controller:any):any {

@@ -15,8 +15,8 @@ import Widget = require('./Widget');
 class View extends Widget implements ui.IView {
 	private _bindings:binding.IBindingHandle[];
 	private _parentAppHandle:IHandle;
-	private _parentMediatorHandle:IHandle;
-	_mediator:core.data.IMediator;
+	private _parentModelHandle:IHandle;
+	_model:core.data.IMediator;
 
 	constructor(kwArgs?:any) {
 		this._bindings = [];
@@ -28,7 +28,7 @@ class View extends Widget implements ui.IView {
 
 	/* protected */ _bind(kwArgs:ui.IBindArguments):binding.IBindingHandle {
 		return this.get('app').get('binder').bind({
-			source: this.get('mediator'),
+			source: this.get('model'),
 			sourceBinding: kwArgs.sourceBinding,
 			target: kwArgs.target || this,
 			targetBinding: kwArgs.targetBinding,
@@ -73,9 +73,9 @@ class View extends Widget implements ui.IView {
 			return deferBind('app');
 		}
 
-		if (!this.get('mediator')) {
-			// If no mediator is set on the widget, delay binding as well
-			return deferBind('mediator');
+		if (!this.get('model')) {
+			// If no model is set on the widget, delay binding as well
+			return deferBind('model');
 		}
 
 		var bindings = this._bindings,
@@ -108,24 +108,24 @@ class View extends Widget implements ui.IView {
 		super.destroy();
 	}
 
-	private _mediatorGetter():data.IMediator {
-		if (this._mediator) {
-			return this._mediator;
+	private _modelGetter():data.IMediator {
+		if (this._model) {
+			return this._model;
 		}
 		var parent = this.get('parent');
 		if (parent) {
-			return parent.get('mediator');
+			return parent.get('model');
 		}
 		return null;
 	}
 }
 
 View.observers({
-	mediator: function (mediator:data.IMediator):void {
-		if (!mediator) { return; }
-		// when the mediator changes, update any bindings
+	model: function (model:data.IMediator):void {
+		if (!model) { return; }
+		// when the model changes, update any bindings
 		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindings[i]); i++) {
-			binding.setSource(mediator);
+			binding.setSource(model);
 		}
 	},
 
@@ -145,15 +145,15 @@ View.observers({
 			}
 		}
 
-		var mediatorHandler = (mediator:data.IMediator, previous:data.IMediator):void => {
-			// if no mediator has been explicitly set, notify of the parent's mediator change
-			if (!this._mediator && !util.isEqual(mediator, previous)) {
-				this._notify(mediator, previous, 'mediator');
+		var modelHandler = (model:data.IMediator, previous:data.IMediator):void => {
+			// if no model has been explicitly set, notify of the parent's model change
+			if (!this._model && !util.isEqual(model, previous)) {
+				this._notify(model, previous, 'model');
 			}
 		};
-		util.remove(this._parentMediatorHandle);
-		this._parentMediatorHandle = parent && parent.observe('mediator', mediatorHandler);
-		mediatorHandler(parent && parent.get('mediator'), previous && previous.get('mediator'));
+		util.remove(this._parentModelHandle);
+		this._parentModelHandle = parent && parent.observe('model', modelHandler);
+		modelHandler(parent && parent.get('model'), previous && previous.get('model'));
 	}
 });
 

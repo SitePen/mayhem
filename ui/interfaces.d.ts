@@ -177,8 +177,6 @@ export interface ITextSet extends IViewSet {
 }
 
 export interface IView extends IWidget {
-	_mediator:data.IMediator;
-
 	get:IViewGet;
 	set:IViewSet;
 
@@ -187,11 +185,11 @@ export interface IView extends IWidget {
 }
 
 export interface IViewGet extends IWidgetGet {
-	(name:'mediator'):core.data.IMediator;
+	(name:'model'):core.data.IMediator;
 }
 
 export interface IViewSet extends IWidgetSet {
-	(name:'mediator', value:core.data.IMediator):void;
+	(name:'model', value:core.data.IMediator):void;
 }
 
 export interface IWidget extends core.IObservableEvented, core.IApplicationComponent, core.IManagedDestroyable {

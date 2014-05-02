@@ -12,23 +12,23 @@ import util = require('../util');
 
 var Renderer:any = require('./renderer!Iterator');
 
-class ScopedMediator extends Mediator {
-	static scope(mediator:data.IMediator, options:any = {}) {
-		options.model = mediator;
-		options.app = mediator.get('app');
-		return new ScopedMediator(options);
+class ScopedModel extends Mediator {
+	static scope(model:data.IMediator, options:any = {}):ScopedModel {
+		options.model = model;
+		options.app = model.get('app');
+		return new ScopedModel(options);
 	}
 }
 
 class Iterator extends ContentView implements ui.IIterator {
 	/* protected */ _each:string;
-	/* protected */ _mediatorIndex:{ [key:string]: Mediator; };
+	/* protected */ _modelIndex:{ [key:string]: Mediator; };
 	/* protected */ _selectedItem:any;
 	/* protected */ _widgetIndex:{ [key:string]: ui.IView; };
 
 	constructor(kwArgs:any = {}) {
 		this._deferProperty('source', '_render');
-		this._mediatorIndex = {};
+		this._modelIndex = {};
 		this._widgetIndex = {};
 		super(kwArgs);
 	}
@@ -36,9 +36,9 @@ class Iterator extends ContentView implements ui.IIterator {
 	get:ui.IIteratorGet;
 	set:ui.IIteratorSet;
 
-	private _createScopedMediator(key:string, mediator?:data.IMediator):Mediator {
+	private _createScopedModel(key:string, model?:data.IMediator):Mediator {
 		var view = this,
-			scoped = ScopedMediator.scope(mediator || this.get('mediator')),
+			scoped = ScopedModel.scope(model || this.get('model')),
 			valueProperty = new Property<any>({
 				get: function ():any {
 					return view._getSourceItem(key);
@@ -53,36 +53,36 @@ class Iterator extends ContentView implements ui.IIterator {
 			var properties = {};
 			properties[view.get('each')] = valueProperty;
 			return properties;
-		}
+		};
 
 		return scoped;
 	}
 
 	destroy():void {
-		// Destroy derived widgets and mediators
+		// Destroy derived widgets and models
 		var widgets = this._widgetIndex,
-			mediators = this._mediatorIndex;
+			models = this._modelIndex;
 		for (var i in widgets) {
 			util.destroy(widgets[i]);
 		}
-		for (var j in mediators) {
-			util.destroy(mediators[j]);
+		for (var j in models) {
+			util.destroy(models[j]);
 		}
-		this._widgetIndex = this._mediatorIndex = widgets = mediators = null;
+		this._widgetIndex = this._modelIndex = widgets = models = null;
 
 		super.destroy();
 	}
 
 	private _eachChanged(value:string):void {
-		var mediator:data.IMediator = this.get('mediator');
-		if (!mediator) {
+		var model:data.IMediator = this.get('model');
+		if (!model) {
 			return;
 		}
 
-		// Recreate our scoped mediators since the name of our value field changed
+		// Recreate our scoped models since the name of our value field changed
 		array.forEach(util.getObjectKeys(this._widgetIndex), (key:string):void => {
-			var scoped = this._mediatorIndex[key] = this._createScopedMediator(key, mediator);
-			this._widgetIndex[key].set('mediator', scoped);
+			var scoped = this._modelIndex[key] = this._createScopedModel(key, model);
+			this._widgetIndex[key].set('model', scoped);
 		});
 	}
 
@@ -96,12 +96,12 @@ class Iterator extends ContentView implements ui.IIterator {
 		}
 	}
 
-	/* protected */ _getMediatorByKey(key:string):Mediator {
-		if (this._mediatorIndex[key]) {
-			return this._mediatorIndex[key];
+	/* protected */ _getModelByKey(key:string):Mediator {
+		if (this._modelIndex[key]) {
+			return this._modelIndex[key];
 		}
-		// Create and cache a new mediator that delegates to the old one
-		return this._mediatorIndex[key] = this._createScopedMediator(key);
+		// Create and cache a new model that delegates to the old one
+		return this._modelIndex[key] = this._createScopedModel(key);
 	}
 
 	private _setSourceItem(key:string, value:any):void {
@@ -117,7 +117,7 @@ class Iterator extends ContentView implements ui.IIterator {
 		}
 		else {
 			// source should be a store, value should be a record
-			//debugger
+			// debugger
 			value && source.put && source.put(value);
 		}
 	}

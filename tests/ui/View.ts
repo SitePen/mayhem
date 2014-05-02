@@ -67,19 +67,19 @@ registerSuite({
 	},
 
 	'#bind': function () {
-		var mediator = new Observable();
+		var model = new Observable();
 
 		var handle = view.bind(<any> {
 			sourceBinding: 'foo',
 			targetBinding: 'bar'
 		});
 
-		assert.isUndefined(app.get('bindingArgs'), 'Binding should not have been created with no app or mediator');
+		assert.isUndefined(app.get('bindingArgs'), 'Binding should not have been created with no app or model');
 
 		view.set('app', app);
-		assert.isUndefined(app.get('bindingArgs'), 'Binding should not have been created with no mediator');
+		assert.isUndefined(app.get('bindingArgs'), 'Binding should not have been created with no model');
 
-		view.set('mediator', mediator);
+		view.set('model', model);
 		assert.propertyVal(app.get('bindingArgs'), 'sourceBinding', 'foo', 'Binding should have been created');
 
 		handle.remove();
@@ -89,7 +89,7 @@ registerSuite({
 		// Remove handle from incomplete binding
 		//
 
-		view.set('mediator', null);
+		view.set('model', null);
 		app.set('bindingArgs', null);
 		app.set('bindingRemoved', false);
 
@@ -99,15 +99,15 @@ registerSuite({
 		});
 		assert.isNull(app.get('bindingArgs'), 'Binding should not have been created');
 		handle.remove();
-		view.set('mediator', mediator);
+		view.set('model', model);
 		assert.isNull(app.get('bindingArgs'), 'Binding should not have been completed');
 	},
 
 	'#destroy': function () {
-		// check that setting mediator updates bindings
+		// check that setting model updates bindings
 
 		view.set('app', app);
-		view.set('mediator', new Observable());
+		view.set('model', new Observable());
 		view.bind(<any> {
 			sourceBinding: 'foo',
 			targetBinding: 'bar'
@@ -116,23 +116,23 @@ registerSuite({
 		assert.isTrue(app.get('bindingRemoved'), 'Binding should have been removed');
 	},
 
-	'#_mediatorGetter': function () {
-		// TODO: check that view's or view's parent's mediator is returned
+	'#_modelGetter': function () {
+		// TODO: check that view's or view's parent's model is returned
 	},
 
 	'observe parent': function () {
-		// check that setting parent updates app and mediator
+		// check that setting parent updates app and model
 		var parent = createParent(),
-			mediator1 = new Observable(),
-			mediator2 = new Observable(),
+			model1 = new Observable(),
+			model2 = new Observable(),
 			app2 = new Observable(),
 			app3 = new Observable(),
-			newMediator:any,
-			oldMediator:any;
+			newModel:any,
+			oldModel:any;
 
-		view.observe('mediator', function (newValue:any, oldValue:any) {
-			newMediator = newValue;
-			oldMediator = oldValue;
+		view.observe('model', function (newValue:any, oldValue:any) {
+			newModel = newValue;
+			oldModel = oldValue;
 		});
 
 		view.set('parent', parent);
@@ -144,8 +144,8 @@ registerSuite({
 		parent.set('app', app2);
 		assert.strictEqual(view.get('app'), app, 'View should not have received a subsequent parent app');
 
-		parent.set('mediator', mediator1)
-		assert.strictEqual(view.get('mediator'), mediator1, 'View should have received parent mediator');
+		parent.set('model', model1)
+		assert.strictEqual(view.get('model'), model1, 'View should have received parent model');
 
 		view.set('app', app3);
 		parent.set('app', app)
@@ -154,34 +154,34 @@ registerSuite({
 		view.destroy();
 
 		view = new View();
-		view.observe('mediator', function (newValue:any, oldValue:any) {
-			newMediator = newValue;
-			oldMediator = oldValue;
+		view.observe('model', function (newValue:any, oldValue:any) {
+			newModel = newValue;
+			oldModel = oldValue;
 		});
 
 		view.set('parent', parent);
-		view._mediator = null;
-		newMediator = oldMediator = null;
+		view['_model'] = null;
+		newModel = oldModel = null;
 
 		view.set('parent', createParent());
-		assert.isUndefined(newMediator, 'New mediator should have been undefined');
-		assert.strictEqual(oldMediator, mediator1, 'Old mediator should have been mediator1');
+		assert.isUndefined(newModel, 'New model should have been undefined');
+		assert.strictEqual(oldModel, model1, 'Old model should have been model1');
 	},
 
-	'observe mediator': function () {
-		// check that setting mediator updates bindings
-		var mediator1 = new Observable(),
-			mediator2 = new Observable();
+	'observe model': function () {
+		// check that setting model updates bindings
+		var model1 = new Observable(),
+			model2 = new Observable();
 
 		view.set('app', app);
-		view.set('mediator', mediator1);
+		view.set('model', model1);
 		view.bind(<any> {
 			sourceBinding: 'foo',
 			targetBinding: 'bar'
 		});
-		assert.strictEqual(app.get('source'), mediator1, 'Binding source should have been mediator1');
+		assert.strictEqual(app.get('source'), model1, 'Binding source should have been model1');
 
-		view.set('mediator', mediator2);
-		assert.strictEqual(app.get('source'), mediator2, 'Binding source should have been changed to mediator2');
+		view.set('model', model2);
+		assert.strictEqual(app.get('source'), model2, 'Binding source should have been changed to model2');
 	}
 });

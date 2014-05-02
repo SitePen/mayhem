@@ -44,12 +44,12 @@ registerSuite({
 	'#destroy': function () {
 		var widget1 = util.createDestroyable(),
 			widget2 = util.createDestroyable(),
-			mediator1 = util.createDestroyable(),
-			mediator2 = util.createDestroyable();
+			model1 = util.createDestroyable(),
+			model2 = util.createDestroyable();
 
 		// iterator._values = [];
 		iterator._widgetIndex = [ widget1, widget2 ];
-		iterator._mediatorIndex = [ mediator1, mediator2 ];
+		iterator._modelIndex = [ model1, model2 ];
 
 		assert.doesNotThrow(function () {
 			iterator.destroy();
@@ -57,8 +57,8 @@ registerSuite({
 
 		assert.isTrue(widget1._destroyed, 'widget1 should have been destroyed');
 		assert.isTrue(widget2._destroyed, 'widget2 should have been destroyed');
-		assert.isTrue(mediator1._destroyed, 'mediator1 should have been destroyed');
-		assert.isTrue(mediator2._destroyed, 'mediator2 should have been destroyed');
+		assert.isTrue(model1._destroyed, 'model1 should have been destroyed');
+		assert.isTrue(model2._destroyed, 'model2 should have been destroyed');
 	},
 
 	'#_eachSetter': function () {
@@ -66,22 +66,22 @@ registerSuite({
 			widget1 = new Widget();
 		iterator._widgetIndex = <any> { '0': widget0, '1': widget1 };
 
-		var mediator0:any, mediator1:any;
+		var model0:any, model1:any;
 		aspect.before(widget0, 'set', function (key:string, value:any) {
-			if (key === 'mediator') { mediator0 = value; }
+			if (key === 'model') { model0 = value; }
 		});
 		aspect.before(widget1, 'set', function (key:string, value:any) {
-			if (key === 'mediator') { mediator1 = value; }
+			if (key === 'model') { model1 = value; }
 		});
 
 		iterator.set('each', 'foo');
-		assert.strictEqual(mediator0, iterator._mediatorIndex['0'],
-			'widget0 mediator should have expected value');
-		assert.strictEqual(mediator1, iterator._mediatorIndex['1'],
-			'widget1 mediator should have expected value');
+		assert.strictEqual(model0, iterator._modelIndex['0'],
+			'widget0 model should have expected value');
+		assert.strictEqual(model1, iterator._modelIndex['1'],
+			'widget1 model should have expected value');
 	},
 
-	'scopedMediator (object source)': function () {
+	'scopedModel (object source)': function () {
 		var index = 0;
 		var source = {
 				idProperty: 'id',
@@ -92,7 +92,7 @@ registerSuite({
 					this[index++] = value;
 				}
 			},
-			mediator:any = {
+			model:any = {
 				set(key:string, value:any) {
 					this[key] = value;
 				},
@@ -104,30 +104,30 @@ registerSuite({
 		source[index++] = 'item0';
 		source[index++] = 'item1';
 
-		// create mediators
+		// create models
 		iterator._widgetIndex = <any> {
 			'0': new Widget(), '1': new Widget()
 		}
 		iterator.set('source', source);
-		iterator.set('mediator', mediator);
+		iterator.set('model', model);
 		iterator.set('each', 'foo');
 
-		mediator = iterator._mediatorIndex['0'];
+		model = iterator._modelIndex['0'];
 
-		// get the iterator's "each" property -- should get the source value corresponding to the key for the mediator
+		// get the iterator's "each" property -- should get the source value corresponding to the key for the model
 		// ('0')
-		var value = mediator.get('foo');
+		var value = model.get('foo');
 		assert.strictEqual(value, 'item0', 'Value for iterator "each" property should have expected value');
 
 		// is a store value since we're using a mock store source
 		var newValue = { id: '2', value: 'item2' };
-		mediator.set('foo', newValue);
+		model.set('foo', newValue);
 		assert.propertyVal(source, '2', newValue, 'New property should have been added to source');
 	},
 
-	'scopedMediator (array source)': function () {
+	'scopedModel (array source)': function () {
 		var source = [ 'item0', 'item1' ],
-			mediator:any = {
+			model:any = {
 				set(key:string, value:any) {
 					this[key] = value;
 				},
@@ -136,29 +136,29 @@ registerSuite({
 				}
 			};
 
-		// create mediators
+		// create models
 		iterator._widgetIndex = <any> {
 			'0': new Widget(), '1': new Widget()
 		}
 		iterator.set('source', source);
-		iterator.set('mediator', mediator);
+		iterator.set('model', model);
 		iterator.set('each', 'foo');
 
-		var scopedMediator = iterator._mediatorIndex['0'];
+		var scopedModel = iterator._modelIndex['0'];
 
-		// get the iterator's "each" property -- should get the source value corresponding to the key for the mediator
+		// get the iterator's "each" property -- should get the source value corresponding to the key for the model
 		// ('0')
-		var value = scopedMediator.get('foo');
+		var value = scopedModel.get('foo');
 		assert.strictEqual(value, 'item0', 'Value for iterator "each" property should have expected value');
 
-		// getting an arbitrary property from the scopedMediator should defer to the original mediator
-		mediator.bar = 'baz';
-		value = scopedMediator.get('bar');
-		assert.strictEqual(value, 'baz', 'Value for arbitrary mediator property should have expected value');
+		// getting an arbitrary property from the scopedModel should defer to the original model
+		model.bar = 'baz';
+		value = scopedModel.get('bar');
+		assert.strictEqual(value, 'baz', 'Value for arbitrary model property should have expected value');
 
 		var newValue = { id: '2', value: 'new baz value' };
-		scopedMediator.set('foo', newValue);
-		// should set value for source index corresponding to the mediator index; we're using mediator 0
+		scopedModel.set('foo', newValue);
+		// should set value for source index corresponding to the model index; we're using model 0
 		assert.propertyVal(source, '0', newValue, 'New property should have been added to source');
 
 		var setValue = {};
@@ -167,22 +167,22 @@ registerSuite({
 			setValue[key] = value;
 		}
 		iterator.set('source', source);
-		scopedMediator.set('foo', newValue);
+		scopedModel.set('foo', newValue);
 		assert.deepEqual(setValue, { '0': newValue }, 'New property should have been set on source at key "0"');
 
-		// setting an arbitrary property on the scoped mediator should set it on the original mediator
-		scopedMediator.set('bar', 'frob');
-		assert.propertyVal(mediator, 'bar', 'frob', 'Original mediator should have new property');
+		// setting an arbitrary property on the scoped model should set it on the original model
+		scopedModel.set('bar', 'frob');
+		assert.propertyVal(model, 'bar', 'frob', 'Original model should have new property');
 	},
 
-	'#_getMediatorByKey': function () {
-		var mediator:any = new Mediator();
-		iterator._mediatorIndex = <any> { '0': mediator }
-		assert.strictEqual(iterator._getMediatorByKey('0'), mediator, 'Should have gotten expected mediator for key 0');
+	'#_getModelByKey': function () {
+		var model:any = new Mediator();
+		iterator._modelIndex = <any> { '0': model }
+		assert.strictEqual(iterator._getModelByKey('0'), model, 'Should have gotten expected model for key 0');
 
-		iterator.set('mediator', mediator);
+		iterator.set('model', model);
 
-		mediator = iterator._getMediatorByKey('1');
-		assert.propertyVal(iterator._mediatorIndex, '1', mediator, 'Should have gotten new mediator for key 1');
+		model = iterator._getModelByKey('1');
+		assert.propertyVal(iterator._modelIndex, '1', model, 'Should have gotten new model for key 1');
 	},
 });

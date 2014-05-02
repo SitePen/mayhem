@@ -1,22 +1,68 @@
+/// <reference path="../dstore.d.ts" />
+
 import core = require('../interfaces');
 import ObservableArray = require('../ObservableArray');
 
-export interface IMediator extends IModel {
+export interface IBaseModel extends core.IApplicationComponent {
+	addError(key:string, error:core.IValidationError):void;
+
+	/**
+	 * Retrieves the value of a property on the model.
+	 */
+	get:IBaseModelGet;
+
+	/**
+	 * Retrieves the proxty for a property on the model.
+	 */
+	getMetadata(key:string):IProperty<any>;
+
+	/**
+	 * Returns whether or not the model currently contains any validation errors.
+	 */
+	isValid():boolean;
+
+	/**
+	 * Sets the value of a property on the model.
+	 */
+	set:IBaseModelSet;
+
+	/**
+	 * Validates the data model.
+	 *
+	 * @param keys
+	 * Passing a list of keys will cause only those keys to be validated. By default, all keys on the model are
+	 * validated.
+	 *
+	 * @returns
+	 * A promise that resolves when validation completes, or is rejected with error if there is an unhandled exception
+	 * during validation. The resolved value is `true` if the model validated successfully, or `false` if the model
+	 * experienced a validation failure. Once validated, errors can be retrieved by calling
+	 * `Model#getMetadata('errors')` (for all model errors) or `Model#property(key).getMetadata('errors')` for a
+	 * specific field.
+	 */
+	validate(keys?:string[]):IPromise<boolean>;
+}
+
+export interface IBaseModelGet extends core.IApplicationComponentGet {
+	(key:'isExtensible'):boolean;
+}
+
+export interface IBaseModelSet extends core.IApplicationComponentSet {
+}
+
+export interface IMediator extends IBaseModel {
 	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
-	_routeState:Object;
 
 	get:IMediatorGet;
 	set:IMediatorSet;
 }
 
-export interface IMediatorGet extends IModelGet {
+export interface IMediatorGet extends IBaseModelGet {
 	(key:'model'):IModel;
-	(key:'routeState'):Object;
 }
 
-export interface IMediatorSet extends IModelSet {
+export interface IMediatorSet extends IBaseModelSet {
 	(key:'model', value:IModel):void;
-	(key:'routeState', value:Object):void;
 }
 
 /**
@@ -81,13 +127,13 @@ export interface IModel extends core.IApplicationComponent {
 	validate(keys?:string[]):IPromise<boolean>;
 }
 
-export interface IModelGet extends core.IApplicationComponentGet {
-	(key:'collection'):any;
+export interface IModelGet extends IBaseModelGet {
+	(key:'store'):dstore.ICollection<any>;
 	(key:'scenario'):string;
 	(key:'isExtensible'):boolean;
 }
 
-export interface IModelSet extends core.IApplicationComponentSet {
+export interface IModelSet extends IBaseModelSet {
 	(key:'scenario', value:string):void;
 }
 

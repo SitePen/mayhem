@@ -2,6 +2,7 @@
 
 import arrayUtil = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
+import BaseModel = require('./BaseModel');
 import core = require('../interfaces');
 import data = require('./interfaces');
 import Evented = require('dojo/Evented');
@@ -10,13 +11,11 @@ import lang = require('dojo/_base/lang');
 import Property = require('./Property');
 import PropertyProxy = require('./PropertyProxy');
 import Observable = require('../Observable');
-import Model = require('./Model');
 import Stateful = require('dojo/Stateful');
 import util = require('../util');
 
-class Mediator extends Model implements data.IMediator, core.IHasMetadata {
+class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 	private _modelHandles:{ [key:string]:IHandle };
-	_routeState:Object;
 
 	get:data.IMediatorGet;
 	set:data.IMediatorSet;
@@ -192,8 +191,7 @@ lang.mixin(Mediator.prototype, {
 
 Mediator.defaults({
 	app: null,
-	model: null,
-	routeState: null
+	model: null
 });
 
 export = Mediator;

@@ -35,9 +35,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * load sub-views into parent views.
 	 *
 	 * See `mayhem/routing/Route` for more information on available Route properties. By default, Router will set the
-	 * `path`, `view`, and `mediator` properties to the ID of the route if they are not explicitly set.
+	 * `path`, `view`, and `viewModel` properties to the ID of the route if they are not explicitly set.
 	 *
-	 * For the moment, routes must only be set after the `mediatorPath`, `viewPath`, and `templatePath` have been set
+	 * For the moment, routes must only be set after the `viewModelPath`, `viewPath`, and `templatePath` have been set
 	 * to their correct values.
 	 *
 	 * Once the router has been started, routes can no longer be changed.
@@ -56,9 +56,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 	_routes:{ [key:string]:Route };
 
 	/**
-	 * The default location for mediators. @protected
+	 * The default location for viewModels. @protected
 	 */
-	_mediatorPath:string;
+	_viewModelPath:string;
 
 	/**
 	 * The default location for views. @protected
@@ -204,7 +204,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * Setter for the _routes property.
 	 *
 	 * @param routeMap A mapping of route IDs to some sort of route descriptor. The descriptor may be a an object, a
-	 * string, or a Route. An object descriptor may have the properties `mediator`, `view`, `code`, or `path`.
+	 * string, or a Route. An object descriptor may have the properties `viewModel`, `view`, `code`, or `path`.
 	 *
 	 * @returns the routeMap
 	 */
@@ -212,7 +212,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var routes = this._routes = {};
 
 		if (!routeMap[this.get('notFoundRoute')]) {
-			routeMap[this.get('notFoundRoute')] = { mediator: null, view: require.toAbsMid('../views/ErrorView'), code: 404 };
+			routeMap[this.get('notFoundRoute')] = { viewModel: null, view: require.toAbsMid('../views/ErrorView'), code: 404 };
 		}
 
 		var kwArgs:any,
@@ -277,7 +277,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Transforms route view/template/mediator arguments to complete module IDs. Directly modifies the passed object.
+	 * Transforms route view/template/viewModel arguments to complete module IDs. Directly modifies the passed object.
 	 */
 	_fixUpRouteArguments(kwArgs:{ id: string; [key:string]: any }):void {
 		/**
@@ -417,7 +417,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 }
 
 Router.defaults({
-	mediatorPath: 'app/mediators',
+	viewModelPath: 'app/viewModels',
 	viewPath: 'app/views',
 	templatePath: '../template!app/views',
 	defaultRoute: 'index',
