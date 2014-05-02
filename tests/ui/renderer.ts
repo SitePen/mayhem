@@ -8,20 +8,20 @@ import registerSuite = require('intern!object');
 import renderer = require('../../ui/renderer');
 
 registerSuite({
-	name: 'ui/dom/util',
+	name: 'ui/renderer',
 
-	load() {
+	load():void {
 		// check that renderer can load modules
 		var dfd = this.async(2000);
-		renderer.load('mayhem/ui/dom/_Base', null, dfd.callback(function (mod:any) {
+		renderer.load('mayhem/ui/dom/_Base', null, dfd.callback(function (mod:any):void {
 			assert.strictEqual(mod.toString(), _BaseRenderer.toString());
 		}));
 	},
 
-	normalize() {
+	normalize():void {
 		// check that renderer normalizes resource IDs as expected
 		var platform = has('host-browser') ? 'dom/' : 'default/',
-			expected = new RegExp('(framework|mayhem)\/ui\/' + platform + 'Widget'),
+			expected = new RegExp('(framework\/|mayhem\/)?ui\/' + platform + 'Widget'),
 			normalized = renderer.normalize('../../ui/dom/Widget', null);
 		assert.match(normalized, expected);
 	}
