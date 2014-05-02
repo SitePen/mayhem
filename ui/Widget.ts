@@ -268,46 +268,4 @@ class Widget extends ObservableEvented implements ui.IWidget {
 Widget.set('class', '');
 Widget.prototype.className = '';
 
-Widget.prototype.on = function (type:any, handler:Function):IHandle {
-	if (typeof type === 'string') {
-		type = ('-' + type).toLowerCase().replace(/-([a-z])/g, function ():string {
-			return arguments[1].toUpperCase();
-		});
-	}
-	return ObservableEvented.prototype.on.call(this, type, handler);
-};
- 
-Widget.prototype.emit = function (type:any, event?:any):boolean {
-	var args = Array.prototype.slice.call(arguments, 0);
-	if (typeof type === 'string') {
-		type = args[0] = ('-' + type).toLowerCase().replace(/-([a-z])/g, function ():string {
-			return arguments[1].toUpperCase();
-		});
-
-		console.log('type', type)
-		var handler = this.get('on' + type);
-		// If handler is a function call with this widget as context
-		if (typeof handler === 'function') {
-			handler.call(this, event);
-		}
-		// If handler is a string call named method on mediator if available
-		else if (typeof handler === 'string') {
-			var mediator = this.get('mediator');
-			if (mediator && mediator[handler]) {
-				mediator[handler](event);
-			}
-		}
-		// TODO: capture result from handler and allow it to cancel event
-	}
- 
-	var result = ObservableEvented.prototype.emit.apply(this, args);
- 
-	if (event && event.bubbles) {
-		var parent = this.get('parent');
-		parent && parent.emit.apply(parent, args);
-	}
- 
-	return result;
-};
-
 export = Widget;
