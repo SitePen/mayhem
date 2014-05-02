@@ -10,27 +10,35 @@ var style:Style;
 registerSuite({
 	name: 'ui/style/Style',
 
-	beforeEach() {
+	beforeEach():void {
 		style = new Style();
 	},
 
-	afterEach() {
+	afterEach():void {
 		style = util.destroy(style);
 	},
 
-	'#observe': function () {
-		var observed:any = [],
-			observer = function (newValue:any, oldValue:any, key:string) {
-				observed.push({ newValue: newValue, oldValue: oldValue, key: key });
-			}
+	'.parse': function ():void {
+		var style = { margin: '0 auto' };
+		assert.deepEqual(Style.parse(style), style);
+		assert.deepEqual(Style.parse('margin: 0 auto;'), style);
+		assert.deepEqual(Style.parse('margin: 0 auto'), style);
+		assert.deepEqual(Style.parse('margin:0 auto'), style);
+	},
 
-		var handle = style.observe(observer)
+	'#observe': function ():void {
+		var observed:any = [],
+			observer = function (newValue:any, oldValue:any, key:string):void {
+				observed.push({ newValue: newValue, oldValue: oldValue, key: key });
+			};
+
+		var handle = style.observe(observer);
 		style.set('display', 'none');
 		assert.deepEqual(observed[0], { newValue: 'none', oldValue: undefined, key: 'display' },
 			'Global observer should have seen display style updated');
 
 		var heightObserved:any = [];
-		style.observe('height', function (newValue:any, oldValue:any) {
+		style.observe('height', function (newValue:any, oldValue:any):void {
 			heightObserved.push({ newValue: newValue, oldValue: oldValue });
 		});
 
@@ -44,12 +52,12 @@ registerSuite({
 		style.set('display', 'visible');
 		assert.lengthOf(observed, 2, 'Global observer should not have observed another change');
 
-		assert.doesNotThrow(function () {
+		assert.doesNotThrow(function ():void {
 			handle.remove();
 		}, 'Removing handle a second time should not throw');
 
-		style.observe('padding-top', function () {});
-		assert.throws(function () {
+		style.observe('padding-top', function ():void {});
+		assert.throws(function ():void {
 			style.set('padding-top', 0);
 		}, Error, /CSS properties in JavaScript/, 'Setting property with hyphenated name should throw');
 	}

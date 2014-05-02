@@ -3,6 +3,7 @@ import has = require('../../has');
 import Observable = require('../../Observable');
 import style = require('./interfaces');
 import util = require('../../util');
+import lang = require('dojo/_base/lang');
 
 class Style extends Observable implements style.IStyle {
 	static parse(value:any = {}):any {
@@ -17,7 +18,7 @@ class Style extends Observable implements style.IStyle {
 		for (var i = 0, len = rules.length; i < len; ++i) {
 			parts = rules[i].split(':');
 			if (parts.length === 2 && parts[0]) {
-				value[parts[0]] = parts[1];
+				value[parts[0]] = lang.trim(parts[1]);
 			}
 		}
 		return value;

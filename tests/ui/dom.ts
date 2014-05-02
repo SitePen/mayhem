@@ -12,5 +12,6 @@ define([
 	'./dom/util',
 	'./dom/util/aria',
 	'./dom/form',
-	'./dom/actions'
+	'./dom/actions',
+	'./dom/FramedPlaceholder'
 ], function ():void {});
