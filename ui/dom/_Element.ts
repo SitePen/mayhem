@@ -34,8 +34,9 @@ class _ElementRenderer extends _BaseRenderer {
 			return has('debug') && console.warn('Renderer missing actions config for role: ' + role);
 		}
 
+		widget._actionHandles = [];
 		for (var key in actions) {
-			actions[key].attach(widget);
+			widget._actionHandles.push(actions[key].attach(widget));
 		}
 
 		// Patch up element tabindex depending on whether focus action is available
@@ -46,7 +47,7 @@ class _ElementRenderer extends _BaseRenderer {
 		}
 		else {
 			if (element.tabIndex >= 0) {
-				element.tabIndex = -1;
+				element.removeAttribute('tabindex');
 			}
 		}
 	}
