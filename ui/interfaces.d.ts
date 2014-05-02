@@ -194,7 +194,7 @@ export interface IViewSet extends IWidgetSet {
 	(name:'mediator', value:core.data.IMediator):void;
 }
 
-export interface IWidget extends core.IApplicationComponent, core.IEvented, core.IManagedDestroyable {
+export interface IWidget extends core.IObservableEvented, core.IApplicationComponent, core.IManagedDestroyable {
 	classList:style.IClassList;
 	className:string;
 	style:style.IStyle;

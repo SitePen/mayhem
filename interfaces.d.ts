@@ -2,7 +2,6 @@
 
 export import binding = require('./binding/interfaces');
 export import data = require('./data/interfaces');
-export import IEvented = require('dojo/Evented');
 export import IValidationError = require('./validation/ValidationError');
 export import IObservableArray = require('./ObservableArray');
 export import routing = require('./routing/interfaces');
@@ -87,7 +86,10 @@ export interface IObservableSet {
 	(key:string, value:any):void;
 }
 
-export interface IObservableEvented extends IObservable, IEvented {
+export interface IObservableEvented extends IObservable {
+	emit(event:ISyntheticEvent):boolean;
+	on(type:IExtensionEvent, listener:(event:any) => void):IHandle;
+	on(type:string, listener:(event:any) => void):IHandle;
 }
 
 export interface IObserver<T> {
@@ -148,6 +150,8 @@ export interface IScheduler {
 	dispatch():void;
 	schedule(id:string, callback:Function):void;
 }
+
+export interface ISyntheticEvent extends Event { }
 
 export interface IValidatorOptions {
 	allowEmpty?:boolean;

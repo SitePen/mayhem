@@ -1,8 +1,29 @@
+import aspect = require('dojo/aspect');
 import BaseController = require('./BaseController');
+import lang = require('dojo/_base/lang');
 import util = require('../util');
 import whenAll = require('dojo/promise/all');
 
 class Controller extends BaseController {
+	private _actions:{ [key:string]:Function; };
+	private _viewActionHandle:IHandle;
+
+	static actions(actionHandlers:any):void {
+		var proto = this.prototype,
+			actions:any = proto._actions;
+
+		if (!actions) {
+			proto._actions = actions = {};
+		}
+		else if (!proto.hasOwnProperty('_actions')) {
+			proto._actions = actions = lang.delegate(proto._actions);
+		}
+
+		for (var key in actionHandlers) {
+			aspect.after(actions, key, actionHandlers[key], true);
+		}
+	}
+
 	_loadModule(key:string, config:any, modules:any):IPromise<any> {
 		if (key !== 'store') {
 			return super._loadModule(key, config, modules);
@@ -44,6 +65,33 @@ class Controller extends BaseController {
 
 		this['_model'] = value;
 		this.get('viewModel').set('model', value);
+	}
+
+	_viewChanged(view:any):void {
+		if (this._viewActionHandle) {
+			this._viewActionHandle.remove();
+			this._viewActionHandle = null;
+		}
+		if (!view) {
+			return;
+		}
+
+		var handles:IHandle[] = [];
+		for (var key in this._actions) {
+			handles.push(
+				view.on(key, lang.hitch(this, this._actions[key]))
+			);
+		}
+
+		this._viewActionHandle = {
+			remove: function ():void {
+				this.remove = function ():void {};
+				for (var i = 0; i < handles.length; i++) {
+					handles[i].remove();
+				}
+				handles = view = null;
+			}
+		};
 	}
 
 	_viewSetter(value:any):void {

@@ -221,7 +221,9 @@ declare module 'dojo/on' {
 	var on:{
 		(target:Node, type:string, listener:EventListener, dontFix?:boolean):IHandle;
 
-		pausable:{ (target:Node, type:string, listener:EventListener, dontFix?:boolean):IPausableHandle; };
+		parse(target:any, type:string, listener:EventListener, addListener:Function, dontFix?:boolean, matchesTarget?:any):IHandle;
+		parse(target:any, type:IExtensionEvent, listener:EventListener, addListener:Function, dontFix?:boolean, matchesTarget?:any):IHandle;
+		pausable(target:Node, type:string, listener:EventListener, dontFix?:boolean):IPausableHandle;
 	};
 	export = on;
 }

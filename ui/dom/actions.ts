@@ -79,7 +79,7 @@ function changeTrigger(widget:dom.IElementWidget, actionName:string, config:any 
 			}
 
 			// Always prevent default behavior on change-triggered events (since the behavior already occurred)
-			var event = new ActionEvent();
+			var event = new ActionEvent({ type: actionName, target: widget });
 			event.preventDefault();
 			widget.trigger(actionName, event);
 		});
@@ -154,17 +154,22 @@ export class Action implements dom.IAction {
 		// Pause action triggers while processing action
 		this._pausedIds[id] = true;
 
-		var event = new ActionEvent();
+		var event = new ActionEvent({
+			type: this.name,
+			target: widget
+		});
 		if (source) {
 			event.sourceEvent = source;
 		}
-		widget.emit(this.name, event);
-		if (!event.defaultPrevented) {
+		if (widget.emit(event)) {
 			this.perform(widget);
 		}
 
 		this._pausedIds[id] = false;
-		widget.emit('after-' + this.name);
+		widget.emit(new ActionEvent({
+			type: 'after-' + this.name,
+			target: widget
+		}));
 	}
 }
 
@@ -298,10 +303,9 @@ DialogShow.prototype.triggers = [ { type: 'change', name: 'hidden', to: false } 
 import SyntheticEvent = require('../../SyntheticEvent');
 
 class ActionEvent extends SyntheticEvent {
+	bubbles:boolean = true;
+	cancelable:boolean = true;
 	sourceEvent:Event;
 
 	// TODO: implement propagation events (if it makes sense to bubble action to widget parent)
-	preventDefault():void {
-		this.defaultPrevented = true;
-	}
 };

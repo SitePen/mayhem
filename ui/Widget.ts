@@ -247,6 +247,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
+	_getEventedMethodName(type:string):string {
+		type = ('-' + type).toLowerCase().replace(/-([a-z])/g, function ():string {
+			return arguments[1].toUpperCase();
+		});
+		return super._getEventedMethodName(type);
+	}
+
 	/* protected */ _styleSetter(value:string) {
 		// Adds any manually set styles to widget's Style
 		// TODO: should we blow away any previously set styles instead?
@@ -260,32 +267,5 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 Widget.set('class', '');
 Widget.prototype.className = '';
-
-Widget.prototype.emit = function (type:any, event?:any):boolean {
-	console.log('emitting', type)
-	if (typeof type === 'string') {
-		// Look up event handler on widget (first transforming hyphenated event name to camelcased property name)
-		var key = ('on-' + type).toLowerCase().replace(/-([a-z])/g, function () {
-				return arguments[1].toUpperCase();
-			}),
-			handler = this.get(key);
-
-		// If handler is a function call with this widget as context
-		if (typeof handler === 'function') {
-			handler.call(this, event);
-		}
-		// If handler is a string call named method on mediator if available
-		else if (typeof handler === 'string') {
-			var mediator = this.get('mediator');
-			if (mediator && mediator[handler]) {
-				mediator[handler](event);
-			}
-		}
-		// TODO: capture result from handler and allow it to cancel event
-	}
-
-	return ObservableEvented.prototype.emit.apply(this, arguments);
-};
-
 
 export = Widget;

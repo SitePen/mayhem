@@ -1,15 +1,17 @@
+import core = require('./interfaces');
 import has = require('./has');
 
 /**
  * This is a base class for synthetic (non-DOM) events.
  */
-class SyntheticEvent implements Event {
+class SyntheticEvent implements core.ISyntheticEvent {
     timeStamp:number = new Date().getTime();
     defaultPrevented:boolean;
+	propagationStopped:boolean;
     isTrusted:boolean;
-    currentTarget:EventTarget;
+    currentTarget:any;
     cancelBubble:boolean;
-    target:EventTarget;
+    target:any;
     eventPhase:number;
     cancelable:boolean;
     type:string;
@@ -27,27 +29,28 @@ class SyntheticEvent implements Event {
 		}
 	}
 
-    initEvent(eventTypeArg:string, canBubbleArg:boolean, cancelableArg:boolean):void {
-		if (has('debug')) {
-			throw new Error('Abstract method "initEvent" not implemented');
-		}
+	initEvent(type:string, bubbles:boolean, cancelable:boolean):void {
+		this.type = type;
+		this.bubbles = bubbles;
+		this.cancelable = cancelable;
 	}
 
-    stopPropagation():void {
-		if (has('debug')) {
-			throw new Error('Abstract method "stopPropagation" not implemented');
+    preventDefault():void {
+		if (this.cancelable) {
+			this.defaultPrevented = true;
 		}
 	}
 
     stopImmediatePropagation():void {
+		// TODO: implement this
 		if (has('debug')) {
 			throw new Error('Abstract method "stopImmediatePropagation" not implemented');
 		}
 	}
 
-    preventDefault():void {
-		if (has('debug')) {
-			throw new Error('Abstract method "preventDefault" not implemented');
+    stopPropagation():void {
+		if (this.bubbles) {
+			this.propagationStopped = true;
 		}
 	}
 }

@@ -80,12 +80,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 */
 	_notFoundRoute:string;
 
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._activeRoutes = [];
-
-		super(kwArgs);
-	}
-
 	/**
 	 * The currently active routes. @protected
 	 */
@@ -95,6 +89,12 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * The previous path after a route transition. @protected
 	 */
 	_oldPath:string;
+
+	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._activeRoutes = [];
+
+		super(kwArgs);
+	}
 
 	/**
 	 * Starts listening for new path changes.
@@ -328,6 +328,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 
 		var event = new RouteEvent({
+				type: 'change',
 				cancelable: true,
 				pausable: true,
 				oldPath: this._oldPath,
@@ -336,14 +337,15 @@ class Router extends ObservableEvented implements routing.IRouter {
 			}),
 			self = this;
 
-		if (this.emit('change', event)) {
+		if (this.emit(event)) {
 			// only do this if a listener didn't cancel the change event
 			whenAll([
 				this._exitRoutes(event),
 				this._enterRoutes(event)
 			]).then(function ():any {
 				function emitIdle():void {
-					self.emit('idle', new RouteEvent({
+					self.emit(new RouteEvent({
+						type: 'idle',
 						oldPath: event.oldPath,
 						newPath: event.newPath,
 						router: self
