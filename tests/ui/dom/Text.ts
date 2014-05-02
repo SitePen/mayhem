@@ -6,36 +6,53 @@ import registerSuite = require('intern!object');
 import TextRenderer = require('../../../ui/dom/Text');
 import util = require('../support/util');
 import Widget = require('../../../ui/Widget');
+import aspect = require('dojo/aspect');
 
 var renderer:any, widget:any;
 
 registerSuite({
 	name: 'ui/dom/Text',
 
-	setup() {
+	setup():void {
 		Widget.prototype._renderer = new TextRenderer();
 	},
 
-	teardown() {
+	teardown():void {
 		Widget.prototype._renderer = undefined;
 	},
 
-	beforeEach() {
+	beforeEach():void {
 		widget = new Widget();
-		renderer = new TextRenderer();
+		renderer = widget._renderer;
 	},
 
-	afterEach() {
+	afterEach():void {
 		widget = util.destroy(widget);
 		renderer = null;
 	},
 
-	'setContent'() { 
+	'#initialize': function ():void {
+		var setText:string;
+
+		renderer.initialize(widget);
+
+		aspect.before(widget, 'setContent', function (content:string):void {
+			setText = content;
+		});
+
+		widget.set('formattedText', 'test');
+		assert.strictEqual(setText, 'test');
+
+		widget.set('text', '&test');
+		assert.strictEqual(setText, '&amp;test');
+	},
+
+	'#setContent': function ():void {
 		widget._firstNode = {
 			innerHTML: '<span>foo</span>',
 			textContent: 'foo'
 		};
-		widget._outerFragment = {}
+		widget._outerFragment = {};
 
 		renderer.setContent(widget, 'bar');
 		assert.strictEqual(widget.get('formattedText'), '<span>foo</span>');
