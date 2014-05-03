@@ -19,6 +19,7 @@ class Controller extends BaseController {
 			proto._actions = actions = lang.delegate(proto._actions);
 		}
 
+		// TODO: should we call stopProgation on events passed to action handlers automatically?
 		for (var key in actionHandlers) {
 			aspect.after(actions, key, actionHandlers[key], true);
 		}

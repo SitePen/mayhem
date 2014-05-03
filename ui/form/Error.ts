@@ -7,8 +7,6 @@ import List = require('../List');
 var Renderer:any = require('../renderer!form/Error');
 
 class FormError extends List implements form.IError {
-	_source:core.IValidationError[];
-
 	get:form.IErrorGet;
 	set:form.IErrorSet;
 }

@@ -1,17 +1,11 @@
 /// <amd-dependency path="../renderer!form/Checkbox" />
 
 import form = require('./interfaces');
-import Control = require('./Control');
+import ContentView = require('../ContentView');
 
 var Renderer:any = require('../renderer!form/Checkbox');
 
-class Checkbox extends Control implements form.ICheckbox {
-	_checked:boolean;
-	_indeterminate:boolean;
-	_name:string;
-	_readonly:boolean;
-	_value:any;
-
+class Checkbox extends /*Widget*/ ContentView implements form.ICheckbox {
 	get:form.ICheckboxGet;
 	set:form.ICheckboxSet;
 }

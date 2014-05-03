@@ -16,7 +16,7 @@ class View extends Widget implements ui.IView {
 	private _bindings:binding.IBindingHandle[];
 	private _parentAppHandle:IHandle;
 	private _parentModelHandle:IHandle;
-	_model:core.data.IMediator;
+	_model:data.IMediator;
 
 	constructor(kwArgs?:any) {
 		this._bindings = [];

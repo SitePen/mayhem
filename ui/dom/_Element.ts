@@ -105,6 +105,7 @@ class _ElementRenderer extends _BaseRenderer {
 
 		this.attachStyles(widget);
 
+		this._bindAttribute(widget, 'disabled', { attribute: 'aria-disabled' });
 		this._bindAttribute(widget, 'spellcheck');
 		this._bindAttribute(widget, 'tabindex');
 		this._bindAttribute(widget, 'title');

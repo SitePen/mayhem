@@ -1,7 +1,7 @@
-import ControlRenderer = require('./Control');
+import DijitRenderer = require('../_Dijit');
 import RadioButtonImpl = require('dijit/form/RadioButton');
 
-class RadioButtonRenderer extends ControlRenderer {}
+class RadioButtonRenderer extends DijitRenderer {}
 
 RadioButtonRenderer.implementation({
 	constructor: RadioButtonImpl

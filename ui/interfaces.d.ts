@@ -185,11 +185,11 @@ export interface IView extends IWidget {
 }
 
 export interface IViewGet extends IWidgetGet {
-	(name:'model'):core.data.IMediator;
+	(name:'model'):data.IMediator;
 }
 
 export interface IViewSet extends IWidgetSet {
-	(name:'model', value:core.data.IMediator):void;
+	(name:'model', value:data.IMediator):void;
 }
 
 export interface IWidget extends core.IObservableEvented, core.IApplicationComponent, core.IManagedDestroyable {
@@ -209,6 +209,7 @@ export interface IWidget extends core.IObservableEvented, core.IApplicationCompo
 
 export interface IWidgetGet extends core.IApplicationComponentGet {
 	(name:'attached'):boolean;
+	(name:'disabled'):boolean;
 	(name:'id'):string;
 	(name:'hidden'):boolean;
 	(name:'index'):number;
@@ -219,6 +220,7 @@ export interface IWidgetGet extends core.IApplicationComponentGet {
 
 export interface IWidgetSet extends core.IApplicationComponentSet {
 	(name:'attached', value:boolean):void;
+	(name:'disabled', value:boolean):void;
 	(name:'hidden', value:boolean):void;
 	(name:'id', value:string):void;
 	(name:'parent', value:IContainer):void;

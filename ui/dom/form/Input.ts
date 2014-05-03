@@ -1,6 +1,6 @@
-import ControlRenderer = require('./Control');
+import _DijitRenderer = require('../_Dijit');
 
-class InputRenderer extends ControlRenderer {}
+class InputRenderer extends _DijitRenderer {}
 
 InputRenderer.implementation({
 	nameMap: {

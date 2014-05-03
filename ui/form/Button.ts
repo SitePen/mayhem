@@ -7,9 +7,6 @@ import form = require('./interfaces');
 var Renderer:any = require('../renderer!form/Button');
 
 class Button extends /*Widget*/ ContentView implements form.IButton {
-	/* protected */ _label:string;
-	/* protected */ _type:string;
-
 	get:form.IButtonGet;
 	set:form.IButtonSet;
 }
