@@ -34,7 +34,7 @@ class Resolver extends ContentView implements ui.IResolver {
 		var promise = this.get('target');
 		promise = promise && promise['cancel'] && promise['cancel']();
 
-		util.destroy(this.get('scopedModel'));
+		util.destroy(this.get('scopedMediator'));
 		util.remove(this._promiseFieldBinding);
 		this._promiseFieldBinding = null;
 
@@ -45,11 +45,11 @@ class Resolver extends ContentView implements ui.IResolver {
 		super._initialize();
 
 		this.observe('model', (model:data.IMediator):void => {
-			this.set('scopedModel', model ? this._scopeModel(model) : null);
+			this.set('scopedMediator', model ? this._scopeMediator(model) : null);
 		});
 
-		this.observe('scopedModel', (model:data.IMediator, previous:data.IMediator):void => {
-			this._updateWidgetModels(model);
+		this.observe('scopedMediator', (mediator:data.IMediator, previous:data.IMediator):void => {
+			this._updateWidgetModels(mediator);
 			util.destroy(previous);
 		});
 
@@ -63,7 +63,7 @@ class Resolver extends ContentView implements ui.IResolver {
 		});
 
 		this.observe('phase', this._updateVisibility);
-		this.observe('result', this._notifyScopedModel);
+		this.observe('result', this._notifyScopedMediator);
 		this.observe('success', this._placeView);
 		this.observe('error', this._placeView);
 		this.observe('during', this._placeView);
@@ -71,9 +71,9 @@ class Resolver extends ContentView implements ui.IResolver {
 		this.set('success', new ContentView());
 	}
 
-	private _notifyScopedModel(result:any, previous:any):void {
-		var model = this.get('scopedModel');
-		model && model['_notify'](result, previous, this.get('value'));
+	private _notifyScopedMediator(result:any, previous:any):void {
+		var mediator = this.get('scopedMediator');
+		mediator && mediator['_notify'](result, previous, this.get('value'));
 	}
 
 	private _placeView(view:ui.IWidget, previous:ui.IWidget):void {
@@ -105,27 +105,27 @@ class Resolver extends ContentView implements ui.IResolver {
 		return this.get('success').remove(index);
 	}
 
-	private _scopeModel(model:data.IMediator):Mediator {
-		var scopedModel = new Mediator({ model: model }),
-			_get = scopedModel.get,
-			_set = scopedModel.set;
-		scopedModel.get = (name:string):any => {
+	private _scopeMediator(model:data.IMediator):Mediator {
+		var scopedMediator = new Mediator({ model: model }),
+			_get = scopedMediator.get,
+			_set = scopedMediator.set;
+		scopedMediator.get = (name:string):any => {
 			if (name === this.get('value')) {
 				return this.get('result');
 			}
 			else {
-				return _get.call(scopedModel, name);
+				return _get.call(scopedMediator, name);
 			}
 		};
-		scopedModel.set = <data.IMediatorGet> ((name:string, value:any):void => {
+		scopedMediator.set = <data.IMediatorGet> ((name:string, value:any):void => {
 			if (name === this.get('value')) {
 				return this.set('result', value);
 			}
 			else {
-				_set.call(scopedModel, name, value);
+				_set.call(scopedMediator, name, value);
 			}
 		});
-		return scopedModel;
+		return scopedMediator;
 	}
 
 	setContent(content:any):void {
@@ -158,13 +158,13 @@ class Resolver extends ContentView implements ui.IResolver {
 		}
 	}
 
-	private _updateWidgetModels(model:data.IMediator):void {
+	private _updateWidgetModels(mediator:data.IMediator):void {
 		var phases = [ 'during', 'error', 'success' ],
 			phase:string,
 			widget:ui.IWidget;
 		for (var i = 0; (phase = phases[i]); ++i) {
 			widget = this.get(phase);
-			widget && widget.set('model', model);
+			widget && widget.set('model', mediator);
 		}
 	}
 }

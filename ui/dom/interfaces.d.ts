@@ -82,9 +82,9 @@ export interface IDijitWidget extends IElementWidget {
 export interface IIterator extends ui.IIterator, IElementWidget {
 	_each:string;
 	_factory:any; // TODO: templating.IViewConstructor
-	_getModelByKey(key:string):core.data.IMediator;
+	_getMediatorByKey(key:string):core.data.IMediator;
 	_impl:List;
-	_modelIndex:{ [key:string]: core.data.IMediator; };
+	_mediatorIndex:{ [key:string]: core.data.IMediator; };
 	_source:any;
 	_sourceLength:number;
 	_sourceObserverHandle:IHandle;

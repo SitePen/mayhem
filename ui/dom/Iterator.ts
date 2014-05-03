@@ -35,9 +35,9 @@ class IteratorRenderer extends _ElementRenderer {
 		if (child) {
 			return child;
 		}
-		var model = widget._getModelByKey(key);
+		var mediator = widget._getMediatorByKey(key);
 		child = widget._widgetIndex[key] = <dom.IContentWidget> new widget._ViewCtor();
-		child.set('model', model);
+		child.set('model', mediator);
 		child.set('parent', widget);
 		return child;
 	}
@@ -209,7 +209,7 @@ class IteratorRenderer extends _ElementRenderer {
 		}
 		// Notify all scoped models of their current values
 		for (var i = 0, len = sourceLength; i < len; ++i) {
-			widget._modelIndex[i]['_notify'](source[i], null, scopeField);
+			widget._mediatorIndex[i]['_notify'](source[i], null, scopeField);
 		}
 	}
 }
