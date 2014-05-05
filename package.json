@@ -1,6 +1,6 @@
 {
 	"name": "mayhem",
-	"version": "1.0.0",
+	"version": "0.9.0",
 	"main": "main",
 	"description": "Mayhem. A framework for rich Internet applications.",
 	"dojoBuild": "package.js",
