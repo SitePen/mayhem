@@ -28,7 +28,7 @@ class WidgetFactory {
 	bindingTemplates:{ [key:string]: any; } = {};
 	childFactories:WidgetFactory[] = [];
 	content:Node;
-	MARKER_PATTERN:RegExp = /^\s*⟨⟨ ({[^{]+}) ⟩⟩\s*$/;
+	MARKER_PATTERN:RegExp = /^\s*⟨⟨ ({[^⟩][^⟩]+}) ⟩⟩\s*$/;
 	propertyBindings:{ [key:string]: string; } = {};
 	propertyWidgetFactories:{ [key:string]: WidgetFactory; } = {};
 	tree:templating.IParseTree;
@@ -59,10 +59,6 @@ class WidgetFactory {
 
 	destroy():void {
 		// TODO: should we just destroy all binding handles, or tear down constructed widgets too?
-	}
-
-	/* protected */ _encodeMarker(marker:any):string {
-		return '<!-- ⟨⟨ ' + JSON.stringify(marker) + ' ⟩⟩ -->';
 	}
 
 	private _initializeArgs():void {
@@ -124,21 +120,52 @@ class WidgetFactory {
 	private _initializeContent():void {
 		var content:any = this.tree.content,
 			value:string = typeof content === 'string' ? content : '';
-		// Transform marker objects into comments for children, placeholders and text bindings
+		// Transform marker objects into a simple pattern in the content string that we can patch up later
 		if (content instanceof Array) {
-			var item:any;
 			for (var i = 0, len = content.length; i < len; ++i) {
-				item = content[i];
-				value += typeof item === 'string' ? item : this._encodeMarker(item);
+				var item:any = content[i];
+				value += typeof item === 'string' ? item : ('⟨⟨ ' + i + ' ⟩⟩');
 			}
 		}
 		if (value) {
+			// Find html element heads with at lesat one attribute binding and fix them up
+			value = value.replace(/<[^>]+⟨⟨ \d+ ⟩⟩[^>]*>/g, (match:string):string => {
+				var attributes:any = {},
+					// Replace all Loop over all attributes with any value at all
+					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*('[^']+'|"[^"]+")/g, (match:string, name:string, value:string):string => {
+						// Find all bindings in this attribute (strip off the quotes and split on the binding marker)
+						var parts:string[] = value.substr(1, value.length - 2).split(/⟨⟨ (\d+) ⟩⟩/g);
+						if (parts.length === 1) {
+							// No bindings so return untouched
+							return match;
+						}
+
+						// Make a binding template out of the value array
+						attributes[name] = array.filter(array.map(parts, (part:string, i:number):any => {
+							// Even elements are strings, odd elements are indexes of bindings
+							return i % 2 === 0 ? part : content[Number(part)];
+						}), (value:any):any => value);
+						// Wipe out attributes with bindings in our html
+						return '';
+				});
+
+				// Insert an attribute binding marker comment just before the element head we're binding
+				return '<!-- ⟨⟨ ' + JSON.stringify({ $attributes: attributes }) + ' ⟩⟩ -->' + head;
+			});
+
+			// Replace text node bindings with html comments
+			value = value.replace(/⟨⟨ (\d+) ⟩⟩/g, (match:string, index:string):string => {
+				return '<!-- ⟨⟨ ' + JSON.stringify(content[Number(index)]) + ' ⟩⟩ -->';
+			});
 			this.content = domUtil.toDom(value);
 		}
 	}
 }
 
 class _WidgetBinder {
+	private _attributeBindingHandles:IHandle[];
+	private _attributeBindingNodes:HTMLElement[] = [];
+	private _attributeBindingPaths:any[] = [];
 	private _childMarkerNodes:Node[];
 	private _childOptions:any;
 	factory:WidgetFactory;
@@ -147,9 +174,9 @@ class _WidgetBinder {
 	originView:ui.IView;
 	propertyWidgetBinders:{ [key:string]:_WidgetBinder } = {};
 	private _templateObservable:Observable;
+	private _textBindingHandles:IHandle[];
 	private _textBindingNodes:Node[] = [];
 	private _textBindingPaths:string[] = [];
-	private _textBindingHandles:IHandle[];
 	widget:ui.IWidget;
 	private _widgetArgs:any;
 
@@ -175,6 +202,7 @@ class _WidgetBinder {
 		this._bindProperties();
 		this._bindPropertyTemplates();
 		this._bindTextNodes();
+		this._bindAttributeNodes();
 	}
 
 	private _bindProperties():void {
@@ -196,24 +224,26 @@ class _WidgetBinder {
 		var widget = this.widget,
 			view = this.getView(),
 			bindingTemplates = this.factory.bindingTemplates,
-			template:any;
+			template:any,
+			sourceMap:{ [key:string]: any[]; } = {},
+			keys:string[];
 
 		// Build a map of all source bindings back to all binding templates which contain them
-		var sourceMap:{ [key:string]: any[]; } = {};
-		for (var key in bindingTemplates) {
+		keys = array.map(util.getObjectKeys(bindingTemplates), (key:string):string => {
 			template = bindingTemplates[key];
 			for (var i = 0, len = template.length; i < len; ++i) {
 				var source:string = template[i].$bind;
 				if (source) {
 					// TODO: set should contain debounced evaluator functions instead
 					var templateSet:any[] = sourceMap[source] || (sourceMap[source] = [])
-					templateSet.indexOf(template) < 0 && templateSet.push(template);
+					templateSet.indexOf(template) === -1 && templateSet.push(template);
 				}
 			}
-		}
+			return key;
+		});
 
 		// Bail if no keys in binding templates map
-		if (!key) {
+		if (!keys.length) {
 			return;
 		}
 
@@ -226,7 +256,7 @@ class _WidgetBinder {
 			this._observerHandles.push(observerTarget.observe(property, () => {
 				var model:data.IMediator = view.get('model');
 				for (var i = 0, len = templates.length; i < len; ++i) {
-					widget.set(getProperty(template), this._evaluateBindingTemplate(model, templates[i]));	
+					widget.set(getProperty(templates[i]), this._evaluateBindingTemplate(model, templates[i]));	
 				}
 			}));
 		});
@@ -267,6 +297,31 @@ class _WidgetBinder {
 				target: node,
 				targetBinding: 'nodeValue'
 			});
+		}
+		// TODO: destroy these bindings when widget body gets wiped out
+	}
+
+	private _bindAttributeNodes():void {
+		if (!this._attributeBindingNodes || !this._attributeBindingPaths) {
+			return;
+		}
+		util.remove.apply(null, this._attributeBindingHandles || []);
+		this._attributeBindingHandles = [];
+		var view = this.getView(),
+			element:HTMLElement,
+			config:any;
+		for (var i = 0, len = this._attributeBindingNodes.length; i < len; i++) {
+			element = this._attributeBindingNodes[i];
+			config = this._attributeBindingPaths[i];
+			if (!element || !config) continue;
+			for (var attributeName in config) {
+				this._attributeBindingHandles.push(view.bind({
+					// TODO: support binding templates (right now we can only do direct bindings)
+					sourceBinding: config[attributeName][0].$bind,
+					target: element,
+					targetBinding: '@' + attributeName
+				}));
+			}
 		}
 		// TODO: destroy these bindings when widget body gets wiped out
 	}
@@ -314,6 +369,8 @@ class _WidgetBinder {
 	private _placeContent():void {
 		if (this.factory.content) {
 			var content = this.factory.content.cloneNode(true);
+			this._attributeBindingNodes = [];
+			this._attributeBindingPaths = [];
 			this._textBindingNodes = [];
 			this._textBindingPaths = [];
 			this._childMarkerNodes = [];
@@ -344,7 +401,14 @@ class _WidgetBinder {
 			descriptor:any = match && JSON.parse(match[1]);
 		if (descriptor) {
 			var parent:Node = node.parentNode;
-			if (descriptor.$bind != null) {
+			if (descriptor.$attributes != null) {
+				var attributes = descriptor.$attributes;
+				this._attributeBindingNodes.push((<HTMLElement> node).nextElementSibling);
+				this._attributeBindingPaths.push(attributes);
+				// Leave binding comment in place but clean up a bit
+				node.nodeValue = ' Mayhem HTML element bindings: ' + JSON.stringify(attributes) + ' ';
+			}
+			else if (descriptor.$bind != null) {
 				var textNode:Text = new Text();
 				this._textBindingNodes.push(textNode);
 				this._textBindingPaths.push(descriptor.$bind);

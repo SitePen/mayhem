@@ -69,7 +69,21 @@ class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 	 * Gets the current value of this property.
 	 */
 	get():T {
-		return this._object ? this._object[this._property] : undefined;
+		// Special syntax to reference an attribute explicitly
+		if (!this._object) {
+			return undefined;
+		}
+		if (this._property.charAt(0) === '@') {
+			var value = (<any> this._object).getAttribute(this._property.substr(1));
+			if (value === '') {
+				return true;
+			}
+			if (value == null) {
+				return undefined;
+			}
+			return value;
+		}
+		return this._object[this._property];
 	}
 
 	/**
@@ -82,7 +96,19 @@ class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 		}
 
 		if (this._object) {
-			this._object[this._property] = value;
+			// Special syntax to reference an attribute explicitly
+			if (this._property.charAt(0) === '@') {
+				var name = this._property.substr(1);
+				if (value) {
+					(<any> this._object).setAttribute(name, value === true ? '' : value);
+				}
+				else {
+					(<any> this._object).removeAttribute(name);
+				}
+			}
+			else {
+				this._object[this._property] = value;
+			}
 		}
 	}
 }
