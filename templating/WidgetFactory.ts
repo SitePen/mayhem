@@ -132,9 +132,13 @@ class WidgetFactory {
 			value = value.replace(/<[^>]+⟨⟨ \d+ ⟩⟩[^>]*>/g, (match:string):string => {
 				var attributes:any = {},
 					// Replace all Loop over all attributes with any value at all
-					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*('[^']+'|"[^"]+")/g, (match:string, name:string, value:string):string => {
-						// Find all bindings in this attribute (strip off the quotes and split on the binding marker)
-						var parts:string[] = value.substr(1, value.length - 2).split(/⟨⟨ (\d+) ⟩⟩/g);
+					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*('[^']+'|"[^"]+"|[^'"\s]+)/g, (match:string, name:string, value:string):string => {
+						// Strip off enclosing quotes, if any
+						if ((value.indexOf("'") === 0 || value.indexOf('"') === 0)) {
+							value = value.substr(1, value.length - 2);
+						}
+						// Find all bindings in this attribute (split on any binding markers)
+						var parts:string[] = value.split(/⟨⟨ (\d+) ⟩⟩/g);
 						if (parts.length === 1) {
 							// No bindings so return untouched
 							return match;
