@@ -57,7 +57,11 @@ class HashRouter extends Router {
 			throw new Error('Router is paused');
 		}
 
-		hash(this.createPath(routeId, kwArgs));
+		// Only change hash if path is new
+		var path = this.createPath(routeId, kwArgs);
+		if (path !== '#' + hash()) {
+			hash(path);
+		}
 	}
 
 	/**
