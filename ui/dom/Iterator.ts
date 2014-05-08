@@ -151,7 +151,7 @@ class IteratorRenderer extends _ElementRenderer {
 			list.renderRow = (element:any):HTMLElement => element;
 		}
 		else {
-			list.renderRow = (record:any):HTMLElement => {\
+			list.renderRow = (record:any):HTMLElement => {
 				var idProperty = widget.get('source').idProperty,
 					id = record.get ? record.get(idProperty) : record[idProperty];
 				return this._getViewByKey(widget, id)._outerFragment;
