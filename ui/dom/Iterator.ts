@@ -42,34 +42,38 @@ class IteratorRenderer extends _ElementRenderer {
 		return child;
 	}
 
+	_updateSelection(widget:dom.IIterator):void {
+		// TODO: multiselect support
+		var list:any = widget._impl,
+			selectedItem:any = widget.get('selectedItem');
+		if (!list) { return; }
+
+		// Silently clear our list impl's selection
+		// TODO: can we do this silently in dgrid?
+		list.allSelected = false;
+		for (var id in list.selection) {
+			list._select(id, null, false);
+		}
+		list._lastSelected = null;
+		// Silently select each value in our selected array
+		// for (var i = 0, len = items.length; i < len; ++i) {
+		// 	list._select(items[i] || '', null, true);
+		// }
+		selectedItem != null && list._select(selectedItem);
+		widget.emit(new Event({
+			type: 'selection',
+			cancelable: true,
+			bubbles: true,
+			target: widget
+		}));
+	}
+
 	initialize(widget:dom.IIterator):void {
 		super.initialize(widget);
 
-		// TODO: multiselect support
-		widget.observe('selectedItem', (item:any):void => {
-			var list:any = widget._impl;
-			if (!list) {
-				return;
-			}
-
-			// Silently clear our list impl's selection
-			// TODO: can we do this silently in dgrid?
-			list.allSelected = false;
-			for (var id in list.selection) {
-				list._select(id, null, false);
-			}
-			list._lastSelected = null;
-			// Silently select each value in our selected array
-			// for (var i = 0, len = items.length; i < len; ++i) {
-			// 	list._select(items[i] || '', null, true);
-			// }
-			item != null && list._select(item, null, true);
-			widget.emit(new Event({
-				type: 'selection',
-				cancelable: true,
-				bubbles: true,
-				target: widget
-			}));
+		
+		widget.observe('selectedItem', ():void => {
+			this._updateSelection(widget);
 		});
 
 		widget.observe('allowSelectAll', (value:boolean) => {
@@ -99,6 +103,8 @@ class IteratorRenderer extends _ElementRenderer {
 				else {
 					widget._impl.set('store', source);
 				}
+
+				this._updateSelection(widget);
 			});
 		});
 
@@ -162,7 +168,6 @@ class IteratorRenderer extends _ElementRenderer {
 		list.set('selectionMode', this._getSelectionMode(widget.get('selection')));
 		list.set('allowSelectAll', widget.get('allowSelectAll'));
 		list.set('allowTextSelection', widget.get('allowTextSelection'));
-
 
 		// TODO: widget selected property as ObservableArray?
 		list.on('dgrid-select,dgrid-deselect', util.debounce(() => {
