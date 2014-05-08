@@ -48,8 +48,8 @@ registerSuite({
 			mediator2 = util.createDestroyable();
 
 		// iterator._values = [];
-		iterator._widgetIndex = [ widget1, widget2 ];
-		iterator._mediatorIndex = [ mediator1, mediator2 ];
+		iterator._viewIndex = [ widget1, widget2 ];
+		iterator._viewModelIndex = [ mediator1, mediator2 ];
 
 		assert.doesNotThrow(function () {
 			iterator.destroy();
@@ -64,7 +64,7 @@ registerSuite({
 	'#_eachSetter': function () {
 		var widget0 = new Widget(),
 			widget1 = new Widget();
-		iterator._widgetIndex = <any> { '0': widget0, '1': widget1 };
+		iterator._viewIndex = <any> { '0': widget0, '1': widget1 };
 
 		var mediator0:any, mediator1:any;
 		aspect.before(widget0, 'set', function (key:string, value:any) {
@@ -75,10 +75,10 @@ registerSuite({
 		});
 
 		iterator.set('each', 'foo');
-		assert.strictEqual(mediator0, iterator._mediatorIndex['0'],
-			'widget0 mediator should have expected value');
-		assert.strictEqual(mediator1, iterator._mediatorIndex['1'],
-			'widget1 mediator should have expected value');
+		assert.strictEqual(mediator0, iterator._viewModelIndex['0'],
+			'widget0 view model should have expected value');
+		assert.strictEqual(mediator1, iterator._viewModelIndex['1'],
+			'widget1 view model should have expected value');
 	},
 
 	'scopedMediator (object source)': function () {
@@ -105,14 +105,14 @@ registerSuite({
 		source[index++] = 'item1';
 
 		// create models
-		iterator._widgetIndex = <any> {
+		iterator._viewIndex = <any> {
 			'0': new Widget(), '1': new Widget()
 		}
 		iterator.set('source', source);
 		iterator.set('model', model);
 		iterator.set('each', 'foo');
 
-		model = iterator._mediatorIndex['0'];
+		model = iterator._viewModelIndex['0'];
 
 		// get the iterator's "each" property -- should get the source value corresponding to the key for the model
 		// ('0')
@@ -137,14 +137,14 @@ registerSuite({
 			};
 
 		// create models
-		iterator._widgetIndex = <any> {
+		iterator._viewIndex = <any> {
 			'0': new Widget(), '1': new Widget()
 		}
 		iterator.set('source', source);
 		iterator.set('model', model);
 		iterator.set('each', 'foo');
 
-		var scopedMediator = iterator._mediatorIndex['0'];
+		var scopedMediator = iterator._viewModelIndex['0'];
 
 		// get the iterator's "each" property -- should get the source value corresponding to the key for the model
 		// ('0')
@@ -175,14 +175,14 @@ registerSuite({
 		assert.propertyVal(model, 'bar', 'frob', 'Original model should have new property');
 	},
 
-	'#_getMediatorByKey': function () {
+	'#_getViewModelByKey': function () {
 		var model:any = new Mediator();
-		iterator._mediatorIndex = <any> { '0': model }
-		assert.strictEqual(iterator._getMediatorByKey('0'), model, 'Should have gotten expected model for key 0');
+		iterator._viewModelIndex = <any> { '0': model }
+		assert.strictEqual(iterator._getViewModelByKey('0'), model, 'Should have gotten expected model for key 0');
 
 		iterator.set('model', model);
 
-		model = iterator._getMediatorByKey('1');
-		assert.propertyVal(iterator._mediatorIndex, '1', model, 'Should have gotten new model for key 1');
+		model = iterator._getViewModelByKey('1');
+		assert.propertyVal(iterator._viewModelIndex, '1', model, 'Should have gotten new model for key 1');
 	},
 });

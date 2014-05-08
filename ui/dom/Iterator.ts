@@ -30,14 +30,14 @@ class IteratorRenderer extends _ElementRenderer {
 		return !!(widget._impl && widget._impl['farOffRemoval']);
 	}
 
-	private _getWidgetByKey(widget:dom.IIterator, key:string):dom.IContentWidget {
-		var child = widget._widgetIndex[key];
+	private _getViewByKey(widget:dom.IIterator, key:string):dom.IContentWidget {
+		var child = widget._viewIndex[key];
 		if (child) {
 			return child;
 		}
-		var mediator = widget._getMediatorByKey(key);
-		child = widget._widgetIndex[key] = <dom.IContentWidget> new widget._ViewCtor();
-		child.set('model', mediator);
+		var viewModel = widget._getViewModelByKey(key);
+		child = widget._viewIndex[key] = <dom.IContentWidget> new widget._ViewCtor();
+		child.set('model', viewModel);
 		child.set('parent', widget);
 		return child;
 	}
@@ -128,8 +128,8 @@ class IteratorRenderer extends _ElementRenderer {
 			return;
 		}
 		// Clean up list and detach all widgets
-		array.forEach(util.getObjectKeys(widget._widgetIndex), (key:string) => {
-			var item = widget._widgetIndex[key];
+		array.forEach(util.getObjectKeys(widget._viewIndex), (key:string) => {
+			var item = widget._viewIndex[key];
 			item._renderer.detach(item);
 		});
 
@@ -144,17 +144,17 @@ class IteratorRenderer extends _ElementRenderer {
 		if (arraySource) {
 			var _insertRow:any = list.insertRow;
 			list.insertRow = (object:any, parent:any, beforeNode:Node, i:number, options?:any):HTMLElement => {
-				var child = this._getWidgetByKey(widget, '' + i);
+				var child = this._getViewByKey(widget, '' + i);
 				child._renderer.detach(child);
 				return _insertRow.call(list, child._outerFragment, parent, beforeNode, i, options);
 			};
 			list.renderRow = (element:any):HTMLElement => element;
 		}
 		else {
-			list.renderRow = (record:any):HTMLElement => {
+			list.renderRow = (record:any):HTMLElement => {\
 				var idProperty = widget.get('source').idProperty,
 					id = record.get ? record.get(idProperty) : record[idProperty];
-				return this._getWidgetByKey(widget, id)._outerFragment;
+				return this._getViewByKey(widget, id)._outerFragment;
 			};
 		}
 
@@ -203,13 +203,13 @@ class IteratorRenderer extends _ElementRenderer {
 			// If it's smaller, we need to detach any extra widgets
 			change = -change;
 			for (var i = 0; i < change; ++i) {
-				child = widget._widgetIndex[sourceLength + i];
+				child = widget._viewIndex[sourceLength + i];
 				child._renderer.detach(child);
 			}
 		}
 		// Notify all scoped models of their current values
 		for (var i = 0, len = sourceLength; i < len; ++i) {
-			widget._mediatorIndex[i]['_notify'](source[i], null, scopeField);
+			widget._viewModelIndex[i]['_notify'](source[i], null, scopeField);
 		}
 	}
 }
