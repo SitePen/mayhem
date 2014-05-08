@@ -199,7 +199,7 @@ registerSuite({
 				});
 			}
 		});
-		resolver.set('mediator', {});
+		resolver.set('model', {});
 		resolver.set('result', 'foo');
 		// check that the new mediator was notified when the result was set
 		assert.deepEqual(notification, [ 'foo', undefined, resolver.get('value') ]);
@@ -215,30 +215,30 @@ registerSuite({
 			}
 		});
 
-		resolver.set('mediator', {});
+		resolver.set('model', {});
 		assert.isDefined(mediator, 'New mediator should have been constructed');
 
 		var destroyed = false;
 		aspect.before(mediator, 'destroy', function () {
 			destroyed = true;
 		});
-		resolver.set('mediator', {});
+		resolver.set('model', {});
 		assert.isTrue(destroyed, 'Previous mediator should have been destroyed');
 	},
 
 	'scopedMediator': function () {
-		var mediator = new Observable({ 'foo': 'item foo', 'bar': 'item bar' });
+		var model = new Observable({ 'foo': 'item foo', 'bar': 'item bar' });
 		resolver.set('value', 'foo');
 		resolver.set('result', 'baz');
-		resolver.set('mediator', mediator);
+		resolver.set('model', model);
 		var scopedMediator = resolver.get('scopedMediator');
 
 		assert.strictEqual(scopedMediator.get('foo'), 'baz', 'Should have gotten resolver result');
-		assert.strictEqual(scopedMediator.get('bar'), 'item bar', 'Should have gotten mediator value');
+		assert.strictEqual(scopedMediator.get('bar'), 'item bar', 'Should have gotten model value');
 
 		scopedMediator.set('foo', 'new foo');
 		assert.strictEqual(resolver.get('result'), 'new foo', 'Should have seen new result in resolver');
 		scopedMediator.set('bar', 'new bar');
-		assert.strictEqual(mediator.get('bar'), 'new bar', 'Should have seen new mediator value');
+		assert.strictEqual(model.get('bar'), 'new bar', 'Should have seen new model value');
 	}
 });
