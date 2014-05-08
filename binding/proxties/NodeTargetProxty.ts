@@ -99,7 +99,7 @@ class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 			// Special syntax to reference an attribute explicitly
 			if (this._property.charAt(0) === '@') {
 				var name = this._property.substr(1);
-				if (value) {
+				if (value || typeof value === 'number') {
 					(<any> this._object).setAttribute(name, value === true ? '' : value);
 				}
 				else {
