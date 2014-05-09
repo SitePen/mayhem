@@ -189,6 +189,28 @@ registerSuite({
 		assert.strictEqual(model.get('any'), 'foo', 'null schema properties should be mutable as any value from an object');
 		assert.strictEqual(model.get('invalid'), undefined, 'non-existant schema properties should not be mutable from an object');
 		assert.strictEqual(model.get('accessor'), 'foo 1234');
+
+		model.set({
+			constructor: 1,
+			newValue: 2
+		});
+		
+		assert.notEqual(model.get('constuctor'), 1);
+		assert.equal(model.get('newValue'), 2);
+	},
+
+	'#getMetadata': function ():void {
+		var model = new PopulatedModel();
+		var meta:data.IProperty<any> = model.getMetadata('number');
+		assert.equal(meta.get('value'), 1234);
+	},
+
+	'#destroy': function ():void {
+		var model = new PopulatedModel();
+		model.destroy();
+		assert.throws(function ():void {
+			model.get('number');
+		}, 'object is not a function');
 	},
 
 	'#save async': function ():IPromise<void> {
