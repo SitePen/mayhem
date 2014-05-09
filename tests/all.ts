@@ -8,6 +8,7 @@ define([
 	'./binding',
 	'./data/Mediator',
 	'./data/Model',
+	'./data/Property',
 //	'./integration'
 //	'./routing',
 //	'./Model',
