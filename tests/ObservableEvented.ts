@@ -8,6 +8,7 @@ import ObservableEvented = require('../ObservableEvented');
 
 class TestEvent extends Event {
 	value:string;
+	sourceEvent:TestEvent;
 }
 
 registerSuite({
@@ -17,7 +18,7 @@ registerSuite({
 		var observableEvented = new ObservableEvented({
 				'ontest': 'newEvent'
 			}),
-			emittedEvent:any,
+			emittedEvent:TestEvent,
 			listenerCallCount = 0;
 		
 		observableEvented.on('newEvent', function (actualEvent:TestEvent) {
