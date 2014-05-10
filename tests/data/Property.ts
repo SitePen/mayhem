@@ -36,7 +36,7 @@ registerSuite({
 		var p2 = new Property<boolean>({
 			value: false
 		});
-		
+
 		assert.isTrue(p1.valueOf());
 		assert.isFalse(p2.valueOf());
 	},

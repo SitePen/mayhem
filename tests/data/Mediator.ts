@@ -41,7 +41,7 @@ Mediator.schema(():any => {
 			get():string {
 				var model = this.get('model'), first = model.get('firstName'), last = model.get('lastName');
 				if(first && last) {
-					return model.get('firstName') + ' ' + model.get('lastName');
+					return first + ' ' + last;
 				}
 			},
 			set(value:string):void {

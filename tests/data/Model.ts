@@ -190,13 +190,14 @@ registerSuite({
 		assert.strictEqual(model.get('invalid'), undefined, 'non-existant schema properties should not be mutable from an object');
 		assert.strictEqual(model.get('accessor'), 'foo 1234');
 
+		// constuctor should not be updated
 		model.set({
 			constructor: 1,
-			newValue: 2
+			nonExistingKey: 2
 		});
 		
 		assert.notEqual(model.get('constuctor'), 1);
-		assert.equal(model.get('newValue'), 2);
+		assert.equal(model.get('nonExistingKey'), 2);
 	},
 
 	'#getMetadata': function ():void {
@@ -208,6 +209,8 @@ registerSuite({
 	'#destroy': function ():void {
 		var model = new PopulatedModel();
 		model.destroy();
+		// Using the model after calling destroy is undefined behavior, 
+		// and is expected to throw
 		assert.throws(function ():void {
 			model.get('number');
 		}, 'object is not a function');
