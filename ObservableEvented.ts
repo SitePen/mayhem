@@ -41,13 +41,13 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 		// TODO: The default mechanism actually runs in reverse order (parent first,
 		// then child) which seems kind of backwards since bubbling happens the other
 		// way
-		method = this['_' + method];
+		method = this['default' + method.slice(2)];
 		if (!event.defaultPrevented && method) {
 			if (typeof method === 'function') {
 				var func:Function = <any>method;
 				func.call(this, event);
 			}
-			else if (typeof method === 'string') {
+			/*else if (typeof method === 'string') {
 				var newEvent = new Event({
 					bubbles: true,
 					cancelable: true,
@@ -56,7 +56,7 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 					sourceEvent: event
 				});
 				this.emit(newEvent);
-			}
+			}*/
 		}
 
 		event.currentTarget = null;

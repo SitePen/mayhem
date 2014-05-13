@@ -16,7 +16,9 @@ import util = require('../util');
 
 class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 	private _modelHandles:{ [key:string]:IHandle };
+	private _model:BaseModel;
 
+	call:data.IMediatorCall;
 	get:data.IMediatorGet;
 	set:data.IMediatorSet;
 
@@ -24,6 +26,12 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 		this._modelHandles = {};
 
 		super(kwArgs);
+	}
+
+	/* protected */ callModel(method:string, ...args:any[]):any {
+		if (this._model) {
+			return this._model.call.apply(this._model, arguments);
+		}
 	}
 
 	getMetadata(key:string):data.IProperty<any> {
@@ -76,6 +84,8 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 				var notifier = (newValue:any, oldValue:any):void => {
 						this._notify(newValue, oldValue, key);
 					},
+					model:data.IModel = this.get('model'),
+					modelPropertyHandle:IHandle = model && model.observe(key, notifier),
 					modelHandle:IHandle = this.observe('model', (newModel:data.IModel, oldModel:data.IModel):void => {
 						var oldValue:any = oldModel && oldModel.get(key),
 							newValue:any = newModel && newModel.get(key);
@@ -88,9 +98,7 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 						if (!util.isEqual(oldValue, newValue)) {
 							this._notify(newValue, oldValue, key);
 						}
-					}),
-					model:data.IModel = this.get('model'),
-					modelPropertyHandle:IHandle = model && model.observe(key, notifier);
+					});
 
 				var oldModelRemove = modelHandle.remove;
 				modelHandle.remove = function ():void {
@@ -110,6 +118,13 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 // set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
 // to allow accessor overrides)
 lang.mixin(Mediator.prototype, {
+	call: function (method:string, ...args:any[]):any {
+		if (this[method]) {
+			return BaseModel.prototype.call.apply(this, arguments);
+		}
+		return this.callModel.apply(this, arguments);
+	},
+
 	get: function (key:string):any {
 		var privateKey = '_' + key,
 			getter = privateKey + 'Getter',

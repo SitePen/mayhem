@@ -6,6 +6,8 @@ import ObservableArray = require('../ObservableArray');
 export interface IBaseModel extends core.IApplicationComponent {
 	addError(key:string, error:core.IValidationError):void;
 
+	call:IBaseModelCall;
+
 	/**
 	 * Retrieves the value of a property on the model.
 	 */
@@ -43,6 +45,10 @@ export interface IBaseModel extends core.IApplicationComponent {
 	validate(keys?:string[]):IPromise<boolean>;
 }
 
+export interface IBaseModelCall {
+	(method:string, ...args:any[]):any;
+}
+
 export interface IBaseModelGet extends core.IApplicationComponentGet {
 	(key:'isExtensible'):boolean;
 }
@@ -51,10 +57,14 @@ export interface IBaseModelSet extends core.IApplicationComponentSet {
 }
 
 export interface IMediator extends IBaseModel {
-	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
-
+	call:IMediatorCall;
 	get:IMediatorGet;
 	set:IMediatorSet;
+}
+
+export interface IMediatorCall extends IBaseModelCall {
+	(method:'save', skipValidation?:boolean):IPromise<void>;
+	(method:'remove'):IPromise<void>;
 }
 
 export interface IMediatorGet extends IBaseModelGet {
@@ -69,23 +79,11 @@ export interface IMediatorSet extends IBaseModelSet {
  * The IModel interface should be implemented by any object that is intended to be used as a data model within the
  * framework.
  */
-export interface IModel extends core.IApplicationComponent {
-	addError(key:string, error:core.IValidationError):void;
-
+export interface IModel extends IBaseModel {
 	/**
 	 * Retrieves the value of a property on the model.
 	 */
 	get:IModelGet;
-
-	/**
-	 * Retrieves the proxty for a property on the model.
-	 */
-	getMetadata(key:string):IProperty<any>;
-
-	/**
-	 * Returns whether or not the model currently contains any validation errors.
-	 */
-	isValid():boolean;
 
 	/**
 	 * Removes the model from its source store.
@@ -109,22 +107,6 @@ export interface IModel extends core.IApplicationComponent {
 	 * Sets the value of a property on the model.
 	 */
 	set:IModelSet;
-
-	/**
-	 * Validates the data model.
-	 *
-	 * @param keys
-	 * Passing a list of keys will cause only those keys to be validated. By default, all keys on the model are
-	 * validated.
-	 *
-	 * @returns
-	 * A promise that resolves when validation completes, or is rejected with error if there is an unhandled exception
-	 * during validation. The resolved value is `true` if the model validated successfully, or `false` if the model
-	 * experienced a validation failure. Once validated, errors can be retrieved by calling
-	 * `Model#getMetadata('errors')` (for all model errors) or `Model#property(key).getMetadata('errors')` for a
-	 * specific field.
-	 */
-	validate(keys?:string[]):IPromise<boolean>;
 }
 
 export interface IModelGet extends IBaseModelGet {

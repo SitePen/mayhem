@@ -26,6 +26,7 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 	_isExtensible:boolean;
 	_validatorInProgress:IPromise<void>;
 
+	call:data.IBaseModelCall;
 	get:data.IBaseModelGet;
 	set:data.IBaseModelSet;
 
@@ -138,7 +139,7 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 	observe(key:string, observer:core.IObserver<any>):IHandle {
 		var property = this._getProperty(key);
 		return property
-			? property.observe('value', (newValue, oldValue) => observer(newValue, oldValue, key))
+			? property.observe('value', (newValue:any, oldValue:any):void => observer(newValue, oldValue, key))
 			: super.observe(key, observer);
 	}
 
@@ -182,32 +183,38 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 	}
 }
 
-BaseModel.prototype.get = function(key:string):any {
-	var property:data.IProperty<any> = this._getProperties()[key];
-	return property ? property.get('value') : Observable.prototype.get.call(this, key);
-};
-
-BaseModel.prototype.set = function(key:any, value?:any):void {
-	if (util.isObject(key)) {
-		var kwArgs:{ [key:string]: any; } = key;
-		for (key in kwArgs) {
-			if (key === 'constructor') {
-				continue;
+lang.mixin(BaseModel.prototype, {
+	call(method:string, ...args:any[]):any {
+		if (this[method]) {
+			return this[method].apply(this, args);
+		}
+	},
+	get(key:string):any {
+		var property:data.IProperty<any> = this._getProperties()[key];
+		return property ? property.get('value') : Observable.prototype.get.call(this, key);
+	},
+	set(key:any, value?:any):void {
+		if (util.isObject(key)) {
+			var kwArgs:{ [key:string]: any; } = key;
+			for (key in kwArgs) {
+				if (key === 'constructor') {
+					continue;
+				}
+				this.set(key, kwArgs[key]);
 			}
-			this.set(key, kwArgs[key]);
+
+			return;
 		}
 
-		return;
+		var property:data.IProperty<any> = this._getProperty(key);
+		if (property) {
+			property.set('value', value);
+		}
+		else {
+			Observable.prototype.set.call(this, key, value);
+		}
 	}
-
-	var property:data.IProperty<any> = this._getProperty(key);
-	if (property) {
-		property.set('value', value);
-	}
-	else {
-		Observable.prototype.set.call(this, key, value);
-	}
-};
+});
 
 module BaseModel {
 	export interface IProperties {

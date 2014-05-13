@@ -4,6 +4,7 @@ import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
+import Event = require('../Event');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
@@ -143,6 +144,23 @@ class Widget extends ObservableEvented implements ui.IWidget {
 				util.spliceMatch(owned, handle);
 			}
 		}
+	}
+
+	emit(event:Event):boolean {
+		var methodName = this._getEventedMethodName(event.type),
+			handlerName:string = this.get(methodName);
+
+		event.currentTarget = this;
+
+		if (handlerName) {
+			var model = this.get('model');
+
+			if (model) {
+				model.call(handlerName, event);
+			}
+		}
+
+		return super.emit(event);
 	}
 
 	/* protected */ _hiddenChanged(value:boolean):void {
