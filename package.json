@@ -5,7 +5,7 @@
 	"description": "Mayhem. A framework for rich Internet applications.",
 	"dojoBuild": "package.js",
 	"scripts": {
-		"install": "bower install"
+		"install": "bower install && grunt build"
 	},
 	"devDependencies": {
 		"globule": "0.2.0",
