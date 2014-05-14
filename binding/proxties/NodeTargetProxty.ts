@@ -8,7 +8,7 @@ import util = require('../../util');
  */
 class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
 	static test(kwArgs:binding.IProxtyArguments):boolean {
-		return kwArgs.object instanceof Node;
+		return typeof Node !== 'undefined' && kwArgs.object instanceof Node;
 	}
 
 	/**

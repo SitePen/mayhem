@@ -52,6 +52,7 @@ class Application extends BaseController implements core.IApplication {
 						require.toAbsMid('./binding/proxties/NestedProxty'),
 						require.toAbsMid('./binding/proxties/ObservableProxty'),
 						require.toAbsMid('./binding/proxties/StatefulProxty'),
+                        // TODO FIXME NodeTargetProxty can break non-DOM environments
 						require.toAbsMid('./binding/proxties/NodeTargetProxty'),
 						// TODO: Es5Proxty is necessary to support bidi nested binding...what should we do?
 						// require.toAbsMid('./binding/proxties/Es5Proxty'),
