@@ -119,26 +119,26 @@ registerSuite({
 					}
 				}
 			}),
-			mediator = new Observable(),
+			model = new Observable(),
 			widget = factory.create();
-
+		
 		widget.set('app', app);
-		widget.set('mediator', mediator);
+		widget.set('model', model);
 
 		// check that bindings have actually been established
-		mediator.set('title', 'foo');
+		model.set('title', 'foo');
 		assert.property(target, 'nodeType', 'Target should be a node');
-		assert.strictEqual(targetValue, 'foo', 'Target value should get mediator value');
+		assert.strictEqual(targetValue, 'foo', 'Target value should get model value');
 
-		mediator.set('region', 'center');
+		model.set('region', 'center');
 		assert.strictEqual(target, widget, 'Target should be the widget');
 		assert.strictEqual(widget.get('region'), 'center', 'Target value should get widget property value');
 
-		mediator.set('first', 'Bob');
+		model.set('first', 'Bob');
 		assert.strictEqual(widget.get('name'), 'Bob ', 'Widget "name" property should have only first name');
-		mediator.set('last', 'Smith');
+		model.set('last', 'Smith');
 		assert.strictEqual(widget.get('name'), 'Bob Smith', 'Widget "name" property should have first and last name');
-		mediator.set('first', 'Sam');
+		model.set('first', 'Sam');
 		assert.strictEqual(widget.get('name'), 'Sam Smith', 'Widget "name" property should have new first name');
 	},
 

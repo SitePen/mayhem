@@ -39,8 +39,10 @@ Mediator.schema(():any => {
 		fullName: TestMediator.property<string>({
 			label: 'Full Name',
 			get():string {
-				var model = this.get('model');
-				return model.get('firstName') + ' ' + model.get('lastName');
+				var model = this.get('model'), first = model.get('firstName'), last = model.get('lastName');
+				if(first && last) {
+					return first + ' ' + last;
+				}
 			},
 			set(value:string):void {
 				var names:string[] = value.split(' ');
@@ -54,7 +56,8 @@ Mediator.schema(():any => {
 		fullyReversedName: TestMediator.property<string>({
 			label: 'Fully Reversed Name',
 			get():string {
-				return this.get('model').get('fullName').split('').reverse().join('');
+				var fullName = this.get('model').get('fullName');
+				return fullName && fullName.split('').reverse().join('');
 			},
 			set(value:string):void {
 				this.get('model').set('fullName', value.split('').reverse().join(''));
@@ -144,6 +147,8 @@ registerSuite({
 				mediator.set('isExtensible', true);
 				mediator.set('nonMediatorProperty', 'expected-value');
 				assert.strictEqual(mediator.get('nonMediatorProperty'), 'expected-value');
+				// TODO The mediator does not update the properties on the model. Discussion about 
+				// the mediator - model relationship is ongoing. This test is a known failure. 
 				assert.strictEqual(model.get('nonMediatorProperty'), 'expected-value');
 			}
 		},
@@ -250,6 +255,10 @@ registerSuite({
 				b = b.key;
 				return (a < b ? -1 : (a === b ? 0 : 1));
 			});
+			// TODO It is still not clear if the mediator should update properties on the model. 
+			// This test fails because of extra notifications from dependent properties publishing 
+			// update events. Once we decide how the mediator should manage the model, we can then 
+			// identify how dependency between properties should trigger change events. 
 			assert.deepEqual(notifications, [
 				{ key: 'firstName', newValue: 'Foo', oldValue: 'First' },
 				{ key: 'fullName', newValue: 'Foo Bar Baz', oldValue: 'First Last' },
