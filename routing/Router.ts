@@ -69,6 +69,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	_oldPath:string;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
+		this._routes = {};
 		this._activeRoutes = [];
 
 		super(kwArgs);
