@@ -566,14 +566,7 @@ AttributeValue
 	= AttributeReferenceValue
 	/ AttributeStringValue
 	/ JSONValue
-	/ BidirectionalBinding
 	/ Binding
-
-BidirectionalBinding
-	= '{' binding:Binding '}' {
-		binding.bidirectional = true;
-		return binding;
-	}
 
 AttributeReferenceValue
 	= '#' id:Identifier {

@@ -24,7 +24,6 @@ class WidgetFactory {
 		};
 	}
 
-	bidirectionalBindings:{ [key:string]: boolean; } = {};
 	bindingTemplates:{ [key:string]: any; } = {};
 	childFactories:WidgetFactory[] = [];
 	content:Node;
@@ -65,7 +64,6 @@ class WidgetFactory {
 		var kwArgs = this.tree.kwArgs,
 			propertyWidgetFactories = this.propertyWidgetFactories,
 			propertyBindings = this.propertyBindings,
-			bidirectionalBindings = this.bidirectionalBindings,
 			bindingTemplates = this.bindingTemplates,
 			widgetArgs = this.widgetArgs,
 			key:string,
@@ -89,8 +87,6 @@ class WidgetFactory {
 				// Bind paths that are plain strings are property bindings
 				if (typeof binding === 'string') {
 					propertyBindings[key] = binding;
-					// Track whether binding should be bidirectional
-					bidirectionalBindings[key] = value.bidirectional;
 				}
 				// Arrays are binding templates
 				else if (binding instanceof Array) {
@@ -213,13 +209,12 @@ class _WidgetBinder {
 		var widget = this.widget,
 			view = this.getView(),
 			propertyBindings = this.factory.propertyBindings,
-			bidirectionalBindings = this.factory.bidirectionalBindings;
 		for (var key in propertyBindings) {
 			view.bind({
 				sourceBinding: propertyBindings[key],
 				target: widget,
 				targetBinding: key,
-				twoWay: bidirectionalBindings[key]
+				twoWay: true // Always bind bidirectionally for widget properties
 			});
 		}
 	}
