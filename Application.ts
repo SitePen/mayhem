@@ -65,6 +65,18 @@ class Application extends BaseController implements core.IApplication {
 			}
 		});
 	}
+
+	_instantiateModule(key:string, Module:any, config:any):void {
+		if (key !== 'view') {
+			super._instantiateModule(key, Module, config);
+		}
+		else {
+			// Ensure the view will instantiate after the binder is ready
+			this.get('binder').startup().then(():void => {
+				super._instantiateModule(key, Module, config);
+			});
+		}
+	}
 }
 
 Application.defaults({

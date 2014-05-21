@@ -60,6 +60,8 @@ export interface IBinder {
 
 	getMetadata<T>(object:Object, binding:string, field:string):core.IProxty<T>;
 	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
+
+	startup():IPromise<any[]>;
 }
 
 /**
