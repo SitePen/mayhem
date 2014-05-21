@@ -123,7 +123,7 @@ class BaseController extends ObservableEvented implements core.IController {
 			});
 		}
 		else {
-			dfd.resolve(config);
+			dfd.resolve(config.constructor);
 		}
 
 		return dfd.promise;
