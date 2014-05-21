@@ -39,8 +39,6 @@ class Application extends BaseController implements core.IApplication {
 	 */
 	/* protected */ _getDefaultConfig():Object {
 		return util.deepCopy(super._getDefaultConfig(), {
-			controllerPath: 'app/controllers',
-
 			modules: {
 				binder: {
 					constructor: require.toAbsMid('./binding/ProxtyBinder'),
