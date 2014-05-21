@@ -403,7 +403,8 @@ class _WidgetBinder {
 			var parent:Node = node.parentNode;
 			if (descriptor.$attributes != null) {
 				var attributes = descriptor.$attributes;
-				this._attributeBindingNodes.push((<HTMLElement> node).nextElementSibling);
+				// TODO: nextElementSibling is defined on ElementTraversal, which conflicts with Node
+				this._attributeBindingNodes.push((<any> node).nextElementSibling);
 				this._attributeBindingPaths.push(attributes);
 				// Leave binding comment in place but clean up a bit
 				node.nodeValue = ' Mayhem HTML element bindings: ' + JSON.stringify(attributes) + ' ';

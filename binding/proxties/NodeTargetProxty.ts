@@ -74,14 +74,14 @@ class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 			return undefined;
 		}
 		if (this._property.charAt(0) === '@') {
-			var value = (<any> this._object).getAttribute(this._property.substr(1));
+			var value:any = (<any> this._object).getAttribute(this._property.substr(1));
 			if (value === '') {
-				return true;
+				value = <any> true;
 			}
 			if (value == null) {
-				return undefined;
+				value = undefined;
 			}
-			return value;
+			return <T> value;
 		}
 		return this._object[this._property];
 	}
@@ -95,19 +95,21 @@ class NodeTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 			return;
 		}
 
-		if (this._object) {
+		var node:any = this._object;
+		if (node) {
 			// Special syntax to reference an attribute explicitly
 			if (this._property.charAt(0) === '@') {
-				var name = this._property.substr(1);
+				var name = this._property.substr(1),
+					attrValue:any = (<any> value) === true ? '' : value;
 				if (value || typeof value === 'number') {
-					(<any> this._object).setAttribute(name, value === true ? '' : value);
+					node.setAttribute(name, attrValue);
 				}
 				else {
-					(<any> this._object).removeAttribute(name);
+					node.removeAttribute(name);
 				}
 			}
 			else {
-				this._object[this._property] = value;
+				node[this._property] = value;
 			}
 		}
 	}
