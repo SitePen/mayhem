@@ -160,7 +160,7 @@ class BaseController extends ObservableEvented implements core.IController {
 			whenAll(promises).then(():void => {
 				dfd.resolve(this);
 			});
-		}, lang.hitch(dfd, 'reject'));
+		}).otherwise(lang.hitch(dfd, 'reject'));
 
 		this.startup = ():IPromise<core.IController> => dfd.promise;
 
