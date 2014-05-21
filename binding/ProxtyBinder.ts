@@ -62,7 +62,7 @@ class ProxtyBinder implements binding.IProxtyBinder {
 				source = this.createProxty<SourceT, TargetT>(newSource, newSourceBinding, { scheduled: this._useScheduler });
 				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
-					target.bindTo(source);
+					target.bindTo(source, { setValue: false });
 				}
 			},
 			setTarget: (newTarget:Object, newTargetBinding:string = kwArgs.targetBinding):void => {
@@ -70,7 +70,7 @@ class ProxtyBinder implements binding.IProxtyBinder {
 				target = this.createProxty<TargetT, SourceT>(newTarget, newTargetBinding, { scheduled: this._useScheduler });
 				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
-					target.bindTo(source);
+					target.bindTo(source, { setValue: false });
 				}
 			},
 			setDirection: (newDirection:BindDirection):void => {
