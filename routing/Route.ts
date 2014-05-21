@@ -13,11 +13,17 @@ import ui = require('../ui/interfaces');
 import util = require('../util');
 import when = require('dojo/when');
 
+function resolve(value:string):string {
+	return value.replace(/(^|\/)([a-z])([^\/]*)$/, function ():string {
+		return arguments[1] + arguments[2].toUpperCase() + arguments[3];
+	});
+}
+
 /**
  * A Route is a BaseRoute that binds a Controller to a particular route.
  */
 class Route extends BaseRoute implements routing.IRoute {
-	private _subViewHandles:Array<{ remove:() => void}> = [];
+	private _subViewHandles:Array<{ remove:() => void}>;
 	private _controllerInstance:any /* core.IController */;
 
 	/**
@@ -30,14 +36,14 @@ class Route extends BaseRoute implements routing.IRoute {
 	 */
 	_parent:any /*routing.IRoute, core.IApplication*/;
 
-	/**
-	 * The name of a controller which, when transformed using the expression `router.controllerPath + '/' +
-	 * toUpperCamelCase(route.controller) + 'Controller'`, provides a module ID that points to a module whose value is a
-	 * `mayhem/Controller`. If the string starts with a `/`, it will be treated as an absolute module ID and not
-	 * transformed. If null, a generic Controller object will be used for this route instead.
-	 */
-	_controller:string;
-	_controllerFor:string;
+	_model:any;
+	_resolvedId:string;
+	_resolvedPath:string;
+	_template:string;
+	_view:any;
+	_viewInstance:any;
+	_viewModel:any;
+	_viewModelInstance:any;
 
 	/**
 	 * The ID of the placeholder in the parent route's view that this route's view should be injected into.
@@ -54,6 +60,80 @@ class Route extends BaseRoute implements routing.IRoute {
 	 */
 	_app:core.IApplication;
 
+	constructor(kwArgs:any = {}) {
+		var newKwArgs = {
+			id: kwArgs.id,
+			app: kwArgs.app,
+			router: kwArgs.router
+		};
+		lang.mixin(newKwArgs, kwArgs);
+
+		this._subViewHandles = [];
+		super(newKwArgs);
+	}
+
+	_idSetter(id:string):void {
+		this._id = id;
+		this._resolvedId = resolve(id);
+		this._resolvedPath = this._resolvedId.substring(0, this._resolvedId.lastIndexOf('/') + 1);
+	}
+
+	_modelGetter():string {
+		return this.get('modelPath').replace(/\/*$/, '/') + this._model;
+	}
+
+	_resolveModuleId(path:string, value:any):string {
+		if (!value && value != null) {
+			return;
+		}
+
+		path = path.replace(/\/*$/, '/');
+		if (!value) {
+			value = path + this._resolvedId;
+		}
+		else {
+			path = path + this._resolvedPath;
+			if (value.charAt(0) !== '.') {
+				if (value.indexOf('/') === -1) {
+					value = path + './' + value;
+				}
+			}
+			else {
+				value = path + value;
+			}
+		}
+
+		return require.toAbsMid(value);
+	}
+
+	_viewGetter():string {
+		var key:string,
+			value:string;
+		if (this._template || !this._view) {
+			key = 'template';
+			value = this._template;
+		}
+		else {
+			key = 'view';
+			value = this._view;
+		}
+		value = this._resolveModuleId(this.get(key + 'Path'), value);
+
+		if (key === 'template') {
+			value = this.get('templatePlugin') + '!' + value;
+
+			if (value.slice(-5) !== '.html') {
+				value += '.html';
+			}
+		}
+
+		return value;
+	}
+
+	_viewModelGetter():string {
+		return this._resolveModuleId(this.get('viewModelPath'), this._viewModel);
+	}
+
 	/**
 	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
 	 * Whenever a route is activated, state information from the route is provided to the controller by setting its
@@ -62,9 +142,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	enter(event:RouteEvent):void {
 		var id = this.get('id');
 
-		if (!this._controllerFor) {
-			this._subViewHandles.push(this.get('parent').place(this._controllerInstance, this.get('placeholder')));
-		}
+		this._subViewHandles.push(this.get('parent').place(this._viewInstance, this.get('placeholder')));
 
 		has('debug') && console.log('entering', id);
 
@@ -84,7 +162,7 @@ class Route extends BaseRoute implements routing.IRoute {
 		lang.mixin(kwArgs, this.parse(event.newPath));
 
 		has('debug') && console.log('new route state for', id, kwArgs);
-		this._controllerInstance.set('routeState', kwArgs);
+		this._viewModelInstance.set('routeState', kwArgs);
 	}
 
 	/**
@@ -98,17 +176,18 @@ class Route extends BaseRoute implements routing.IRoute {
 			handle.remove();
 		}
 
-		this._controllerInstance.set('routeState', null);
+		this._viewModelInstance.set('routeState', null);
 	}
 
 	/**
 	 * Destroy the controller associated with this route.
 	 */
 	destroy():void {
-		if (this._controllerInstance) {
-			when(this._controllerInstance).then((controller:any):void => {
-				controller.destroy();
-				this._controllerInstance = null;
+		if (this._viewInstance) {
+			when(this._viewInstance).then((view:any):void => {
+				view.destroy();
+				this._viewModel.destroy();
+				this._view = this._viewModel = null;
 			});
 		}
 	}
@@ -119,60 +198,54 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * @param view - The sub-view to place.
 	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
 	 */
-	place(controller:core.IController, placeholderId?:string):IHandle {
-		return this._controllerInstance.add(controller, placeholderId);
+	place(view:any, placeholderId?:string):IHandle {
+		return this._viewInstance.add(view, placeholderId);
 	}
 
 	startup():IPromise<Route> {
 		has('debug') && console.log('preparing', this.get('id'));
 
 		var dfd = new Deferred<Route>(),
-			controllerDfd = new Deferred<any>();
+			viewDfd = new Deferred<any>();
 
-		this._controllerInstance = controllerDfd.promise.then((controller:any):void => {
-			this._controllerInstance = controller;
+		this._viewInstance = viewDfd.promise.then((view:any):void => {
+			this._viewInstance = view;
 			dfd.resolve(this);
 		}).otherwise((error:any):void => {
 			dfd.reject(error);
 		});
 
-		if (this._controllerFor) {
-			this.get('router').get('routes')[this._controllerFor]._controllerInstance.then(controllerDfd.resolve, controllerDfd.reject);
-		}
-		else {
-			require([
-				this.get('controller')
-			], (Controller:any):void => {
-				try {
-					var controller = this._controllerInstance = new Controller({
-						id: this.get('id'),
-						app: this.get('app'),
-						modules: this.get('modules')
-					});
-					controller.startup().then(controllerDfd.resolve, controllerDfd.reject);
-				}
-				catch (e) {
-					controllerDfd.reject(e);
-				}
-			});
-		}
+		require([
+			this.get('view'),
+			this.get('viewModel'),
+			this.get('model')
+		], (View:any, ViewModel:any, Store:any):void => {
+			try {
+				var viewModel:any = this._viewModelInstance = new ViewModel({
+					app: this.get('app'),
+					store: Store
+				});
+				var view:any = new View({
+					app: this.get('app'),
+					model: viewModel
+				});
+				viewDfd.resolve(view);
+			}
+			catch (e) {
+				viewDfd.reject(e);
+			}
+		});
 
 		this.startup = ():IPromise<Route> => dfd.promise;
 
 		return dfd.promise;
 	}
-
-	/**
-	 * Instantiate the controller this route manages.
-	 * @protected
-	 */
-	_instantiateComponents(Controller:any):any {
-		return this._controllerInstance = new Controller({
-			app: this.get('app'),
-			parent: this.get('parent').get('controllerInstance')
-		});
-	}
 }
+
+util.applicationGetters(Route, [
+	'modelPath', 'storePath', 'templatePath',
+	'templatePlugin', 'viewPath', 'viewModelPath'
+]);
 
 // Default primitive property values
 Route.defaults({

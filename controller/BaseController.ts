@@ -11,7 +11,7 @@ import util = require('../util');
 import whenAll = require('dojo/promise/all');
 
 class BaseController extends ObservableEvented implements core.IController {
-	private _app:core.IApplication;
+	/* protected */ _app:core.IApplication;
 	private _model:data.IModel;
 	/* protected */ _routeState:any;
 	private _view:any;

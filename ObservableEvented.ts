@@ -2,11 +2,11 @@
 
 import aspect = require('dojo/aspect');
 import core = require('./interfaces');
-import lang = require('dojo/_base/lang');
+import Event = require('./Event');
 import Evented = require('dojo/Evented');
+import lang = require('dojo/_base/lang');
 import Observable = require('./Observable');
 import on = require('dojo/on');
-import Event = require('./Event');
 import util = require('./util');
 
 // TODO: Define an Event interface for Mayhem and use it as the type for events in this class
@@ -20,7 +20,7 @@ class ObservableEvented extends Observable implements core.IObservableEvented {
 		return 'on' + type;
 	}
 
-	emit(event:Event):boolean {
+	emit(event:core.IEvent):boolean {
 		var type = event.type,
 			oldCurrentTarget = event.currentTarget;
 

@@ -14,11 +14,17 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 		};
 	}
 
-	static schema(schemaCreator:(parentSchema?:BaseModel.ISchema) => BaseModel.ISchema):void {
-		var ctor:Function = this,
-			oldSchema:any = ctor.prototype._schema;
+	static schema(schema:BaseModel.ISchema):void;
+	static schema(schemaCreator:(parentSchema?:BaseModel.ISchema) => BaseModel.ISchema):void
+	static schema(schema:any):void {
+		var proto = this.prototype;
 
-		ctor.prototype._schema = schemaCreator(oldSchema);
+		if (typeof schema === 'function') {
+			proto._schema = schema(proto._schema);
+		}
+		else {
+			proto._schema = schema;
+		}
 	}
 
 	_schema:BaseModel.ISchema;
@@ -115,7 +121,7 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 		var properties:BaseModel.IProperties = this._getProperties(),
 			property:data.IProperty<any> = properties[key];
 
-		if (!property && this.get('isExtensible')) {
+		if (!property && !(('_' + key) in this) && this.get('isExtensible')) {
 			property = properties[key] = new Property<any>({
 				model: this,
 				key: key

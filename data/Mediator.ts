@@ -28,6 +28,38 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 		super(kwArgs);
 	}
 
+	_modelSetter(model:any /* BaseModel */):void {
+		if (model && typeof model.then === 'function') {
+			// If handed a promise, set 'model' to its value
+			model.then((model:any):void => this.set('model', model));
+			return;
+		}
+
+		this._model = model;
+	}
+
+	_routeStateSetter(routeState:any):void {
+		if (!routeState) {
+			this.set('model', null);
+			return;
+		}
+
+		var hasParameters = false,
+			modelName:string, idValue:any, match:any[];
+		for (var key in routeState) {
+			if ((match = key.match(/^(.*)Id$/))) {
+				modelName = match[1];
+				idValue = routeState[key];
+				break;
+			}
+			hasParameters = true;
+		}
+
+		if (hasParameters) {
+			this.set('model', this.get('store').get(idValue));
+		}
+	}
+
 	/* protected */ callModel(method:string, ...args:any[]):any {
 		if (this._model) {
 			return this._model.call.apply(this._model, arguments);
@@ -206,7 +238,8 @@ lang.mixin(Mediator.prototype, {
 
 Mediator.defaults({
 	app: null,
-	model: null
+	model: null,
+	store: null
 });
 
 export = Mediator;

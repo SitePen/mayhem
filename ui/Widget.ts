@@ -4,7 +4,6 @@ import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
-import Event = require('../Event');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
@@ -86,7 +85,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 			values.push(value);
 		};
 
-		var untilHandles:any[] = array.map(untilMethods, (method:string, i:number) => {
+		var untilHandles:IHandle[] = array.map(untilMethods, (method:string, i:number):IHandle => {
 			return aspect.after(this, method, ():void => {
 				untilHandles[i].remove();
 				if (!--outstandingMethods) {
@@ -146,7 +145,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
-	emit(event:Event):boolean {
+	emit(event:core.IEvent):boolean {
 		var methodName = this._getEventedMethodName(event.type),
 			handlerName:string = this.get(methodName);
 
@@ -272,7 +271,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return super._getEventedMethodName(type);
 	}
 
-	/* protected */ _styleSetter(value:string) {
+	/* protected */ _styleSetter(value:string):void {
 		// Adds any manually set styles to widget's Style
 		// TODO: should we blow away any previously set styles instead?
 		this.style.set(Style.parse(value));

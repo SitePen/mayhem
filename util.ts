@@ -219,3 +219,37 @@ export function deepMixin(target:any, source:any):any {
 	}
 	return target;
 }
+
+export function omitKeys(object:any, keys:string[]):any {
+	var keyHash:any = {},
+		result:any = {};
+
+	for (var i = 0; i < keys.length; i++) {
+		keyHash[keys[i]] = 1;
+	}
+
+	for (var key in object) {
+		if (keyHash.hasOwnProperty(key)) {
+			continue;
+		}
+		result[key] = object[key];
+	}
+
+	return result;
+}
+
+export function applicationGetters(Ctor:Function, keys:string[]):void {
+	array.forEach(keys, (key:string):void => {
+		Ctor.prototype['_' + key + 'Getter'] = function ():string {
+			var app:core.IApplication = this._app || this.get('app');
+
+			if (app === this) {
+				// Application and subclasses
+				return this['_' + key];
+			}
+			else {
+				return app.get(key);
+			}
+		};
+	});
+}

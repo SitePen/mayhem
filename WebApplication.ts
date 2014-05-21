@@ -11,15 +11,15 @@ class WebApplication extends Application {
 					constructor: require.toAbsMid('./routing/HashRouter')
 				},
 				view: {
-					constructor: './ApplicationView',
+					constructor: '!./Application.html',
 					model: this
 				}
 			}
 		});
 	}
 
-	place(controller:any, placeholder?:string):IHandle {
-		return this.get('view').add(controller.get('view'), placeholder);
+	place(view:any, placeholder?:string):IHandle {
+		return this.get('view').add(view, placeholder);
 	}
 
 	startup():IPromise<WebApplication> {
@@ -35,5 +35,9 @@ class WebApplication extends Application {
 		return promise;
 	}
 }
+
+WebApplication.defaults({
+	templatePlugin: require.toAbsMid('./templating/html')
+});
 
 export = WebApplication;

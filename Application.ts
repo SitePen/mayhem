@@ -28,10 +28,7 @@ class Application extends BaseController implements core.IApplication {
 
 	constructor(kwArgs:any = {}) {
 		super(kwArgs);
-	}
-
-	_appGetter():core.IApplication {
-		return this;
+		this._app = this;
 	}
 
 	/**
@@ -64,15 +61,18 @@ class Application extends BaseController implements core.IApplication {
 // 				},
 				scheduler: {
 					constructor: require.toAbsMid('./Scheduler')
-				},
-				stores: {
-					constructor: require.toAbsMid('./store/Manager'),
-					modelPath: 'app/models',
-					storePath: 'app/store'
 				}
 			}
 		});
 	}
 }
+
+Application.defaults({
+	modelPath: 'app/models',
+	templatePath: 'app/views',
+	templatePlugin: require.toAbsMid('./templating/html'),
+	viewPath: 'app/views',
+	viewModelPath: 'app/viewModels'
+});
 
 export = Application;

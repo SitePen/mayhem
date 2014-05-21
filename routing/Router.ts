@@ -7,16 +7,9 @@ import RouteEvent = require('./RouteEvent');
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import has = require('../has');
-import lang = require('dojo/_base/lang');
 import routing = require('./interfaces');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
-
-function resolve(value:string):string {
-	return value.replace(/(^|\/)([a-z])([^\/]*)$/, function ():string {
-		return arguments[1] + arguments[2].toUpperCase() + arguments[3];
-	});
-}
 
 /**
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
@@ -54,21 +47,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * The routes managed by this router. @protected
 	 */
 	_routes:{ [key:string]:Route };
-
-	/**
-	 * The default location for viewModels. @protected
-	 */
-	_viewModelPath:string;
-
-	/**
-	 * The default location for views. @protected
-	 */
-	_viewPath:string;
-
-	/**
-	 * The default location for templates. @protected
-	 */
-	_templatePath:string;
 
 	/**
 	 * The default route when the application is loaded without an existing route. @protected
@@ -216,6 +194,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 
 		var kwArgs:any,
+			defaultRoute:string,
 			route:Route;
 
 		for (var routeId in routeMap) {
@@ -242,11 +221,18 @@ class Router extends ObservableEvented implements routing.IRouter {
 				// the default path; the remainder is picked up when the parent relationship is established
 				kwArgs.path == null && (kwArgs.path = routeId.replace(/^.*\//, ''));
 
-				this._fixUpRouteArguments(kwArgs);
 				route = new Route(kwArgs);
 			}
 
+			if (route.get('default')) {
+				defaultRoute = routeId;
+			}
+
 			routes[routeId] = route;
+		}
+
+		if (defaultRoute) {
+			this.set('defaultRoute', defaultRoute);
 		}
 
 		// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
@@ -273,43 +259,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 				parent: parentRoute,
 				path: parentRoute.get('path') + '/' + route.get('path')
 			});
-		}
-	}
-
-	/**
-	 * Transforms route view/template/viewModel arguments to complete module IDs. Directly modifies the passed object.
-	 */
-	_fixUpRouteArguments(kwArgs:{ id: string; [key:string]: any }):void {
-		/**
-		 * Converts a shorthand reference to a valid constructor-style module ID. e.g. `foo -> Foo`, `foo/bar ->
-		 * foo/Bar`
-		 */
-
-		var routeId = kwArgs.id,
-			resolvedRouteId = resolve(routeId);
-
-		for (var key in { controller: 1, controllerFor: 1 }) {
-			var value = kwArgs[key],
-				tmp:any;
-
-			if (key === 'controller') {
-				if (value) {
-					if (value.charAt(0) === '.') {
-						// values starting with a period are treated as relative to their parent
-						// route or `controllerPath`
-						kwArgs[key] = require.toAbsMid(this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId.replace(/\/[^\/]*?$/, '/') + value);
-					}
-				}
-				else if (value === null) {
-					kwArgs[key] = require.toAbsMid('../controller/Controller');
-				}
-				else {
-					kwArgs[key] = this.get(key + 'Path').replace(/\/*$/, '/') + resolvedRouteId;
-				}
-			}
-			else if (key === 'controllerFor') {
-				// TODO: anything?
-			}
 		}
 	}
 
@@ -417,9 +366,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 }
 
 Router.defaults({
-	viewModelPath: 'app/viewModels',
-	viewPath: 'app/views',
-	templatePath: '../template!app/views',
 	defaultRoute: 'index',
 	notFoundRoute: 'error'
 });

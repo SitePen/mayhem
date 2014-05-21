@@ -208,7 +208,8 @@ class _WidgetBinder {
 	private _bindProperties():void {
 		var widget = this.widget,
 			view = this.getView(),
-			propertyBindings = this.factory.propertyBindings,
+			propertyBindings = this.factory.propertyBindings;
+
 		for (var key in propertyBindings) {
 			view.bind({
 				sourceBinding: propertyBindings[key],

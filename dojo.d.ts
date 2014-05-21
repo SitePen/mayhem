@@ -1,3 +1,17 @@
+declare var define:{
+	(dependencies:string[], callback?:Function):void;
+};
+
+declare var require:{
+	(config:Object, dependencies:string[], callback?:Function):void;
+	(dependencies:string[], callback?:Function):void;
+	<T>(moduleId:string):T;
+	undef(moduleId:string):void;
+	config(config:Object):void;
+	toUrl(moduleId:string):string;
+	toAbsMid(moduleId:string):string;
+};
+
 // TODO: Not part of dojo, convenience type since the indexer was removed from Object
 interface Object {
 	[key:string]: any;
@@ -59,20 +73,6 @@ interface IStore<T> {
 	put(object:T, options?:Object):any; // string | number
 }
 
-declare var define:{
-	(dependencies:string[], callback?:Function):void;
-};
-
-declare var require:{
-	(config:Object, dependencies:string[], callback?:Function):void;
-	(dependencies:string[], callback?:Function):void;
-	<T>(moduleId:string):T;
-	undef(moduleId:string):void;
-	config(config:Object):void;
-	toUrl(moduleId:string):string;
-	toAbsMid(moduleId:string):string;
-};
-
 declare module 'dojo/_base/array' {
 	var array:{
 		every<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
@@ -80,7 +80,7 @@ declare module 'dojo/_base/array' {
 		forEach<T>(array:T[], callback:(value:T, index:number, array:T[]) => void, thisArg?:any): void;
 		indexOf<T>(array:T[], value:T, fromIndex?:number, findLast?:boolean):number;
 		lastIndexOf<T>(array:T[], value:T, fromIndex?:number):number;
-		map<T>(array:T[], callback:(value:T, index:number, array:T[]) => T, thisArg?:any):T[];
+		map<T, U>(array:T[], callback:(value:T, index:number, array:T[]) => U, thisArg?:any):U[];
 		some<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
 	};
 	export = array;
