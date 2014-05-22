@@ -113,24 +113,10 @@ class WidgetFactory {
 			// Find html element heads with at lesat one attribute binding and fix them up
 			value = value.replace(/<[^>]+⟨⟨ \d+ ⟩⟩[^>]*>/g, (match:string):string => {
 				var attributes:any = {},
-					// Replace all Loop over all attributes with any value at all
-					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*('[^']+'|"[^"]+"|[^'"\s]+)/g, (match:string, name:string, value:string):string => {
-						// Strip off enclosing quotes, if any
-						if ((value.indexOf("'") === 0 || value.indexOf('"') === 0)) {
-							value = value.substr(1, value.length - 2);
-						}
-						// Find all bindings in this attribute (split on any binding markers)
-						var parts:string[] = value.split(/⟨⟨ (\d+) ⟩⟩/g);
-						if (parts.length === 1) {
-							// No bindings so return untouched
-							return match;
-						}
+					// Replace all Loop over all binding attributes
+					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*⟨⟨ (\d+) ⟩⟩/g, (match:string, name:string, part:string):string => {
+						attributes[name] = content[Number(part)].$bind;
 
-						// Make a binding template out of the value array
-						attributes[name] = array.filter(array.map(parts, (part:string, i:number):any => {
-							// Even elements are strings, odd elements are indexes of bindings
-							return i % 2 === 0 ? part : content[Number(part)];
-						}), (value:any):any => value);
 						// Wipe out attributes with bindings in our html
 						return '';
 				});
@@ -237,11 +223,12 @@ class _WidgetBinder {
 		for (var i = 0, len = this._attributeBindingNodes.length; i < len; i++) {
 			element = this._attributeBindingNodes[i];
 			config = this._attributeBindingPaths[i];
-			if (!element || !config) continue;
+			if (!element || !config) {
+				continue;
+			}
 			for (var attributeName in config) {
 				this._attributeBindingHandles.push(view.bind({
-					// TODO: support binding templates (right now we can only do direct bindings)
-					sourceBinding: config[attributeName][0].$bind,
+					sourceBinding: config[attributeName],
 					target: element,
 					targetBinding: '@' + attributeName
 				}));
