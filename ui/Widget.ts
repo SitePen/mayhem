@@ -29,24 +29,24 @@ if (has('debug')) {
 class Widget extends ObservableEvented implements ui.IWidget {
 
 	/**
-	 * Get a reference to a widget by id.
+	 * Looks up a widget instance by id.
 	 * @static
 	 * @param {string} id - The widget id
-	 * @return {Widget | undefined} - Widget instance or undefined
+	 * @return {Widget} - Widget instance
 	 */
 	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
 
 	/**
-	 * A CSS class name for the wiget.
+	 * A class name for the widget.
 	 * @public
 	 * @type {string}
 	 */
 	className:string;
 
 	/**
-	 * Maintains a list of css class names.
+	 * Maintains a list of class names.
 	 * @public
 	 * @type {style/ClassList}
 	 */
@@ -70,10 +70,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	 * @public
 	 */
 	set:ui.IWidgetSet;
-
-
-	/** @protected TODO remove? set in #_classSetter but it is never used */
-	_class:any;
 
 	/**
 	 * The unique widget id.
@@ -144,7 +140,6 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	 * @protected
 	 */
 	_classSetter(value:any):void {
-		this._class = value;
 
 		var classes:any = [];
 		this.className && classes.push(this.className);
@@ -408,7 +403,8 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	}
 
 	/**
-	 * Update the widget's ARIA role.
+	 * Update the role associated with widget instance. The widget's role is used
+	 * to configure its default behaviors and action triggers.
 	 * @protected
 	 */
 	_roleChanged(value:string):void {
