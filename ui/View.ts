@@ -12,21 +12,73 @@ import ui = require('./interfaces');
 import util = require('../util');
 import Widget = require('./Widget');
 
+/**
+ * A view manages the bindings between source and target objects.
+ *
+ * @extends Widget
+ * @implements IView
+ *
+ */
 class View extends Widget implements ui.IView {
+
+	/**
+	 * Public interface for getting properties of the view
+	 * @public
+	 */
+	get:ui.IViewGet;
+
+	/**
+	 * Public interface for setting properties of the view
+	 * @public
+	 */
+	set:ui.IViewSet;
+
+	/**
+	 * List of binding handlers.
+	 * @private
+	 */
 	private _bindings:binding.IBindingHandle[];
+
+	/**
+	 * Event handle for the parent application.
+	 * @private
+	 */
 	private _parentAppHandle:IHandle;
+
+	/**
+	 * Event handle for the parent model.
+	 * @private
+	 */
 	private _parentModelHandle:IHandle;
+
+	/**
+	 * Mediator / Model for the view.
+	 * @protected
+	 */
 	_model:data.IMediator;
 
+
+	/**
+	* Creates a view instance.
+	* @constructor
+	* @param {object} kwArgs - keyword arguments
+	*/
 	constructor(kwArgs?:any) {
 		this._bindings = [];
 		super(kwArgs);
 	}
 
-	get:ui.IViewGet;
-	set:ui.IViewSet;
-
-	/* protected */ _bind(kwArgs:ui.IBindArguments):binding.IBindingHandle {
+	/**
+	 * Bind the View or target to the model.
+	 *
+	 * @protected
+	 * @param kwArgs {IBindArguments}
+	 * @param kwArgs.sourceBinding {string} - the binding string for the property being bound on the source object
+	 * @param kwArgs.target {object} - the target object ot bind to
+	 * @param kwArgs.targetBinding {string} - the binding string for the property being bound on the target object
+	 * @param kwArgs.twoWay {boolean} - the direction in which the properties are bound
+	 */
+	_bind(kwArgs:ui.IBindArguments):binding.IBindingHandle {
 		return this.get('app').get('binder').bind({
 			source: this.get('model'),
 			sourceBinding: kwArgs.sourceBinding,
@@ -36,6 +88,16 @@ class View extends Widget implements ui.IView {
 		});
 	}
 
+	/**
+	 * Binds the view or target to the model. Defers binding until the app and model are ready.
+	 *
+	 * @public
+	 * @param kwArgs {IBindArguments}
+	 * @param kwArgs.sourceBinding {string} - the binding string for the property being bound on the source object
+	 * @param kwArgs.target {object} - the target object ot bind to
+	 * @param kwArgs.targetBinding {string} - the binding string for the property being bound on the target object
+	 * @param kwArgs.twoWay {boolean} - the direction in which the properties are bound
+	 */
 	bind(kwArgs:ui.IBindArguments):IHandle {
 		kwArgs = lang.mixin(<any>{}, kwArgs);
 		var deferBind = (propertyName:string):IHandle => {
@@ -94,10 +156,18 @@ class View extends Widget implements ui.IView {
 		};
 	}
 
+	/**
+	 * Clear the view from the app UI.
+	 * @public
+	 */
 	clear():void {
 		this._renderer.clear(this);
 	}
 
+	/**
+	 * Remove bindings and destroy view.
+	 * @public
+	 */
 	destroy():void {
 		var binding:binding.IBindingHandle;
 		for (var i = 0; (binding = this._bindings[i]); ++i) {
@@ -108,6 +178,10 @@ class View extends Widget implements ui.IView {
 		super.destroy();
 	}
 
+	/**
+	 * Returns the view's or the parent's model.
+	 * @private
+	 */
 	private _modelGetter():data.IMediator {
 		if (this._model) {
 			return this._model;
