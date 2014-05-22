@@ -64,7 +64,6 @@ class WidgetFactory {
 		var kwArgs = this.tree.kwArgs,
 			propertyWidgetFactories = this.propertyWidgetFactories,
 			propertyBindings = this.propertyBindings,
-			bindingTemplates = this.bindingTemplates,
 			widgetArgs = this.widgetArgs,
 			key:string,
 			value:any,
@@ -83,20 +82,7 @@ class WidgetFactory {
 				widgetArgs[key] = WidgetFactory.getConstructor(value.$ctor);
 			}
 			else if (value && value.$bind) {
-				binding = value.$bind;
-				// Bind paths that are plain strings are property bindings
-				if (typeof binding === 'string') {
-					propertyBindings[key] = binding;
-				}
-				// Arrays are binding templates
-				else if (binding instanceof Array) {
-					bindingTemplates[key] = binding;
-				}
-				else {
-					if (has('debug')) {
-						throw new Error('No handler for this kind of binding: ' + binding);
-					}
-				}
+				propertyBindings[key] = value.$bind;
 			}
 			else {
 				widgetArgs[key] = value;
@@ -170,10 +156,8 @@ class _WidgetBinder {
 	private _childOptions:any;
 	factory:WidgetFactory;
 	private _modelHandle:IHandle;
-	private _observerHandles:IHandle[];
 	originView:ui.IView;
 	propertyWidgetBinders:{ [key:string]:_WidgetBinder } = {};
-	private _templateObservable:Observable;
 	private _textBindingHandles:IHandle[];
 	private _textBindingNodes:Node[] = [];
 	private _textBindingPaths:string[] = [];
@@ -200,7 +184,6 @@ class _WidgetBinder {
 
 	attachBindings():void {
 		this._bindProperties();
-		this._bindPropertyTemplates();
 		this._bindTextNodes();
 		this._bindAttributeNodes();
 	}
@@ -216,65 +199,6 @@ class _WidgetBinder {
 				target: widget,
 				targetBinding: key,
 				twoWay: true // Always bind bidirectionally for widget properties
-			});
-		}
-	}
-
-	private _bindPropertyTemplates():void {
-		var widget = this.widget,
-			view = this.getView(),
-			bindingTemplates = this.factory.bindingTemplates,
-			template:any,
-			sourceMap:{ [key:string]: any[]; } = {},
-			keys:string[];
-
-		// Build a map of all source bindings back to all binding templates which contain them
-		keys = array.map(util.getObjectKeys(bindingTemplates), (key:string):string => {
-			template = bindingTemplates[key];
-			for (var i = 0, len = template.length; i < len; ++i) {
-				var source:string = template[i].$bind;
-				if (source) {
-					// TODO: set should contain debounced evaluator functions instead
-					var templateSet:any[] = sourceMap[source] || (sourceMap[source] = [])
-					templateSet.indexOf(template) === -1 && templateSet.push(template);
-				}
-			}
-			return key;
-		});
-
-		// Bail if no keys in binding templates map
-		if (!keys.length) {
-			return;
-		}
-
-		// Create an observable as a binding target and set up observers to signal template reprocessing
-		var observerTarget = this._templateObservable = new Observable();
-		util.remove.apply(null, this._observerHandles || []);
-		this._observerHandles = [];
-		array.forEach(util.getObjectKeys(sourceMap), (property:string) => {
-			var templates:any[] = sourceMap[property];
-			this._observerHandles.push(observerTarget.observe(property, () => {
-				var model:data.IMediator = view.get('model');
-				for (var i = 0, len = templates.length; i < len; ++i) {
-					widget.set(getProperty(templates[i]), this._evaluateBindingTemplate(model, templates[i]));	
-				}
-			}));
-		});
-
-		var getProperty = (template:any):string => {
-			for (var key in bindingTemplates) {
-				if (template === bindingTemplates[key]) {
-					return key;
-				}
-			}
-		}
-
-		// Bind each source binding property with our observable as the target
-		for (var property in sourceMap) {
-			view.bind({
-				sourceBinding: property,
-				target: observerTarget,
-				targetBinding: property
 			});
 		}
 	}
@@ -323,18 +247,11 @@ class _WidgetBinder {
 				}));
 			}
 		}
-		// TODO: destroy these bindings when widget body gets wiped out
+		// TODO: sniff for widget body reset and destroy these bindings
 	}
 
 	destroy():void {
-		this._observerHandles = util.remove.apply(null, this._observerHandles || []) && null;
-		// TODO: moar
-	}
-
-	private _evaluateBindingTemplate(model:data.IMediator, template:any[]):string {
-		return array.map(template, (item:any):any => {
-			return item.$bind ? model.get(item.$bind) : item;
-		}).join('');
+		// TODO
 	}
 
 	getView():ui.IView {
