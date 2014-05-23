@@ -12,6 +12,8 @@ import ui = require('./interfaces');
 import util = require('../util');
 import when = require('dojo/when');
 
+/** @module ui */
+
 var registry:{ [id:string]:ui.IWidget } = {},
 	uid = 0;
 
@@ -19,26 +21,92 @@ if (has('debug')) {
 	(<any> window).__widgets = registry;
 }
 
+/**
+ * The Widget is the basic unit of the Mayhem user interface.
+ * @class ui/Widget
+ * @extends  ObservableEvented
+ * @implements ui/IWidget
+ * @property {string} className - A class name for the widget.
+ * @property {ui/style/ClassList} classList - Maintains a list of class names.
+ * @property {ui/style/Style} style - Maintains widget style values.
+ * @property {ui/IWidgetGet} get - getters for accessing protected widget properties.
+ * @property {ui/IWidgetSet} set - setters for accessing protected widget properties.
+ * @property {string} _id - protected unique widget id.
+ * @property {number} _index - protected the index of the widget within its siblings.
+ * @property {ui/IWidget} _next - protected the next sibling widget.
+ * @property {ui/IContainer} _parent - protected the parent widget or container.
+ * @property {ui/IWidget} _previous - protected the previous sibling widget.
+ * @property {ui/IRenderer} _renderer - protected the widget renderer.
+ *
+ */
 class Widget extends ObservableEvented implements ui.IWidget {
+
+	/**
+	 * Looks up a widget instance by id.
+	 * @name ui/Widget.byId
+	 * @function
+	 * @param {string} id - The widget id
+	 * @return {ui/Widget} - Widget instance
+	 */
 	static byId(id:string):ui.IWidget {
 		return registry[id];
 	}
 
-	/* protected */ _class:any;
-	classList:ClassList;
 	className:string;
-	/* protected */ _id:string;
-	/* protected */ _index:number;
-	/* protected */ _next:ui.IWidget;
-	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
-	/* protected */ _parent:ui.IContainer;
-	/* protected */ _previous:ui.IWidget;
-	/* protected */ _renderer:ui.IRenderer;
+	classList:ClassList;
 	style:Style;
-
 	get:ui.IWidgetGet;
 	set:ui.IWidgetSet;
 
+	/**
+	 * The unique widget id.
+	 * @protected
+	 */
+	_id:string;
+
+
+	/**
+	 * The index of the widget within its siblings.
+	 * @protected
+	 */
+	_index:number;
+
+	/**
+	 * The next sibling widget.
+	 * @protected
+	 */
+	_next:ui.IWidget;
+
+	/**
+	 * The parent container or widget.
+	 * @protected
+	 */
+	_parent:ui.IContainer;
+
+	/**
+	 * The previous sibling widget.
+	 * @protected
+	 */
+	_previous:ui.IWidget;
+
+	/**
+	 * The widget renderer.
+	 * @protected
+	 */
+	_renderer:ui.IRenderer;
+
+	/**
+	 * A list of event handle objects.
+	 * @private
+	 */
+	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
+
+	/**
+	* Creates a widget instance.
+	* @constructor
+	* @class ui/Widget
+	* @param {Object} kwArgs - keyword arguments
+	*/
 	constructor(kwArgs:any = {}) {
 		this._deferProperty('hidden', '_render');
 		this._deferProperty('role', '_render');
@@ -54,9 +122,15 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this._render();
 	}
 
-	/* protected */ _classSetter(value:any):void {
-		// Reset a widget's classList, incorporating in existing widget and renderer classNames
-		this._class = value;
+	/**
+	 * Reset a widget's classList, incorporating in existing widget and renderer
+	 * classNames.
+	 * @name ui/Widget#_classSetter
+	 * @function
+	 * @protected
+	 * @param {object} - class list object
+	 */
+	_classSetter(value:any):void {
 
 		var classes:any = [];
 		this.className && classes.push(this.className);
@@ -65,17 +139,36 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this.classList.add(classes.concat(ClassList.parse(value)).join(' '));
 	}
 
-	// Returns the whole class list, not just the bits explicitly set on class
+	/**
+	 * Returns the whole class list, not just the bits explicitly set on class.
+	 * @name ui/Widget#_classGetter
+	 * @function
+	 * @private
+	 */
 	private _classNameGetter():string {
 		return this.classList.get();
 	}
 
-	// Sets the class list completely, overriding className defined by widget or renderer
+	/**
+	 * Sets the class list completely, overriding className defined by widget or renderer.
+	 * @name ui/Widget#_classNameSetter
+	 * @function
+	 * @private
+	 * @param {string} value - widget class name
+	 */
 	private _classNameSetter(value:string):void {
 		this.classList.set(value);
 	}
 
-	/* protected */ _deferProperty(name:string, ...untilMethods:string[]):void {
+	/**
+	 * Defers the setting of a given property until the specified method is called.
+	 * @name ui/Widget#_deferProperty
+	 * @function
+	 * @protected
+	 * @param {string} name - property name.
+	 * @param {{Array.<string>}} utilMethods - method names.
+	 */
+	_deferProperty(name:string, ...untilMethods:string[]):void {
 		var setterName = '_' + name + 'Setter',
 			originalSetter:any = this[setterName],
 			outstandingMethods = untilMethods.length,
@@ -96,7 +189,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 					}
 					else {
 						delete this[setterName];
-						
+
 					}
 
 					// Only use last value (for now)
@@ -107,6 +200,12 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		});
 	}
 
+	/**
+	 * Clean up references and destroy widget.
+	 * @public
+	 * @name ui/Widget#destroy
+	 * @function
+	 */
 	destroy():void {
 		this.detach();
 		this._renderer.destroy(this);
@@ -128,11 +227,24 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		super.destroy();
 	}
 
+	/**
+	 * Remove widget from the parent.
+	 * @public
+	 * @name ui/Widget#detach
+	 * @function
+	 */
 	detach():void {
 		var parent = this.get('parent');
 		parent && parent.remove(this);
 	}
 
+	/**
+	 * Remove given handles from list of widget handles.
+	 * @public
+	 * @name ui/Widget#disown
+	 * @function
+	 * @param {array} handles - list of handles to remove
+	 */
 	disown(...handles:any[]):void {
 		var owned = this._ownHandles,
 			handle:any;
@@ -145,6 +257,14 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
+	/**
+	 * Invoke the event handler on the model and emit the event.
+	 * @public
+	 * @name ui/Widget#emit
+	 * @function
+	 * @param {IEvent} event
+	 * @returns {boolean}
+	 */
 	emit(event:core.IEvent):boolean {
 		var methodName = this._getEventedMethodName(event.type),
 			handlerName:string = this.get(methodName);
@@ -162,16 +282,36 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return super.emit(event);
 	}
 
-	/* protected */ _hiddenChanged(value:boolean):void {
+	/**
+	 * Update the visibility of the widget.
+	 * @protected
+	 * @name ui/Widget#_hiddenChanged
+	 * @function
+	 * @param {boolean} value
+	 */
+	_hiddenChanged(value:boolean):void {
 		this._renderer.updateVisibility(this, !value);
 	}
 
+	/**
+	 * Gets the index of the widget from the parent's child widgets.
+	 * @private
+	 * @name ui/Widget#_indexSetter
+	 * @function
+	 * @returns {number} - index of the widget or -1 if not attached.
+	 */
 	private _indexGetter():number {
 		var parent = this.get('parent');
 		return parent ? parent.getChildIndex(this) : -1;
 	}
 
-	/* protected */ _initialize():void {
+	/**
+	 * Initialize the widget, setting the initial style and classList properties.
+	 * @protected
+	 * @name ui/Widget#_initialize
+	 * @function
+	 */
+	_initialize():void {
 		super._initialize();
 
 		// Create Style and ClassList properties
@@ -181,6 +321,13 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		this._renderer.initialize(this);
 	}
 
+	/**
+	 * Get the next sibling widget.
+	 * @private
+	 * @name ui/Widget#_nextGetter
+	 * @function
+	 * @returns {IWidget | null}
+	 */
 	private _nextGetter():ui.IWidget {
 		var parent = this.get('parent');
 		return parent ? parent.nextChild(this) : null;
@@ -188,6 +335,15 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 	on(type:IExtensionEvent, listener:(event:core.IEvent) => void):IHandle;
 	on(type:string, listener:(event:core.IEvent) => void):IHandle;
+	/**
+	 * Register a listener for a widget event.
+	 * @public
+	 * @name ui/Widget#on
+	 * @function
+	 * @param {IExtensionEvent | string | ?} type
+	 * @param {function} listener
+	 * @returns {IHandle}
+	 */
 	on(type:any, listener:(event:core.IEvent) => void):IHandle {
 		var handle = super.on.apply(this, arguments);
 		this._ownHandles.push(handle);
@@ -197,6 +353,15 @@ class Widget extends ObservableEvented implements ui.IWidget {
 	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
 	placeAt(destination:ui.IContainer, position:number):IHandle;
 	placeAt(destination:ui.IContainer, placeholder:string):IHandle;
+	/**
+	 * Place the widget relative to the given destination.
+	 * @public
+	 * @name ui/Widget#placeAt
+	 * @function
+	 * @param {IWidget | IContainer} destination
+	 * @param {PlacePostion | number | string} position | placeholder
+	 * @returns {IHandle}
+	 */
 	placeAt(destination:any, position:any = PlacePosition.LAST):IHandle {
 		var handle:IHandle;
 
@@ -236,22 +401,49 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return handle;
 	}
 
+	/**
+	 * Get the previous sibling widget.
+	 * @name ui/Widget#_previousGetter
+	 * @function
+	 * @private
+	 * @returns {IWidget | null}
+	 */
 	private _previousGetter():ui.IWidget {
 		var parent = this.get('parent');
 		return parent ? parent.previousChild(this) : null;
 	}
 
-	/* protected */ _render():void {
+	/**
+	 * Renders the widget.
+	 * @name ui/Widget#_render
+	 * @function
+	 * @protected
+	 */
+	_render():void {
 		this._renderer.render(this);
 		this.set('rendered', true);
 	}
 
-	/* protected */ _roleChanged(value:string):void {
+	/**
+	 * Update the role associated with widget instance. The widget's role is used
+	 * to configure its default behaviors and action triggers.
+	 * @name ui/Widget#_roleChanged
+	 * @function
+	 * @protected
+	 */
+	_roleChanged(value:string):void {
 		this._renderer.attachRole(this);
 
 		// TODO: set focusable based on role?
 	}
 
+	/**
+	 * Add handles to the widget's list of event handles.
+	 * @public
+	 * @name ui/Widget#own
+	 * @function
+	 * @param {array} handles
+	 */
 	own(...handles:any[]):void {
 		var owned = this._ownHandles,
 			handle:any;
@@ -264,6 +456,14 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		}
 	}
 
+	/**
+	 * For a given event type, return the evented method name.
+	 * @protected
+	 * @name ui/Widget#_getEventedMethodName
+	 * @function
+	 * @param {string} type
+	 * @returns {string} - method name
+	 */
 	_getEventedMethodName(type:string):string {
 		type = ('-' + type).toLowerCase().replace(/-([a-z])/g, function ():string {
 			return arguments[1].toUpperCase();
@@ -271,12 +471,26 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		return super._getEventedMethodName(type);
 	}
 
-	/* protected */ _styleSetter(value:string):void {
-		// Adds any manually set styles to widget's Style
+	/**
+	 * Adds any manually set styles to widget's Style
+	 * @protected
+	 * @name ui/Widget#_styleSetter
+	 * @function
+	 * @param {string} value
+	 */
+	_styleSetter(value:string):void {
 		// TODO: should we blow away any previously set styles instead?
 		this.style.set(Style.parse(value));
 	}
 
+	/**
+	 * Trigger an action on the widget.
+	 * @public
+	 * @name ui/Widget#trigger
+	 * @function
+	 * @param {string} actionName
+	 * @param {IEvent} source
+	 */
 	trigger(actionName:string, source?:core.IEvent):void {
 		this._renderer.trigger(this, actionName, source);
 	}
