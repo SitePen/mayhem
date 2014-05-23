@@ -5,6 +5,7 @@ import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
 import has = require('../../has');
 import util = require('../../util');
+import when = require('dojo/when');
 
 /**
  * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
@@ -114,7 +115,9 @@ class Es5Proxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> 
 	}
 
 	private _update(value:T):void {
-		this._target && this._target.set(value);
+		when(value).then((value:T):void => {
+			this._target && this._target.set(value);
+		});
 	}
 }
 

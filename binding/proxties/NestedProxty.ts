@@ -179,7 +179,9 @@ class NestedProxty<SourceT, TargetT> extends BindingProxty<SourceT, TargetT> imp
 	 * Updates the bound target property with the given value.
 	 */
 	private _update(value:TargetT):void {
-		this._target && this._target.set(value);
+		when(value).then((value:TargetT):void => {
+			this._target && this._target.set(value);
+		});
 	}
 }
 

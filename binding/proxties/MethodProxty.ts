@@ -3,6 +3,7 @@
 import binding = require('../interfaces');
 import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
+import when = require('dojo/when');
 
 var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
 
@@ -72,7 +73,9 @@ class MethodProxty<SourceT, TargetT> extends BindingProxty<any, TargetT> impleme
 	}
 
 	set(value:SourceT):void {
-		this._source.set(value);
+		when(value, (value:SourceT):void => {
+			this._source.set(value);
+		});
 	}
 }
 

@@ -6,6 +6,7 @@ import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
 import util = require('../../util');
+import when = require('dojo/when');
 
 /**
  * This property binder enables the ability to bind to mayhem Observable objects.
@@ -101,7 +102,9 @@ class ObservableProxty<T> extends BindingProxty<T, T> implements binding.IProxty
 	 * Updates the bound target property with the given value.
 	 */
 	private _update(value:T):void {
-		this._target && this._target.set(value);
+		when(value).then((value:T):void => {
+			this._target && this._target.set(value);
+		});
 	}
 }
 

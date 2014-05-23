@@ -7,6 +7,7 @@ import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
 import Stateful = require('dojo/Stateful');
 import util = require('../../util');
+import when = require('dojo/when');
 
 /**
  * This property binder enables the ability to bind to Dojo 1 Stateful objects.
@@ -95,18 +96,22 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
 	set(value:T):void {
-		if (util.isEqual(this.get(), value)) {
-			return;
-		}
+		if (this._object) {
+			if (util.isEqual(this.get(), value)) {
+				return;
+			}
 
-		this._object && this._object.set(this._property, value);
+			this._object.set(this._property, value);
+		}
 	}
 
 	/**
 	 * Updates the bound target property with the given value.
 	 */
 	private _update(value:T):void {
-		this._target && this._target.set(value);
+		when(value).then((value:T):void => {
+			this._target && this._target.set(value);
+		});
 	}
 }
 
