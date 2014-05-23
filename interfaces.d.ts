@@ -9,19 +9,20 @@ import store = require('./store/interfaces');
 export import templating = require('./templating/interfaces');
 export import ui = require('./ui/interfaces');
 
-export interface IApplication extends IController {
+export interface IApplication extends IObservableEvented {
 	get:IApplicationGet;
 	set:IApplicationSet;
+	startup():IPromise<IApplication>;
 }
 
-export interface IApplicationGet extends IControllerGet {
+export interface IApplicationGet extends IObservableGet {
 	(key:'binder'):binding.IBinder;
 	(key:'router'):routing.IRouter;
 	(key:'scheduler'):IScheduler;
-	(key:'stores'):store.IManager;
+	(name:'view'):ui.IMaster;
 }
 
-export interface IApplicationSet extends IControllerSet {
+export interface IApplicationSet extends IObservableSet {
 }
 
 export interface IArrayObserver<T> {
@@ -38,21 +39,6 @@ export interface IApplicationComponentGet extends IObservableGet {
 }
 
 export interface IApplicationComponentSet extends IObservableSet {
-}
-
-export interface IController extends IObservableEvented {
-	add(controller:IController, placeholder?:string):IHandle;
-	startup():IPromise<IController>;
-}
-
-export interface IControllerGet extends IObservableGet {
-	(name:'app'):IApplication;
-	(name:'model'):data.IModel;
-	(name:'view'):any;
-	(name:'viewModel'):data.IMediator;
-}
-
-export interface IControllerSet extends IObservableSet {
 }
 
 export interface IDestroyable {

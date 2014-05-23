@@ -1,4 +1,5 @@
 import Application = require('./Application');
+import core = require('./interfaces');
 import routing = require('./routing/interfaces');
 import ui = require('./ui/interfaces');
 import util = require('dojo/request/util');
@@ -18,17 +19,13 @@ class WebApplication extends Application {
 		});
 	}
 
-	place(view:any, placeholder?:string):IHandle {
-		return this.get('view').add(view, placeholder);
-	}
-
-	startup():IPromise<WebApplication> {
-		var promise = super.startup().then(():WebApplication => {
+	startup():IPromise<core.IApplication> {
+		var promise = super.startup().then(():core.IApplication => {
 			this.get('view').attachToWindow(document.body);
 			return this;
 		});
 
-		this.startup = function ():IPromise<WebApplication> {
+		this.startup = function ():IPromise<core.IApplication> {
 			return promise;
 		};
 

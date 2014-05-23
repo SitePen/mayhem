@@ -20,11 +20,10 @@ function resolve(value:string):string {
 }
 
 /**
- * A Route is a BaseRoute that binds a Controller to a particular route.
+ * A Route is a BaseRoute that binds a view and view model to a particular route.
  */
 class Route extends BaseRoute implements routing.IRoute {
 	private _subViewHandles:Array<{ remove:() => void}>;
-	private _controllerInstance:any /* core.IController */;
 
 	/**
 	 * The unique identifier for this route.
@@ -135,21 +134,31 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	/**
-	 * Activates this route, instantiating view and controller components and placing them into any parent route's view.
-	 * Whenever a route is activated, state information from the route is provided to the controller by setting its
+	 * Places a sub-view into the view for this route at the placeholder given in `placeholderId`.
+	 *
+	 * @param view - The sub-view to place.
+	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
+	 */
+	add(view:any, placeholderId?:string):IHandle {
+		return this._viewInstance.add(view, placeholderId);
+	}
+
+	/**
+	 * Activates this route, instantiating view and viewModel components and placing them into any parent route's view.
+	 * Whenever a route is activated, state information from the route is provided to the viewModel by setting its
 	 * `routeState` property.
 	 */
 	enter(event:RouteEvent):void {
 		var id = this.get('id');
 
-		this._subViewHandles.push(this.get('parent').place(this._viewInstance, this.get('placeholder')));
+		this._subViewHandles.push(this.get('parent').add(this._viewInstance, this.get('placeholder')));
 
 		has('debug') && console.log('entering', id);
 
 		var kwArgs = { id: id };
 
 		for (var k in this) {
-			// Custom properties on the route should be provided to the controller, but not private or default
+			// Custom properties on the route should be provided to the viewModel, but not private or default
 			// properties since those are only relevant to the route itself
 			// TODO: is !this.hasOwnProperty(k) equivalent to (k in this.constructor.prototype)?
 			if (k.charAt(0) === '_' || !this.hasOwnProperty(k) || k === 'startup') {
@@ -180,7 +189,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	/**
-	 * Destroy the controller associated with this route.
+	 * Destroy the view and viewModel associated with this route.
 	 */
 	destroy():void {
 		if (this._viewInstance) {
@@ -190,16 +199,6 @@ class Route extends BaseRoute implements routing.IRoute {
 				this._view = this._viewModel = null;
 			});
 		}
-	}
-
-	/**
-	 * Places a sub-view into the view for this route at the placeholder given in `placeholderId`.
-	 *
-	 * @param view - The sub-view to place.
-	 * @param placeholderId - The placeholder in which it should be placed. If not provided, defaults to `default`.
-	 */
-	place(view:any, placeholderId?:string):IHandle {
-		return this._viewInstance.add(view, placeholderId);
 	}
 
 	startup():IPromise<Route> {

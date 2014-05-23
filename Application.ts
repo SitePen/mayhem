@@ -1,12 +1,18 @@
 /// <reference path="./dojo" />
 
 import binding = require('./binding/interfaces');
-import BaseController = require('./controller/BaseController');
 import core = require('./interfaces');
+import decl = require('dojo/_base/declare');
+import Deferred = require('dojo/Deferred');
+import has = require('./has');
+import lang = require('dojo/_base/lang');
+import ObservableEvented = require('./ObservableEvented');
 import routing = require('./routing/interfaces');
+import ui = require('./ui/interfaces');
 import util = require('dojo/request/util');
+import whenAll = require('dojo/promise/all');
 
-class Application extends BaseController implements core.IApplication {
+class Application extends ObservableEvented implements core.IApplication {
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		var start = (config?:any):void => {
 			this.start(config).then(load);
@@ -19,16 +25,22 @@ class Application extends BaseController implements core.IApplication {
 		}
 	}
 
-	static start(config:any = {}):IPromise<Application> {
+	static start(config:any = {}):IPromise<core.IApplication> {
 		config.modules || (config.modules = { router: null });
 		return new this(config).startup();
 	}
 
 	get:core.IApplicationGet;
+	set:core.IApplicationSet;
 
 	constructor(kwArgs:any = {}) {
+		kwArgs = util.deepCopy(this._getDefaultConfig(), kwArgs);
+		kwArgs.app = this;
 		super(kwArgs);
-		this._app = this;
+	}
+
+	add(view:ui.IView, placeholder:string = 'default'):IHandle {
+		return this.get('view').add(view, placeholder);
 	}
 
 	/**
@@ -38,7 +50,7 @@ class Application extends BaseController implements core.IApplication {
 	 * will attempt to blindly execute any `constructor` property it encounters.
 	 */
 	/* protected */ _getDefaultConfig():Object {
-		return util.deepCopy(super._getDefaultConfig(), {
+		return {
 			modules: {
 				binder: {
 					constructor: require.toAbsMid('./binding/ProxtyBinder'),
@@ -61,19 +73,127 @@ class Application extends BaseController implements core.IApplication {
 					constructor: require.toAbsMid('./Scheduler')
 				}
 			}
-		});
+		};
+	}
+
+	_instantiateModules(modules:any):void {
+		var configs:Object = this.get('modules');
+		for (var key in modules) {
+			var config:any = configs[key];
+			config && this._instantiateModule(key, modules[key], config);
+		}
 	}
 
 	_instantiateModule(key:string, Module:any, config:any):void {
+		if (!Module) {
+			return;
+		}
+		config.constructor = Module;
 		if (key !== 'view') {
-			super._instantiateModule(key, Module, config);
+			this.set(key, new Module(decl.safeMixin({ app: this.get('app') }, config)));
 		}
 		else {
 			// Ensure the view will instantiate after the binder is ready
 			this.get('binder').startup().then(():void => {
-				super._instantiateModule(key, Module, config);
+				this.set(key, new Module(decl.safeMixin({ app: this.get('app') }, config)));
 			});
 		}
+	}
+
+	/**
+	 * Loads application components and attaches them to the application object.
+	 */
+	private _loadModules():IPromise<void> {
+		var dfd:IDeferred<void> = new Deferred<void>(),
+			lazyConstructors:{ [key:string]: number; } = {},
+			moduleIdsToLoad:string[] = [],
+			modules:Object = this.get('modules'),
+			promises:{ [key:string]:IPromise<void> } = {};
+
+		for (var key in modules) {
+			promises[key] = this._loadModule(key, modules[key], modules);
+		}
+
+		return whenAll(promises).then((modules:any):void => this._instantiateModules(modules));
+	}
+
+	_loadModule(key:string, config:any, modules:any):IPromise<any> {
+		var dfd = new Deferred<any>(),
+			isTemplate = false,
+			ctor:string;
+
+		if (typeof config === 'string') {
+			modules[key] = config = { constructor: config };
+		}
+		if (typeof config.constructor === 'string') {
+			ctor = config.constructor;
+
+			if (isTemplate = ctor.charAt(0) === '!') {
+				ctor = ctor.slice(1);
+			}
+
+			if (ctor.charAt(0) === '.') {
+				// normalize relative paths
+				if (this.get(key + 'Path')) {
+					ctor = require.toAbsMid(this.get(key + 'Path') + '/' + ctor);
+				}
+			}
+
+			if (isTemplate) {
+				ctor = this.get('templatePlugin') + '!' + ctor;
+			}
+
+			config.constructor = ctor;
+		}
+
+		if (ctor) {
+			require([ctor], (Module:any):void => {
+				dfd.resolve(Module);
+			});
+		}
+		else {
+			dfd.resolve(config.constructor);
+		}
+
+		return dfd.promise;
+	}
+
+	/**
+	 * Starts the application.
+	 *
+	 * @returns A promise that is resolved once all modules have been loaded.
+	 */
+	startup():IPromise<core.IApplication> {
+		if (has('debug')) {
+			this.on('error', function (event:any):void {
+				console.error(event.message);
+			});
+		}
+
+		var dfd = new Deferred<core.IApplication>();
+
+		this._loadModules().then(():void => {
+			var promises:IPromise<any>[] = [],
+				promise:IPromise<any>,
+				modules:Object = this.get('modules'),
+				module:{ startup?:Function; };
+
+			for (var key in modules) {
+				module = this.get(key);
+				promise = module && module.startup && module.startup();
+				if (promise && promise.then) {
+					promises.push(promise);
+				}
+			}
+
+			whenAll(promises).then(():void => {
+				dfd.resolve(this);
+			});
+		}).otherwise(lang.hitch(dfd, 'reject'));
+
+		this.startup = ():IPromise<core.IApplication> => dfd.promise;
+
+		return dfd.promise;
 	}
 }
 
