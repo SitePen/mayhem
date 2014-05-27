@@ -3,7 +3,9 @@
 import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import core = require('./interfaces');
+import Deferred = require('dojo/Deferred');
 import has = require('./has');
+import whenAll = require('dojo/promise/all');
 
 export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
 	for (var i = 0, baseCtor:Function; (baseCtor = baseCtors[i]); ++i) {
@@ -252,4 +254,64 @@ export function applicationGetters(Ctor:Function, keys:string[]):void {
 			}
 		};
 	});
+}
+
+declare var global:any;
+
+var globalObject:any;
+if (typeof window !== 'undefined') {
+	globalObject = window;
+}
+else if (typeof global !== 'undefined') {
+	globalObject = global;
+}
+
+export function getModule(moduleId:string):IPromise<any> {
+	return getModules([moduleId]).then(():any => arguments[0]);
+}
+
+export function getModules(moduleIds:string[]):IPromise<any[]> {
+	var dfd = new Deferred<any[]>(),
+		handle:IHandle;
+
+	if (globalObject.require.on) {
+		var moduleUrls = {};
+		for (var i = 0; i < moduleIds.length; i++) {
+			moduleUrls[globalObject.require.toUrl(moduleIds[i])] = moduleIds[i];
+		}
+
+		// TODO: this should probably be handled in one global handler
+		handle = globalObject.require.on('error', function (error:any):void {
+			// TODO: handle plugins correctly
+			if (error.message === 'scriptError') {
+				var moduleUrl = error.info[0].slice(0, -3);
+				if (moduleUrl in moduleUrls) {
+					handle && handle.remove();
+					handle = null;
+
+					var reportedError = new Error('Couldn\'t load ' + moduleUrls[moduleUrl] + ' from ' + error.info[0]);
+					reportedError['info'] = error.info;
+					dfd.reject(reportedError);
+				}
+			}
+		});
+	}
+
+	globalObject.require(moduleIds, function (modules:any[]):void {
+		handle && handle.remove();
+		dfd.resolve(modules);
+	});
+
+	return dfd.promise;
+}
+
+export function spread<T, U>(values:IPromise<T>[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void):IPromise<U>;
+export function spread<T, U>(values:T[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void):IPromise<U>;
+export function spread(values:any[], resolved:(...args:any[]) => any, rejected?:(error:Error) => void):IPromise<any> {
+	return whenAll(values).then(
+		function (values:any):any {
+			return resolved.apply(undefined, values);
+		},
+		rejected
+	);
 }
