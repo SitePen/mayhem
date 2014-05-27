@@ -2,14 +2,14 @@
 
 import binding = require('./binding/interfaces');
 import core = require('./interfaces');
-import decl = require('dojo/_base/declare');
 import Deferred = require('dojo/Deferred');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
 import ObservableEvented = require('./ObservableEvented');
+import requestUtil = require('dojo/request/util');
 import routing = require('./routing/interfaces');
 import ui = require('./ui/interfaces');
-import util = require('dojo/request/util');
+import util = require('./util');
 import whenAll = require('dojo/promise/all');
 
 class Application extends ObservableEvented implements core.IApplication {
@@ -34,7 +34,8 @@ class Application extends ObservableEvented implements core.IApplication {
 	set:core.IApplicationSet;
 
 	constructor(kwArgs:any = {}) {
-		kwArgs = util.deepCopy(this._getDefaultConfig(), kwArgs);
+		// TODO: more robust configuration merging
+		kwArgs = requestUtil.deepCopy(this._getDefaultConfig(), kwArgs);
 		kwArgs.app = this;
 		super(kwArgs);
 	}
@@ -65,12 +66,16 @@ class Application extends ObservableEvented implements core.IApplication {
 						require.toAbsMid('./binding/proxties/ObjectTargetProxty')
 					]
 				},
-// TODO: Fix-up and re-enable
-// 				router: {
-// 					constructor: require.toAbsMid('./routing/NullRouter')
-// 				},
+ 				router: {
+ 					constructor: require.toAbsMid('./routing/NullRouter'),
+					routes: {}
+ 				},
 				scheduler: {
 					constructor: require.toAbsMid('./Scheduler')
+				},
+				view: {
+					constructor: require.toAbsMid('./ui/Master'),
+					attachTo: null
 				}
 			}
 		};
@@ -89,14 +94,29 @@ class Application extends ObservableEvented implements core.IApplication {
 			return;
 		}
 		config.constructor = Module;
-		if (key !== 'view') {
-			this.set(key, new Module(decl.safeMixin({ app: this.get('app') }, config)));
-		}
-		else {
-			// Ensure the view will instantiate after the binder is ready
+
+		this.set(key, new Module(lang.mixin({ app: this.get('app') }, config)));
+		if (key === 'view') {
+			// Ensure the view will defer bindings until after the binder is ready
 			this.get('binder').startup().then(():void => {
-				this.set(key, new Module(decl.safeMixin({ app: this.get('app') }, config)));
+				var view = this.get('view');
+				view.set('model', this);
 			});
+
+			if (config.template) {
+				// If the user has provided a template, get it, and add it to the master widget
+				config.template = this.get('templatePlugin') + '!' + this._resolveModuleId(this.get('templatePath'), config.template);
+
+				util.getModule(config.template).then((Template:any):void => {
+					var view = this.get('view');
+					view.add(new Template({
+						app: this
+					}));
+				})/*.otherwise((error:any):void => {
+					// TODO: Error handling
+					throw error;
+				})*/;
+			}
 		}
 	}
 
@@ -117,9 +137,26 @@ class Application extends ObservableEvented implements core.IApplication {
 		return whenAll(promises).then((modules:any):void => this._instantiateModules(modules));
 	}
 
+	_resolveModuleId(path:string, value:string):string {
+		if (!value) {
+			return;
+		}
+
+		path = path ? path.replace(/\/*$/, '/') : '';
+		if (value.charAt(0) !== '.') {
+			if (value.indexOf('/') === -1) {
+				value = path + value;
+			}
+		}
+		else {
+			value = path + value;
+		}
+
+		return require.toAbsMid(value);
+	}
+
 	_loadModule(key:string, config:any, modules:any):IPromise<any> {
 		var dfd = new Deferred<any>(),
-			isTemplate = false,
 			ctor:string;
 
 		if (typeof config === 'string') {
@@ -127,29 +164,12 @@ class Application extends ObservableEvented implements core.IApplication {
 		}
 		if (typeof config.constructor === 'string') {
 			ctor = config.constructor;
-
-			if (isTemplate = ctor.charAt(0) === '!') {
-				ctor = ctor.slice(1);
-			}
-
-			if (ctor.charAt(0) === '.') {
-				// normalize relative paths
-				if (this.get(key + 'Path')) {
-					ctor = require.toAbsMid(this.get(key + 'Path') + '/' + ctor);
-				}
-			}
-
-			if (isTemplate) {
-				ctor = this.get('templatePlugin') + '!' + ctor;
-			}
-
+			ctor = this._resolveModuleId(this.get(key + 'Path'), ctor);
 			config.constructor = ctor;
 		}
 
 		if (ctor) {
-			require([ctor], (Module:any):void => {
-				dfd.resolve(Module);
-			});
+			util.getModule(ctor).then((Module:any):any => dfd.resolve(Module), dfd.reject);
 		}
 		else {
 			dfd.resolve(config.constructor);
@@ -172,7 +192,7 @@ class Application extends ObservableEvented implements core.IApplication {
 
 		var dfd = new Deferred<core.IApplication>();
 
-		this._loadModules().then(():void => {
+		this._loadModules().then(():IPromise<void> => {
 			var promises:IPromise<any>[] = [],
 				promise:IPromise<any>,
 				modules:Object = this.get('modules'),
@@ -186,7 +206,7 @@ class Application extends ObservableEvented implements core.IApplication {
 				}
 			}
 
-			whenAll(promises).then(():void => {
+			return whenAll(promises).then(():void => {
 				dfd.resolve(this);
 			});
 		}).otherwise(lang.hitch(dfd, 'reject'));

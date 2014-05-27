@@ -25,7 +25,12 @@ class HashRouter extends Router {
 				this._handlePathChange(this.normalizeId(initialRoute));
 			}
 			else {
-				hash(this.createPath(this.get('defaultRoute')), true);
+				try {
+					hash(this.createPath(this.get('defaultRoute')), true);
+				}
+				catch (error) {
+					this._handlePathChange(this.get('notFoundRoute'));
+				}
 			}
 		});
 	}

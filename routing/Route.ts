@@ -78,6 +78,9 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	_modelGetter():string {
+		if (this._model === false || typeof this._model === 'function') {
+			return this._model;
+		}
 		return this.get('modelPath').replace(/\/*$/, '/') + this._model;
 	}
 
@@ -116,6 +119,11 @@ class Route extends BaseRoute implements routing.IRoute {
 			key = 'view';
 			value = this._view;
 		}
+
+		if (typeof value === 'function') {
+			return value;
+		}
+
 		value = this._resolveModuleId(this.get(key + 'Path'), value);
 
 		if (key === 'template') {
@@ -130,7 +138,10 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	_viewModelGetter():string {
-		return this._resolveModuleId(this.get('viewModelPath'), this._viewModel);
+		if (!this._viewModel || typeof this._viewModel === 'string') {
+			return this._resolveModuleId(this.get('viewModelPath'), this._viewModel);
+		}
+		return this._viewModel;
 	}
 
 	/**
@@ -204,40 +215,37 @@ class Route extends BaseRoute implements routing.IRoute {
 	startup():IPromise<Route> {
 		has('debug') && console.log('preparing', this.get('id'));
 
-		var dfd = new Deferred<Route>(),
-			viewDfd = new Deferred<any>();
+		var view:any = this.get('view'),
+			viewModel:any = this.get('viewModel'),
+			model:any = this.get('model');
 
-		this._viewInstance = viewDfd.promise.then((view:any):void => {
-			this._viewInstance = view;
-			dfd.resolve(this);
-		}).otherwise((error:any):void => {
-			dfd.reject(error);
-		});
+		// TODO: There has to be a better way to do this
+		view = typeof view === 'string' ? util.getModule(view) : view;
+		viewModel = typeof viewModel === 'string' ? util.getModule(viewModel) : viewModel;
+		model = typeof model === 'string' ? util.getModule(model) : model;
 
-		require([
-			this.get('view'),
-			this.get('viewModel'),
-			this.get('model')
-		], (View:any, ViewModel:any, Store:any):void => {
-			try {
-				var viewModel:any = this._viewModelInstance = new ViewModel({
+		this._viewInstance = util.spread([view, viewModel, model], (View:any, ViewModel:any, Store:any):any => {
+			if (typeof ViewModel === 'function') {
+				this._viewModelInstance = new ViewModel({
 					app: this.get('app'),
 					store: Store
 				});
-				var view:any = new View({
-					app: this.get('app'),
-					model: viewModel
-				});
-				viewDfd.resolve(view);
 			}
-			catch (e) {
-				viewDfd.reject(e);
+			else {
+				this._viewModelInstance = ViewModel;
 			}
+			var view:any = this._viewInstance = new View({
+				app: this.get('app'),
+				model: this._viewModelInstance
+			});
+			return view;
 		});
 
-		this.startup = ():IPromise<Route> => dfd.promise;
+		var promise:IPromise<Route> = this._viewInstance.then(():any => this);
 
-		return dfd.promise;
+		this.startup = ():IPromise<Route> => promise;
+
+		return promise;
 	}
 }
 

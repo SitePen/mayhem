@@ -12,24 +12,10 @@ class WebApplication extends Application {
 					constructor: require.toAbsMid('./routing/HashRouter')
 				},
 				view: {
-					constructor: '!./Application.html',
-					model: this
+					template: 'Application.html'
 				}
 			}
 		});
-	}
-
-	startup():IPromise<core.IApplication> {
-		var promise = super.startup().then(():core.IApplication => {
-			this.get('view').attachToWindow(document.body);
-			return this;
-		});
-
-		this.startup = function ():IPromise<core.IApplication> {
-			return promise;
-		};
-
-		return promise;
 	}
 }
 

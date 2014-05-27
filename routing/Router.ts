@@ -191,7 +191,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var routes = this._routes = {};
 
 		if (!routeMap[this.get('notFoundRoute')]) {
-			routeMap[this.get('notFoundRoute')] = { viewModel: null, view: require.toAbsMid('../views/ErrorView'), code: 404 };
+			routeMap[this.get('notFoundRoute')] = { viewModel: this.get('app'), template: require.toAbsMid('../views/Error.html'), model: false, code: 404 };
 		}
 
 		var kwArgs:any,
@@ -353,6 +353,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 			for (var i = 0; i < routes.length; i++) {
 				routes[i].enter(event);
 			}
+		}).otherwise((error:any):void => {
+			// TODO: handle this at the application level?
+			console.error('Mayhem routing error:', error.message, error);
 		});
 	}
 
@@ -362,7 +365,12 @@ class Router extends ObservableEvented implements routing.IRouter {
 	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
 		var notFoundRoute = this.get('routes')[this.get('notFoundRoute')];
 		this._activeRoutes.push(notFoundRoute);
-		return when(notFoundRoute.enter(event));
+		return when(notFoundRoute.startup()).then((route:Route):any => {
+			return route.enter(event);
+		}).otherwise((error:any):void => {
+			// TODO: handle this at the application level?
+			console.error('Mayhem routing error:', error.message, error);
+		});
 	}
 }
 
