@@ -4,6 +4,7 @@ import domConstruct = require('dojo/dom-construct');
 import has = require('../../has');
 import Observable = require('../../Observable');
 import PlacePosition = require('../PlacePosition');
+import query = require('dojo/query');
 import style = require('../style/interfaces');
 import ui = require('../interfaces');
 import util = require('../../util');
@@ -40,7 +41,13 @@ class _BaseRenderer implements ui.IRenderer {
 
 	attachStyles(widget:dom.IWidget):void {}
 
-	attachToWindow(widget:dom.IWidget, target:Node):void {
+	attachToWindow(widget:dom.IWidget, target:any):void {
+		if (target == null) {
+			target = document.body;
+		}
+		else if (typeof target === 'string') {
+			target = query(target)[0];
+		}
 		target.appendChild(widget._outerFragment);
 	}
 

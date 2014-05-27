@@ -1,22 +1,27 @@
 import ContentView = require('./ContentView');
+import core = require('../interfaces');
 import ui = require('./interfaces');
 
 class Master extends ContentView implements ui.IMaster {
-	attachToWindow(target:any):IHandle {
-		this._renderer.detach(this);
+	/* protected */ _app:core.IApplication;
+	/* protected */ _attachTo:any;
 
-		this._renderer.attachToWindow(this, target);
+	add(item:ui.IWidget, position?:any):IHandle {
+		var children = this.get('children');
+
+		if (!children.length) {
+			return super.add(item, position);
+		}
+		else {
+			return (<ui.IContainer>children[0]).add(item, position);
+		}
+	}
+
+	startup():void {
+		this.startup = ():void => {};
+
+		this._renderer.attachToWindow(this, this.get('attachTo'));
 		this.set('attached', true);
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self._renderer.detach(self);
-				this.set('attached', false);
-				self = null;
-			}
-		};
 	}
 }
 export = Master;

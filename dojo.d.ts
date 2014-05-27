@@ -217,6 +217,33 @@ declare module 'dojo/mouse' {
 	export = mouse;
 }
 
+declare module 'dojo/NodeList' {
+	class NodeList {
+		length:number;
+		[n:number]:Element;
+		at(...indexes:number[]):NodeList;
+		concat(...items:Element[]):NodeList;
+		every(callbackfn:(value:Element, index:number, array:NodeList) => boolean, thisArg?:any):boolean;
+		filter(callbackfn:(value:Element, index:number, array:NodeList) => boolean, thisArg?:any):NodeList;
+		forEach(callbackfn:(value:Element, index:number, array:NodeList) => void, thisArg?:any):void;
+		indexOf(searchElement:Element, fromIndex?:number):number;
+		join(separator?:string):string;
+		lastIndexOf(searchElement:Element, fromIndex?:number):number;
+		map<T>(callbackfn:(value:Element, index:number, array:NodeList) => T, thisArg?:any):NodeList;
+		pop():Element;
+		push(...items:Element[]):number;
+		reverse():NodeList;
+		shift():Element;
+		slice(start?:number, end?:number):NodeList;
+		some(callbackfn:(value:Element, index:number, array:NodeList) => boolean, thisArg?:any):boolean;
+		sort(compareFn?:(a:Element, b:Element) => number):NodeList;
+		splice(start:number):NodeList;
+		splice(start:number, deleteCount:number, ...items:Element[]):NodeList;
+		unshift(...items:Element[]):number;
+	}
+	export = NodeList;
+}
+
 declare module 'dojo/on' {
 	var on:{
 		(target:Node, type:string, listener:EventListener, dontFix?:boolean):IHandle;
@@ -235,6 +262,14 @@ declare module 'dojo/promise/all' {
 		(object:Object):IPromise<Object>;
 	};
 	export = all;
+}
+
+declare module 'dojo/query' {
+	import NodeList = require('dojo/NodeList');
+	var query:{
+		(selector:string, root?:Element):NodeList;
+	};
+	export = query;
 }
 
 declare module 'dojo/request' {

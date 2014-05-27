@@ -123,7 +123,7 @@ export interface IListSet extends IViewSet {
 }
 
 export interface IMaster extends IContentView {
-	attachToWindow(target:any):IHandle;
+	startup():void;
 }
 
 export interface IPlaceholder extends IContainer {
