@@ -166,7 +166,7 @@ class Route extends BaseRoute implements routing.IRoute {
 
 		has('debug') && console.log('entering', id);
 
-		var kwArgs = { id: id };
+		var kwArgs:any = { id: id };
 
 		for (var k in this) {
 			// Custom properties on the route should be provided to the viewModel, but not private or default
@@ -179,6 +179,8 @@ class Route extends BaseRoute implements routing.IRoute {
 			kwArgs[k] = this[k];
 		}
 
+		// TODO: Is there other data that should always be exposed from the route? Maybe the entire event?
+		kwArgs.path = event.newPath;
 		lang.mixin(kwArgs, this.parse(event.newPath));
 
 		has('debug') && console.log('new route state for', id, kwArgs);

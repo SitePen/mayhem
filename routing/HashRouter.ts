@@ -1,6 +1,7 @@
 /// <reference path="../dojo" />
 
 import Deferred = require('dojo/Deferred');
+import RouteEvent = require('./RouteEvent');
 import Router = require('./Router');
 import hash = require('dojo/hash');
 import lang = require('dojo/_base/lang');
@@ -29,7 +30,10 @@ class HashRouter extends Router {
 					hash(this.createPath(this.get('defaultRoute')), true);
 				}
 				catch (error) {
-					this._handlePathChange(this.get('notFoundRoute'));
+					this._handleNotFoundRoute(new RouteEvent({
+						oldPath: '',
+						newPath: this.get('defaultRoute')
+					}));
 				}
 			}
 		});
