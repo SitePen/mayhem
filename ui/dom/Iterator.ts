@@ -5,12 +5,13 @@ import ContentView = require('../ContentView');
 import Deferred = require('dojo/Deferred');
 import dgrid = require('./util/dgrid');
 import dom = require('./interfaces');
+import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import _ElementRenderer = require('./_Element');
 import Event = require('../../Event');
+import LegacyObservable = require('dojo/store/Observable');
 import Template = require('../../templating/Template');
 import util = require('../../util');
 import when = require('dojo/when');
-
 
 class IteratorRenderer extends _ElementRenderer {
 	destroy(widget:dom.IIterator):void {
@@ -71,7 +72,7 @@ class IteratorRenderer extends _ElementRenderer {
 	initialize(widget:dom.IIterator):void {
 		super.initialize(widget);
 
-		
+
 		widget.observe('selectedItem', ():void => {
 			this._updateSelection(widget);
 		});
@@ -101,6 +102,10 @@ class IteratorRenderer extends _ElementRenderer {
 					}
 				}
 				else {
+					if (source.filter) {
+						source = new LegacyObservable(new DstoreAdapter({ store: source }));
+					}
+
 					widget._impl.set('store', source);
 				}
 

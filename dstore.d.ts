@@ -26,6 +26,7 @@ declare module dstore {
 		forEach(callback:(item:T, index:number) => void, thisObject?:any):any; /* void, IPromise<void> */
 		map<U>(callback:(item:T, index:number) => U, thisObject?:any):ICollection<U>;
 		fetch():any; /* T[], IPromise<T[]> */
+		track():ICollection<T>;
 	}
 	export interface ISyncCollection<T> extends ICollection<T> {
 		total?:number;
@@ -245,6 +246,7 @@ declare module 'dstore/Store' {
 		get(id:any, options?:Object):any /* T | Promise<T> */;
 		getIdentity(object:T):any;
 		fetch():any;
+		track():Store<T>;
 		filter(filter:any):dstore.ICollection<T>;
 		forEach(callback:(item:T, index:number, collection:dstore.ICollection<T>) => void, thisObject?:any):any; /* void, IPromise<void> */
 		map<U>(callback:(item:T, index:number, collection:dstore.ICollection<T>) => U, thisObject?:any):dstore.ICollection<U>;
