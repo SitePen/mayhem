@@ -84,9 +84,26 @@ class Model extends BaseModel implements data.IModel {
 	}
 
 	save(skipValidation?:boolean):IPromise<void> {
-		// TODO: Implementation
+		var self = this;
+		function save():IPromise<void> {
+			return when(self._store.put(self)).then(function ():void {
+				self.set('scenario', 'update');
+			});
+		}
 
-		return;
+		if (skipValidation) {
+			return save();
+		}
+		else {
+			return this.validate().then(function (isValid:boolean):IPromise<void> {
+				if (isValid) {
+					return save();
+				}
+				else {
+					throw new Error('Could not save model; validation failed');
+				}
+			});
+		}
 	}
 }
 
