@@ -77,10 +77,11 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	_modelGetter():string {
-		if (this._model === false || typeof this._model === 'function') {
-			return this._model;
+		if (typeof this._model === 'string') {
+			return this._resolveModuleId(this.get('modelPath'), this._model);
 		}
-		return this.get('modelPath').replace(/\/*$/, '/') + this._model;
+
+		return this._model;
 	}
 
 	_resolveModuleId(path:string, value:any):string {
