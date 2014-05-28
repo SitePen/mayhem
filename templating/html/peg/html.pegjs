@@ -366,7 +366,7 @@ For '<for/>'
 		// Add a constructor and wrap in signal object to just get a ctor instead of a constructed instance
 		body.constructor = require.toAbsMid('../../ui/IteratorElement');
 		kwArgs.template = { $ctor: body };
-		
+
 		// Convert "in" attribute into a one-way "source" binding
 		if (kwArgs.in) {
 			kwArgs.source = { $bind: kwArgs.in };
@@ -380,7 +380,7 @@ For '<for/>'
 	}
 
 ForTagOpen '<for>'
-	= '<for'i kwArgs:AttributeMap '>' { return kwArgs }
+	= '<for'i kwArgs:AttributeMap '>' { return kwArgs; }
 
 ForTagClose '</for>'
 	= '</for>'i
@@ -499,7 +499,7 @@ WidgetTagClose '</widget>'
 // actions
 
 // Action '<action/>'
-//	= '<action'i 
+//	= '<action'i
 
 // all others
 
