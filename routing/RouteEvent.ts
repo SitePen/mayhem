@@ -2,19 +2,29 @@ import Event = require('../Event');
 import routing = require('./interfaces');
 
 class RouteEvent extends Event {
-	/** @readonly */
+	/**
+	 * @readonly
+	 */
 	oldPath:string;
 
-	/** @readonly */
+	/**
+	 * @readonly
+	 */
 	newPath:string;
 
-	/** @readonly */
+	/**
+	 * @readonly
+	 */
 	canceled:boolean;
 
-	/** @readonly */
+	/**
+	 * @readonly
+	 */
 	paused:boolean;
 
-	/** @readonly */
+	/**
+	 * @readonly
+	 */
 	router:routing.IRouter;
 
 	/**

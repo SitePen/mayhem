@@ -191,7 +191,11 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var routes = this._routes = {};
 
 		if (!routeMap[this.get('notFoundRoute')]) {
-			routeMap[this.get('notFoundRoute')] = { viewModel: this.get('app'), template: require.toAbsMid('../views/Error.html'), model: false, code: 404 };
+			routeMap[this.get('notFoundRoute')] = {
+				viewModel: this.get('app'),
+				template: require.toAbsMid('../views/Error.html'),
+				model: false
+			};
 		}
 
 		var kwArgs:any,

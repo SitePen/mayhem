@@ -59,16 +59,15 @@ class Route extends BaseRoute implements routing.IRoute {
 	 */
 	_app:core.IApplication;
 
-	constructor(kwArgs:any = {}) {
-		var newKwArgs = {
+	constructor(kwArgs?:any) {
+		kwArgs = lang.mixin({
 			id: kwArgs.id,
 			app: kwArgs.app,
 			router: kwArgs.router
-		};
-		lang.mixin(newKwArgs, kwArgs);
+		}, kwArgs);
 
 		this._subViewHandles = [];
-		super(newKwArgs);
+		super(kwArgs);
 	}
 
 	_idSetter(id:string):void {
@@ -109,8 +108,9 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	_viewGetter():string {
-		var key:string,
-			value:string;
+		var key:string;
+		var value:string;
+
 		if (this._template || !this._view) {
 			key = 'template';
 			value = this._template;
@@ -217,9 +217,9 @@ class Route extends BaseRoute implements routing.IRoute {
 	startup():IPromise<Route> {
 		has('debug') && console.log('preparing', this.get('id'));
 
-		var view:any = this.get('view'),
-			viewModel:any = this.get('viewModel'),
-			model:any = this.get('model');
+		var view:any = this.get('view');
+		var viewModel:any = this.get('viewModel');
+		var model:any = this.get('model');
 
 		// TODO: There has to be a better way to do this
 		view = typeof view === 'string' ? util.getModule(view) : view;
@@ -245,7 +245,9 @@ class Route extends BaseRoute implements routing.IRoute {
 
 		var promise:IPromise<Route> = this._viewInstance.then(():any => this);
 
-		this.startup = ():IPromise<Route> => promise;
+		this.startup = function ():IPromise<Route> {
+			return promise;
+		};
 
 		return promise;
 	}
