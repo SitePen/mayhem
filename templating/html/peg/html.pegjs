@@ -505,12 +505,9 @@ WidgetTagClose '</widget>'
 
 Placeholder '<placeholder/>'
 	= '<placeholder'i kwArgs:AttributeMap '/'? '>' {
-		validate(kwArgs, {
-			type: '<placeholder>',
-			required: [ 'name' ]
-		});
 		// return just another marker object (like $bind and $child)
-		return { $named: kwArgs.name };
+		// set name kwArgs to "default" if no name attribute is specified
+		return { $named: kwArgs.name || 'default' };
 	}
 
 Alias '<alias/>'
