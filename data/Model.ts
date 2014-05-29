@@ -40,6 +40,10 @@ class Model extends BaseModel implements data.IModel {
 		return when(this._store.remove(id));
 	}
 
+	static track():dstore.ICollection<data.IModel> {
+		return this._store.track();
+	}
+
 	static filter(query:string):dstore.ICollection<data.IModel>;
 	static filter(query:Object):dstore.ICollection<data.IModel>;
 	static filter(query:(item:data.IModel, index:number) => boolean):dstore.ICollection<data.IModel>;
