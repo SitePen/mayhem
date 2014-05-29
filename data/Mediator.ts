@@ -146,6 +146,11 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 	}
 }
 
+module Mediator {
+	export interface Getters extends data.IMediatorGet {}
+	export interface Setters extends data.IMediatorSet {}
+}
+
 // TypeScript does not create default properties on the prototype, but they are necessary to allow these fields to be
 // set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
 // to allow accessor overrides)
