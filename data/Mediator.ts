@@ -5,14 +5,18 @@ import aspect = require('dojo/aspect');
 import BaseModel = require('./BaseModel');
 import core = require('../interfaces');
 import data = require('./interfaces');
+import declare = require('dojo/_base/declare');
 import Evented = require('dojo/Evented');
 import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
+import MemoryStore = require('dstore/Memory');
 import Property = require('./Property');
 import PropertyProxy = require('./PropertyProxy');
 import Observable = require('../Observable');
+import ObservableStore = require('dstore/Observable');
 import Stateful = require('dojo/Stateful');
 import util = require('../util');
+import when = require('dojo/when');
 
 class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 	private _modelHandles:{ [key:string]:IHandle };
@@ -21,6 +25,40 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 	call:data.IMediatorCall;
 	get:data.IMediatorGet;
 	set:data.IMediatorSet;
+
+	static forCollection(collection:dstore.ICollection<data.IModel>):dstore.ICollection<Mediator> {
+		var Store:any = <any> declare([ MemoryStore, ObservableStore ], {
+			model: null
+		});
+		var wrapperCollection:dstore.ICollection<Mediator> = new Store().track();
+		var Ctor = this;
+
+		function wrapSetter(method:string):(object:any, options?:Object) => any {
+			return function (object:any, options?:Object):any {
+				if (object instanceof Mediator) {
+					object = object.get('model');
+				}
+
+				return collection[method](object, options);
+			};
+		}
+
+		var put = wrapperCollection.put;
+		var remove = wrapperCollection.remove;
+
+		wrapperCollection.add = wrapSetter('add');
+		wrapperCollection.put = wrapSetter('put');
+		wrapperCollection.remove = lang.hitch(collection, 'remove');
+
+		collection.on('add, update', function (event:dstore.ChangeEvent):void {
+			put.call(wrapperCollection, new Ctor({ model: event.target }), { index: event.index });
+		});
+		collection.on('delete', function (event:dstore.ChangeEvent):void {
+			remove.call(wrapperCollection, event.id);
+		});
+
+		return wrapperCollection;
+	}
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
 		this._modelHandles = {};
