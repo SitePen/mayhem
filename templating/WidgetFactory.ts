@@ -110,14 +110,18 @@ class WidgetFactory {
 			}
 		}
 		if (value) {
-			// Find html element heads with at lesat one attribute binding and fix them up
+			// Find html element heads with at least one attribute binding and fix them up
 			value = value.replace(/<[^>]+⟨⟨ \d+ ⟩⟩[^>]*>/g, (match:string):string => {
 				var attributes:any = {},
 					// Replace all Loop over all binding attributes
-					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*⟨⟨ (\d+) ⟩⟩/g, (match:string, name:string, part:string):string => {
-						attributes[name] = content[Number(part)].$bind;
-
-						// Wipe out attributes with bindings in our html
+					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*(["']?)⟨⟨ (\d+) ⟩⟩(["']?)/g, (match:string, name:string, open:string, id:string, close:string):string => {
+						// Check for matching quotes (if any) and punt if unbalanced
+						if (has('debug') && open !== close) {
+							throw new Error('Invalid binding in HTML attribute: ' + match);
+						}
+						// Grab binding from content attribute and assign to attribute
+						attributes[name] = content[Number(id)].$bind;
+						// Wipe out any attributes with bindings in our element html
 						return '';
 				});
 
