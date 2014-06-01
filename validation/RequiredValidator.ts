@@ -1,20 +1,16 @@
-import core = require('../interfaces');
+import data = require('../data/interfaces');
 import ValidationError = require('./ValidationError');
-
+import Validator = require('./Validator');
 
 var i18n = {
 	required: 'TODO field required error message'
 };
 
-
-class RequiredValidator implements core.IValidator {
-	
-	// TODO we need a way to define return as boolean | IPromise<boolean> (union types?)
-	validate(model:any/*IModel*/, key:string, value:any):void {
-		if (value == null || value == "") {
+class RequiredValidator extends Validator {
+	validate(model:data.IModel, key:string, value:any):void {
+		if (value == null || value === '') {
 			model.addError(key, new ValidationError(i18n.required));
 		}
-		return undefined;
 	}
 }
 

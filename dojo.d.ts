@@ -130,6 +130,27 @@ declare module 'dojo/aspect' {
 	export = aspect;
 }
 
+declare module 'dojo/date/locale' {
+	module locale {
+		export interface IFormatOptions {
+			selector?:string;
+			formatLength?:string;
+			datePattern?:string;
+			timePattern?:string;
+			am?:string;
+			pm?:string;
+			locale?:string;
+			fullYear?:boolean;
+			strict?:boolean;
+		}
+
+		export function format(date:Date, options?:locale.IFormatOptions):string;
+		export function parse(date:string, options?:locale.IFormatOptions):Date;
+	}
+
+	export = locale;
+}
+
 declare module 'dojo/Deferred' {
 	var Deferred:{
 		new <T>(canceler?:(reason:any) => any):IDeferred<T>;

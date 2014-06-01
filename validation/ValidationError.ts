@@ -4,7 +4,7 @@ import createError = require('dojo/errors/create');
 import lang = require('dojo/_base/lang');
 
 var i18n = {
-	genericFieldName: 'TODO lol'
+	genericFieldName: 'TODO Field'
 };
 
 interface ValidationError extends Error {
@@ -16,7 +16,7 @@ var ValidationError:{
 	new (message:string, options?:{ [key:string]:any; }):ValidationError;
 };
 
-function Ctor(message:string, options?:{ [key:string]:any; }) {
+function Ctor(message:string, options?:{ [key:string]:any; }):void {
 	this.options = options;
 }
 
