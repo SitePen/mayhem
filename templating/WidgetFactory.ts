@@ -314,8 +314,8 @@ class _WidgetBinder {
 				// TODO: nextElementSibling is defined on ElementTraversal, which conflicts with Node
 				this._attributeBindingNodes.push((<any> node).nextElementSibling);
 				this._attributeBindingPaths.push(attributes);
-				// Leave binding comment in place but clean up a bit
-				node.nodeValue = ' Mayhem HTML element bindings: ' + JSON.stringify(attributes) + ' ';
+				// Removing binding comment
+				parent.removeChild(node);
 			}
 			else if (descriptor.$bind != null) {
 				var textNode:Text = new Text();
