@@ -38,8 +38,8 @@ class WidgetFactory {
 		// TODO: for widgets with ids to be cloned multiple times we need a way to transform child ids
 		ctor = this.WidgetCtor = ctor || <typeof Widget> require(tree.constructor);
 
-		if (has('debug') && !(ctor.prototype instanceof Widget || ctor instanceof WidgetFactory)) {
-			console.warn('Invalid widget constructor:', this.WidgetCtor);
+		if (!(ctor.prototype instanceof Widget || ctor instanceof WidgetFactory)) {
+			has('debug') && console.debug('Invalid widget constructor:', this.WidgetCtor);
 			throw new Error('Invalid widget constructor provided');
 		}
 

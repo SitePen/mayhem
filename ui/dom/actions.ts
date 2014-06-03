@@ -117,7 +117,7 @@ export class Action implements dom.IAction {
 
 	attach(widget:dom.IElementWidget):IPausableHandle {
 		var name = this.name;
-		!name && has('debug') && console.warn('Action config must have a name property');
+		!name && has('debug') && console.debug('Action config must have a name property');
 		var id = widget.get('id'),
 			_pausedIds = this._pausedIds,
 			triggerHandles = array.map(this.triggers, (triggerConfig:any):IPausableHandle => {

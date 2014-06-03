@@ -23,11 +23,11 @@ class _FragmentRenderer extends _BaseRenderer {
 
 		// Poison classList and style instances since they're effectively useless
 		widget._classListHandle = widget.classList.observe((value:string):void => {
-			has('debug') && console.warn('Cannot set class on fragment-rendered widget');
+			has('debug') && console.debug('Cannot set class on fragment-rendered widget');
 		});
 
 		widget._styleHandle = widget.style.observe((value:any, previous:any, key:string):void => {
-			has('debug') && console.warn('Cannot set style on fragment-rendered widget');
+			has('debug') && console.debug('Cannot set style on fragment-rendered widget');
 		});
 	}
 

@@ -106,7 +106,7 @@ class _BaseRenderer implements ui.IRenderer {
 			action.trigger(widget, source);
 		}
 		else if (has('debug')) {
-			console.warn('No action handler for: ' + actionName);
+			console.debug('No action handler for: ' + actionName);
 		}
 	}
 

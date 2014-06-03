@@ -1,12 +1,13 @@
 /// <reference path="../dojo" />
 
+import array = require('dojo/_base/array');
+import core = require('../interfaces');
 import Deferred = require('dojo/Deferred');
+import Event = require('../Event');
+import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import Route = require('./Route');
 import RouteEvent = require('./RouteEvent');
-import array = require('dojo/_base/array');
-import core = require('../interfaces');
-import has = require('../has');
 import routing = require('./interfaces');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
@@ -358,8 +359,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 				routes[i].enter(event);
 			}
 		}).otherwise((error:any):void => {
-			// TODO: handle this at the application level?
-			console.error('Mayhem routing error:', error.message, error);
+			emitError(error);
 		});
 	}
 
@@ -372,8 +372,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		return when(notFoundRoute.startup()).then((route:Route):any => {
 			return route.enter(event);
 		}).otherwise((error:any):void => {
-			// TODO: handle this at the application level?
-			console.error('Mayhem routing error:', error.message, error);
+			emitError(error);
 		});
 	}
 }
@@ -382,5 +381,13 @@ Router.defaults({
 	defaultRoute: 'index',
 	notFoundRoute: 'error'
 });
+
+function emitError(error:Error):void {
+	this.get('app').emit(new Event({
+		type: 'error',
+		target: error,
+		message: error.message
+	}));
+}
 
 export = Router;

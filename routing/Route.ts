@@ -165,7 +165,7 @@ class Route extends BaseRoute implements routing.IRoute {
 
 		this._subViewHandles.push(this.get('parent').add(this._viewInstance, this.get('placeholder')));
 
-		has('debug') && console.log('entering', id);
+		has('debug') && console.debug('entering', id);
 
 		var kwArgs:any = { id: id };
 
@@ -184,7 +184,7 @@ class Route extends BaseRoute implements routing.IRoute {
 		kwArgs.path = event.newPath;
 		lang.mixin(kwArgs, this.parse(event.newPath));
 
-		has('debug') && console.log('new route state for', id, kwArgs);
+		has('debug') && console.debug('new route state for', id, kwArgs);
 		this._viewModelInstance.set('routeState', kwArgs);
 	}
 
@@ -192,7 +192,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	 * Deactivates the route, disconnecting any subviews within the route's view and removing the view from its parent.
 	 */
 	exit():void {
-		has('debug') && console.log('exiting', this.get('id'));
+		has('debug') && console.debug('exiting', this.get('id'));
 
 		var handle:IHandle;
 		while ((handle = this._subViewHandles.pop())) {
@@ -216,7 +216,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 
 	startup():IPromise<Route> {
-		has('debug') && console.log('preparing', this.get('id'));
+		has('debug') && console.debug('preparing', this.get('id'));
 
 		var view:any = this.get('view');
 		var viewModel:any = this.get('viewModel');

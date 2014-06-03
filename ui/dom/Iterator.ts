@@ -101,7 +101,7 @@ class IteratorRenderer extends _ElementRenderer {
 						});
 					}
 				}
-				else {
+				else if (source) {
 					if (source.filter) {
 						source = new LegacyObservable(new DstoreAdapter({ store: source }));
 					}
@@ -148,9 +148,6 @@ class IteratorRenderer extends _ElementRenderer {
 
 		var ImplCtor = source instanceof Array ? dgrid.EagerList : dgrid.LazyList;
 		list = widget._impl = new ImplCtor({ id: widget.get('id') });
-		list._onNotification = function() {
-			console.log('list notification:', arguments)
-		}
 
 		if (arraySource) {
 			var _insertRow:any = list.insertRow;

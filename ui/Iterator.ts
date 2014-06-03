@@ -120,9 +120,8 @@ class Iterator extends ContentView implements ui.IIterator {
 				source[key] = value;
 			}
 		}
-		else {
+		else if (source) {
 			// source should be a store, value should be a record
-			// debugger
 			value && source.put && source.put(value);
 		}
 	}

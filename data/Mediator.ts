@@ -264,7 +264,7 @@ lang.mixin(Mediator.prototype, {
 					model.set(key, value);
 				}
 				else if (has('debug')) {
-					console.warn('Attempt to set key "%s" on mediator but it has no model and no such key', key);
+					console.debug('Attempt to set key "%s" on mediator but it has no model and no such key', key);
 				}
 			}
 		}

@@ -1,4 +1,5 @@
 import array = require('dojo/_base/array');
+import has = require('../has');
 import lang = require('dojo/_base/lang');
 import Mediator = require('./Mediator');
 import when = require('dojo/when');
@@ -20,7 +21,7 @@ class StoreMediator<T> extends Mediator {
 	}
 
 	_routeStateSetter(routeState:any):void {
-		console.log('StoreMediator route state', routeState);
+		has('debug') && console.debug('StoreMediator route state', routeState);
 	}
 
 	getIdentity(item:any):any {

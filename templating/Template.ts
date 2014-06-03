@@ -49,7 +49,7 @@ class Template implements templating.ITemplate {
 
 	create(options?:any):any {
 		if (!this.Constructor && has('debug')) {
-			console.warn('Dependencies must be loaded before Template can create instances')
+			console.debug('Dependencies must be loaded before Template can create instances')
 		}
 		return this.Constructor(options);
 	}
@@ -75,7 +75,7 @@ class Template implements templating.ITemplate {
 	}
 
 	process(CtorOverride?:any, timeout?:number):IPromise<templating.IWidgetConstructor> {
-		console.log('AST: ', this.tree);
+		has('debug') && console.debug('AST: ', this.tree);
 		return this._fetch(timeout).then(():templating.IWidgetConstructor => {
 			return this.Constructor = Template.create(this.tree, CtorOverride);
 		});

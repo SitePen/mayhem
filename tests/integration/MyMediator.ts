@@ -6,17 +6,7 @@ import Mediator = require('../../data/Mediator');
 import MemoryStore = require('dojo/store/Memory');
 import ObservableStore = require('dojo/store/Observable');
 
-class MyMediator extends Mediator {
-	save(skipValidation?:boolean):IPromise<void> {
-		if (this.get('model')) {
-			console.log('Allow us to save some data!');
-		}
-		else {
-			console.log('There is no data to save!');
-		}
-		return;
-	}
-}
+class MyMediator extends Mediator {}
 
 MyMediator.schema(():any => {
 	return {

@@ -21,7 +21,7 @@ export function setState(element:HTMLElement, stateName:string, value:any):void 
 		stateSetters[stateName](element, stateName, value);
 	}
 	else if (has('debug')) {
-		console.warn('Unable to set aria attribute associated with ' + stateName + ' on element:', element);
+		console.debug('Unable to set aria attribute associated with ' + stateName + ' on element:', element);
 	}
 }
 

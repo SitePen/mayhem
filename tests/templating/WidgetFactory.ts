@@ -63,12 +63,7 @@ registerSuite({
 		assert.instanceOf((<any> widget.get('children'))[0], Button, 'Widget child should be a Widget');
 
 		assert.doesNotThrow(function () {
-			try {
-				widget.destroy();
-			} catch (e) {
-				console.error(e);
-				throw e;
-			}
+			widget.destroy();
 		}, 'Destroy with placeholder should not throw');
 	},
 

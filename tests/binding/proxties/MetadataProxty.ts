@@ -65,7 +65,6 @@ registerSuite({
 			sourceObject = {
 				foo: 'aaa',
 				getMetadata: function (key:string):any {
-					console.log('getting metadata for ' + key);
 					if (key === 'outerKey') {
 						return mockObservable;
 					}

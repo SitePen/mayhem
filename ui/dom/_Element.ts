@@ -31,7 +31,7 @@ class _ElementRenderer extends _BaseRenderer {
 		element.setAttribute('role', widget.get('role'));
 
 		if (!actions) {
-			return has('debug') && console.warn('Renderer missing actions config for role: ' + role);
+			return has('debug') && console.debug('Renderer missing actions config for role: ' + role);
 		}
 
 		widget._actionHandles = [];

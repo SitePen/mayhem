@@ -5,10 +5,6 @@ class MockView {
 	_bindArgs:any;
 	_bindingRemoved = false;
 
-	constructor() {
-		console.log('creating a mock view');
-	}
-
 	add(widget:any, position?:any) {
 		this._added = {
 			widget: widget,
