@@ -30,11 +30,6 @@
 				}
 			}
 		}
-
-		var idType = typeof attributes.id;
-		if (idType !== 'undefined' && idType !== 'string') {
-			error('Invalid "id" attribute type: ' + idType);
-		}
 	}
 
 	function parseBoundText(text) {
