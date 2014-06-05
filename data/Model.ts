@@ -111,6 +111,11 @@ class Model extends BaseModel implements data.IModel {
 	}
 }
 
+module Model {
+	export interface Getters extends data.IModelGet {}
+	export interface Setters extends data.IModelSet {}
+}
+
 Model.defaults({
 	scenario: 'insert',
 	store: null
