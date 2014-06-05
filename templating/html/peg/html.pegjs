@@ -588,8 +588,8 @@ Identifier
 	= $([A-Za-z] [A-Za-z0-9\-_\:\.]*)
 
 AttributeStringValue
-	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return value.join('') })
-	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return value.join(''); })
+	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return parseBoundText(value.join('')) })
+	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return parseBoundText(value.join('')); })
 
 // JSON parser adapted from PEG.js example
 

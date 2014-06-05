@@ -109,18 +109,25 @@ class WidgetFactory {
 				value += typeof item === 'string' ? item : ('⟨⟨ ' + i + ' ⟩⟩');
 			}
 		}
+
 		if (value) {
 			// Find html element heads with at least one attribute binding and fix them up
-			value = value.replace(/<[^>]+⟨⟨ \d+ ⟩⟩[^>]*>/g, (match:string):string => {
+			value = value.replace(/<[^>]+⟨⟨ \d+ ⟩⟩[^>]*>/g, (candidate:string):string => {
 				var attributes:any = {},
 					// Replace all Loop over all binding attributes
-					head:string = match.replace(/\s+([a-zA-Z_:][-\w:.]*)\s*=\s*(["']?)⟨⟨ (\d+) ⟩⟩(["']?)/g, (match:string, name:string, open:string, id:string, close:string):string => {
-						// Check for matching quotes (if any) and punt if unbalanced
-						if (has('debug') && open !== close) {
-							throw new Error('Invalid binding in HTML attribute: ' + match);
+					head:string = candidate.replace(/\s+([a-zA-Z_\:][\-\w\:\.]*)\s*=\s*('[^']+'|"[^"]+"|⟨⟨ (\d+) ⟩⟩)/g, (match:string, name:string, value:string):string => {
+						// Strip off quotes and split on bindings (punting if there are none by returning the matched value)
+						var items:string[] = value.replace(/^['"](.+)['"]$/, '$1').split(/⟨⟨ (\d+) ⟩⟩/);
+						if (items.length === 1) {
+							return match;
 						}
-						// Grab binding from content attribute and assign to attribute
-						attributes[name] = content[Number(id)].$bind;
+
+						// Look up path value for each binding index in template
+						attributes[name] = array.map(items, (item:string, i:number):any[] => {
+							// Even numbers are strings, odd numbers should be bindings
+							return i % 2 ? content[item] : item;
+						});
+
 						// Wipe out any attributes with bindings in our element html
 						return '';
 				});
@@ -133,13 +140,13 @@ class WidgetFactory {
 			value = value.replace(/⟨⟨ (\d+) ⟩⟩/g, (match:string, index:string):string => {
 				return '<!-- ⟨⟨ ' + JSON.stringify(content[Number(index)]) + ' ⟩⟩ -->';
 			});
+
 			this.content = domUtil.toDom(value);
 		}
 	}
 }
 
 class _WidgetBinder {
-	private _attributeBindingHandles:IHandle[];
 	private _attributeBindingNodes:HTMLElement[] = [];
 	private _attributeBindingPaths:any[] = [];
 	private _childMarkerNodes:Node[];
@@ -183,14 +190,42 @@ class _WidgetBinder {
 			view = this.getView(),
 			propertyBindings = this.factory.propertyBindings;
 
-		for (var key in propertyBindings) {
-			view.bind({
-				sourceBinding: propertyBindings[key],
-				target: widget,
-				targetBinding: key,
-				twoWay: true // Always bind bidirectionally for widget properties
-			});
-		}
+		array.forEach(util.getObjectKeys(propertyBindings), (key:string) => {
+			var binding = propertyBindings[key];
+			// Binding descriptor can be a string or an array representing a binding template
+			if (typeof binding === 'string') {
+				view.bind({
+					sourceBinding: binding,
+					target: widget,
+					targetBinding: key,
+					twoWay: true // Always bind bidirectionally for strait bindings
+				});
+			}
+			else {
+				// Create a observable for our bind target and reprocess our binding template every time it changes
+				var bindTarget = new Observable();
+				bindTarget._notify = function ():void {
+					view.set(key, array.map(binding, (function (value:any, i:any) {
+						// If value is a binding look it up by index (since we can't use its string as a key without)
+						return value.$bind ? bindTarget.get(i) : value;
+					})).join(''));
+				}
+
+				// Replace binding directives in template with proxties
+				array.forEach(binding, (item:any, i:number):void => {
+					var binding:string = item && item.$bind;
+					if (binding) {
+						view.bind({
+							sourceBinding: binding,
+							target: bindTarget,
+							targetBinding: '' + i // Use the template index value (since we can't use the binding string w/o wreaking havoc)
+						});
+					}
+					return item;
+
+				});
+			}
+		});
 	}
 
 	private _bindTextNodes():void {
@@ -219,26 +254,40 @@ class _WidgetBinder {
 		if (!this._attributeBindingNodes || !this._attributeBindingPaths) {
 			return;
 		}
-		util.remove.apply(null, this._attributeBindingHandles || []);
-		this._attributeBindingHandles = [];
-		var view = this.getView(),
-			element:HTMLElement,
-			config:any;
-		for (var i = 0, len = this._attributeBindingNodes.length; i < len; i++) {
-			element = this._attributeBindingNodes[i];
-			config = this._attributeBindingPaths[i];
-			if (!element || !config) {
-				continue;
-			}
-			for (var attributeName in config) {
-				this._attributeBindingHandles.push(view.bind({
-					sourceBinding: config[attributeName],
-					target: element,
-					targetBinding: '@' + attributeName
-				}));
-			}
-		}
-		// TODO: sniff for widget body reset and destroy these bindings
+
+		var view = this.getView();
+
+		array.forEach(this._attributeBindingNodes, (element:HTMLElement, i:number):void => {
+			var bindingPaths = this._attributeBindingPaths[i];
+			if (!element || !bindingPaths) { return; }
+
+			array.forEach(util.getObjectKeys(bindingPaths), (attributeName:string) => {
+				var template = bindingPaths[attributeName],
+					bindTarget = new Observable();
+
+				// Hook observable's notify to update the attribute value
+				bindTarget._notify = function ():void {
+					element.setAttribute(attributeName, array.map(template, (function (value:any, i:any) {
+						// If value is a binding look it up by index (since we can't use its string as a key without)
+						return value.$bind ? bindTarget.get(i) : value;
+					})).join(''));
+				}
+
+				// Replace binding directives in template with proxties
+				array.forEach(template, (item:any, i:number) :void=> {
+					var binding:string = item && item.$bind;
+					if (binding) {
+						view.bind({
+							sourceBinding: binding,
+							target: bindTarget,
+							targetBinding: '' + i // Use the template index value (since we can't use the binding string w/o wreaking havoc)
+						});
+					}
+					return item;
+
+				});
+			});
+		});
 	}
 
 	destroy():void {

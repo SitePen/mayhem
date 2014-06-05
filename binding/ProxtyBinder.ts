@@ -47,9 +47,22 @@ class ProxtyBinder implements binding.IProxtyBinder {
 	}
 
 	bind<SourceT, TargetT>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
-		var source = this.createProxty<SourceT, TargetT>(kwArgs.source, kwArgs.sourceBinding, { scheduled: this._useScheduler }),
+		// For source or target, if binding is provided use it to create proxty, otherwise it should already be a proxty
+		var source:binding.IProxty<SourceT, TargetT>,
+			target:binding.IProxty<TargetT, SourceT>;
+		if (kwArgs.sourceBinding) {
+			source = this.createProxty<SourceT, TargetT>(kwArgs.source, kwArgs.sourceBinding, { scheduled: this._useScheduler });
+		}
+		else {
+			source = <binding.IProxty<SourceT, TargetT>> kwArgs.source;
+		}
+		if (kwArgs.sourceBinding) {
 			target = this.createProxty<TargetT, SourceT>(kwArgs.target, kwArgs.targetBinding, { scheduled: this._useScheduler });
-
+		}
+		else {
+			target = <binding.IProxty<TargetT, SourceT>> kwArgs.target;
+		}
+		
 		source.bindTo(target);
 
 		if (kwArgs.direction === BindDirection.TWO_WAY) {
