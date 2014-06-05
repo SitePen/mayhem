@@ -191,7 +191,7 @@ class _WidgetBinder {
 			propertyBindings = this.factory.propertyBindings;
 
 		array.forEach(util.getObjectKeys(propertyBindings), (key:string) => {
-			var binding = propertyBindings[key];
+			var binding:any = propertyBindings[key];
 			// Binding descriptor can be a string or an array representing a binding template
 			if (typeof binding === 'string') {
 				view.bind({
@@ -204,11 +204,14 @@ class _WidgetBinder {
 			else {
 				// Create a observable for our bind target and reprocess our binding template every time it changes
 				var bindTarget = new Observable();
+				view.own(bindTarget);
 				bindTarget._notify = function ():void {
-					view.set(key, array.map(binding, (function (value:any, i:any) {
+					var values = array.map(<any[]> binding, ((item:any, i:any):any => {
 						// If value is a binding look it up by index (since we can't use its string as a key without)
-						return value.$bind ? bindTarget.get(i) : value;
-					})).join(''));
+						return item.$bind ? bindTarget.get(i) : item;
+					}));
+
+					view.set(key, values.join(''));
 				}
 
 				// Replace binding directives in template with proxties
@@ -257,20 +260,23 @@ class _WidgetBinder {
 
 		var view = this.getView();
 
-		array.forEach(this._attributeBindingNodes, (element:HTMLElement, i:number):void => {
+		array.forEach(this._attributeBindingNodes, (element:HTMLElement, i:number) => {
 			var bindingPaths = this._attributeBindingPaths[i];
 			if (!element || !bindingPaths) { return; }
 
 			array.forEach(util.getObjectKeys(bindingPaths), (attributeName:string) => {
-				var template = bindingPaths[attributeName],
+				var template:any[] = bindingPaths[attributeName],
 					bindTarget = new Observable();
+				view.own(bindTarget);
 
 				// Hook observable's notify to update the attribute value
 				bindTarget._notify = function ():void {
-					element.setAttribute(attributeName, array.map(template, (function (value:any, i:any) {
+					var values:any[] = array.map(<any> template, ((item:any, i:any):any => {
 						// If value is a binding look it up by index (since we can't use its string as a key without)
-						return value.$bind ? bindTarget.get(i) : value;
-					})).join(''));
+						return item.$bind ? bindTarget.get(i) : item;
+					}));
+
+					element.setAttribute(attributeName, values.join(''));
 				}
 
 				// Replace binding directives in template with proxties
