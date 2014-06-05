@@ -56,6 +56,7 @@
 
 	var aliases = {
 		_aliases: [],
+		childTemplates: [],
 		_map: null,
 
 		/**
@@ -94,7 +95,7 @@
 		/**
 		 * Walks the widget tree, resolving constructor aliases for the given node and its children.
 		 */
-		resolve: function (node) {
+		resolve: function (node, childTemplates) {
 			var aliasMap = this._map;
 
 			for (var k in aliasMap) {
@@ -106,6 +107,12 @@
 			if (node.children && node.children.length) {
 				for (var i = 0, child; (child = node.children[i]); ++i) {
 					this.resolve(child);
+				}
+			}
+
+			if (childTemplates) {
+				for (var i = 0, length = childTemplates.length; i < length; ++i) {
+					this.resolve(childTemplates[i]);
 				}
 			}
 		},
@@ -156,8 +163,9 @@ Template
 		else {
 			root = { constructor: require.toAbsMid('../../ui/View') };
 		}
+
 		aliases.validate();
-		aliases.resolve(root);
+		aliases.resolve(root, aliases.childTemplates);
 		return root;
 	}
 
@@ -367,6 +375,9 @@ For '<for/>'
 			kwArgs.source = { $bind: kwArgs.in };
 			delete kwArgs.in;
 		}
+
+		// Register body as a childTemplate for alias resolution
+		aliases.childTemplates.push(body);
 
 		return {
 			constructor: require.toAbsMid('../../ui/Iterator'),
