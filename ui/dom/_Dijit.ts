@@ -52,10 +52,11 @@ class _DijitRenderer extends _ElementRenderer {
 			keys = {};
 
 		for (key in widget) {
-			// Collect any keys that are defined either by _key or _keyGetter or _keySetter
-			if (key.charAt(0) !== '_' || (typeof widget[key] === 'function' && !/^_.*[GS]etter$/.test(key))) {
+			// Collect any keys that are defined either by _key or _keyGetter
+			if (key.charAt(0) !== '_' || (typeof widget[key] === 'function' && !/^_.+Getter$/.test(key))) {
 				continue;
 			}
+			key = key.substring(1).replace(/Getter$/, '');
 			keys[key] = 1;
 		}
 
@@ -68,16 +69,19 @@ class _DijitRenderer extends _ElementRenderer {
 		widget._firstNode = widget._lastNode = widget._outerFragment = dijit.domNode;
 		widget.set('class', dijit.domNode.className);
 
+		function setDijitProperty(key:string, value:any):void {
+			var dijitKey:string = nameMap[key] || key;
+			if (!util.isEqual(value, dijit.get(dijitKey))) {
+				dijit.set(dijitKey, value);
+			}
+		}
+
 		// Sync widget with dijit
 		var _notify:(value:any, oldValue:any, key:string) => void = widget['_notify'];
 		widget['_notify'] = (value:any, oldValue:any, key:string):void => {
 			_notify.apply(widget, arguments);
-			if (util.isEqual(value, oldValue)) {
-				return;
-			}
-			var dijitKey:string = nameMap[key] || key;
-			if (!util.isEqual(value, dijit.get(dijitKey))) {
-				dijit.set(dijitKey, value);
+			if (!util.isEqual(value, oldValue)) {
+				setDijitProperty(key, value);
 			}
 		};
 		dijit.watch((key:string, oldValue:any, value:any):void => {
