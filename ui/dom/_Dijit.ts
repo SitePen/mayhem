@@ -40,7 +40,7 @@ class _DijitRenderer extends _ElementRenderer {
 		
 		var nameMap = this._implNameMap,
 			inverseNameMap:{ [key:string]:string; } = {},
-			key:string;
+			ImplCtor = this._ImplCtor;
 
 		// Invert property rename map
 		for (key in nameMap) {
@@ -49,7 +49,10 @@ class _DijitRenderer extends _ElementRenderer {
 
 		// Walk widget values and get initial properties to pass to dijit constructor
 		var args:any = lang.mixin({}, this._implDefaults),
-			keys = {};
+			ignoreKeys = [ 'class', 'style' ],
+			keys = {},
+			key:string,
+			value:any;
 
 		for (key in widget) {
 			// Collect any keys that are defined either by _key or _keyGetter
@@ -61,11 +64,17 @@ class _DijitRenderer extends _ElementRenderer {
 		}
 
 		for (key in keys) {
-			args[nameMap[key] || key] = this._getProperty(widget, key);
+			value = this._getProperty(widget, key);
 			// TODO: if prop expects a function, pull from model and/or wrap
+
+			key = nameMap[key] || key;
+			// Ignore keys not on dijit's prototype, and some keys regardless
+			if (key in ImplCtor.prototype && ignoreKeys.indexOf(key) === -1) {
+				args[key] = value;
+			}
 		}
 
-		var dijit = widget._impl = new this._ImplCtor(args);
+		var dijit = widget._impl = new ImplCtor(args);
 		widget._firstNode = widget._lastNode = widget._outerFragment = dijit.domNode;
 		widget.set('class', dijit.domNode.className);
 
