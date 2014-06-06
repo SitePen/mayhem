@@ -40,41 +40,21 @@ class _DijitRenderer extends _ElementRenderer {
 		
 		var nameMap = this._implNameMap,
 			inverseNameMap:{ [key:string]:string; } = {},
-			ImplCtor = this._ImplCtor;
+			args:any = lang.mixin({}, this._implDefaults),
+			initialArgs:any = widget.get('initialArgs'),
+			key:string;
 
 		// Invert property rename map
 		for (key in nameMap) {
 			inverseNameMap[nameMap[key]] = key;
 		}
 
-		// Walk widget values and get initial properties to pass to dijit constructor
-		var args:any = lang.mixin({}, this._implDefaults),
-			ignoreKeys = [ 'class', 'style' ],
-			keys = {},
-			key:string,
-			value:any;
-
-		for (key in widget) {
-			// Collect any keys that are defined either by _key or _keyGetter
-			if (key.charAt(0) !== '_' || (typeof widget[key] === 'function' && !/^_.+Getter$/.test(key))) {
-				continue;
-			}
-			key = key.substring(1).replace(/Getter$/, '');
-			keys[key] = 1;
+		// Build up initial values for dijit widget
+		for (key in initialArgs) {
+			args[nameMap[key] || key] = initialArgs[key];
 		}
 
-		for (key in keys) {
-			value = this._getProperty(widget, key);
-			// TODO: if prop expects a function, pull from model and/or wrap
-
-			key = nameMap[key] || key;
-			// Ignore keys not on dijit's prototype, and some keys regardless
-			if (key in ImplCtor.prototype && ignoreKeys.indexOf(key) === -1) {
-				args[key] = value;
-			}
-		}
-
-		var dijit = widget._impl = new ImplCtor(args);
+		var dijit = widget._impl = new this._ImplCtor(args);
 		widget._firstNode = widget._lastNode = widget._outerFragment = dijit.domNode;
 		widget.set('class', dijit.domNode.className);
 

@@ -5,6 +5,7 @@ import aspect = require('dojo/aspect');
 import ClassList = require('./style/ClassList');
 import core = require('../interfaces');
 import has = require('../has');
+import lang = require('dojo/_base/lang');
 import ObservableEvented = require('../ObservableEvented');
 import PlacePosition = require('./PlacePosition');
 import Style = require('./style/Style');
@@ -46,6 +47,9 @@ class Widget extends ObservableEvented implements ui.IWidget {
 
 		// Capture id as provided before transforming
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
+
+		// Capture initial kwArgs
+		kwArgs.initialArgs = lang.mixin({}, kwArgs);
 
 		// TODO: check registry for duplicate id and throw?
 		registry[id] = this;
