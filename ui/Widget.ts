@@ -49,7 +49,7 @@ class Widget extends ObservableEvented implements ui.IWidget {
 		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
 
 		// Capture initial kwArgs
-		kwArgs.initialArgs = lang.mixin({}, kwArgs);
+		kwArgs.kwArgs = lang.mixin({}, kwArgs);
 
 		// TODO: check registry for duplicate id and throw?
 		registry[id] = this;

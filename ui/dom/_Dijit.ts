@@ -41,7 +41,7 @@ class _DijitRenderer extends _ElementRenderer {
 		var nameMap = this._implNameMap,
 			inverseNameMap:{ [key:string]:string; } = {},
 			args:any = lang.mixin({}, this._implDefaults),
-			initialArgs:any = widget.get('initialArgs'),
+			initialArgs:any = widget.get('kwArgs'),
 			key:string;
 
 		// Invert property rename map
