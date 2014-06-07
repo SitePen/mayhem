@@ -65,6 +65,7 @@ class _FragmentRenderer extends _BaseRenderer {
 	setContent(widget:dom.IFragmentWidget, value?:any /* string | Node */):void {
 		var fragment:DocumentFragment;
 		value = domUtil.toDom(value);
+
 		// If we just have text node make a fragment out of it
 		if (value instanceof Text) {
 			fragment = document.createDocumentFragment();
@@ -76,7 +77,9 @@ class _FragmentRenderer extends _BaseRenderer {
 
 		this.clear(widget);
 		widget._innerFragment = fragment;
-		this.attachContent(widget);
+		if (!widget.get('hidden')) {
+			this.attachContent(widget);
+		}
 	}
 
 	updateVisibility(widget:dom.IFragmentWidget, value:boolean):void {
