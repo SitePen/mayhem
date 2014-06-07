@@ -63,8 +63,19 @@ class _FragmentRenderer extends _BaseRenderer {
 	}
 
 	setContent(widget:dom.IFragmentWidget, value?:any /* string | Node */):void {
+		var fragment:DocumentFragment;
+		value = domUtil.toDom(value);
+		// If we just have text node make a fragment out of it
+		if (value instanceof Text) {
+			fragment = document.createDocumentFragment();
+			fragment.appendChild(value);
+		}
+		else {
+			fragment = value;
+		}
+
 		this.clear(widget);
-		widget._innerFragment = domUtil.toDom(value);
+		widget._innerFragment = fragment;
 		this.attachContent(widget);
 	}
 
