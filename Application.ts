@@ -12,7 +12,11 @@ import ui = require('./ui/interfaces');
 import util = require('./util');
 import whenAll = require('dojo/promise/all');
 
-class Application extends ObservableEvented implements core.IApplication {
+/**
+ * The Application class is the base class for all Mayhem applications.
+ */
+class Application extends ObservableEvented {
+	// TODO: Get rid of this
 	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
 		var start = (config?:any):void => {
 			this.start(config).then(load);
@@ -25,21 +29,24 @@ class Application extends ObservableEvented implements core.IApplication {
 		}
 	}
 
-	static start(config:any = {}):IPromise<core.IApplication> {
+	// TODO: Get rid of this
+	static start(config:any = {}):IPromise<Application> {
 		config.modules || (config.modules = { router: null });
 		return new this(config).startup();
 	}
 
-	get:core.IApplicationGet;
-	set:core.IApplicationSet;
+	get:Application.Getters;
+	set:Application.Setters;
 
-	constructor(kwArgs:any = {}) {
+	constructor(kwArgs:HashMap<any> = {}) {
 		// TODO: more robust configuration merging
 		kwArgs = requestUtil.deepCopy(this._getDefaultConfig(), kwArgs);
+		// TODO: Why is application getting a reference to itself?
 		kwArgs.app = this;
 		super(kwArgs);
 	}
 
+	// TODO: Router uses Application as the parent for root routes, which is not correct.
 	add(view:ui.IView, placeholder:string = 'default'):IHandle {
 		return this.get('view').add(view, placeholder);
 	}
@@ -49,8 +56,10 @@ class Application extends ObservableEvented implements core.IApplication {
 	 * literal in order to allow subclasses to inherit and modify the default configuration, and to avoid
 	 * using lang.clone when creating a copy of the config for a new instance of an application since it
 	 * will attempt to blindly execute any `constructor` property it encounters.
+	 *
+	 * @protected
 	 */
-	/* protected */ _getDefaultConfig():Object {
+	_getDefaultConfig():HashMap<any> {
 		return {
 			modules: {
 				binder: {
@@ -67,15 +76,10 @@ class Application extends ObservableEvented implements core.IApplication {
 					]
 				},
  				router: {
- 					constructor: require.toAbsMid('./routing/NullRouter'),
-					routes: {}
+ 					constructor: require.toAbsMid('./routing/NullRouter')
  				},
 				scheduler: {
 					constructor: require.toAbsMid('./Scheduler')
-				},
-				view: {
-					constructor: require.toAbsMid('./ui/Master'),
-					attachTo: null
 				}
 			}
 		};
@@ -105,7 +109,7 @@ class Application extends ObservableEvented implements core.IApplication {
 
 			if (config.template) {
 				// If the user has provided a template, get it, and add it to the master widget
-				config.template = this.get('templatePlugin') + '!' + this._resolveModuleId(this.get('templatePath'), config.template);
+				config.template = this._resolveModuleId(this.get('templatePath'), config.template);
 
 				util.getModule(config.template).then((Template:any):void => {
 					var view = this.get('view');
@@ -124,11 +128,11 @@ class Application extends ObservableEvented implements core.IApplication {
 	 * Loads application components and attaches them to the application object.
 	 */
 	private _loadModules():IPromise<void> {
-		var dfd:IDeferred<void> = new Deferred<void>(),
-			lazyConstructors:{ [key:string]: number; } = {},
-			moduleIdsToLoad:string[] = [],
-			modules:Object = this.get('modules'),
-			promises:{ [key:string]:IPromise<void> } = {};
+		var dfd:IDeferred<void> = new Deferred<void>();
+		var lazyConstructors:HashMap<number> = {};
+		var moduleIdsToLoad:string[] = [];
+		var modules:Object = this.get('modules');
+		var promises:HashMap<IPromise<void>> = {};
 
 		for (var key in modules) {
 			promises[key] = this._loadModule(key, modules[key], modules);
@@ -137,6 +141,7 @@ class Application extends ObservableEvented implements core.IApplication {
 		return whenAll(promises).then((modules:any):void => this._instantiateModules(modules));
 	}
 
+	// TODO: There needs to be only one of these, there is another one in Route
 	_resolveModuleId(path:string, value:string):string {
 		if (!value) {
 			return;
@@ -183,14 +188,14 @@ class Application extends ObservableEvented implements core.IApplication {
 	 *
 	 * @returns A promise that is resolved once all modules have been loaded.
 	 */
-	startup():IPromise<core.IApplication> {
+	startup():IPromise<Application> {
 		if (has('debug')) {
 			this.on('error', function (event:any):void {
 				console.error(event.message);
 			});
 		}
 
-		var dfd = new Deferred<core.IApplication>();
+		var dfd = new Deferred<Application>();
 
 		this._loadModules().then(():IPromise<void> => {
 			var promises:IPromise<any>[] = [],
@@ -211,17 +216,27 @@ class Application extends ObservableEvented implements core.IApplication {
 			});
 		}).otherwise(lang.hitch(dfd, 'reject'));
 
-		this.startup = ():IPromise<core.IApplication> => dfd.promise;
+		this.startup = function ():IPromise<Application> {
+			return dfd.promise;
+		};
 
 		return dfd.promise;
 	}
 }
 
+module Application {
+	export interface Getters extends ObservableEvented.Getters {
+		(key:'binder'):binding.IBinder;
+		(key:'router'):routing.IRouter;
+		(key:'scheduler'):core.IScheduler;
+		(key:'view'):ui.IMaster;
+	}
+
+	export interface Setters extends ObservableEvented.Setters {}
+}
+
 Application.defaults({
 	modelPath: 'app/models',
-	templatePath: 'app/views',
-	templatePlugin: require.toAbsMid('./templating/html'),
-	viewPath: 'app/views',
 	viewModelPath: 'app/viewModels'
 });
 

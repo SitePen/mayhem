@@ -1,4 +1,6 @@
+import Application = require('../Application');
 import core = require('../interfaces');
+import Observable = require('../Observable');
 import RouteEvent = require('./RouteEvent');
 
 /**
@@ -12,11 +14,11 @@ export interface IRoute {
 	startup():IPromise<IRoute>;
 }
 
-export interface IRouteGet extends core.IObservableGet {
+export interface IRouteGet extends Observable.Getters {
 	(key:'router'):IRouter;
 }
 
-export interface IRouteSet extends core.IObservableSet {
+export interface IRouteSet extends Observable.Setters {
 	(key:'router', value:IRouter):void;
 }
 
@@ -37,13 +39,13 @@ export interface IRouter extends core.IApplicationComponent {
 }
 
 export interface IRouterGet extends core.IApplicationComponentGet {
-	(key:'app'):core.IApplication;
+	(key:'app'):Application;
 	(key:'defaultRoute'):string;
 	(key:'notFoundRoute'):string;
 }
 
 export interface IRouterSet extends core.IApplicationComponentSet {
-	(key:'app', value:core.IApplication):void;
+	(key:'app', value:Application):void;
 	(key:'defaultRoute', value:string):void;
 	(key:'notFoundRoute', value:string):void;
 }

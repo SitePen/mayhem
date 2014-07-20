@@ -1,74 +1,33 @@
 /// <reference path="./dojo" />
 
-import aspect = require('dojo/aspect');
 import core = require('./interfaces');
-import Event = require('./Event');
 import Evented = require('dojo/Evented');
-import lang = require('dojo/_base/lang');
 import Observable = require('./Observable');
-import on = require('dojo/on');
-import util = require('./util');
 
-// TODO: Define an Event interface for Mayhem and use it as the type for events in this class
+/**
+ * The ObservableEvented class is a base object class that combines an Observable object with an event emitter. This
+ * class should be used as a base class for objects that also need to emit events.
+ */
 class ObservableEvented extends Observable implements core.IObservableEvented {
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs:HashMap<any> = {}) {
 		super(kwArgs);
 		Evented.apply(this, arguments);
 	}
 
-	/* protected */ _getEventedMethodName(type:string):string {
-		return 'on' + type;
-	}
-
 	emit(event:core.IEvent):boolean {
-		var type = event.type,
-			oldCurrentTarget = event.currentTarget;
-
-		event.currentTarget = this;
-
-		var method = this._getEventedMethodName(type);
-		if (this[method]) {
-			this[method](event);
-		}
-
-		if (event.bubbles && !event.propagationStopped) {
-			var parent = this.get('parent');
-			if (parent && parent.emit) {
-				parent.emit(event);
-			}
-		}
-
-		// TODO: The default mechanism actually runs in reverse order (parent first,
-		// then child) which seems kind of backwards since bubbling happens the other
-		// way
-		method = this['default' + method.slice(2)];
-		if (!event.defaultPrevented && method) {
-			if (typeof method === 'function') {
-				var func:Function = <any>method;
-				func.call(this, event);
-			}
-			/*else if (typeof method === 'string') {
-				var newEvent = new Event({
-					bubbles: true,
-					cancelable: true,
-					type: method,
-					target: this,
-					sourceEvent: event
-				});
-				this.emit(newEvent);
-			}*/
-		}
-
-		event.currentTarget = null;
-
-		return !event.defaultPrevented;
+		return Evented.prototype.emit.call(this, event.type, event);
 	}
 
+	on(type:IExtensionEvent, listener:(event:core.IEvent) => void):IHandle;
+	on(type:string, listener:(event:core.IEvent) => void):IHandle;
 	on(type:any, listener:(event:core.IEvent) => void):IHandle {
-		return on.parse(this, type, <any>listener, (target:any, type:string):IHandle => {
-			return aspect.after(target, this._getEventedMethodName(type), listener, true);
-		});
+		return Evented.prototype.on.call(this, type, listener);
 	}
+}
+
+module ObservableEvented {
+	export interface Getters extends Observable.Getters {}
+	export interface Setters extends Observable.Setters {}
 }
 
 export = ObservableEvented;

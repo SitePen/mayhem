@@ -3,74 +3,86 @@ import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
+/**
+ * The Observable class is a base object class that provides the ability to use computed properties and observe
+ * properties for changes in EcmaScript 3 browsers.
+ *
+ * When interacting with an Observable object, the `get` and `set` methods are used to get and set properties of the
+ * object, rather than the normal dot and assignment operators.
+ */
 class Observable implements core.IObservable {
-	static _initialValues:any;
+	/**
+	 * Gets the value of a property on the object.
+	 *
+	 * @method
+	 * @param {string} key The key to retrieve.
+	 * @returns {any} The value of the property.
+	 */
+	get:Observable.Getters;
 
-	static defaults(kwArgs:any):void {
-		for (var key in kwArgs) {
-			this.prototype['_' + key] = kwArgs[key];
-		}
-	}
+	// TODO: Why is this not private?
+	/**
+	 * Not private in order to facilitate extension by Proxty and Proxy.
+	 *
+	 * @protected
+	 */
+	_observers:HashMap<core.IObserver<any>[]>;
 
-	static observers(kwArgs:{ [key:string]: core.IObserver<any>; }):void {
-		var proto = this.prototype,
-			observers:any = proto._observers;
+	/**
+	 * Sets multiple properties on the object at once.
+	 *
+	 * @method
+	 * @property set
+	 * @param {HashMap<any>} kwArgs A list of properties to set.
+	 */
 
-		if (!proto.hasOwnProperty('_observers')) {
-			proto._observers = observers = {};
-		}
-		for (var key in kwArgs) {
-			proto.observe(key, kwArgs[key]);
-		}
-	}
+	/**
+	 * Sets a value of a property on the object.
+	 *
+	 * @method
+	 * @param {string} key The key to set.
+	 * @param {any} value The value to set.
+	 */
+	set:Observable.Setters;
 
-	static set(key:any, value?:any):void {
-		// Sets defaults that fire change notifications on construction
-		var kwArgs:{ [key:string]: any; };
-		if (util.isObject(key)) {
-			kwArgs = key;
-		}
-		else {
-			kwArgs = {};
-			kwArgs[key] = value;
-		}
-		this._initialValues = lang.mixin({}, this._initialValues, kwArgs);
-	}
-
-	constructor(kwArgs?:{ [key:string]: any; }) {
-		var observers:any = this._observers;
-		if (has('es5')) {
-			this._observers = Object.create(null);
-		}
-		else {
-			this._observers = {};
-		}
-		util.deepMixin(this._observers, observers);
+	/**
+	 * @constructor module:mayhem/Observable
+	 * @param {HashMap<any>=} kwArgs An initial set of properties to set on the object at construction time.
+	 */
+	constructor(kwArgs:HashMap<any> = {}) {
+		this._observers = has('es5') ? Object.create(null) : {};
 		this._initialize();
-		kwArgs && this.set(lang.mixin({}, (<typeof Observable> this.constructor)._initialValues, kwArgs));
 	}
 
-	get:core.IObservableGet;
-	set:core.IObservableSet;
-	// TODO: Do we need this?
-	// has:(key:string) => boolean;
-	/* protected */ _observers:{ [key:string]: core.IObserver<any>[]; };
-
+	/**
+	 * Destroys the object. Subclasses may perform additional cleanup upon destruction, so make sure to call `destroy`
+	 * whenever you are finished working with any Observable object.
+	 */
 	destroy():void {
 		this.destroy = function ():void {};
 		this._observers = null;
 	}
 
-	/* protected */ _initialize():void {
-	}
+	/**
+	 * Provides a mechanism for subclasses to set default properties. These default properties will then be overridden
+	 * by any values passed to the class using the `kwArgs` object.
+	 *
+	 * @protected
+	 */
+	_initialize():void {}
 
-	/* protected */ _notify(newValue:any, oldValue:any, key:string):void {
-		var changedMethod = '_' + key + 'Changed';
-		this[changedMethod] && this[changedMethod](newValue, oldValue);
-
-		// TODO: we could eventually use the changed handler's return value to suppress observer notifications
-
-		var observers:core.IObserver<any>[] = has('es5') ? this._observers[key] : (this._observers.hasOwnProperty(key) && this._observers[key]);
+	/**
+	 * Notifies observers of the given property that its value has changed.
+	 *
+	 * @protected
+	 * @param {any} newValue The new value for the property.
+	 * @param {any} oldValue The old value for the property.
+	 * @param {string} key The name of the property.
+	 */
+	_notify(newValue:any, oldValue:any, key:string):void {
+		var observers:core.IObserver<any>[] = has('es5') ?
+			this._observers[key] :
+			(this._observers.hasOwnProperty(key) && this._observers[key]);
 
 		if (observers) {
 			// Prevent mutation of the observers list from affecting this loop
@@ -85,8 +97,15 @@ class Observable implements core.IObservable {
 		}
 	}
 
-	observe(key:any, observer:core.IObserver<any>):IHandle {
-		if (has('es5') ? !this._observers[key] : !this._observers.hasOwnProperty(key)) {
+	/**
+	 * Observes a property on the object for changes.
+	 *
+	 * @param key The name of the property to observe.
+	 * @param observer An callback that will be invoked whenever the property changes.
+	 * @returns A handle that can be used to stop observing the property.
+	 */
+	observe(key:string, observer:core.IObserver<any>):IHandle {
+		if (!this._observers.hasOwnProperty(key)) {
 			this._observers[key] = [];
 		}
 
@@ -103,20 +122,33 @@ class Observable implements core.IObservable {
 	}
 }
 
+module Observable {
+	export interface Getters {
+		(key:string):any;
+	}
+
+	export interface Setters {
+		(kwArgs:HashMap<any>):void;
+		(key:string, value:any):void;
+	}
+}
+
 Observable.prototype.get = function (key:string):any {
-	var privateKey = '_' + key,
-		getter = privateKey + 'Getter';
+	var privateKey:string = '_' + key;
+	var getter:string = privateKey + 'Getter';
 
 	if (typeof this[getter] === 'function') {
 		return this[getter]();
 	}
+
 	return this[privateKey];
 };
 
 Observable.prototype.set = function (key:any, value?:any):void {
 	if (util.isObject(key)) {
-		var kwArgs:{ [key:string]: any; } = key;
+		var kwArgs:HashMap<any> = key;
 		for (key in kwArgs) {
+			// TODO: Document why
 			if (key === 'constructor') {
 				continue;
 			}
@@ -126,9 +158,9 @@ Observable.prototype.set = function (key:any, value?:any):void {
 		return;
 	}
 
-	var oldValue = this.get(key),
-		privateKey = '_' + key,
-		setter = privateKey + 'Setter';
+	var oldValue:any = this.get(key);
+	var privateKey:string = '_' + key;
+	var setter:string = privateKey + 'Setter';
 
 	if (typeof this[setter] === 'function') {
 		this[setter](value);
@@ -142,14 +174,5 @@ Observable.prototype.set = function (key:any, value?:any):void {
 		this._notify(newValue, oldValue, key);
 	}
 };
-
-Observable.prototype._observers = has('es5') ? Object.create(null) : {};
-
-// TODO: Do we need this anymore?
-/*Observable.prototype.has = function (key:string):boolean {
-	var privateKey = '_' + key;
-
-	return (privateKey in this) || ((privateKey + 'Getter') in this) || ((privateKey + 'Setter') in this);
-};*/
 
 export = Observable;

@@ -1,5 +1,6 @@
 export import IBindDirection = require('./BindDirection');
 import core = require('../interfaces');
+import Observable = require('../Observable');
 
 /**
  * The keyword arguments object for the high-level data binding API.
@@ -59,7 +60,7 @@ export interface IBinder {
 	createProxty<SourceT, TargetT>(object:Object, binding:string, options?:{ scheduled?:boolean; }):IProxty<SourceT, TargetT>;
 
 	getMetadata<T>(object:Object, binding:string, field:string):core.IProxty<T>;
-	getMetadata(object:Object, binding:string):core.IProxty<core.IObservable>;
+	getMetadata(object:Object, binding:string):core.IProxty<Observable>;
 
 	startup():IPromise<any[]>;
 }

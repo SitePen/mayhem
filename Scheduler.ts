@@ -5,7 +5,7 @@ import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
-class Scheduler implements core.IScheduler {
+class Scheduler {
 	private _callbacks:{ [id:string]:() => void; } = {};
 	private _dispatch:() => void;
 	private _postCallbacks:Array<(...args:any[]) => void> = [];
@@ -22,8 +22,8 @@ class Scheduler implements core.IScheduler {
 		callbacks.push(callback);
 
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				spliceMatch(callbacks, callback);
 				spliceMatch = callbacks = callback = null;
 			}
@@ -70,8 +70,8 @@ class Scheduler implements core.IScheduler {
 		}
 
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				callbacks = id = callbacks[id] = null;
 			}
 		};

@@ -4,6 +4,7 @@ import binding = require('../interfaces');
 import BindingProxty = require('../BindingProxty');
 import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
+import Observable = require('../../Observable');
 import util = require('../../util');
 
 /**
@@ -82,7 +83,7 @@ class MetadataProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	}
 
 	private _swapMetadataObject(newObject:core.IHasMetadata):void {
-		var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(this._key) : null;
+		var newMetadata:Observable = newObject && newObject.getMetadata ? newObject.getMetadata(this._key) : null;
 
 		this._handle && this._handle.remove();
 

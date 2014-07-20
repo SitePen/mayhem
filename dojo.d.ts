@@ -10,11 +10,16 @@ declare var require:{
 	config(config:Object):void;
 	toUrl(moduleId:string):string;
 	toAbsMid(moduleId:string):string;
+	on(eventName:string, listener:(...args:any[]) => any):IHandle;
 };
 
 // TODO: Not part of dojo, convenience type since the indexer was removed from Object
 interface Object {
-	[key:string]: any;
+	[key:string]:any;
+}
+
+interface HashMap<T> {
+	[key:string]:T;
 }
 
 interface IDeferred<T> extends IPromise<T> {

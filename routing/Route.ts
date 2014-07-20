@@ -84,6 +84,7 @@ class Route extends BaseRoute implements routing.IRoute {
 		return this._model;
 	}
 
+	// TODO: There needs to be only one of these, there is another one in Application
 	_resolveModuleId(path:string, value:any):string {
 		if (!value && value != null) {
 			return;
