@@ -48,6 +48,10 @@ export interface IEvent {
 	stopPropagation():void;
 }
 
+export interface IEventListener {
+	(event:IEvent):void;
+}
+
 ////
 
 export interface IHasMetadata {

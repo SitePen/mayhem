@@ -52,6 +52,7 @@ class Observable implements core.IObservable {
 	constructor(kwArgs:HashMap<any> = {}) {
 		this._observers = has('es5') ? Object.create(null) : {};
 		this._initialize();
+		this.set(kwArgs);
 	}
 
 	/**
@@ -148,7 +149,8 @@ Observable.prototype.set = function (key:any, value?:any):void {
 	if (util.isObject(key)) {
 		var kwArgs:HashMap<any> = key;
 		for (key in kwArgs) {
-			// TODO: Document why
+			// If a typed object is passed in as the kwArgs object, we do not want to copy its constructor onto this
+			// instance, since this will result in this object having an incorrect reference back to its own constructor
 			if (key === 'constructor') {
 				continue;
 			}

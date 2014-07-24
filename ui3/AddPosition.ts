@@ -1,7 +1,7 @@
 // These values should match those of PlacePosition
 enum AddPosition {
-	FIRST = -1,
-	LAST = -2
+	FIRST = 0,
+	LAST = -1
 }
 
 export = AddPosition;

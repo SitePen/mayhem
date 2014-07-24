@@ -1,72 +1,55 @@
+/// <amd-dependency path="./dom/Widget" />
+
+import ClassList = require('./style/ClassList');
+import core = require('../interfaces');
+import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 
-var sid:string = String(new Date().getTime());
-var uid:number = 0;
-
-class Widget extends ObservableEvented {
-	/**
-	 * @protected
-	 */
-	_attached:boolean;
-
-	/**
-	 * @protected
-	 */
-	_classList:ClassList;
-
-	/**
-	 * @protected
-	 */
-	_id:string;
-
-	constructor(kwArgs:HashMap<any>) {
-		super(kwArgs);
-		if (!this._id) {
-			this._id = 'Widget' + sid + (++uid);
-		}
-	}
-
-	suspend() {}
-
-	destroy():void {
-
-	}
+interface Widget extends ObservableEvented {
+	get:Widget.Getters;
+	on:Widget.Events;
+	set:Widget.Setters;
 }
 
 module Widget {
+	export interface Events extends ObservableEvented.Events {
+		// TODO: Research iOS/Android for extra native events
+		(type:'gotpointercapture', listener:core.IEventListener):IHandle;
+		(type:'lostpointercapture', listener:core.IEventListener):IHandle;
+		(type:'pointercancel', listener:core.IEventListener):IHandle;
+		(type:'pointerdown', listener:core.IEventListener):IHandle;
+		(type:'pointerenter', listener:core.IEventListener):IHandle;
+		(type:'pointerleave', listener:core.IEventListener):IHandle;
+		(type:'pointermove', listener:core.IEventListener):IHandle;
+		(type:'pointerout', listener:core.IEventListener):IHandle;
+		(type:'pointerover', listener:core.IEventListener):IHandle;
+		(type:'pointerstart', listener:core.IEventListener):IHandle;
+		(type:'pointerup', listener:core.IEventListener):IHandle;
+	}
+
 	export interface Getters extends ObservableEvented.Getters {
+		(key:'app'):core.IApplication;
 		(key:'attached'):boolean;
+		(key:'class'):string;
+		(key:'classList'):ClassList;
 		(key:'id'):string;
+		(key:'index'):number;
+		(key:'parent'):Widget;
 	}
 
 	export interface Setters extends ObservableEvented.Setters {
+		(key:'app', value:core.IApplication):void;
 		(key:'attached', value:boolean):void;
+		(key:'class', value:string):void;
 		(key:'id', value:string):void;
+		(key:'parent', value:Widget):void;
 	}
 }
 
-export = Widget;
+var Widget:{ new (kwArgs:HashMap<any>):Widget; };
 
-/**
- * so.
- * renderers.
- * let's see.
- *
- * how do we want to be able to use widgets?
- *
- * 1. mayhem/ui/form/Text -> platform-appropriate widget
- * 2. mayhem/ui/form/dom/Text -> specific platform widget
- *
- * key features:
- * * no loader plugin needed
- * * no duplication of APIs
- * * using specific platform widgets opens access to more platform-specific APIs?
- *
- * common (no rendering) + platform-specific (has rendering) = completed widget
- *
- * problem: two inheritance hierarchies need to be combined into one. platform-specifics will want to inherit from
- * other platform-specifics but also inherit from related common interfaces
- *
- * research: write the common interfaces, then figure out what “common” code actually exists, since it may be possible
- * to write the common interface and then have the platform-specific widgets call out to those methods
- */
+if (has('host-browser')) {
+	Widget = <typeof Widget> require('./dom/Widget');
+}
+
+export = Widget;
