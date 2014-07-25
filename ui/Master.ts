@@ -1,27 +1,29 @@
-import ContentView = require('./ContentView');
 import core = require('../interfaces');
-import ui = require('./interfaces');
+import has = require('../has');
+import View = require('./View');
 
-class Master extends ContentView implements ui.IMaster {
-	/* protected */ _app:core.IApplication;
-	/* protected */ _attachTo:any;
+interface Master extends View {
+	get:Master.Getters;
+	on:Master.Events;
+	set:Master.Setters;
+}
 
-	add(item:ui.IWidget, position?:any):IHandle {
-		var children = this.get('children');
+module Master {
+	export interface Events extends View.Events {}
 
-		if (!children.length) {
-			return super.add(item, position);
-		}
-		else {
-			return (<ui.IContainer>children[0]).add(item, position);
-		}
+	export interface Getters extends View.Getters {
+		(key:'model'):core.IApplication;
 	}
 
-	startup():void {
-		this.startup = ():void => {};
-
-		this._renderer.attachToWindow(this, this.get('attachTo'));
-		this.set('attached', true);
+	export interface Setters extends View.Setters {
+		(key:'model', value:core.IApplication):void;
 	}
 }
+
+var Master:{ new (kwArgs:HashMap<any>):Master; };
+
+if (has('host-browser')) {
+	Master = <typeof Master> require('./dom/Master');
+}
+
 export = Master;

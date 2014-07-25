@@ -1,11 +1,15 @@
 import AddPosition = require('../AddPosition');
-import BaseContainer = require('../Container');
 import CommonContainerMixin = require('../common/Container');
+import IContainer = require('../Container');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Widget = require('./Widget');
 
-class Container extends MultiNodeWidget implements BaseContainer {
+class Container extends MultiNodeWidget implements IContainer {
 	private _children:Widget[];
+
+	get:Container.Getters;
+	on:Container.Events;
+	set:Container.Setters;
 
 	add(child:Widget, position?:AddPosition):IHandle;
 	add(child:Widget, position?:number):IHandle;
@@ -36,7 +40,7 @@ class Container extends MultiNodeWidget implements BaseContainer {
 		// implemented by CommonContainerMixin
 	}
 
-	getIndexOf(child:Widget):number {
+	getChildIndex(child:Widget):number {
 		// implemented by CommonContainerMixin
 		return undefined;
 	}
@@ -63,18 +67,16 @@ class Container extends MultiNodeWidget implements BaseContainer {
 			}
 		}
 
-		children.splice(index, 1);
-
-		// implemented by CommonContainerMixin
+		CommonContainerMixin.remove(children.splice(index, 1)[0]);
 	}
 }
 
 CommonContainerMixin.applyTo(Container);
 
 module Container {
-	export interface Events extends Widget.Events, BaseContainer.Events {}
-	export interface Getters extends Widget.Getters, BaseContainer.Getters {}
-	export interface Setters extends Widget.Setters, BaseContainer.Setters {}
+	export interface Events extends MultiNodeWidget.Events, IContainer.Events {}
+	export interface Getters extends MultiNodeWidget.Getters, IContainer.Getters {}
+	export interface Setters extends MultiNodeWidget.Setters, IContainer.Setters {}
 }
 
 export = Container;

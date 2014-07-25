@@ -276,9 +276,10 @@ declare module 'dijit/_Widget' {
 
 declare module 'dijit/_WidgetBase' {
 	import Destroyable = require('dijit/Destroyable');
+	import Evented = require('dojo/Evented');
 	import Stateful = require('dojo/Stateful');
 
-	interface _WidgetBase extends Stateful, Destroyable {
+	interface _WidgetBase extends Stateful, Evented, Destroyable {
 		/* readonly */ containerNode?:HTMLElement;
 		/* readonly */ domNode:HTMLElement;
 

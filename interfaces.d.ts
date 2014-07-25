@@ -1,21 +1,27 @@
 /// <reference path="./dojo" />
 
-export interface IApplication extends IObservableEvented {
+import ObservableEvented = require('./ObservableEvented');
+
+export interface IApplication extends ObservableEvented {
 	get:IApplication.Getters;
+	on:IApplication.Events;
 	set:IApplication.Setters;
 	startup():IPromise<IApplication>;
 }
 
 export declare module IApplication {
-	export interface Getters extends IObservableEvented.Getters {}
-	export interface Setters extends IObservableEvented.Setters {}
+	export interface Events extends ObservableEvented.Events {}
+	export interface Getters extends ObservableEvented.Getters {}
+	export interface Setters extends ObservableEvented.Setters {}
 }
 
 ////
 
+// TODO: Probably remove this interface, it is not very useful?
 export interface IApplicationComponent extends IObservable {
 	get:IApplicationComponent.Getters;
 	set:IApplicationComponent.Setters;
+	startup():IPromise<any>;
 }
 
 export declare module IApplicationComponent {
@@ -23,7 +29,9 @@ export declare module IApplicationComponent {
 		(key:'app'):IApplication;
 	}
 
-	export interface Setters extends IObservable.Setters {}
+	export interface Setters extends IObservable.Setters {
+		(key:'app', value:IApplication):void;
+	}
 }
 
 ////
@@ -76,17 +84,6 @@ export declare module IObservable {
 		(kwArgs:HashMap<any>):void;
 		(key:string, value:any):void;
 	}
-}
-
-export interface IObservableEvented extends IObservable {
-	emit(event:IEvent):boolean;
-	on(type:IExtensionEvent, listener:(event:IEvent) => void):IHandle;
-	on(type:string, listener:(event:IEvent) => void):IHandle;
-}
-
-export declare module IObservableEvented {
-	export interface Getters extends IObservable.Getters {}
-	export interface Setters extends IObservable.Setters {}
 }
 
 export interface IObserver<T> {

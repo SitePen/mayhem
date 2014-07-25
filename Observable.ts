@@ -124,14 +124,8 @@ class Observable implements core.IObservable {
 }
 
 module Observable {
-	export interface Getters {
-		(key:string):any;
-	}
-
-	export interface Setters {
-		(kwArgs:HashMap<any>):void;
-		(key:string, value:any):void;
-	}
+	export interface Getters extends core.IObservable.Getters {}
+	export interface Setters extends core.IObservable.Setters {}
 }
 
 Observable.prototype.get = function (key:string):any {

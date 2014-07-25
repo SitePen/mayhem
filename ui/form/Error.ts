@@ -1,16 +1,24 @@
-/// <amd-dependency path="../renderer!form/Error" />
+/// <amd-dependency path="./dom/Error" />
 
-import core = require('../../interfaces');
-import form = require('./interfaces');
-import List = require('../List');
+import has = require('../../has');
+import View = require('../View');
 
-var Renderer:any = require('../renderer!form/Error');
-
-class FormError extends List implements form.IError {
-	get:form.IErrorGet;
-	set:form.IErrorSet;
+interface Error extends View {
+	get:Error.Getters;
+	on:Error.Events;
+	set:Error.Setters;
 }
 
-FormError.prototype._renderer = new Renderer();
+module Error {
+	export interface Events extends View.Events {}
+	export interface Getters extends View.Getters {}
+	export interface Setters extends View.Setters {}
+}
 
-export = FormError;
+var Error:{ new (kwArgs:HashMap<any>):Error; };
+
+if (has('host-browser')) {
+	Error = <typeof Error> require('./dom/Error');
+}
+
+export = Error;

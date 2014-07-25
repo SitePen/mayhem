@@ -1,292 +1,57 @@
-/// <reference path="../dojo" />
+/// <amd-dependency path="./dom/Widget" />
 
-import array = require('dojo/_base/array');
-import aspect = require('dojo/aspect');
 import ClassList = require('./style/ClassList');
+import Container = require('./Container');
 import core = require('../interfaces');
 import has = require('../has');
-import lang = require('dojo/_base/lang');
 import ObservableEvented = require('../ObservableEvented');
-import PlacePosition = require('./PlacePosition');
-import Style = require('./style/Style');
-import ui = require('./interfaces');
-import util = require('../util');
-import when = require('dojo/when');
 
-var registry:{ [id:string]:ui.IWidget } = {},
-	uid = 0;
-
-if (has('debug')) {
-	(<any> window).__widgets = registry;
+interface Widget extends ObservableEvented {
+	detach():any;
+	get:Widget.Getters;
+	on:Widget.Events;
+	set:Widget.Setters;
 }
 
-class Widget extends ObservableEvented implements ui.IWidget {
-	static byId(id:string):ui.IWidget {
-		return registry[id];
+module Widget {
+	export interface Events extends ObservableEvented.Events {
+		// TODO: Research iOS/Android for extra native events
+		(type:'gotpointercapture', listener:core.IEventListener):IHandle;
+		(type:'lostpointercapture', listener:core.IEventListener):IHandle;
+		(type:'pointercancel', listener:core.IEventListener):IHandle;
+		(type:'pointerdown', listener:core.IEventListener):IHandle;
+		(type:'pointerenter', listener:core.IEventListener):IHandle;
+		(type:'pointerleave', listener:core.IEventListener):IHandle;
+		(type:'pointermove', listener:core.IEventListener):IHandle;
+		(type:'pointerout', listener:core.IEventListener):IHandle;
+		(type:'pointerover', listener:core.IEventListener):IHandle;
+		(type:'pointerstart', listener:core.IEventListener):IHandle;
+		(type:'pointerup', listener:core.IEventListener):IHandle;
 	}
 
-	/* protected */ _class:any;
-	classList:ClassList;
-	className:string;
-	/* protected */ _id:string;
-	/* protected */ _index:number;
-	/* protected */ _next:ui.IWidget;
-	private _ownHandles:any[]; // Array<core.IDestroyable | IHandle>
-	/* protected */ _parent:ui.IContainer;
-	/* protected */ _previous:ui.IWidget;
-	/* protected */ _renderer:ui.IRenderer;
-	style:Style;
-
-	get:ui.IWidgetGet;
-	set:ui.IWidgetSet;
-
-	constructor(kwArgs:any = {}) {
-		this._deferProperty('hidden', '_render');
-		this._deferProperty('role', '_render');
-		this._ownHandles = [];
-
-		// Capture id as provided before transforming
-		var id = kwArgs.id || (kwArgs.id = 'Widget' + (++uid));
-
-		// Capture initial kwArgs
-		kwArgs.kwArgs = lang.mixin({}, kwArgs);
-
-		// TODO: check registry for duplicate id and throw?
-		registry[id] = this;
-
-		super(kwArgs);
-		this._render();
+	export interface Getters extends ObservableEvented.Getters {
+		(key:'app'):core.IApplication;
+		(key:'attached'):boolean;
+		(key:'class'):string;
+		(key:'classList'):ClassList;
+		(key:'id'):string;
+		(key:'index'):number;
+		(key:'parent'):Container;
 	}
 
-	/* protected */ _classSetter(value:any):void {
-		// Reset a widget's classList, incorporating in existing widget and renderer classNames
-		this._class = value;
-
-		var classes:any = [];
-		this.className && classes.push(this.className);
-		this._renderer.className && classes.push(this._renderer.className);
-
-		this.classList.add(classes.concat(ClassList.parse(value)).join(' '));
-	}
-
-	// Returns the whole class list, not just the bits explicitly set on class
-	private _classNameGetter():string {
-		return this.classList.get();
-	}
-
-	// Sets the class list completely, overriding className defined by widget or renderer
-	private _classNameSetter(value:string):void {
-		this.classList.set(value);
-	}
-
-	/* protected */ _deferProperty(name:string, ...untilMethods:string[]):void {
-		var setterName = '_' + name + 'Setter',
-			originalSetter:any = this[setterName],
-			outstandingMethods = untilMethods.length,
-			values:any[] = [];
-
-		this[setterName] = (value:any):void => {
-			values.push(value);
-		};
-
-		var untilHandles:IHandle[] = array.map(untilMethods, (method:string, i:number):IHandle => {
-			return aspect.after(this, method, ():void => {
-				untilHandles[i].remove();
-				if (!--outstandingMethods) {
-					untilHandles = null;
-
-					if (originalSetter) {
-						this[setterName] = originalSetter;
-					}
-					else {
-						delete this[setterName];
-						
-					}
-
-					// Only use last value (for now)
-					values.length && this.set(name, values.pop());
-					values = null;
-				}
-			});
-		});
-	}
-
-	destroy():void {
-		this.detach();
-		this._renderer.destroy(this);
-
-		// Clean up any handles and destroyables we own
-		var handles = this._ownHandles;
-		for (var i = 0, len = handles.length; i < len; ++i) {
-			var handle = handles[i];
-			if (handle && handle['destroy']) {
-				util.destroy(handle);
-			}
-			else if (handle && handle['remove']) {
-				util.remove(handle);
-			}
-		}
-		this._ownHandles = handles = handle = null;
-
-		registry[this.get('id')] = null;
-		super.destroy();
-	}
-
-	detach():void {
-		var parent = this.get('parent');
-		parent && parent.remove(this);
-	}
-
-	disown(...handles:any[]):void {
-		var owned = this._ownHandles,
-			handle:any;
-		for (var i = 0, len = handles.length; i < len; ++i) {
-			handle = handles[i];
-			// List of owned handles is a set
-			if (handle && array.indexOf(owned, handle) !== -1) {
-				util.spliceMatch(owned, handle);
-			}
-		}
-	}
-
-	emit(event:core.IEvent):boolean {
-		var methodName = this._getEventedMethodName(event.type),
-			handlerName:string = this.get(methodName);
-
-		event.currentTarget = this;
-
-		if (handlerName) {
-			var model = this.get('model');
-
-			if (model) {
-				model.call(handlerName, event);
-			}
-		}
-
-		return super.emit(event);
-	}
-
-	/* protected */ _hiddenChanged(value:boolean):void {
-		this._renderer.updateVisibility(this, !value);
-	}
-
-	private _indexGetter():number {
-		var parent = this.get('parent');
-		return parent ? parent.getChildIndex(this) : -1;
-	}
-
-	/* protected */ _initialize():void {
-		super._initialize();
-
-		// Create Style and ClassList properties
-		this.style = new Style();
-		this.classList = new ClassList();
-
-		this._renderer.initialize(this);
-	}
-
-	private _nextGetter():ui.IWidget {
-		var parent = this.get('parent');
-		return parent ? parent.nextChild(this) : null;
-	}
-
-	on(type:IExtensionEvent, listener:(event:core.IEvent) => void):IHandle;
-	on(type:string, listener:(event:core.IEvent) => void):IHandle;
-	on(type:any, listener:(event:core.IEvent) => void):IHandle {
-		var handle = super.on.apply(this, arguments);
-		this._ownHandles.push(handle);
-		return handle;
-	}
-
-	placeAt(destination:ui.IWidget, position:PlacePosition):IHandle;
-	placeAt(destination:ui.IContainer, position:number):IHandle;
-	placeAt(destination:ui.IContainer, placeholder:string):IHandle;
-	placeAt(destination:any, position:any = PlacePosition.LAST):IHandle {
-		var handle:IHandle;
-
-		if (has('debug') && !destination) {
-			throw new Error('Cannot place widget at undefined destination');
-		}
-
-		var destinationParent:ui.IContainer = destination.get('parent');
-
-		if (position === PlacePosition.BEFORE) {
-			if (has('debug') && !destinationParent) {
-				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to place before it');
-			}
-
-			handle = destinationParent.add(this, destination.get('index'));
-		}
-		else if (position === PlacePosition.AFTER) {
-			if (has('debug') && !destinationParent) {
-				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to place after it');
-			}
-
-			handle = destinationParent.add(this, destination.get('index') + 1);
-		}
-		else if (position === PlacePosition.REPLACE) {
-			if (has('debug') && !destinationParent) {
-				throw new Error('Destination widget ' + destination.get('id') + ' must have a parent in order to replace it');
-			}
-
-			var index:number = destination.get('index');
-			destination._renderer.detach(destination);
-			handle = destinationParent.add(this, index);
-		}
-		else {
-			handle = destination.add(this, position);
-		}
-
-		return handle;
-	}
-
-	private _previousGetter():ui.IWidget {
-		var parent = this.get('parent');
-		return parent ? parent.previousChild(this) : null;
-	}
-
-	/* protected */ _render():void {
-		this._renderer.render(this);
-		this.set('rendered', true);
-	}
-
-	/* protected */ _roleChanged(value:string):void {
-		this._renderer.attachRole(this);
-
-		// TODO: set focusable based on role?
-	}
-
-	own(...handles:any[]):void {
-		var owned = this._ownHandles,
-			handle:any;
-		for (var i = 0, len = handles.length; i < len; ++i) {
-			handle = handles[i];
-			// List of owned handles is a set
-			if (handle && array.indexOf(owned, handle) === -1) {
-				owned.push(handle);
-			}
-		}
-	}
-
-	_getEventedMethodName(type:string):string {
-		type = ('-' + type).toLowerCase().replace(/-([a-z])/g, function ():string {
-			return arguments[1].toUpperCase();
-		});
-		return super._getEventedMethodName(type);
-	}
-
-	/* protected */ _styleSetter(value:string):void {
-		// Adds any manually set styles to widget's Style
-		// TODO: should we blow away any previously set styles instead?
-		this.style.set(Style.parse(value));
-	}
-
-	trigger(actionName:string, source?:core.IEvent):void {
-		this._renderer.trigger(this, actionName, source);
+	export interface Setters extends ObservableEvented.Setters {
+		(key:'app', value:core.IApplication):void;
+		(key:'attached', value:boolean):void;
+		(key:'class', value:string):void;
+		(key:'id', value:string):void;
+		(key:'parent', value:Container):void;
 	}
 }
 
-Widget.set('class', '');
-Widget.prototype.className = '';
+var Widget:{ new (kwArgs:HashMap<any>):Widget; };
+
+if (has('host-browser')) {
+	Widget = <typeof Widget> require('./dom/Widget');
+}
 
 export = Widget;

@@ -8,7 +8,7 @@ import Observable = require('./Observable');
  * The ObservableEvented class is a base object class that combines an Observable object with an event emitter. This
  * class should be used as a base class for objects that also need to emit events.
  */
-class ObservableEvented extends Observable implements core.IObservableEvented {
+class ObservableEvented extends Observable {
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
 		Evented.apply(this, arguments);

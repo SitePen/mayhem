@@ -1,51 +1,49 @@
-import Application = require('../Application');
 import core = require('../interfaces');
-import Observable = require('../Observable');
 import RouteEvent = require('./RouteEvent');
 
-/**
- * Root interface for routes
- */
-export interface IRoute {
-	get:IRouteGet;
+export interface IRoute extends core.IObservable {
+	get:IRoute.Getters;
 	enter(event:RouteEvent):void;
-	exit():void;
-	set:IRouteSet;
+	exit(event:RouteEvent):void;
+	set:IRoute.Setters;
 	startup():IPromise<IRoute>;
 }
 
-export interface IRouteGet extends Observable.Getters {
-	(key:'router'):IRouter;
+export declare module IRoute {
+	export interface Getters extends core.IObservable.Getters {
+		(key:'app'):core.IApplication;
+		(key:'router'):IRouter;
+	}
+
+	export interface Setters extends core.IObservable.Setters {
+		(key:'app', value:core.IApplication):void;
+		(key:'router', value:IRouter):void;
+	}
 }
 
-export interface IRouteSet extends Observable.Setters {
-	(key:'router', value:IRouter):void;
+export interface IRouter extends core.IObservable {
+	createPath(routeId:string, kwArgs?:Object):string;
+	destroy():void;
+	get:IRouter.Getters;
+	go(routeId:string, kwArgs:Object):void;
+	normalizeId(routeId:string):string;
+	pause():void;
+	resetPath(path:string, replace?:boolean):void;
+	resume():void;
+	set:IRouter.Setters;
+	startup():IPromise<void>;
 }
 
-/**
- * Root interface for routers
- */
-export interface IRouter extends core.IApplicationComponent {
-	createPath:(routeId:string, kwArgs?:Object) => string;
-	destroy:() => void;
-	get:IRouterGet;
-	go:(routeId:string, kwArgs:Object) => void;
-	normalizeId:(routeId:string) => string;
-	pause:() => void;
-	resetPath:(path:string, replace?:boolean) => void;
-	resume:() => void;
-	set:IRouterSet;
-	startup:() => IPromise<void>;
-}
+export declare module IRouter {
+	export interface Getters extends core.IObservable.Getters {
+		(key:'app'):core.IApplication;
+		(key:'defaultRoute'):string;
+		(key:'notFoundRoute'):string;
+	}
 
-export interface IRouterGet extends core.IApplicationComponentGet {
-	(key:'app'):Application;
-	(key:'defaultRoute'):string;
-	(key:'notFoundRoute'):string;
-}
-
-export interface IRouterSet extends core.IApplicationComponentSet {
-	(key:'app', value:Application):void;
-	(key:'defaultRoute', value:string):void;
-	(key:'notFoundRoute', value:string):void;
+	export interface Setters extends core.IObservable.Setters {
+		(key:'app', value:core.IApplication):void;
+		(key:'defaultRoute', value:string):void;
+		(key:'notFoundRoute', value:string):void;
+	}
 }

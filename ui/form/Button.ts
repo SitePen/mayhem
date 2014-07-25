@@ -1,17 +1,28 @@
-/// <amd-dependency path="../renderer!form/Button" />
+/// <amd-dependency path="./dom/Button" />
 
-import ContentView = require('../ContentView');
-import form = require('./interfaces');
-// import Widget = require('../Widget');
+import BaseEvent = require('../../Event');
+import core = require('../../interfaces');
+import has = require('../../has');
+import Label = require('../Label');
 
-var Renderer:any = require('../renderer!form/Button');
-
-class Button extends /*Widget*/ ContentView implements form.IButton {
-	get:form.IButtonGet;
-	set:form.IButtonSet;
+interface Button extends Label {
+	get:Button.Getters;
+	on:Button.Events;
+	set:Button.Setters;
 }
 
-Button.set('role', 'button');
-Button.prototype._renderer = new Renderer();
+module Button {
+	export interface Events extends Label.Events {
+		(type:'activate', listener:core.IEventListener):IHandle;
+	}
+	export interface Getters extends Label.Getters {}
+	export interface Setters extends Label.Setters {}
+}
+
+var Button:{ new (kwArgs:HashMap<any>):Button; };
+
+if (has('host-browser')) {
+	Button = <typeof Button> require('./dom/Button');
+}
 
 export = Button;

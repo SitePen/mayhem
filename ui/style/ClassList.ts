@@ -1,59 +1,42 @@
 /// <reference path="../../dojo" />
 
-import lang = require('dojo/_base/lang');
-import Proxty = require('../../Proxty');
-import style = require('./interfaces');
+import util = require('../../util');
 
-class ClassList extends Proxty<string> implements style.IClassList {
-	static parse(value:any):string[] {
-		return typeof value === 'string' ? lang.trim(value).split(/\s+/g) : value;
+class ClassList {
+	private _value:HashMap<boolean>;
+
+	constructor() {
+		this._value = {};
 	}
 
-	constructor(initialValue?:string) {
-		super(initialValue || '');
-	}
-
-	add(value:any):void {
-		var classes = ClassList.parse(value),
-			classList:string = this.get(),
-			className:string;
-
-		for (var i = 0; (className = classes[i]); ++i) {
-			if (!this.has(className)) {
-				classList += ' ' + className;
+	add(className:string):void {
+		var classes:string[] = className.split(/\s+/);
+		for (var i = 0, j = classes.length; i < j; ++i) {
+			if (className) {
+				this._value[className] = true;
 			}
 		}
-
-		this.set(lang.trim(classList));
 	}
 
-	has(value:any):boolean {
-		var classes = ClassList.parse(value),
-			classList:string = ' ' + this.get() + ' ',
-			className:string;
+	has(className:string):boolean {
+		return this._value[className] || false;
+	}
 
-		for (var i = 0; (className = classes[i]); ++i) {
-			if (classList.indexOf(' ' + className + ' ') === -1) {
-				return false;
+	remove(className:string):void {
+		var classes:string[] = className.split(/\s+/);
+		for (var i = 0, j = classes.length; i < j; ++i) {
+			className = classes[i];
+			if (className) {
+				// "slow" object is OK, it should still be faster than holding a string
+				// and simplifies implementation
+				delete this._value[className];
 			}
 		}
-
-		return true;
 	}
 
-	remove(value:any):void {
-		if (!value || !value.length) {
-			return;
-		}
-		var classes = ClassList.parse(value),
-			classList:string = ' ' + this.get() + ' ',
-			className:string;
-
-		for (var i = 0; (className = classes[i]); ++i) {
-			classList = classList.replace(' ' + className + ' ', ' ');
-		}
-
-		this.set(lang.trim(classList));
+	set(className:string):void {
+		this._value = {};
+		this.add(className);
 	}
 
 	toggle(className:string, forceState?:boolean):void {
@@ -61,12 +44,22 @@ class ClassList extends Proxty<string> implements style.IClassList {
 			this[forceState ? 'add' : 'remove'](className);
 		}
 		else {
-			var classes = ClassList.parse(className);
+			var classes:string[] = className.split(/\s+/);
 
-			for (var i = 0; (className = classes[i]); ++i) {
-				this.has(className) ? this.remove(className) : this.add(className);
+			for (var i = 0, j = classes.length; i < j; ++i) {
+				className = classes[i];
+				if (this._value[className]) {
+					delete this._value[className];
+				}
+				else {
+					this._value[className] = true;
+				}
 			}
 		}
+	}
+
+	valueOf():string {
+		return util.getObjectKeys(this._value).join(' ');
 	}
 }
 

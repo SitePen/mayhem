@@ -3,7 +3,7 @@
 import core = require('./interfaces');
 import util = require('./util');
 
-class Proxty<T> implements core.IProxty<T> {
+class Proxty<T> {
 	isProxty:boolean;
 	private _observers:core.IObserver<T>[];
 	private _value:T;
@@ -36,8 +36,8 @@ class Proxty<T> implements core.IProxty<T> {
 
 		var self = this;
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				util.spliceMatch(self._observers, observer);
 				self = observer = null;
 			}
@@ -66,6 +66,7 @@ class Proxty<T> implements core.IProxty<T> {
 		return value && (<T> value.valueOf());
 	}
 }
+
 Proxty.prototype.isProxty = true;
 
 export = Proxty;

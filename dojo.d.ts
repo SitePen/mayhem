@@ -281,6 +281,13 @@ declare module 'dojo/on' {
 	export = on;
 }
 
+declare module 'dojo/promise/Promise' {
+	var Promise:{
+		new <T>():IPromise<T>;
+	};
+	export = Promise;
+}
+
 declare module 'dojo/promise/all' {
 	var all:{
 		<T>(array:IPromise<T>[]):IPromise<T[]>;

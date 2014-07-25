@@ -1,87 +1,58 @@
 /// <reference path="../../dojo" />
 
-import domConstruct = require('dojo/dom-construct');
-import PlacePosition = require('../PlacePosition');
+import has = require('../../has');
 
-export function toDom(value:any /* string | Node */):Node {
-	return typeof value === 'string' ? domConstruct.toDom(value) : value;
-}
+has.add('dom-range', Boolean(typeof document !== 'undefined' && document.createRange));
 
-export function extractRange(start:Node, end:Node, exclusive:boolean = false):DocumentFragment {
-	var fragment = document.createDocumentFragment(),
-		next:Node;
+export function extractContents(start:Node, end:Node, exclusive:boolean = false):DocumentFragment {
+	if (has('dom-range')) {
+		var range:Range = document.createRange();
 
-	if (start.parentNode && start.parentNode === end.parentNode) {
-		if (exclusive) {
-			start = start.nextSibling;
+		if (start.parentNode && end.parentNode) {
+			if (exclusive) {
+				range.setStartAfter(start);
+				range.setEndBefore(end);
+			}
+			else {
+				range.setStartBefore(start);
+				range.setEndAfter(end);
+			}
+		}
+		else {
+			// TODO: what does this mean?
+			// point range at the end of the document (it has to point within the document nodes can be inserted)
+			range.setStartAfter(document.body.lastChild);
+			range.setEndAfter(document.body.lastChild);
+			range.insertNode(end);
+			range.insertNode(start);
 		}
 
-		while (start != end) {
-			next = start.nextSibling;
-			fragment.appendChild(start);
-			start = next;
-		}
-
-		if (!exclusive) {
-			fragment.appendChild(start);
-		}
+		return range.extractContents();
 	}
 	else {
-		fragment.appendChild(start);
-		fragment.appendChild(end);
+		var fragment = document.createDocumentFragment();
+		var next:Node;
+
+		if (start.parentNode && start.parentNode === end.parentNode) {
+			if (exclusive) {
+				start = start.nextSibling;
+			}
+
+			while (start !== end) {
+				next = start.nextSibling;
+				fragment.appendChild(start);
+				start = next;
+			}
+
+			if (!exclusive) {
+				fragment.appendChild(start);
+			}
+		}
+		else {
+			fragment.appendChild(start);
+			fragment.appendChild(end);
+		}
+
+		return fragment;
 	}
-
-	return fragment;
-}
-
-export function deleteRange(start:Node, end:Node, exclusive:boolean = false):void {
-	if (start.parentNode !== end.parentNode) {
-		throw new Error('start and end do not share a parent')
-	}
-
-	if (!start.parentNode) {
-		// return if nodes have no parent
-		return;
-	}
-
-	var parent = start.parentNode,
-		next:Node;
-
-	if (exclusive) {
-		start = start.nextSibling;
-	}
-
-	while (start != end) {
-		next = start.nextSibling;
-		parent.removeChild(start);
-		start = next;
-	}
-
-	if (!exclusive) {
-		parent.removeChild(start);
-	}
-}
-
-export function place(node:any /* Node | string */, refNode:any /* Node | string */, position:PlacePosition = PlacePosition.LAST):Node {
-	return domConstruct.place(node, refNode, PLACE_POSITION_KEYS[position])
-}
-
-export var PLACE_POSITION_KEYS:{ [key:string]: string; } = {
-	'-1': 'first',
-	'-2': 'last',
-	'-3': 'before',
-	'-4': 'after',
-	'-5': 'only',
-	'-6': 'replace'
-};
-
-export function setStyle(node:HTMLElement, key:string, value:any):void {
-	if (value == null) {
-		value = '';
-	}
-	else if (typeof value === 'number' && value !== 0) {
-		value += 'px';
-	}
-
-	node.style[<any> key] = value;
 }

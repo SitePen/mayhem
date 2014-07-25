@@ -8,7 +8,7 @@ import lang = require('dojo/_base/lang');
 import ObservableEvented = require('./ObservableEvented');
 import requestUtil = require('dojo/request/util');
 import routing = require('./routing/interfaces');
-import ui = require('./ui/interfaces');
+import Scheduler = require('./Scheduler');
 import util = require('./util');
 import whenAll = require('dojo/promise/all');
 
@@ -16,39 +16,16 @@ import whenAll = require('dojo/promise/all');
  * The Application class is the base class for all Mayhem applications.
  */
 class Application extends ObservableEvented {
-	// TODO: Get rid of this
-	static load(resourceId:string, contextRequire:Function, load:(...modules:any[]) => void):void {
-		var start = (config?:any):void => {
-			this.start(config).then(load);
-		};
-		if (resourceId) {
-			require([resourceId], start);
-		}
-		else {
-			start();
-		}
-	}
-
-	// TODO: Get rid of this
-	static start(config:any = {}):IPromise<Application> {
-		config.modules || (config.modules = { router: null });
-		return new this(config).startup();
-	}
+	private _modules:HashMap<HashMap<any>>;
 
 	get:Application.Getters;
+	on:Application.Events;
 	set:Application.Setters;
 
-	constructor(kwArgs:HashMap<any> = {}) {
+	constructor(kwArgs?:HashMap<any>) {
 		// TODO: more robust configuration merging
 		kwArgs = requestUtil.deepCopy(this._getDefaultConfig(), kwArgs);
-		// TODO: Why is application getting a reference to itself?
-		kwArgs.app = this;
 		super(kwArgs);
-	}
-
-	// TODO: Router uses Application as the parent for root routes, which is not correct.
-	add(view:ui.IView, placeholder:string = 'default'):IHandle {
-		return this.get('view').add(view, placeholder);
 	}
 
 	/**
@@ -86,9 +63,9 @@ class Application extends ObservableEvented {
 	}
 
 	_instantiateModules(modules:any):void {
-		var configs:Object = this.get('modules');
+		var configs:HashMap<HashMap<any>> = this._modules;
 		for (var key in modules) {
-			var config:any = configs[key];
+			var config:HashMap<any> = configs[key];
 			config && this._instantiateModule(key, modules[key], config);
 		}
 	}
@@ -100,28 +77,6 @@ class Application extends ObservableEvented {
 		config.constructor = Module;
 
 		this.set(key, new Module(lang.mixin({ app: this.get('app') }, config)));
-		if (key === 'view') {
-			// Ensure the view will defer bindings until after the binder is ready
-			this.get('binder').startup().then(():void => {
-				var view = this.get('view');
-				view.set('model', this);
-			});
-
-			if (config.template) {
-				// If the user has provided a template, get it, and add it to the master widget
-				config.template = this._resolveModuleId(this.get('templatePath'), config.template);
-
-				util.getModule(config.template).then((Template:any):void => {
-					var view = this.get('view');
-					view.add(new Template({
-						app: this
-					}));
-				})/*.otherwise((error:any):void => {
-					// TODO: Error handling
-					throw error;
-				})*/;
-			}
-		}
 	}
 
 	/**
@@ -131,7 +86,7 @@ class Application extends ObservableEvented {
 		var dfd:IDeferred<void> = new Deferred<void>();
 		var lazyConstructors:HashMap<number> = {};
 		var moduleIdsToLoad:string[] = [];
-		var modules:Object = this.get('modules');
+		var modules:HashMap<HashMap<any>> = this._modules;
 		var promises:HashMap<IPromise<void>> = {};
 
 		for (var key in modules) {
@@ -169,8 +124,6 @@ class Application extends ObservableEvented {
 		}
 		if (typeof config.constructor === 'string') {
 			ctor = config.constructor;
-			ctor = this._resolveModuleId(this.get(key + 'Path'), ctor);
-			config.constructor = ctor;
 		}
 
 		if (ctor) {
@@ -200,7 +153,7 @@ class Application extends ObservableEvented {
 		this._loadModules().then(():IPromise<void> => {
 			var promises:IPromise<any>[] = [],
 				promise:IPromise<any>,
-				modules:Object = this.get('modules'),
+				modules:HashMap<HashMap<any>> = this._modules,
 				module:{ startup?:Function; };
 
 			for (var key in modules) {
@@ -225,19 +178,17 @@ class Application extends ObservableEvented {
 }
 
 module Application {
+	export interface Events extends ObservableEvented.Events, core.IApplication.Events {}
 	export interface Getters extends ObservableEvented.Getters {
 		(key:'binder'):binding.IBinder;
 		(key:'router'):routing.IRouter;
-		(key:'scheduler'):core.IScheduler;
-		(key:'view'):ui.IMaster;
+		(key:'scheduler'):Scheduler;
 	}
-
-	export interface Setters extends ObservableEvented.Setters {}
+	export interface Setters extends ObservableEvented.Setters {
+		(key:'binder'):binding.IBinder;
+		(key:'router'):routing.IRouter;
+		(key:'scheduler'):Scheduler;
+	}
 }
-
-Application.defaults({
-	modelPath: 'app/models',
-	viewModelPath: 'app/viewModels'
-});
 
 export = Application;

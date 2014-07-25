@@ -4,16 +4,16 @@ import CommonWidget = require('../common/Widget');
  * @abstract
  */
 class Widget extends CommonWidget {
-	constructor(kwArgs?:HashMap<any>) {
-		super(kwArgs);
-		this._render();
-	}
+	get:Widget.Getters;
+	on:Widget.Events;
+	set:Widget.Setters;
 
+	/**
+	 * @abstract
+	 */
 	detach():Node {
 		return null;
 	}
-
-	_render():void {}
 }
 
 module Widget {

@@ -14,25 +14,6 @@ class ContainerMixin {
 		});
 	}
 
-	empty():void {
-		var children:Widget[] = this._children;
-		var child:Widget;
-		while ((child = children.pop())) {
-			child.destroy();
-		}
-	}
-
-	getIndexOf(child:Widget):number {
-		var children:Widget[] = this._children;
-		for (var i = 0, maybeChild:Widget; (maybeChild = children[i]); ++i) {
-			if (maybeChild === child) {
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
 	/**
 	 * @protected
 	 */
@@ -66,6 +47,26 @@ class ContainerMixin {
 		this.empty();
 		this._children = null;
 	}
+
+	getIndexOfChild(child:Widget):number {
+		var children:Widget[] = this._children;
+
+		for (var i = 0, maybeChild:Widget; (maybeChild = children[i]); ++i) {
+			if (maybeChild === child) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	empty():void {
+		var children:Widget[] = this._children;
+		var child:Widget;
+		while ((child = children.pop())) {
+			child.destroy();
+		}
+	}
 }
 
 export function applyTo(Ctor:Function):void {
@@ -79,4 +80,11 @@ export function applyTo(Ctor:Function):void {
 			prototype[key] = ContainerMixin[key];
 		}
 	}
+}
+
+export function remove(child:Widget):void {
+	child.set({
+		attached: false,
+		parent: null
+	});
 }

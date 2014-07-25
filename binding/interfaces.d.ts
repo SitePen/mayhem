@@ -1,6 +1,7 @@
-export import IBindDirection = require('./BindDirection');
+import BindDirection = require('./BindDirection');
 import core = require('../interfaces');
 import Observable = require('../Observable');
+import Proxty = require('../Proxty');
 
 /**
  * The keyword arguments object for the high-level data binding API.
@@ -33,7 +34,7 @@ export interface IBindArguments {
 	 * only the source is bound to the target. A `TWO_WAY` binding keeps the source and target in sync no matter which
 	 * changes.
 	 */
-	direction?:IBindDirection;
+	direction?:BindDirection;
 }
 
 /**
@@ -59,8 +60,8 @@ export interface IBinder {
 	 */
 	createProxty<SourceT, TargetT>(object:Object, binding:string, options?:{ scheduled?:boolean; }):IProxty<SourceT, TargetT>;
 
-	getMetadata<T>(object:Object, binding:string, field:string):core.IProxty<T>;
-	getMetadata(object:Object, binding:string):core.IProxty<Observable>;
+	getMetadata<T>(object:Object, binding:string, field:string):Proxty<T>;
+	getMetadata(object:Object, binding:string):Proxty<Observable>;
 
 	startup():IPromise<any[]>;
 }
@@ -73,7 +74,7 @@ export interface IBindingHandle extends IHandle {
 	// TODO: Is it a bad limitation to not be able to set only the bindings?
 	setSource(source:Object, sourceBinding?:string):void;
 	setTarget(target:Object, targetBinding?:string):void;
-	setDirection(direction:IBindDirection):void;
+	setDirection(direction:BindDirection):void;
 }
 
 // TODO: This is needed in order to prevent race conditions when binding a source and a target together at the same
@@ -115,14 +116,14 @@ export interface IComputedProperty {
  * needing to know the originally bound object, the name of the property, or even that the property exists at the time
  * that it is bound or set.
  */
-export interface IProxty<SourceT, TargetT> extends core.IProxty<SourceT> {
+export interface IProxty<SourceT, TargetT> extends Proxty<SourceT> {
 	id:string;
 
 	/**
 	 * Binds the property to another target property. The target property is only notified of a change when the actual
 	 * property is updated; calling `set` on this bound property will *not* update the bound target value.
 	 */
-	bindTo(target:core.IProxty<TargetT>, options?:IBindToOptions):IHandle;
+	bindTo(target:Proxty<TargetT>, options?:IBindToOptions):IHandle;
 }
 
 /**

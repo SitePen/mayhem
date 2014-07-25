@@ -1,15 +1,30 @@
-/// <amd-dependency path="../renderer!form/Checkbox" />
+/// <amd-dependency path="./dom/Checkbox" />
 
-import form = require('./interfaces');
-import ContentView = require('../ContentView');
+import BaseEvent = require('../../Event');
+import core = require('../../interfaces');
+import has = require('../../has');
+import Widget = require('../Widget');
 
-var Renderer:any = require('../renderer!form/Checkbox');
-
-class Checkbox extends /*Widget*/ ContentView implements form.ICheckbox {
-	get:form.ICheckboxGet;
-	set:form.ICheckboxSet;
+interface Checkbox extends Widget {
+	get:Checkbox.Getters;
+	on:Checkbox.Events;
+	set:Checkbox.Setters;
 }
 
-Checkbox.prototype._renderer = new Renderer();
+module Checkbox {
+	export interface Events extends Widget.Events {}
+	export interface Getters extends Widget.Getters {
+		(key:'value'):boolean;
+	}
+	export interface Setters extends Widget.Setters {
+		(key:'value', value:boolean):void;
+	}
+}
+
+var Checkbox:{ new (kwArgs:HashMap<any>):Checkbox; };
+
+if (has('host-browser')) {
+	Checkbox = <typeof Checkbox> require('./dom/Checkbox');
+}
 
 export = Checkbox;
