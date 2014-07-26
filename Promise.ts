@@ -8,6 +8,14 @@ import whenAll = require('dojo/promise/all');
 class Promise<T> implements IPromise<T> {
 	static all = whenAll;
 
+	static Deferred = Deferred;
+
+	static reject(error:Error):IPromise<Error> {
+		var dfd:IDeferred<Error> = new Deferred();
+		dfd.reject(error);
+		return dfd.promise;
+	}
+
 	static resolve<U>(value:IPromise<U>):IPromise<U>;
 	static resolve<U>(value:U):IPromise<U>;
 	static resolve<U>(value:U):IPromise<U> {
@@ -24,19 +32,13 @@ class Promise<T> implements IPromise<T> {
 		return dfd.promise;
 	}
 
-	static reject(error:Error):IPromise<Error> {
-		var dfd:IDeferred<Error> = new Deferred();
-		dfd.reject(error);
-		return dfd.promise;
-	}
-
 	constructor(initializer:(
-		resolve?:(value:T) => void,
-		reject?:(error:Error) => void,
-		progress?:(update:any) => void,
-		setCanceler?:(canceler:(reason?:Error) => any) => void
+		resolve?:Promise.IResolver<T>,
+		reject?:Promise.IRejecter,
+		progress?:Promise.IProgress,
+		setCanceler?:(canceler:Promise.ICanceler) => void
 	) => void) {
-		var canceler:(reason?:Error) => any;
+		var canceler:Promise.ICanceler;
 		var dfd = new Deferred(function (reason:Error):any {
 			return canceler && canceler(reason);
 		});
@@ -46,7 +48,7 @@ class Promise<T> implements IPromise<T> {
 				lang.hitch(dfd, 'resolve'),
 				lang.hitch(dfd, 'reject'),
 				lang.hitch(dfd, 'progress'),
-				function (_canceler:(reason?:Error) => any):void {
+				function (_canceler:Promise.ICanceler):void {
 					canceler = _canceler;
 				}
 			);
@@ -78,6 +80,21 @@ class Promise<T> implements IPromise<T> {
 		<U>(callback:(value:T) => U,           errback?:(reason:any) => IPromise<U>, progback?:(update:any) => U):IPromise<U>;
 		<U>(callback:(value:T) => U,           errback?:(reason:any) => U,           progback?:(update:any) => U):IPromise<U>;
 	};
+}
+
+module Promise {
+	export interface ICanceler {
+		(reason:Error):any;
+	}
+	export interface IProgress {
+		(update:any):void;
+	}
+	export interface IRejecter {
+		(error:Error):void;
+	}
+	export interface IResolver<T> {
+		(value:T):void;
+	}
 }
 
 export = Promise;

@@ -21,14 +21,14 @@ class ObservableEvented extends Observable {
 	on:ObservableEvented.Events;
 }
 
-ObservableEvented.prototype.on = function (type:any, listener:core.IEventListener):IHandle {
+ObservableEvented.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
 	return Evented.prototype.on.call(this, type, listener);
 };
 
 module ObservableEvented {
 	export interface Events {
-		(type:IExtensionEvent, listener:core.IEventListener):IHandle;
-		(type:string, listener:core.IEventListener):IHandle;
+		(type:IExtensionEvent, listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:string, listener:core.IEventListener<core.IEvent>):IHandle;
 	}
 	export interface Getters extends Observable.Getters {}
 	export interface Setters extends Observable.Setters {}

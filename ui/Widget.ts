@@ -16,17 +16,18 @@ interface Widget extends ObservableEvented {
 module Widget {
 	export interface Events extends ObservableEvented.Events {
 		// TODO: Research iOS/Android for extra native events
-		(type:'gotpointercapture', listener:core.IEventListener):IHandle;
-		(type:'lostpointercapture', listener:core.IEventListener):IHandle;
-		(type:'pointercancel', listener:core.IEventListener):IHandle;
-		(type:'pointerdown', listener:core.IEventListener):IHandle;
-		(type:'pointerenter', listener:core.IEventListener):IHandle;
-		(type:'pointerleave', listener:core.IEventListener):IHandle;
-		(type:'pointermove', listener:core.IEventListener):IHandle;
-		(type:'pointerout', listener:core.IEventListener):IHandle;
-		(type:'pointerover', listener:core.IEventListener):IHandle;
-		(type:'pointerstart', listener:core.IEventListener):IHandle;
-		(type:'pointerup', listener:core.IEventListener):IHandle;
+		// TODO: Fix core.IEvent to be the right event types for pointers
+		(type:'gotpointercapture', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'lostpointercapture', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointercancel', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerdown', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerenter', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerleave', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointermove', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerout', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerover', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerstart', listener:core.IEventListener<core.IEvent>):IHandle;
+		(type:'pointerup', listener:core.IEventListener<core.IEvent>):IHandle;
 	}
 
 	export interface Getters extends ObservableEvented.Getters {

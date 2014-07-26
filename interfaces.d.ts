@@ -56,8 +56,12 @@ export interface IEvent {
 	stopPropagation():void;
 }
 
-export interface IEventListener {
-	(event:IEvent):void;
+export interface IErrorEvent extends IEvent {
+	error:Error;
+}
+
+export interface IEventListener<T extends IEvent> {
+	(event:T):void;
 }
 
 ////
