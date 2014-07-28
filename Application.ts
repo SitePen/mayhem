@@ -7,7 +7,6 @@ import lang = require('dojo/_base/lang');
 import ObservableEvented = require('./ObservableEvented');
 import Promise = require('./Promise');
 import requestUtil = require('dojo/request/util');
-import routing = require('./routing/interfaces');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
 
@@ -65,7 +64,7 @@ interface ComponentConstructor {
  * });
  * ```
  *
- * Internally, this will do something similar to the following when @{link module:mayhem/Application#startup} is called:
+ * Internally, this will do something similar to the following when {@link module:mayhem/Application#startup} is called:
  *
  * ```ts
  * require([ 'app/services/CustomService' ], function (CustomService) {
@@ -90,19 +89,24 @@ class Application extends ObservableEvented {
 					require.toAbsMid('./binding/proxties/ObservableProxty'),
 					require.toAbsMid('./binding/proxties/StatefulProxty'),
 					require.toAbsMid('./binding/proxties/NodeTargetProxty'),
-					// TODO: Es5Proxty is necessary to support bidi nested binding...what should we do?
-					// require.toAbsMid('./binding/proxties/Es5Proxty'),
+					require.toAbsMid('./binding/proxties/Es5Proxty'),
 					require.toAbsMid('./binding/proxties/ObjectTargetProxty')
 				]
-			},
-			router: {
-				constructor: require.toAbsMid('./routing/NullRouter')
 			},
 			scheduler: {
 				constructor: require.toAbsMid('./Scheduler')
 			}
 		}
 	};
+
+	/**
+	 * The data binder component.
+	 *
+	 * @get
+	 * @set
+	 * @default module:mayhem/binding/Binder
+	 */
+	private _binder:binding.IBinder;
 
 	/**
 	 * A hash map of application components that will be dynamically loaded and set on the Application object when it is
@@ -112,9 +116,19 @@ class Application extends ObservableEvented {
 	 * loaded at runtime and its value used as the constructor, or a constructor function, in which case it will be used
 	 * as-is. The constructor must accept a keyword arguments object as its only argument.
 	 *
-	 * @property components
+	 * @get
+	 * @set
 	 */
 	private _components:HashMap<any>;
+
+	/**
+	 * The event scheduler component.
+	 *
+	 * @get
+	 * @set
+	 * @default module:mayhem/Scheduler
+	 */
+	private _scheduler:Scheduler;
 
 	get:Application.Getters;
 	on:Application.Events;
@@ -155,10 +169,11 @@ class Application extends ObservableEvented {
 		var self = this;
 		var components:HashMap<any> = this._components;
 
-		function getComponentConstructors():IPromise<HashMap<ComponentConstructor>> {
+		function getConstructors():IPromise<HashMap<ComponentConstructor>> {
 			var ctors:HashMap<IPromise<ComponentConstructor>> = {};
 
 			for (var key in components) {
+				// User may have disabled a component by setting its value to null/undefined
 				if (!components[key]) {
 					continue;
 				}
@@ -187,7 +202,7 @@ class Application extends ObservableEvented {
 			var startups:IPromise<any>[] = [];
 
 			for (var key in ctors) {
-				instance = new ctors[key](lang.mixin({ app: this }, components[key], { constructor: undefined }));
+				instance = new ctors[key](lang.mixin({ app: self }, components[key], { constructor: undefined }));
 				self.set(key, instance);
 				instances.push(instance);
 			}
@@ -206,7 +221,7 @@ class Application extends ObservableEvented {
 			});
 		}
 
-		var promise = getComponentConstructors()
+		var promise = getConstructors()
 			.then(instantiateComponents)
 			.then(function ():Application {
 				return self;
@@ -225,14 +240,12 @@ module Application {
 	export interface Getters extends ObservableEvented.Getters {
 		(key:'binder'):binding.IBinder;
 		(key:'components'):HashMap<HashMap<any>>;
-		(key:'router'):routing.IRouter;
 		(key:'scheduler'):Scheduler;
 	}
 	export interface Setters extends ObservableEvented.Setters {
-		(key:'binder'):binding.IBinder;
-		(key:'components'):HashMap<HashMap<any>>;
-		(key:'router'):routing.IRouter;
-		(key:'scheduler'):Scheduler;
+		(key:'binder', value:binding.IBinder):void;
+		(key:'components', value:HashMap<HashMap<any>>):void;
+		(key:'scheduler', value:Scheduler):void;
 	}
 }
 

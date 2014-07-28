@@ -1,4 +1,4 @@
-/// <amd-dependency path="./dom/Text" />
+/// <amd-dependency path="../dom/form/Text" />
 
 import has = require('../../has');
 import Widget = require('../Widget');
@@ -26,7 +26,7 @@ module Text {
 var Text:{ new (kwArgs:HashMap<any>):Text; };
 
 if (has('host-browser')) {
-	Text = <typeof Text> require('./dom/Text');
+	Text = <typeof Text> require('../dom/form/Text');
 }
 
 export = Text;

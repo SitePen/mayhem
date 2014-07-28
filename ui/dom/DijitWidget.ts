@@ -1,5 +1,6 @@
 /// <reference path="../../dijit" />
 
+import BindDirection = require('../../binding/BindDirection');
 import SingleNodeWidget = require('./SingleNodeWidget');
 import _WidgetBase = require('dijit/_WidgetBase');
 
@@ -31,7 +32,8 @@ class DijitWidget extends SingleNodeWidget {
 				source: widget,
 				sourceBinding: dijitName,
 				target: this,
-				targetBinding: mayhemName
+				targetBinding: mayhemName,
+				direction: BindDirection.TWO_WAY
 			});
 		}
 

@@ -62,7 +62,7 @@ class ProxtyBinder implements binding.IProxtyBinder {
 		else {
 			target = <binding.IProxty<TargetT, SourceT>> kwArgs.target;
 		}
-		
+
 		source.bindTo(target);
 
 		if (kwArgs.direction === BindDirection.TWO_WAY) {
@@ -108,7 +108,8 @@ class ProxtyBinder implements binding.IProxtyBinder {
 			proxty.set = function (value:SourceT):void {
 				var self = this,
 					args = arguments,
-					schedule = util.isArray(value) || value !== proxty.get();
+					// TODO: Why always schedule if it is an array?
+					schedule = value instanceof Array || value !== proxty.get();
 
 				app.get('scheduler').schedule(proxty.id, schedule ? function ():void {
 					oldSet.apply(self, args);

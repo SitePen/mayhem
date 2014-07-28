@@ -8,10 +8,16 @@ var sid:string = String(new Date().getTime() + Math.random());
 var uid:number = 0;
 
 /**
+ * The
+ *
  * @abstract
  */
 class Widget extends ObservableEvented implements IWidget {
 	/**
+	 * The {@link module:mayhem/Application} instance for this view.
+	 *
+	 * @get
+	 * @set
 	 * @protected
 	 */
 	_app:WebApplication;

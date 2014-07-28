@@ -106,7 +106,7 @@ class Observable implements core.IObservable {
 	 * @returns A handle that can be used to stop observing the property.
 	 */
 	observe(key:string, observer:core.IObserver<any>):IHandle {
-		if (!this._observers.hasOwnProperty(key)) {
+		if (has('es5') ? !this._observers[key] : !this._observers.hasOwnProperty(key)) {
 			this._observers[key] = [];
 		}
 

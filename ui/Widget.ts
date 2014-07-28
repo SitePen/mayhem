@@ -49,6 +49,11 @@ module Widget {
 	}
 }
 
+/**
+ * The Widget class is the base class for all user interface components within the Mayhem view system.
+ *
+ * @constructor module:mayhem/ui/Widget
+ */
 var Widget:{ new (kwArgs:HashMap<any>):Widget; };
 
 if (has('host-browser')) {

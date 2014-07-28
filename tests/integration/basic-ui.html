@@ -1,72 +1,64 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="../../../dojo/resources/dojo.css">
-		<link rel="stylesheet" href="../../../dijit/themes/claro/claro.css">
-		<style>
-			body {
-				margin: 1em !important;
-			}
-			.dgrid.dgrid-list {
-				height: 12em;
-			}
-
-			/* styles for autoheight */
-			.dgrid.dgrid-list.autoheight {
-				border: none;
-				height: auto;
-			}
-			.dgrid.dgrid-list.autoheight .dgrid-scroller {
-				position: relative;
-				overflow-y: hidden;
-			}
-			.has-ie-6 .dgrid.dgrid-list.autoheight .dgrid-scroller {
-				/* IE6 doesn't react properly to hidden on this page for some reason */
-				overflow-y: visible;
-			}
-		</style>
+		<link rel="stylesheet" href="../../third-party/dojo/resources/dojo.css">
+		<link rel="stylesheet" href="../../third-party/dijit/themes/claro/claro.css">
 	</head>
 	<body class="claro">
 		<script>
 var dojoConfig = {
-    async: true,
-    baseUrl: '../../third-party',
-    packages: [
-        'dojo',
-        'dijit',
-        'dgrid',
-        'xstyle',
-        'put-selector',
-        'dstore',
-		{ name: 'mayhem', location: '../' }
-    ]
+	async: true,
+	baseUrl: '../..',
+	packages: [
+		{ name: 'dojo', location: 'third-party/dojo' },
+		{ name: 'dijit', location: 'third-party/dijit' },
+		{ name: 'dgrid', location: 'third-party/dgrid' },
+		{ name: 'xstyle', location: 'third-party/xstyle' },
+		{ name: 'put-selector', location: 'third-party/put-selector' },
+		{ name: 'dstore', location: 'third-party/dstore' },
+		{ name: 'mayhem', location: '.' }
+	]
 };
 		</script>
-		<script src="../../../dojo/dojo.js"></script>
+		<script src="../../third-party/dojo/dojo.js"></script>
 		<script>
 require([
-	'mayhem/Application',
-	'mayhem/tests/integration/MyModel',
-	'mayhem/tests/integration/MyMediator',
-	'mayhem/tests/integration/MyView'
-], function (Application, MyModel, MyMediator, MyView) {
-	var app = new Application({
-		modules: { router: null }
+	'mayhem/WebApplication',
+	'mayhem/ui/form/Text'
+], function (WebApplication, Text) {
+	var app = window.app = new WebApplication({
+		components: {
+			router: null,
+			ui: {
+				view: null
+			}
+		}
 	});
 
+	var model = window.model = {
+		hello: 'hello'
+	};
+
 	app.startup().then(function () {
-		var model = window.model = new MyModel();
-		var mediator = window.mediator = new MyMediator({
-			app: app,
-			model: model
+		// var model = window.model = new MyModel();
+		// var mediator = window.mediator = new MyMediator({
+		// 	app: app,
+		// 	model: model
+		// });
+
+		var view = window.view = new Text({
+			app: app
+//			model: mediator
 		});
 
-		var view = window.view = new MyView({
-			app: app,
-			mediator: mediator
+		app.get('ui').set('view', view);
+		app.get('binder').bind({
+			source: model,
+			sourceBinding: 'hello',
+			target: view,
+			targetBinding: 'value',
+			direction: 2
 		});
-
-		view.attachToWindow(document.body);
 	});
 });
 		</script>

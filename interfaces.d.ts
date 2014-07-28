@@ -17,7 +17,6 @@ export declare module IApplication {
 
 ////
 
-// TODO: Probably remove this interface, it is not very useful?
 export interface IApplicationComponent extends IObservable {
 	get:IApplicationComponent.Getters;
 	set:IApplicationComponent.Setters;
@@ -76,7 +75,8 @@ export interface IObservable extends IDestroyable {
 	get:IObservable.Getters;
 	set:IObservable.Setters;
 
-	observe<T>(key:string, observer:IObserver<T>):IHandle;
+	// TODO: Should expose correct interface for all observers, like Getters, throughout framework
+	observe(key:string, observer:IObserver<any>):IHandle;
 }
 
 export declare module IObservable {
