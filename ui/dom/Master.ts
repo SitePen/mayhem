@@ -27,8 +27,8 @@ class Master extends MultiNodeWidget implements IMaster {
 		super.destroy();
 	}
 
-	startup():IPromise<Master> {
-		return Promise.resolve(this);
+	startup():IPromise<void> {
+		return <any> Promise.resolve(undefined);
 	}
 
 	_rootSetter(root:Element):void {

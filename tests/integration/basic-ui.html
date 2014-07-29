@@ -54,9 +54,9 @@ require([
 		app.get('ui').set('view', view);
 		app.get('binder').bind({
 			source: model,
-			sourceBinding: 'hello',
+			sourcePath: 'hello',
 			target: view,
-			targetBinding: 'value',
+			targetPath: 'value',
 			direction: 2
 		});
 	});

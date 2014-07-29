@@ -1,14 +1,15 @@
 import binding = require('../interfaces');
-import BindingProxty = require('../BindingProxty');
+import Binding = require('../Binding');
 import core = require('../../interfaces');
+import has = require('../../has');
 import util = require('../../util');
 
 /**
  * This property binder enables the ability to bind to arbitrary Objects (as a binding target only).
  */
-class ObjectTargetProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
-	static test(kwArgs:binding.IProxtyArguments):boolean {
-		return kwArgs.object instanceof Object;
+class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
+	static test(kwArgs:binding.IBindingArguments):boolean {
+		return util.isObject(kwArgs.object) && typeof kwArgs.path === 'string';
 	}
 
 	/**
@@ -24,19 +25,19 @@ class ObjectTargetProxty<T> extends BindingProxty<T, T> implements binding.IProx
 	/**
 	 * The target property.
 	 */
-	private _target:core.IProxty<T>;
+	private _target:binding.IBinding<T, T>;
 
-	constructor(kwArgs:binding.IProxtyArguments) {
+	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
 		this._object = kwArgs.object;
-		this._property = kwArgs.binding;
+		this._property = kwArgs.path;
 	}
 
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:core.IProxty<T>, options:binding.IBindToOptions = {}):IHandle {
+	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -49,8 +50,8 @@ class ObjectTargetProxty<T> extends BindingProxty<T, T> implements binding.IProx
 
 		var self = this;
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				self = self._target = null;
 			}
 		};
@@ -60,8 +61,7 @@ class ObjectTargetProxty<T> extends BindingProxty<T, T> implements binding.IProx
 	 * Destroys the property binding.
 	 */
 	destroy():void {
-		this.destroy = function () {};
-
+		this.destroy = function ():void {};
 		this._object = this._target = null;
 	}
 
@@ -87,4 +87,4 @@ class ObjectTargetProxty<T> extends BindingProxty<T, T> implements binding.IProx
 	}
 }
 
-export = ObjectTargetProxty;
+export = ObjectTargetBinding;

@@ -2,22 +2,21 @@
 
 import array = require('dojo/_base/array');
 import binding = require('../interfaces');
-import BindingProxty = require('../BindingProxty');
+import Binding = require('../Binding');
 import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
-import Stateful = require('dojo/Stateful');
 import util = require('../../util');
-import when = require('dojo/when');
 
 /**
- * This property binder enables the ability to bind to Dojo 1 Stateful objects.
+ * This property binder enables the ability to bind to mayhem Observable objects.
  */
-class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T, T> {
-	static test(kwArgs:binding.IProxtyArguments):boolean {
-		var object = <Stateful> kwArgs.object;
+class ObservableBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
+	static test(kwArgs:binding.IBindingArguments):boolean {
+		var object = <core.IObservable> kwArgs.object;
 		return object != null && typeof object.get === 'function' &&
 			typeof object.set === 'function' &&
-			typeof object.watch === 'function';
+			typeof object.observe === 'function' &&
+			typeof kwArgs.path === 'string';
 	}
 
 	/**
@@ -28,7 +27,7 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	/**
 	 * The object containing the final property to be bound.
 	 */
-	private _object:Stateful;
+	private _object:core.IObservable;
 
 	/**
 	 * The key for the final property to be bound.
@@ -38,15 +37,15 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	/**
 	 * The target property.
 	 */
-	private _target:core.IProxty<T>;
+	private _target:binding.IBinding<T, T>;
 
-	constructor(kwArgs:binding.IProxtyArguments) {
+	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
-		var object = this._object = <Stateful> kwArgs.object;
-		this._property = kwArgs.binding;
+		var object = this._object = <core.IObservable> kwArgs.object;
+		this._property = kwArgs.path;
 
-		this._handle = object.watch(kwArgs.binding, (key:string, oldValue:any, newValue:any) => {
+		this._handle = object.observe(kwArgs.path, (newValue:any):void => {
 			this._update(newValue);
 		});
 	}
@@ -54,7 +53,7 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	/**
 	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
 	 */
-	bindTo(target:core.IProxty<T>, options:binding.IBindToOptions = {}):IHandle {
+	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -67,8 +66,8 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 
 		var self = this;
 		return {
-			remove: function () {
-				this.remove = function () {};
+			remove: function ():void {
+				this.remove = function ():void {};
 				self = self._target = null;
 			}
 		};
@@ -78,7 +77,7 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	 * Destroys the property binding.
 	 */
 	destroy():void {
-		this.destroy = function () {};
+		this.destroy = function ():void {};
 
 		this._handle.remove();
 		this._handle = this._object = this._target = null;
@@ -88,7 +87,7 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	 * Gets the current value of this property.
 	 */
 	get():T {
-		return this._object ? this._object.get(this._property) : undefined;
+		return this._object ? <any> this._object.get(this._property) : undefined;
 	}
 
 	/**
@@ -96,23 +95,15 @@ class StatefulProxty<T> extends BindingProxty<T, T> implements binding.IProxty<T
 	 * bound property and so will not be propagated to the target object, if one exists.
 	 */
 	set(value:T):void {
-		if (this._object) {
-			if (util.isEqual(this.get(), value)) {
-				return;
-			}
-
-			this._object.set(this._property, value);
-		}
+		this._object && this._object.set(this._property, value);
 	}
 
 	/**
 	 * Updates the bound target property with the given value.
 	 */
 	private _update(value:T):void {
-		when(value).then((value:T):void => {
-			this._target && this._target.set(value);
-		});
+		this._target && this._target.set(value);
 	}
 }
 
-export = StatefulProxty;
+export = ObservableBinding;

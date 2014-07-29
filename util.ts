@@ -91,6 +91,72 @@ export function deferSetters(target:Object, methods:string[], untilMethod:string
 }
 
 /**
+ * Finds the first index of `searchString` in `source`, unless `searchString` is prefixed by a backslash in the source
+ * string (escaped), in which case it is considered not a match.
+ *
+ * @param source The string to search.
+ * @param searchString The string to search for.
+ * @param position The index to start the search.
+ * @returns The position of the search string, or -1 if the string is not found.
+ */
+export function escapedIndexOf(source:string, searchString:string, position?:number):number {
+	var index:number;
+
+	do {
+		index = source.indexOf(searchString, position);
+
+		if (source.charAt(index - 1) !== '\\' || source.slice(index - 2, index) === '\\\\') {
+			break;
+		}
+
+		position = index;
+	} while (index > -1);
+
+	return index;
+}
+
+/**
+ * Splits a string `source` by a string `separator`, unless `separator` is prefixed by a backslash in the source string
+ * (escaped), in which case the backslash is removed and no split occurs.
+ *
+ * @param source The string to split.
+ * @param separator The separator to split on.
+ * @returns The split string.
+ */
+export function escapedSplit(source:string, separator:string):string[] {
+	var result:string[] = [];
+	var part:string = '';
+
+	for (var i = 0, j = source.length; i < j; ++i) {
+		if (source.charAt(i) === '\\') {
+			if (source.slice(i + 1, i + separator.length + 1) === separator) {
+				part += separator;
+				i += separator.length;
+			}
+			else if (source.charAt(i + 1) === '\\') {
+				part += '\\';
+				i += 1;
+			}
+			else {
+				part += source.charAt(i);
+			}
+		}
+		else if (source.slice(i, i + separator.length) === separator) {
+			result.push(part);
+			part = '';
+			i += separator.length - 1;
+		}
+		else {
+			part += source.charAt(i);
+		}
+	}
+
+	result.push(part);
+
+	return result;
+}
+
+/**
  * Escapes a string of text for injection into a serialization of HTML or XML.
  */
 export function escapeXml(text:string, forAttribute:boolean = false):string {

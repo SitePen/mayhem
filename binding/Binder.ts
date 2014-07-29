@@ -1,0 +1,262 @@
+/// <reference path="../dojo" />
+
+import Application = require('../Application');
+import aspect = require('dojo/aspect');
+import BindDirection = require('./BindDirection');
+import binding = require('./interfaces');
+import BindingError = require('./BindingError');
+import core = require('../interfaces');
+import Observable = require('../Observable');
+import Promise = require('../Promise');
+import Proxty = require('../Proxty');
+import util = require('../util');
+
+/**
+ * A data binder that uses Binding objects to enable binding between arbitrary properties of two different objects.
+ */
+class Binder extends Observable implements binding.IBinder {
+	private _app:Application;
+	private _constructors:binding.IBindingConstructor[];
+	private _useScheduler:boolean;
+
+	_initialize():void {
+		super._initialize();
+		this._useScheduler = false;
+	}
+
+	add(Ctor:binding.IBindingConstructor, index:number = Infinity):IHandle {
+		var constructors = this._constructors;
+
+		constructors.splice(index, 0, Ctor);
+
+		return {
+			remove: function ():void {
+				this.remove = function ():void {};
+
+				for (var i = 0, MaybeCtor:binding.IBindingConstructor; (MaybeCtor = constructors[i]); ++i) {
+					if (Ctor === MaybeCtor) {
+						constructors.splice(i, 1);
+						break;
+					}
+				}
+
+				Ctor = constructors = null;
+			}
+		};
+	}
+
+	bind<SourceT, TargetT>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
+		var self = this;
+
+		if (!kwArgs.direction) {
+			kwArgs.direction = BindDirection.TWO_WAY;
+		}
+
+		var source:binding.IBinding<SourceT, TargetT>;
+		var target:binding.IBinding<TargetT, SourceT>;
+
+		// TODO: This does not really make sense; if you already have a Binding object then why are you not just
+		// calling bindTo on it? This condition was removed
+		// For source and target, if binding string is provided use it to create Binding object, otherwise it should
+		// already be a proxty
+
+		source = this.createBinding<SourceT, TargetT>(kwArgs.source, kwArgs.sourcePath, { scheduled: this._useScheduler });
+		target = this.createBinding<TargetT, SourceT>(kwArgs.target, kwArgs.targetPath, { scheduled: this._useScheduler });
+
+		source.bindTo(target);
+
+		if (kwArgs.direction === BindDirection.TWO_WAY) {
+			target.bindTo(source, { setValue: false });
+		}
+
+		return {
+			setSource: function (newSource:Object, newSourcePath:string = kwArgs.sourcePath):void {
+				source.destroy();
+				source = self.createBinding<SourceT, TargetT>(newSource, newSourcePath, { scheduled: self._useScheduler });
+				source.bindTo(target);
+				if (kwArgs.direction === BindDirection.TWO_WAY) {
+					target.bindTo(source, { setValue: false });
+				}
+			},
+			setTarget: function (newTarget:Object, newTargetPath:string = kwArgs.targetPath):void {
+				target.destroy();
+				target = self.createBinding<TargetT, SourceT>(newTarget, newTargetPath, { scheduled: self._useScheduler });
+				source.bindTo(target);
+				if (kwArgs.direction === BindDirection.TWO_WAY) {
+					target.bindTo(source, { setValue: false });
+				}
+			},
+			setDirection: function (newDirection:BindDirection):void {
+				target.bindTo(newDirection === BindDirection.TWO_WAY ? source : null);
+			},
+			remove: function ():void {
+				this.remove = function ():void {};
+				source.destroy();
+				target.destroy();
+				source = target = null;
+			}
+		};
+	}
+
+	createBinding<SourceT, TargetT>(object:Object, path:string, options:{ scheduled?:boolean; } = {}):binding.IBinding<SourceT, TargetT> {
+		var binder = this;
+		var constructors = this._constructors;
+		var app = this._app;
+
+		function scheduled(binding:binding.IBinding<SourceT, TargetT>):binding.IBinding<SourceT, TargetT> {
+			var oldSet = binding.set;
+			binding.set = function (value:SourceT):void {
+				var self = this;
+				var args = arguments;
+				// TODO: Why always schedule if it is an array?
+				var schedule = value instanceof Array || value !== binding.get();
+
+				app.get('scheduler').schedule(binding.id, schedule ? function ():void {
+					oldSet.apply(self, args);
+				} : null);
+			};
+			return binding;
+		}
+
+		var binding:binding.IBinding<SourceT, TargetT>;
+		for (var i = 0, Binding:binding.IBindingConstructor; (Binding = constructors[i]); ++i) {
+			if (Binding.test({ object: object, path: path, binder: this })) {
+				binding = new Binding<SourceT, TargetT>({
+					object: object,
+					path: path,
+					binder: this
+				});
+
+				return options.scheduled === false ? binding : scheduled(binding);
+			}
+		}
+
+		throw new BindingError(
+			'No registered proxty constructors understand the requested binding "{binding}" on {object}.', {
+				object: object,
+				path: path,
+				binder: this
+			}
+		);
+	}
+
+	/**
+	 * Return a Binding that is bound to a particular metadata key on an object.
+	 *
+	 * @param object Object with metadata
+	 * @param binding Metadata key, or hierarchical key specifier, to bind to
+	 * @param field Specific field in metadata object to observe
+	 */
+	getMetadata<T>(object:Object, binding:string, field:string):Proxty<T>;
+	getMetadata(object:Object, binding:string):Proxty<core.IObservable>;
+	getMetadata(object:Object, binding:string, field?:string):Proxty<any> {
+		var metadata:Proxty<any> = new Proxty(null);
+		var metadataHandle:IHandle;
+		var key:string;
+
+		function swapMetadataObject(newObject:core.IHasMetadata):void {
+			var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(key) : null;
+
+			if (field) {
+				metadataHandle && metadataHandle.remove();
+
+				if (newMetadata) {
+					metadataHandle = newMetadata.observe(field, function (newValue:any):void {
+						metadata.set(newValue);
+					});
+
+					metadata.set(newMetadata.get(field));
+				}
+				else {
+					metadata.set(null);
+				}
+			}
+			else {
+				metadata.set(newMetadata);
+			}
+		}
+
+		var splitAt:number = binding.lastIndexOf('.');
+
+		// Getting metadata is like getting a property descriptor; we need to have a reference to the parent object
+		// of the key, and the key, in order to look it up
+		if (splitAt > -1) {
+			key = binding.slice(splitAt + 1);
+			binding = binding.slice(0, splitAt);
+		}
+		else {
+			key = binding;
+			binding = '';
+		}
+
+		if (binding) {
+			var parentProxty = this.createBinding(object, binding);
+			// TODO: should we be keeping track of this observer handle?
+			parentProxty.observe(swapMetadataObject);
+		}
+		else {
+			swapMetadataObject(<core.IHasMetadata> object);
+		}
+
+		aspect.after(metadata, 'destroy', function ():void {
+			metadataHandle && metadataHandle.remove();
+			parentProxty && parentProxty.destroy();
+			metadataHandle = parentProxty = null;
+		}, true);
+
+		return metadata;
+	}
+
+	startup():IPromise<void> {
+		// This is needed because bindings can be set up in the configuration of the app
+		var constructors = this._constructors;
+
+		function loadConstructor(index:number, moduleId:string):IPromise<void> {
+			return util.getModule(moduleId).then(function (Binding:binding.IBindingConstructor):void {
+				constructors.splice(index, 1, Binding);
+			});
+		}
+
+		var promises:IPromise<void>[] = [];
+
+		for (var i = 0, Ctor:any; (Ctor = this._constructors[i]); ++i) {
+			if (typeof Ctor === 'string') {
+				promises.push(loadConstructor(i, Ctor));
+			}
+		}
+
+		var self = this;
+		return Promise.all(promises).then(function ():void {});
+	}
+
+	test(kwArgs:binding.IBindArguments):boolean {
+		var sourceBindingValid:boolean = false;
+		var targetBindingValid:boolean = false;
+
+		for (var i = 0, Binding:binding.IBindingConstructor; (Binding = this._constructors[i]); ++i) {
+			if (!sourceBindingValid && Binding.test({
+				object: kwArgs.source,
+				path: kwArgs.sourcePath,
+				binder: this
+			})) {
+				sourceBindingValid = true;
+			}
+
+			if (!targetBindingValid && Binding.test({
+				object: kwArgs.target,
+				path: kwArgs.targetPath,
+				binder: this
+			})) {
+				targetBindingValid = true;
+			}
+
+			if (sourceBindingValid && targetBindingValid) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
+export = Binder;

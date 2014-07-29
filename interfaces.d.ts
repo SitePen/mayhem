@@ -20,7 +20,7 @@ export declare module IApplication {
 export interface IApplicationComponent extends IObservable {
 	get:IApplicationComponent.Getters;
 	set:IApplicationComponent.Setters;
-	startup():IPromise<any>;
+	startup():IPromise<void>;
 }
 
 export declare module IApplicationComponent {
@@ -65,6 +65,7 @@ export interface IEventListener<T extends IEvent> {
 
 ////
 
+// TODO: Should be getDescriptor or similar
 export interface IHasMetadata {
 	getMetadata(key:string):IObservable;
 }

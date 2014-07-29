@@ -82,15 +82,14 @@ class Application extends ObservableEvented {
 	static _defaultConfig = {
 		components: {
 			binder: {
-				constructor: require.toAbsMid('./binding/ProxtyBinder'),
-				proxties: [
-					require.toAbsMid('./binding/proxties/MetadataProxty'),
-					require.toAbsMid('./binding/proxties/NestedProxty'),
-					require.toAbsMid('./binding/proxties/ObservableProxty'),
-					require.toAbsMid('./binding/proxties/StatefulProxty'),
-					require.toAbsMid('./binding/proxties/NodeTargetProxty'),
-					require.toAbsMid('./binding/proxties/Es5Proxty'),
-					require.toAbsMid('./binding/proxties/ObjectTargetProxty')
+				constructor: require.toAbsMid('./binding/Binder'),
+				constructors: [
+					require.toAbsMid('./binding/bindings/MetadataBinding'),
+					require.toAbsMid('./binding/bindings/NestedBinding'),
+					require.toAbsMid('./binding/bindings/ObservableBinding'),
+					require.toAbsMid('./binding/bindings/StatefulBinding'),
+					require.toAbsMid('./binding/bindings/Es5Binding'),
+					require.toAbsMid('./binding/bindings/ObjectTargetBinding')
 				]
 			},
 			scheduler: {

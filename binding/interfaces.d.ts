@@ -1,6 +1,5 @@
 import BindDirection = require('./BindDirection');
 import core = require('../interfaces');
-import Observable = require('../Observable');
 import Proxty = require('../Proxty');
 
 /**
@@ -17,7 +16,7 @@ export interface IBindArguments {
 	 * string but is typically an identifier or expression. The data binding registry in use determines whether or not
 	 * the specified binding string is valid.
 	 */
-	sourceBinding:string;
+	sourcePath:string;
 
 	/**
 	 * The target object to bind to.
@@ -27,7 +26,7 @@ export interface IBindArguments {
 	/**
 	 * The binding string for the property being bound on the target object.
 	 */
-	targetBinding:string;
+	targetPath:string;
 
 	/**
 	 * The direction in which the two properties are bound. By default, the direction is `ONE_WAY`, which means that
@@ -38,10 +37,10 @@ export interface IBindArguments {
 }
 
 /**
- * IReactor provides the high-level data binding API for creating reactive objects and binding together two object
+ * IBinder provides the high-level data binding API for creating reactive objects and binding together two object
  * properties.
  */
-export interface IBinder {
+export interface IBinder extends core.IApplicationComponent {
 	/**
 	 * Tests whether or not the given data binding arguments can be used to successfully bind two objects together.
 	 */
@@ -58,12 +57,10 @@ export interface IBinder {
 	 * in order to allow property binders to peel away sections of binding strings, and to allow access to additional
 	 * interfaces exposed on subtypes of IProxty.
 	 */
-	createProxty<SourceT, TargetT>(object:Object, binding:string, options?:{ scheduled?:boolean; }):IProxty<SourceT, TargetT>;
+	createBinding<SourceT, TargetT>(object:Object, path:string, options?:{ scheduled?:boolean; }):IBinding<SourceT, TargetT>;
 
-	getMetadata<T>(object:Object, binding:string, field:string):Proxty<T>;
-	getMetadata(object:Object, binding:string):Proxty<Observable>;
-
-	startup():IPromise<any[]>;
+	getMetadata<T>(object:Object, path:string, field:string):Proxty<T>;
+	getMetadata(object:Object, path:string):Proxty<core.IObservable>;
 }
 
 /**
@@ -72,8 +69,8 @@ export interface IBinder {
  */
 export interface IBindingHandle extends IHandle {
 	// TODO: Is it a bad limitation to not be able to set only the bindings?
-	setSource(source:Object, sourceBinding?:string):void;
-	setTarget(target:Object, targetBinding?:string):void;
+	setSource(source:Object, sourcePath?:string):void;
+	setTarget(target:Object, targetPath?:string):void;
 	setDirection(direction:BindDirection):void;
 }
 
@@ -116,7 +113,7 @@ export interface IComputedProperty {
  * needing to know the originally bound object, the name of the property, or even that the property exists at the time
  * that it is bound or set.
  */
-export interface IProxty<SourceT, TargetT> extends Proxty<SourceT> {
+export interface IBinding<SourceT, TargetT> extends Proxty<SourceT> {
 	id:string;
 
 	/**
@@ -127,9 +124,9 @@ export interface IProxty<SourceT, TargetT> extends Proxty<SourceT> {
 }
 
 /**
- * The keyword arguments object for property binders.
+ * The keyword arguments object for property bindings.
  */
-export interface IProxtyArguments {
+export interface IBindingArguments {
 	/**
 	 * The object to bind to.
 	 */
@@ -138,10 +135,10 @@ export interface IProxtyArguments {
 	/**
 	 * The binding string to use when creating the binding.
 	 */
-	binding:string;
+	path:string;
 
 	/**
-	 * The property registry that is creating the bound property. Providing this information to the property binder
+	 * The binder that is creating the bound property. Providing this information to the property binder
 	 * enables property binders to peel away sections of a binding string to compose complex wirings of bound
 	 * properties.
 	 */
@@ -149,28 +146,16 @@ export interface IProxtyArguments {
 }
 
 /**
- * IPropertyRegistry is the interface definition for the default IBoundProperty-based data binding registry.
- * This type of registry operates on the principle of registering IPropertyBinders, which create opaque bound property
- * objects that are then wired together in series to create complex chains of arbitrary bindings between objects.
- */
-export interface IProxtyBinder extends IBinder {
-	/**
-	 * Adds a property binder to the property registry.
-	 */
-	add(Binder:IProxtyConstructor, index?:number):IHandle;
-}
-
-/**
  * IPropertyBinder constructors are responsible for implementing the actual property binding logic for the default
  * PropertyRegistry data binding registry. They are typically classes that implement `IBoundProperty` with an
  * additional static `test` function.
  */
-export interface IProxtyConstructor {
-	new <SourceT, TargetT>(kwArgs:IProxtyArguments):IProxty<SourceT, TargetT>;
+export interface IBindingConstructor {
+	new <SourceT, TargetT>(kwArgs:IBindingArguments):IBinding<SourceT, TargetT>;
 
 	/**
 	 * Tests whether or not the property binder can successfully create a bound property from the given object and
 	 * binding string.
 	 */
-	test(kwArgs:IProxtyArguments):boolean;
+	test(kwArgs:IBindingArguments):boolean;
 }

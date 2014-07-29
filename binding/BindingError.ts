@@ -5,25 +5,22 @@ import createError = require('dojo/errors/create');
 import lang = require('dojo/_base/lang');
 
 interface BindingError extends Error {
-	kwArgs:binding.IProxtyArguments;
+	kwArgs:binding.IBindingArguments;
 }
 
 var BindingError:{
-	new (message:string, kwArgs:binding.IProxtyArguments):BindingError;
+	new (message:string, kwArgs:binding.IBindingArguments):BindingError;
 };
 
-function Ctor(message:string, kwArgs:binding.IProxtyArguments) {
+function Ctor(message:string, kwArgs:binding.IBindingArguments) {
 	if (!message) {
-		this.message = 'Could not create proxty for "{binding}" on {object}.';
+		message = 'Could not create Binding object for "{binding}" on {object}.';
 	}
 
+	this.message = lang.replace(message, kwArgs);
 	this.kwArgs = kwArgs;
 }
 
-BindingError = createError('BindingError', Ctor, Error, {
-	toString: function ():string {
-		return lang.replace(this.message, this.kwArgs);
-	}
-});
+BindingError = createError('BindingError', Ctor, Error, {});
 
 export = BindingError;

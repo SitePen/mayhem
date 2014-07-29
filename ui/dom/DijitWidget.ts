@@ -30,9 +30,9 @@ class DijitWidget extends SingleNodeWidget {
 			mayhemName = setupMap.properties[dijitName];
 			this._app.get('binder').bind({
 				source: widget,
-				sourceBinding: dijitName,
+				sourcePath: dijitName,
 				target: this,
-				targetBinding: mayhemName,
+				targetPath: mayhemName,
 				direction: BindDirection.TWO_WAY
 			});
 		}
