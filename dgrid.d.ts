@@ -10,6 +10,7 @@ declare module 'dgrid/List' {
 	class List {
 		/* readonly */ domNode:HTMLElement;
 		selection:any; // TODO: interface for dgrid/Selection
+		_started:boolean;
 
 		constructor(kwArgs?:Object);
 
@@ -23,8 +24,11 @@ declare module 'dgrid/List' {
 		on(type:string, listener:EventListener):IHandle;
 		_onNotification(rows?:any[], object?:any, from?:number, to?:number):void;
 		refresh(options?:Object):IPromise<any>;
+		removeRow(rowElement:any, justCleanup?:boolean):void;
 		renderArray(results:any, beforeNode?:Node, options?:any):HTMLElement;
 		renderRow(value:any, options?:Object):HTMLElement;
+		resize():void;
+		startup():void;
 	}
 
 	export = List;

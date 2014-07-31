@@ -12,6 +12,7 @@ class Widget extends CommonWidget {
 	 * @abstract
 	 */
 	detach():Node {
+		super.detach();
 		return null;
 	}
 }

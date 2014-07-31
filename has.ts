@@ -20,4 +20,8 @@ if (typeof window !== 'undefined') {
 	has.add('tablet', has('touch') && !has('phone'));
 }
 
+if (has('dom')) {
+	has.add('dom-tree-walker', typeof document.createTreeWalker !== 'undefined');
+}
+
 export = has;

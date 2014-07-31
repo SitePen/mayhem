@@ -8,6 +8,7 @@ class SingleNodeWidget extends Widget {
 
 	detach():Element {
 		this._node.parentNode && this._node.parentNode.removeChild(this._node);
+		super.detach();
 		return this._node;
 	}
 

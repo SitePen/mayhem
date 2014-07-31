@@ -9,19 +9,9 @@ class ContainerMixin {
 
 	add(child:Widget):void {
 		child.set({
-			attached: this.get('attached'),
+			isAttached: this.get('isAttached'),
 			parent: this
 		});
-	}
-
-	/**
-	 * @protected
-	 */
-	_attachedSetter(value:boolean):void {
-		var children:Widget[] = this._children;
-		for (var i = 0, child:Widget; (child = children[i]); ++i) {
-			child.set('attached', value);
-		}
 	}
 
 	/**
@@ -48,6 +38,14 @@ class ContainerMixin {
 		this._children = null;
 	}
 
+	empty():void {
+		var children:Widget[] = this._children;
+		var child:Widget;
+		while ((child = children.pop())) {
+			child.destroy();
+		}
+	}
+
 	getIndexOfChild(child:Widget):number {
 		var children:Widget[] = this._children;
 
@@ -60,11 +58,13 @@ class ContainerMixin {
 		return -1;
 	}
 
-	empty():void {
+	/**
+	 * @protected
+	 */
+	_isAttachedSetter(value:boolean):void {
 		var children:Widget[] = this._children;
-		var child:Widget;
-		while ((child = children.pop())) {
-			child.destroy();
+		for (var i = 0, child:Widget; (child = children[i]); ++i) {
+			child.set('isAttached', value);
 		}
 	}
 }

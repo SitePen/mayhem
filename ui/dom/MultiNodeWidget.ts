@@ -7,6 +7,8 @@ class MultiNodeWidget extends Widget {
 	 */
 	_firstNode:Comment;
 
+	private _fragment:DocumentFragment;
+
 	/**
 	 * @protected
 	 */
@@ -17,7 +19,11 @@ class MultiNodeWidget extends Widget {
 	set:MultiNodeWidget.Setters;
 
 	detach():DocumentFragment {
-		return domUtil.extractContents(this._firstNode, this._lastNode);
+		if (this._firstNode.parentNode !== this._fragment) {
+			this._fragment = domUtil.extractContents(this._firstNode, this._lastNode);
+		}
+		super.detach();
+		return this._fragment;
 	}
 
 	_render():void {
@@ -26,8 +32,8 @@ class MultiNodeWidget extends Widget {
 		this._lastNode = document.createComment('/' + commentId);
 
 		// An initial fragment is necessary in order to provide a clear parent for any elements that are added to the
-		// widget while it is detached; it can be accessed consistently via `this._firstNode.parentNode`
-		var fragment:DocumentFragment = document.createDocumentFragment();
+		// widget while it is detached
+		var fragment:DocumentFragment = this._fragment = document.createDocumentFragment();
 		fragment.appendChild(this._firstNode);
 		fragment.appendChild(this._lastNode);
 	}

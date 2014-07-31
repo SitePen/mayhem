@@ -37,7 +37,7 @@ class Master extends MultiNodeWidget implements IMaster {
 
 		if (root && viewNode) {
 			root.appendChild(viewNode);
-			this._view.set('attached', true);
+			this._view.set('isAttached', true);
 		}
 	}
 
@@ -53,7 +53,7 @@ class Master extends MultiNodeWidget implements IMaster {
 
 			if (this._root) {
 				this._root.appendChild(this._view.detach());
-				this._view.set('attached', true);
+				this._view.set('isAttached', true);
 			}
 		}
 	}

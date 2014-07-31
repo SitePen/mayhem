@@ -32,19 +32,19 @@ module Widget {
 
 	export interface Getters extends ObservableEvented.Getters {
 		(key:'app'):core.IApplication;
-		(key:'attached'):boolean;
 		(key:'class'):string;
 		(key:'classList'):ClassList;
 		(key:'id'):string;
 		(key:'index'):number;
+		(key:'isAttached'):boolean;
 		(key:'parent'):Container;
 	}
 
 	export interface Setters extends ObservableEvented.Setters {
 		(key:'app', value:core.IApplication):void;
-		(key:'attached', value:boolean):void;
 		(key:'class', value:string):void;
 		(key:'id', value:string):void;
+		(key:'isAttached', value:boolean):void;
 		(key:'parent', value:Container):void;
 	}
 }

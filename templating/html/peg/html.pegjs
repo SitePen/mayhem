@@ -1,57 +1,59 @@
 {
+	require.toAbsMid = require.toAbsMid || function (identity) { return identity; };
+
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+
 	/**
 	 * Validates that the attributes provided in the given attribute map are correct according to the provided rules.
 	 */
 	 function validate(attributes, rules) {
-		var required = rules.required || [],
-			optional = rules.optional || [],
-			type = rules.type ? ' on ' + rules.type : '';
+		var required = rules.required || [];
+		var optional = rules.optional || [];
+		var type = rules.type ? ' on ' + rules.type : '';
 
-		var i = 0,
-			permitted = {};
+		var i = 0;
+		var j = 0;
+		var permitted = {};
 
-		for (i = 0; i < required.length; ++i) {
+		for (i = 0, j = required.length; i < j; ++i) {
 			permitted[required[i]] = true;
 		}
-		for (i = 0; i < optional.length; ++i) {
+		for (i = 0, j = optional.length; i < j; ++i) {
 			permitted[optional[i]] = true;
 		}
 
-		for (i = 0; i < required.length; ++i) {
-			if (!(required[i] in attributes)) {
+		for (i = 0, j = required.length; i < j; ++i) {
+			if (!hasOwnProperty.call(attributes, required[i])) {
 				error('Missing required attribute "' + required[i] + '"' + type);
 			}
 		}
 
 		if (!rules.extensible) {
 			for (var name in attributes) {
-				if (!(name in permitted)) {
+				if (!hasOwnProperty.call(permitted, name)) {
 					error('Invalid attribute "' + name + '"' + type);
 				}
 			}
 		}
 	}
 
+	/**
+	 * Parses `text` for data binding signatures.
+	 *
+	 * @param {string} text Text possibly containing data binding signatures.
+	 * @returns {{ $bind: string[] }|string} A binding instruction object if data binding paths exist in the text, or
+	 * just the text if there were no data binding signatures.
+	 */
 	function parseBoundText(text) {
 		var results = parse(text, { startRule: 'BoundText' });
-		// Loop over results list and inspect for binding objects
-		for (var i = 0, len = results.length; i < len; ++i) {
+
+		for (var i = 0, j = results.length; i < j; ++i) {
 			if (results[i].$bind) {
 				return { $bind: results };
 			}
 		}
-		// If no bindings in array flatten into a string
-		// TODO: should we generate an error instead?
-		return results.join('');
-	}
 
-	function trim(str) {
-		// Levithan trim via http://blog.stevenlevithan.com/archives/faster-trim-javascript
-		var	str = str.replace(/^\s\s*/, ''),
-			ws = /\s/,
-			i = str.length;
-		while (ws.test(str.charAt(--i)));
-		return str.slice(0, i + 1);
+		return results.join('');
 	}
 
 	var aliases = {
@@ -72,8 +74,8 @@
 			var aliases = this._aliases;
 
 			// Ensure that aliases are limited to complete module ID fragments
-			newAlias.from = newAlias.from.toString().replace(/\/*$/, '/');
-			newAlias.to = newAlias.to.toString().replace(/\/*$/, '/');
+			newAlias.from = newAlias.from.replace(/\/*$/, '/');
+			newAlias.to = newAlias.to.replace(/\/*$/, '/');
 
 			for (var i = 0, oldAlias; (oldAlias = aliases[i]); ++i) {
 				// The same alias has already been parsed once before, probably by some look-ahead; do not add it
@@ -103,14 +105,15 @@
 				}
 			}
 
-			if (node.children && node.children.length) {
+			if (node.children) {
 				for (var i = 0, child; (child = node.children[i]); ++i) {
 					this.resolve(child);
 				}
 			}
 
 			// Recurse widget properties for constructors or other templates
-			var key, value;
+			var key;
+			var value;
 			if (node.kwArgs) {
 				for (key in node.kwArgs) {
 					value = node.kwArgs[key];
@@ -128,11 +131,11 @@
 		 * Validates that the collected aliases from the template are valid and do not contain duplicate definitions.
 		 */
 		validate: function () {
-			var aliases = this._aliases,
-				aliasMap = {};
+			var aliases = this._aliases;
+			var aliasMap = {};
 
 			for (var i = 0, alias; (alias = aliases[i]); ++i) {
-				if (aliasMap[alias.from]) {
+				if (hasOwnProperty.call(aliasMap, alias.from)) {
 					var oldAlias = aliasMap[alias.from];
 					throw new Error('Line ' + alias.line + ', column ' + alias.column + ': Alias "' + alias.from +
 						'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
@@ -146,6 +149,7 @@
 	};
 }
 
+
 // template root
 
 Template
@@ -155,7 +159,7 @@ Template
 		// require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky tree
 		// where the first widget is the first widget and then the second widget is an Element widget containing all
 		// the rest of the widgets
-		(widget:AnyNonElement !. { return widget })
+		(widget:AnyNonElement !. { return widget; })
 		/ Element
 	)? {
 		if (root) {
@@ -163,12 +167,14 @@ Template
 			if (!root.content && root.children && root.children.length === 1) {
 				root = root.children[0];
 			}
+			// array of children, give them a container
+			// TODO: This seems like it should not need to be
 			else {
-				root.constructor = require.toAbsMid('../../ui/View');
+				root.constructor = require.toAbsMid('../ui/Element');
 			}
 		}
 		else {
-			root = { constructor: require.toAbsMid('../../ui/View') };
+			root = { constructor: require.toAbsMid('../ui/Element') };
 		}
 
 		aliases.validate();
@@ -183,11 +189,11 @@ Element 'HTML'
 		AnyNonElement
 		/ HtmlFragment
 	)+ {
-		var content = [],
-			element = {},
-			children = [],
-			nonWhitespace = /\S/,
-			hasContent;
+		var content = [];
+		var element = {};
+		var children = [];
+		var nonWhitespace = /\S/;
+		var hasContent;
 
 		for (var i = 0, j = nodes.length; i < j; ++i) {
 			var node = nodes[i];
@@ -199,7 +205,7 @@ Element 'HTML'
 
 			if (typeof node === 'string') {
 				content.push(node);
-				hasContent || (hasContent = nonWhitespace.test(node))
+				hasContent = hasContent || nonWhitespace.test(node);
 			}
 			else if (node.$named) {
 				content.push(node);
@@ -221,11 +227,12 @@ Element 'HTML'
 		}
 
 		// Parse the string portions of our html template for text bindings
-		var results = [],
-			item,
-			parsed;
-		for (var i = 0, len = content.length; i < len; ++i) {
+		var results = [];
+		var item;
+		var parsed;
+		for (var i = 0, j = content.length; i < j; ++i) {
 			item = content[i];
+
 			if (typeof item === 'string') {
 				parsed = parseBoundText(item);
 				if (parsed.$bind) {
@@ -240,18 +247,8 @@ Element 'HTML'
 			}
 		}
 
-		if (results.length === 1 && typeof results[0] === 'string') {
-			// Flatten to string if there's no complex content
-			element.content = results[0];
-			return element;
-		}
-
 		element.content = results;
-		return element;
-	}
-
-NonBlankElement 'HTML'
-	= element:Element & { return element.content || element.children } {
+		element.constructor = require.toAbsMid('../ui/Element');
 		return element;
 	}
 
@@ -263,75 +260,68 @@ HtmlFragment 'HTML'
 			& '<'
 
 			IfTagOpen
+			/ ElseIfTag
+			/ ElseTag
 			/ IfTagClose
-			/ ElseIfTagOpen
-			/ ElseIfTagClose
-			/ ElseTagOpen
-			/ ElseTagClose
 			/ ForTagOpen
 			/ ForTagClose
 			/ WhenTagOpen
+			/ RejectedTag
+			/ PendingTag
 			/ WhenTagClose
-			/ ErrorTagOpen
-			/ DuringTagOpen
-			/ DuringTagClose
-			/ ErrorTagClose
 			/ Placeholder
 			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
 		)
-		character:. { return character }
+		character:. { return character; }
 	)+ {
 		return content.join('');
 	}
 
 BoundText
-	// Curly brackets inside the actions needs to be escaped due to https://github.com/dmajda/pegjs/issues/89
-	= ( Binding / !'{' value:('\\{' { return '\x7b' } / [^{])+ { return value.join('') } )*
+	// Curly brackets inside the action are escaped (\x7b, \x7d) due to https://github.com/dmajda/pegjs/issues/89
+	= (
+		Binding
+		/ !'{' value:('\\{' { return '\x7b'; } / [^{])+ { return value.join(''); }
+	)*
 
 Binding
-	= '{' value:('\\}' { return '\x7d' } / [^}])* '}' { return { $bind: trim(value.join('')) } }
-
+	= '{' value:('\\}' { return '\x7d' } / [^}])* '}' {
+		return { $bind: value.join('').replace(/^\s+|\s+$/g, '') };
+	}
 
 // conditionals
 
-If '<if/>'
+If '<if></if>'
 	= kwArgs:IfTagOpen
-	body:Element?
+	consequent:Any?
 	alternates:(
-		kwArgs:ElseIfTagOpen body:Element? (ElseIfTagClose S*)? {
-			body.constructor = require.toAbsMid('../../ui/Conditional');
-			body.kwArgs = kwArgs;
-			return body;
+		kwArgs:ElseIfTag consequent:Any? {
+			kwArgs.consequent = consequent;
+			return kwArgs;
 		}
 	)*
-	finalAlternate:(kwArgs:ElseTagOpen body:Element? (ElseTagClose S*)? {
-		body.constructor = require.toAbsMid('../../ui/View');
-		body.kwArgs = kwArgs;
-		return body;
+	finalAlternate:(kwArgs:ElseTag consequent:Any? {
+		kwArgs.condition = true;
+		kwArgs.consequent = consequent;
+		return kwArgs;
 	})?
 	IfTagClose {
-		body.constructor = require.toAbsMid('../../ui/Conditional');
-		body.kwArgs = kwArgs;
+		kwArgs.consequent = consequent;
 
-		// Loop over our alternates and turn them into a recursive list of conditional widgets
-		var target = body, i, alternate;
-		for (i = 0; (alternate = alternates[i]); ++i) {
-			target = target.kwArgs.alternate = alternate;
-		}
-		if (finalAlternate) {
-			target.kwArgs.alternate = finalAlternate;
-		}
-		return body;
+		var widget = { constructor: require.toAbsMid('../ui/Conditional') };
+		widget.conditions = alternates ? alternates : [];
+		widget.conditions.unshift(kwArgs);
+		finalAlternate && widget.conditions.push(finalAlternate);
+		return widget;
 	}
 
 IfTagOpen '<if>'
 	= '<if'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
 			type: '<if>',
-			required: [ 'condition' ],
-			optional: [ 'id' ]
+			required: [ 'condition' ]
 		});
 		return kwArgs;
 	}
@@ -339,84 +329,73 @@ IfTagOpen '<if>'
 IfTagClose '</if>'
 	= '</if>'i
 
-ElseIfTagOpen '<elseif>'
+ElseIfTag '<elseif>'
 	= '<elseif'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
 			type: '<elseif>',
-			required: [ 'condition' ],
-			optional: [ 'id' ]
+			required: [ 'condition' ]
 		});
 		return kwArgs;
 	}
 
-ElseIfTagClose '</elseif>'
-	= '</elseif>'i
-
-ElseTagOpen '<else>'
+ElseTag '<else>'
 	= '<else'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
-			type: '<else>',
-			optional: [ 'id' ]
+			type: '<else>'
 		});
 		return kwArgs;
 	}
-
-ElseTagClose '</else>'
-	= '</else>'i
 
 // loops
 
-For '<for/>'
-	= kwArgs:ForTagOpen body:Element ForTagClose {
-		validate(kwArgs, {
-			type: '<for>',
-			extensible: true
-		});
-
-		// Add a constructor and wrap in signal object to just get a ctor instead of a constructed instance
-		body.constructor = require.toAbsMid('../../ui/IteratorElement');
-		kwArgs.template = { $ctor: body };
-
-		// Convert "in" attribute into a one-way "source" binding
-		if (kwArgs.in) {
-			kwArgs.source = { $bind: kwArgs.in };
-			delete kwArgs.in;
-		}
-
-		return {
-			constructor: require.toAbsMid('../../ui/Iterator'),
-			kwArgs: kwArgs
-		};
+For '<for></for>'
+	= kwArgs:ForTagOpen
+	template:Any
+	ForTagClose {
+		kwArgs.constructor = require.toAbsMid('../ui/Iterator');
+		// $ctor is a special flag to the template processor to pass the generated constructor function for the widget
+		// instead of generating an instance of the widget
+		kwArgs.itemConstructor = { $ctor: template };
+		return kwArgs;
 	}
 
 ForTagOpen '<for>'
-	= '<for'i kwArgs:AttributeMap '>' { return kwArgs; }
+	= '<for'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
+			type: '<for>',
+			required: [ 'each' ],
+			optional: [ 'as' ]
+		});
+		return kwArgs;
+	}
 
 ForTagClose '</for>'
 	= '</for>'i
 
 // promises
 
-When '<when/>'
+When '<when></when>'
 	= kwArgs:WhenTagOpen
-	widget:Any?
-	during:(head:DuringTagOpen body:Any? (DuringTagClose S*)? {
-		body.constructor = head.constructor;
-		body.kwArgs = head.kwArgs;
-		return body;
+	body:Any?
+	// TODO: Allow <pending> and <rejected> to appear in either order
+	pending:(kwArgs:PendingTag body:Any? {
+		kwArgs.instance = body;
+		return kwArgs;
 	})?
-	error:(head:ErrorTagOpen body:Any? (ErrorTagClose S*)? {
-		body.constructor = head.constructor;
-		body.kwArgs = head.kwArgs;
-		return body;
+	rejected:(kwArgs:RejectedTag body:Any? {
+		kwArgs.instance = body;
+		return kwArgs;
 	})?
 	WhenTagClose {
-		// TODO: process bindings within content, and within during and error content
-		kwArgs.during = during;
-		kwArgs.error = error;
-		widget.constructor = require.toAbsMid('../../ui/Resolver');
-		widget.kwArgs = kwArgs;
-		return widget;
+		kwArgs.constructor = require.toAbsMid('../ui/Resolver');
+		kwArgs.resolved = body;
+		// TODO: This is not correct; there should be a way to indicate a separate mechanism for creating a new view
+		// scope for each of the instance widgets, instead of adding these keys, which do nothing right now
+		kwArgs.pendingAs = pending && pending.as;
+		kwArgs.rejectedAs = rejected && rejected.as;
+		kwArgs.pending = pending.instance;
+		kwArgs.rejected = rejected.instance;
+		return kwArgs;
 	}
 
 WhenTagOpen '<when>'
@@ -424,7 +403,7 @@ WhenTagOpen '<when>'
 		validate(kwArgs, {
 			type: '<when>',
 			required: [ 'promise' ],
-			optional: [ 'value', 'id' ]
+			optional: [ 'as' ]
 		});
 		return kwArgs;
 	}
@@ -432,95 +411,74 @@ WhenTagOpen '<when>'
 WhenTagClose '</when>'
 	= '</when>'i
 
-DuringTagOpen '<during>'
-	= '<during'i kwArgs:AttributeMap '>' S* {
+PendingTag '<pending>'
+	= '<pending'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
-			type: '<during>',
-			optional: [ 'id' ]
+			type: '<pending>',
+			optional: [ 'as' ]
 		});
-		return {
-			constructor: require.toAbsMid('../../ui/View'),
-			kwArgs: kwArgs
-		};
+		return kwArgs;
 	}
 
-DuringTagClose '</during>'
-	= '</during>'i
-
-ErrorTagOpen '<error>'
-	= '<error'i kwArgs:AttributeMap '>' S* {
+RejectedTag '<rejected>'
+	= '<rejected'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
-			type: '<error>',
-			optional: [ 'id' ]
+			type: '<rejected>',
+			optional: [ 'as' ]
 		});
-		return {
-			constructor: require.toAbsMid('../../ui/View'),
-			kwArgs: kwArgs
-		};
+		return kwArgs;
 	}
-
-ErrorTagClose '</error>'
-	= '</error>'i
 
 // widgets
 
-
 Widget '<widget></widget>'
-	= kwArgs:WidgetTagOpen body:Element? WidgetTagClose {
-		validate(kwArgs, {
-			type: '<widget>',
-			required: [ 'is' ],
-			extensible: true
-		});
+	= kwArgs:WidgetTagOpen children:Any* WidgetTagClose {
+		var widget = {};
 
-		var widget = {
-			constructor: kwArgs.is,
-			kwArgs: kwArgs
-		};
-		delete kwArgs.is;
-		if (typeof widget.constructor !== 'string') {
-			error('Widget constructor ' + widget.constructor + ' must be a string');
-		}
-
-		// Resolve any attribute reference functions with widget children
-		if (body && body.children) {
-			widget.children = body.children;
-			var value;
-			for (var key in kwArgs) {
-				value = kwArgs[key];
-				if (typeof value === 'function') {
-					kwArgs[key] = value(widget.children);
-				}
+		for (var key in kwArgs) {
+			if (key === 'is') {
+				widget.constructor = kwArgs[key];
+			}
+			else {
+				widget[key] = kwArgs[key];
 			}
 		}
-		if (body && body.content) {
-			widget.content = body.content;
+
+		if (typeof widget.constructor !== 'string') {
+			error('Widget constructor must be a string');
+		}
+
+		if (children.length) {
+			widget.children = children;
 		}
 
 		return widget;
 	}
 
 WidgetTagOpen '<widget>'
-	= '<widget'i kwArgs:AttributeMap '>' { return kwArgs }
+	= '<widget'i kwArgs:AttributeMap '>' {
+		validate(kwArgs, {
+			type: '<widget>',
+			required: [ 'is' ],
+			extensible: true
+		});
+
+		return kwArgs;
+	}
 
 WidgetTagClose '</widget>'
 	= '</widget>'i
 
-// actions
-
-// Action '<action/>'
-//	= '<action'i
-
 // all others
 
-Placeholder '<placeholder/>'
+Placeholder '<placeholder>'
 	= '<placeholder'i kwArgs:AttributeMap '/'? '>' {
 		// return just another marker object (like $bind and $child)
 		// set name kwArgs to "default" if no name attribute is specified
 		return { $named: kwArgs.name || 'default' };
 	}
 
-Alias '<alias/>'
+Alias '<alias>'
 	= '<alias'i alias:AttributeMap '/'? '>' {
 		validate(alias, {
 			type: '<alias>',
@@ -538,7 +496,7 @@ AttributeMap
 	= attributes:Attribute* S* {
 		var attributeMap = {};
 		for (var i = 0, attribute; (attribute = attributes[i]); ++i) {
-			if (Object.prototype.hasOwnProperty.call(attributeMap, attribute.name)) {
+			if (hasOwnProperty.call(attributeMap, attribute.name)) {
 				error('Duplicate attribute "' + attribute.name + '"');
 			}
 
@@ -549,8 +507,8 @@ AttributeMap
 
 Attribute
 	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue {
-		// We have to invert null and undefined here to disambiguate empty attributes from JSONValue null
-		return value === null ? undefined : value;
+		// Treat attributes without values as true
+		return value === null ? true : value;
 	})? {
 		// Treat attributes without values as true
 		if (value === null) {
@@ -567,131 +525,104 @@ AttributeName
 		});
 	}
 
-// Attribute values can be strings (which are parsed for bindings), bindings, references, or json
-
 AttributeValue
-	= AttributeReferenceValue
-	/ AttributeStringValue
-	/ JSONValue
+	= AttributeStringValue
+	/ JsonValue
 	/ Binding
 
-AttributeReferenceValue
-	= '#' id:Identifier {
-		// Returns a function to resolve a child given a children array
-		return function resolve(children) {
-			// TODO: recurse for ids?
-			var child;
-			for (var i = 0, len = children.length; i < len; ++i) {
-				child = children[i];
-				if (child && child.kwArgs && child.kwArgs.id === id) {
-					// null out child since it's no longer part of content
-					children[i] = null;
-					return child;
-				}
-			}
-			error('Referenced child id "' + id + '" not found');
-		};
-	}
-
-// Identifiers per HTML
-Identifier
-	= $([A-Za-z] [A-Za-z0-9\-_\:\.]*)
-
 AttributeStringValue
-	= ("'" value:("\\'" { return "'" } / [^'\r\n])* "'" { return parseBoundText(value.join('')) })
+	= ("'" value:("\\'" { return "'"; } / [^'\r\n])* "'" { return parseBoundText(value.join('')); })
 	/ ('"' value:('\\"' { return '"'; } / [^"\r\n])* '"' { return parseBoundText(value.join('')); })
 
-// JSON parser adapted from PEG.js example
+// JSON parser, adapted from PEG.js example
 
-JSONObject
-	= "{" S* "}" { return {} }
-	/ "{" S* members:JSONMembers "}" { return members }
+JsonObject
+	= '{' S* '}' { return {}; }
+	/ '{' S* members:JsonMembers '}' { return members; }
 
-JSONMembers
-	= head:JSONPair tail:("," S* JSONPair)* {
-      var result = {};
-      result[head[0]] = head[1];
-      for (var i = 0; i < tail.length; i++) {
-        result[tail[i][2][0]] = tail[i][2][1];
-      }
-      return result;
-    }
+JsonMembers
+	= head:JsonPair tail:(',' S* JsonPair)* {
+		var result = {};
+		result[head[0]] = head[1];
+		for (var i = 0; i < tail.length; i++) {
+			result[tail[i][2][0]] = tail[i][2][1];
+		}
+		return result;
+	}
 
-JSONPair
-	= name:JSONString ":" S* value:JSONValue S* { return [name, value] }
+JsonPair
+	= name:JsonString ':' S* value:JsonValue S* { return [ name, value ]; }
 
-JSONArray
-	= "[" S* "]" { return [] }
-	/ "[" S* elements:JSONElements "]" { return elements }
+JsonArray
+	= '[' S* ']' { return [] }
+	/ '[' S* elements:JsonElements ']' { return elements; }
 
-JSONElements
-	= head:JSONValue tail:("," S* JSONValue)* S* {
-      var result = [head];
-      for (var i = 0, len = tail.length; i < len; ++i) {
-        result.push(tail[i][2]);
-      }
-      return result;
-    }
+JsonElements
+	= head:JsonValue tail:("," S* JsonValue)* S* {
+		var result = [ head ];
+		for (var i = 0, j = tail.length; i < j; ++i) {
+			result.push(tail[i][2]);
+		}
+		return result;
+	}
 
-JSONValue
-	= JSONLiteral
-	/ JSONObject
-	/ JSONArray
+JsonValue
+	= JsonLiteral
+	/ JsonObject
+	/ JsonArray
 
-JSONLiteral
-	= JSONString
-	/ JSONNumber
-	/ JSONTrue
-	/ JSONFalse
-	/ JSONNull
+JsonLiteral
+	= JsonString
+	/ JsonNumber
+	/ JsonTrue
+	/ JsonFalse
+	/ JsonNull
 
-JSONTrue "true"
-	= "true" { return true }
+JsonTrue 'true'
+	= 'true' { return true; }
 
-JSONFalse "false"
-	= "false" { return false }
+JsonFalse 'false'
+	= 'false' { return false; }
 
-JSONNull "null"
-	= "null" { return null }
+JsonNull 'null'
+	= 'null' { return null; }
 
-// JSON lexical elements
+JsonString 'string'
+	= '"' '"' { return ""; }
+	/ '"' chars:JsonChars '"' { return chars; }
 
-JSONString "string"
-	= '"' '"' { return "" }
-	/ '"' chars:JSONChars '"' { return chars }
+JsonChars
+	= chars:JsonChar+ { return chars.join(''); }
 
-JSONChars
-	= chars:JSONChar+ { return chars.join("") }
-
-JSONChar
-  // In the original JSON grammar: "any-Unicode-character-except-"-or-\-or-control-character"
+JsonChar
+  // In the original Json grammar: "any-Unicode-character-except-"-or-\-or-control-character"
 	= [^"\\\0-\x1F\x7f]
-	/ '\\"' { return '"' }
-	/ "\\\\" { return "\\" }
-	/ "\\/" { return "/"  }
-	/ "\\b" { return "\b" }
-	/ "\\f" { return "\f" }
-	/ "\\n" { return "\n" }
-	/ "\\r" { return "\r" }
-	/ "\\t" { return "\t" }
-	/ "\\u" digits:$(HexDigit HexDigit HexDigit HexDigit) { return String.fromCharCode(parseInt(digits, 16)) }
+	/ '\\"' { return '"'; }
+	/ '\\\\' { return '\\'; }
+	/ '\\/' { return '/';  }
+	/ '\\b' { return '\b'; }
+	/ '\\f' { return '\f'; }
+	/ '\\n' { return '\n'; }
+	/ '\\r' { return '\r'; }
+	/ '\\t' { return '\t'; }
+	/ '\\u' digits:$(HexDigit HexDigit HexDigit HexDigit) { return String.fromCharCode(parseInt(digits, 16)); }
 
-JSONNumber "number"
-	= parts:$(JSONInteger JSONFraction JSONExponent) { return parseFloat(parts) }
-	/ parts:$(JSONInteger JSONFraction) { return parseFloat(parts) }
-	/ parts:$(JSONInteger JSONExponent) { return parseFloat(parts) }
-	/ parts:$(JSONInteger) { return parseFloat(parts) }
+JsonNumber 'number'
+	= parts:$(JsonInteger JsonFraction JsonExponent) { return parseFloat(parts); }
+	/ parts:$(JsonInteger JsonFraction) { return parseFloat(parts); }
+	/ parts:$(JsonInteger JsonExponent) { return parseFloat(parts); }
+	/ parts:$(JsonInteger) { return parseFloat(parts); }
 
-JSONInteger
+JsonInteger
 	= Digit19 Digits
 	/ Digit
-	/ "-" Digit19 Digits
-	/ "-" Digit
+	/ '-' Digit19 Digits
+	/ '-' Digit
 
-JSONFraction
-	= "." Digits
+JsonFraction
+	= '.' Digits
 
-JSONExponent
+JsonExponent
 	= E Digits
 
 Digits
@@ -723,5 +654,5 @@ AnyNonElement
 	/ Alias
 	/ Widget
 
-S "whitespace"
+S 'whitespace'
 	= [ \t\r\n]

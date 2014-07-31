@@ -1,4 +1,4 @@
-/// <reference path="./dojo.d.ts"/>
+/// <reference path="./dojo" />
 
 declare module dstore {
 	export interface ChangeEvent extends Event {

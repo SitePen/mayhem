@@ -25,11 +25,6 @@ class Widget extends ObservableEvented implements IWidget {
 	/**
 	 * @protected
 	 */
-	_attached:boolean;
-
-	/**
-	 * @protected
-	 */
 	_classList:ClassList;
 
 	/**
@@ -41,6 +36,11 @@ class Widget extends ObservableEvented implements IWidget {
 	 * @protected
 	 */
 	_index:number;
+
+	/**
+	 * @protected
+	 */
+	_isAttached:boolean;
 
 	/**
 	 * @protected
@@ -84,7 +84,9 @@ class Widget extends ObservableEvented implements IWidget {
 	/**
 	 * @abstract
 	 */
-	detach():void {}
+	detach():void {
+		this.set('isAttached', false);
+	}
 
 	/**
 	 * @abstract
