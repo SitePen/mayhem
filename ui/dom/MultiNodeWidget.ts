@@ -4,13 +4,18 @@ import Widget = require('./Widget');
 class MultiNodeWidget extends Widget {
 	/**
 	 * @protected
+	 * @get
 	 */
 	_firstNode:Comment;
 
-	private _fragment:DocumentFragment;
+	/**
+	 * @protected
+	 */
+	_fragment:DocumentFragment;
 
 	/**
 	 * @protected
+	 * @get
 	 */
 	_lastNode:Comment;
 

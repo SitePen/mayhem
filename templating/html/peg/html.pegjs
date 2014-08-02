@@ -1,4 +1,5 @@
 {
+	// TODO: Use the correct thing for Node.js
 	require.toAbsMid = require.toAbsMid || function (identity) { return identity; };
 
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -198,7 +199,7 @@ Element 'HTML'
 		for (var i = 0, j = nodes.length; i < j; ++i) {
 			var node = nodes[i];
 
-			// An alias node will be transformed into a null node
+			// Alias nodes are transformed into `null` since they cannot be removed entirely from the output
 			if (!node) {
 				continue;
 			}
@@ -279,8 +280,8 @@ HtmlFragment 'HTML'
 		return content.join('');
 	}
 
+// Curly brackets are escaped (\x7b, \x7d) due to https://github.com/dmajda/pegjs/issues/89
 BoundText
-	// Curly brackets inside the action are escaped (\x7b, \x7d) due to https://github.com/dmajda/pegjs/issues/89
 	= (
 		Binding
 		/ !'{' value:('\\{' { return '\x7b'; } / [^{])+ { return value.join(''); }
@@ -473,9 +474,7 @@ WidgetTagClose '</widget>'
 
 Placeholder '<placeholder>'
 	= '<placeholder'i kwArgs:AttributeMap '/'? '>' {
-		// return just another marker object (like $bind and $child)
-		// set name kwArgs to "default" if no name attribute is specified
-		return { $named: kwArgs.name || 'default' };
+		return { $placeholder: kwArgs.name || 'default' };
 	}
 
 Alias '<alias>'
@@ -487,7 +486,7 @@ Alias '<alias>'
 		alias.line = line();
 		alias.column = column();
 		aliases.add(alias);
-		return null;
+		return undefined;
 	}
 
 // attributes

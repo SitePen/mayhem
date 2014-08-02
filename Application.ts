@@ -84,6 +84,7 @@ class Application extends ObservableEvented {
 			binder: {
 				constructor: require.toAbsMid('./binding/Binder'),
 				constructors: [
+					require.toAbsMid('./binding/bindings/CompositeBinding'),
 					require.toAbsMid('./binding/bindings/MetadataBinding'),
 					require.toAbsMid('./binding/bindings/NestedBinding'),
 					require.toAbsMid('./binding/bindings/ObservableBinding'),

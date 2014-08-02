@@ -6,7 +6,6 @@ import BindingError = require('../BindingError');
 import core = require('../../interfaces');
 import has = require('../../has');
 import util = require('../../util');
-import when = require('dojo/when');
 
 /**
  * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
@@ -14,7 +13,12 @@ import when = require('dojo/when');
  */
 class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
-		if (!has('es5') || !util.isObject(kwArgs.object) || typeof kwArgs.path !== 'string') {
+		if (!has('es5') || !util.isObject(kwArgs.object) || typeof kwArgs.path !== 'string' ||
+			// TODO: This is a hack to avoid using the ES5 binder with DOM nodes since when the descriptor of these
+			// objects is replaced, they stop updating. Need to figure out why DOM nodes with getter/setter properties
+			// return property descriptors with only a value property and no get/set methods
+			typeof Node !== 'undefined' && kwArgs.object instanceof Node
+		) {
 			return false;
 		}
 
@@ -117,9 +121,7 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	}
 
 	private _update(value:T):void {
-		when(value).then((value:T):void => {
-			this._target && this._target.set(value);
-		});
+		this._target && this._target.set(value);
 	}
 }
 

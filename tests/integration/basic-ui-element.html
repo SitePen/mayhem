@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="../../third-party/dojo/resources/dojo.css">
+		<link rel="stylesheet" href="../../third-party/dijit/themes/claro/claro.css">
+	</head>
+	<body class="claro">
+		<script>
+var dojoConfig = {
+	async: true,
+	baseUrl: '../..',
+	packages: [
+		{ name: 'dojo', location: 'third-party/dojo' },
+		{ name: 'dijit', location: 'third-party/dijit' },
+		{ name: 'dgrid', location: 'third-party/dgrid' },
+		{ name: 'xstyle', location: 'third-party/xstyle' },
+		{ name: 'put-selector', location: 'third-party/put-selector' },
+		{ name: 'dstore', location: 'third-party/dstore' },
+		{ name: 'mayhem', location: '.' }
+	]
+};
+		</script>
+		<script src="../../third-party/dojo/dojo.js"></script>
+		<script>
+require([
+	'mayhem/WebApplication',
+	'mayhem/templating/html/peg/html',
+	'mayhem/templating/html/ui/Element'
+], function (WebApplication, parser, Element) {
+	var app = window.app = new WebApplication({
+		components: {
+			router: null,
+			ui: {
+				view: null
+			}
+		}
+	});
+
+	var model = window.model = {
+		hello: 'hello'
+	};
+
+	app.startup().then(function () {
+		var viewAst = parser.parse('<div>Hello, {hello}!</div><input value="i like to say {hello}">');
+		var view = window.view = new Element({
+			app: app,
+			content: viewAst.content
+		});
+		app.get('ui').set('view', view);
+		view.set('model', model);
+	});
+});
+		</script>
+	</body>
+</html>

@@ -5,7 +5,10 @@ import MultiNodeWidget = require('./MultiNodeWidget');
 import Widget = require('./Widget');
 
 class Container extends MultiNodeWidget implements IContainer {
-	private _children:Widget[];
+	/**
+	 * @protected
+	 */
+	_children:Widget[];
 
 	get:Container.Getters;
 	on:Container.Events;
