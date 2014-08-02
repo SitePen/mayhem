@@ -79,7 +79,6 @@ class Element extends Container {
 			else if (node.nodeType === Node.ELEMENT_NODE) {
 				for (var i:number = 0, attribute:Attr; (attribute = node.attributes[i]); ++i) {
 					var nodeValue:string = attribute.nodeValue;
-					console.log(nodeValue);
 					if ((result = BIND_ATTRIBUTE.exec(nodeValue))) {
 						var lastIndex:number = 0;
 
