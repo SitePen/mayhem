@@ -7,6 +7,20 @@ import core = require('../../interfaces');
 import has = require('../../has');
 import util = require('../../util');
 
+has.add('webidl-bad-descriptors', function ():boolean {
+	var element:HTMLDivElement = arguments[2];
+	return Boolean(element && Object.getOwnPropertyDescriptor(element, 'nodeValue') != null);
+});
+
+function getAnyPropertyDescriptor(object:Object, property:string):PropertyDescriptor {
+	var descriptor:PropertyDescriptor;
+	do {
+		descriptor = Object.getOwnPropertyDescriptor(object, property);
+	} while (!descriptor && (object = Object.getPrototypeOf(object)));
+
+	return descriptor;
+}
+
 /**
  * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
  * that support EcmaScript 5.
@@ -14,10 +28,8 @@ import util = require('../../util');
 class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		if (!has('es5') || !util.isObject(kwArgs.object) || typeof kwArgs.path !== 'string' ||
-			// TODO: This is a hack to avoid using the ES5 binder with DOM nodes since when the descriptor of these
-			// objects is replaced, they stop updating. Need to figure out why DOM nodes with getter/setter properties
-			// return property descriptors with only a value property and no get/set methods
-			typeof Node !== 'undefined' && kwArgs.object instanceof Node
+			// https://code.google.com/p/chromium/issues/detail?id=43394
+			(has('webidl-bad-descriptors') && typeof Node !== 'undefined' && kwArgs.object instanceof Node)
 		) {
 			return false;
 		}
@@ -43,17 +55,16 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 		this._property = property;
 
 		var value = object[property];
-		var descriptor = this._originalDescriptor = Object.getOwnPropertyDescriptor(object, property);
+		var descriptor = this._originalDescriptor = getAnyPropertyDescriptor(object, property);
 		var newDescriptor:PropertyDescriptor = {
 			enumerable: descriptor ? descriptor.enumerable : true,
 			configurable: descriptor ? descriptor.configurable : true
 		};
 
-		if (descriptor && !('value' in descriptor)) {
+		if (descriptor && (descriptor.get || descriptor.set)) {
 			newDescriptor.get = descriptor.get;
 
 			if (!descriptor.set) {
-				// TODO: Correct data to BindingError
 				throw new BindingError('Binding to a read-only property is not possible because this binder does not support computed properties', kwArgs);
 			}
 			else {

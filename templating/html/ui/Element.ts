@@ -98,7 +98,7 @@ class Element extends Container {
 							// TODO: Loosen restriction on sourcePath in binding interfaces?
 							sourcePath: <any> compositeBinding,
 							target: attribute,
-							targetPath: 'nodeValue',
+							targetPath: 'value',
 							direction: BindDirection.ONE_WAY
 						}));
 					}
