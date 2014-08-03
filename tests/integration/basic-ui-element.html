@@ -49,7 +49,6 @@ require([
 		});
 
 		var viewAst = parser.parse('<div>Hello, {hello}!</div><placeholder name="magic"><input value="i like to say {hello}">');
-		console.log(viewAst);
 		var view = window.view = new Element({
 			app: app,
 			content: viewAst.content

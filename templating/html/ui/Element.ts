@@ -103,7 +103,7 @@ class Element extends Container {
 			}
 			else if (node.nodeType === Node.ELEMENT_NODE) {
 				for (var i:number = 0, attribute:Attr; (attribute = node.attributes[i]); ++i) {
-					var nodeValue:string = attribute.nodeValue;
+					var nodeValue:string = attribute.value;
 					if ((result = BIND_ATTRIBUTE.exec(nodeValue))) {
 						var lastIndex:number = 0;
 
@@ -113,7 +113,7 @@ class Element extends Container {
 							compositeBinding.push(nodeValue.slice(lastIndex, result.index));
 							compositeBinding.push({ $bind: result[1] });
 							lastIndex = result.index + result[0].length;
-						} while ((result = BIND_ATTRIBUTE.exec(attribute.nodeValue)));
+						} while ((result = BIND_ATTRIBUTE.exec(nodeValue)));
 
 						compositeBinding.push(nodeValue.slice(lastIndex));
 
