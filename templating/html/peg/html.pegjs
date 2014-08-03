@@ -208,7 +208,7 @@ Element 'HTML'
 				content.push(node);
 				hasContent = hasContent || nonWhitespace.test(node);
 			}
-			else if (node.$named) {
+			else if (node.$placeholder) {
 				content.push(node);
 				hasContent = true;
 			}

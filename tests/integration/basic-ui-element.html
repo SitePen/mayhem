@@ -26,8 +26,9 @@ var dojoConfig = {
 require([
 	'mayhem/WebApplication',
 	'mayhem/templating/html/peg/html',
-	'mayhem/templating/html/ui/Element'
-], function (WebApplication, parser, Element) {
+	'mayhem/templating/html/ui/Element',
+	'mayhem/ui/form/Text'
+], function (WebApplication, parser, Element, Text) {
 	var app = window.app = new WebApplication({
 		components: {
 			router: null,
@@ -42,11 +43,18 @@ require([
 	};
 
 	app.startup().then(function () {
-		var viewAst = parser.parse('<div>Hello, {hello}!</div><input value="i like to say {hello}">');
+		var text = new Text({
+			app: app,
+			placeholder: 'lolol!?'
+		});
+
+		var viewAst = parser.parse('<div>Hello, {hello}!</div><placeholder name="magic"><input value="i like to say {hello}">');
+		console.log(viewAst);
 		var view = window.view = new Element({
 			app: app,
 			content: viewAst.content
 		});
+		view.set('magic', text);
 		app.get('ui').set('view', view);
 		view.set('model', model);
 	});

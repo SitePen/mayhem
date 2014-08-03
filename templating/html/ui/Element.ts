@@ -11,6 +11,20 @@ var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)-->/g;
 var CHILD:RegExp = /^child ([0-9]+)$/;
 var PLACEHOLDER:RegExp = /^placeholder (.*)$/;
 
+function createPlaceholderSetter(property:string, placeholderNode:Node):(value:Widget) => void {
+	property = '_' + property;
+	return function (value:Widget):void {
+		var oldValue:Widget = this[property];
+		oldValue && oldValue.detach();
+
+		if (value) {
+			placeholderNode.parentNode.insertBefore(value.detach(), placeholderNode);
+		}
+
+		this[property] = value;
+	};
+}
+
 class Element extends Container {
 	get:Element.Getters;
 	on:Element.Events;
@@ -25,6 +39,17 @@ class Element extends Container {
 		super._initialize();
 		this._bindingHandles = [];
 		this._model = {};
+	}
+
+	destroy():void {
+		super.destroy();
+
+		var handle:binding.IBindingHandle;
+		while ((handle = this._bindingHandles.pop())) {
+			handle.remove();
+		}
+
+		this._bindingHandles = this._model = null;
 	}
 
 	_render():void {
@@ -57,7 +82,7 @@ class Element extends Container {
 			var result:RegExpExecArray;
 			if (node.nodeType === Node.COMMENT_NODE) {
 				if ((result = PLACEHOLDER.exec(node.nodeValue))) {
-					// TODO
+					self['_' + result[1] + 'Setter'] = createPlaceholderSetter(result[1], node);
 				}
 				else if ((result = CHILD.exec(node.nodeValue))) {
 					node.parentNode.replaceChild(self._children[result[1]].detach(), node);
