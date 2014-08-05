@@ -1,8 +1,33 @@
 {
-	// TODO: Use the correct thing for Node.js
-	require.toAbsMid = require.toAbsMid || function (identity) { return identity; };
-
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var toAbsMid = require.toAbsMid || function (mid) {
+		// From Dojo 2 core
+		function compactPath(path) {
+			var result = [];
+			var segment;
+			var lastSegment;
+			var splitPath = path.replace(/\\/g, '/').split('/');
+
+			while (splitPath.length) {
+				segment = splitPath.shift();
+				if (segment === '..' && result.length && lastSegment !== '..') {
+					result.pop();
+					lastSegment = result[result.length - 1];
+				}
+				else if (segment !== '.') {
+					result.push((lastSegment = segment));
+				} // else ignore "."
+			}
+
+			return result.join('/');
+		}
+
+		if (mid.charAt(0) !== '.') {
+			return mid;
+		}
+
+		return compactPath(module.id.replace(/[^\/]*\.js$/, '') + mid);
+	};
 
 	/**
 	 * Validates that the attributes provided in the given attribute map are correct according to the provided rules.
@@ -57,9 +82,10 @@
 		return results.join('');
 	}
 
-	var aliases = {
+	var tree = {
+		_aliasMap: null,
 		_aliases: [],
-		_map: null,
+		_constructors: {},
 
 		/**
 		 * Adds a new alias to the alias list for this template.
@@ -71,7 +97,7 @@
 		 *   * `line` (number): The one-indexed line number where the alias was defined in the template.
 		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
 		 */
-		add: function (newAlias) {
+		addAlias: function (newAlias) {
 			var aliases = this._aliases;
 
 			// Ensure that aliases are limited to complete module ID fragments
@@ -95,35 +121,60 @@
 		},
 
 		/**
+		 * Retrieves the root tree structure for the given node.
+		 *
+		 * @returns {Object} The validated syntax tree for the given root node.
+		 */
+		get: function (root) {
+			this._constructors = {};
+			this._validate();
+			this._resolve(root);
+
+			return {
+				constructors: this._getConstructors(),
+				root: root
+			};
+		},
+
+		/**
+		 * Retrieves the list of resolved constructors that were discovered in the AST.
+		 *
+		 * @returns {string[]} An array of constructor module IDs.
+		 */
+		_getConstructors: function () {
+			var constructors = [];
+			for (var key in this._constructors) {
+				constructors.push(key);
+			}
+
+			return constructors;
+		},
+
+		/**
 		 * Walks the widget tree, resolving constructor aliases for the given node and its children.
 		 */
-		resolve: function (node) {
-			var aliasMap = this._map;
+		_resolve: function (node) {
+			var aliasMap = this._aliasMap;
 
-			for (var k in aliasMap) {
-				if (node.constructor.indexOf(k) === 0) {
-					node.constructor = node.constructor.replace(k, aliasMap[k].to);
+			if (hasOwnProperty.call(node, 'constructor')) {
+				for (var k in aliasMap) {
+					if (node.constructor.indexOf(k) === 0) {
+						node.constructor = node.constructor.replace(k, aliasMap[k].to);
+					}
 				}
+
+				this._constructors[node.constructor] = true;
 			}
 
-			if (node.children) {
-				for (var i = 0, child; (child = node.children[i]); ++i) {
-					this.resolve(child);
+			for (var key in node) {
+				var value = node[key];
+				if (value instanceof Array) {
+					for (var i = 0, child; (child = value[i]); ++i) {
+						this._resolve(child);
+					}
 				}
-			}
-
-			// Recurse widget properties for constructors or other templates
-			var key;
-			var value;
-			if (node.kwArgs) {
-				for (key in node.kwArgs) {
-					value = node.kwArgs[key];
-					if (typeof value.constructor === 'string') {
-						this.resolve(value);
-					}
-					else if (value.$ctor) {
-						this.resolve(value.$ctor);
-					}
+				else if (typeof value === 'object' || typeof value === 'function') {
+					this._resolve(value);
 				}
 			}
 		},
@@ -131,7 +182,7 @@
 		/**
 		 * Validates that the collected aliases from the template are valid and do not contain duplicate definitions.
 		 */
-		validate: function () {
+		_validate: function () {
 			var aliases = this._aliases;
 			var aliasMap = {};
 
@@ -145,7 +196,7 @@
 				aliasMap[alias.from] = alias;
 			}
 
-			this._map = aliasMap;
+			this._aliasMap = aliasMap;
 		}
 	};
 }
@@ -171,16 +222,14 @@ Template
 			// array of children, give them a container
 			// TODO: This seems like it should not need to be
 			else {
-				root.constructor = require.toAbsMid('../ui/Element');
+				root.constructor = toAbsMid('../ui/Element');
 			}
 		}
 		else {
-			root = { constructor: require.toAbsMid('../ui/Element') };
+			root = { constructor: toAbsMid('../ui/Element') };
 		}
 
-		aliases.validate();
-		aliases.resolve(root);
-		return root;
+		return tree.get(root);
 	}
 
 // HTML
@@ -249,7 +298,7 @@ Element 'HTML'
 		}
 
 		element.content = results;
-		element.constructor = require.toAbsMid('../ui/Element');
+		element.constructor = toAbsMid('../ui/Element');
 		return element;
 	}
 
@@ -311,7 +360,7 @@ If '<if></if>'
 	IfTagClose {
 		kwArgs.consequent = consequent;
 
-		var widget = { constructor: require.toAbsMid('../ui/Conditional') };
+		var widget = { constructor: toAbsMid('../ui/Conditional') };
 		widget.conditions = alternates ? alternates : [];
 		widget.conditions.unshift(kwArgs);
 		finalAlternate && widget.conditions.push(finalAlternate);
@@ -353,7 +402,7 @@ For '<for></for>'
 	= kwArgs:ForTagOpen
 	template:Any
 	ForTagClose {
-		kwArgs.constructor = require.toAbsMid('../ui/Iterator');
+		kwArgs.constructor = toAbsMid('../ui/Iterator');
 		// $ctor is a special flag to the template processor to pass the generated constructor function for the widget
 		// instead of generating an instance of the widget
 		kwArgs.itemConstructor = { $ctor: template };
@@ -388,7 +437,7 @@ When '<when></when>'
 		return kwArgs;
 	})?
 	WhenTagClose {
-		kwArgs.constructor = require.toAbsMid('../ui/Resolver');
+		kwArgs.constructor = toAbsMid('../ui/Resolver');
 		kwArgs.resolved = body;
 		// TODO: This is not correct; there should be a way to indicate a separate mechanism for creating a new view
 		// scope for each of the instance widgets, instead of adding these keys, which do nothing right now
@@ -485,7 +534,7 @@ Alias '<alias>'
 		});
 		alias.line = line();
 		alias.column = column();
-		aliases.add(alias);
+		tree.addAlias(alias);
 		return undefined;
 	}
 

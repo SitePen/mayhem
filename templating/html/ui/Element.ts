@@ -111,7 +111,7 @@ class Element extends Container {
 
 						do {
 							compositeBinding.push(nodeValue.slice(lastIndex, result.index));
-							compositeBinding.push({ $bind: result[1] });
+							compositeBinding.push({ path: result[1] });
 							lastIndex = result.index + result[0].length;
 						} while ((result = BIND_ATTRIBUTE.exec(nodeValue)));
 

@@ -58,21 +58,27 @@ export function debounce<T extends (...args:any[]) => void>(callback:T, delay:nu
 	};
 }
 
-export function deferMethods(target:Object, methods:string[], untilMethod:string):void {
-	var waiting = {},
-		untilHandle = aspect.after(target, untilMethod, function ():void {
-			untilHandle.remove();
-			untilHandle = null;
+// TODO: Not sure if `instead` is a good idea; talk to Bryan
+export function deferMethods(
+	target:Object,
+	methods:string[],
+	untilMethod:string,
+	instead?:(method:string, args:IArguments) => any
+):void {
+	var waiting = {};
+	var untilHandle = aspect.after(target, untilMethod, function ():void {
+		untilHandle.remove();
+		untilHandle = null;
 
-			for (var method in waiting) {
-				var info = waiting[method];
+		for (var method in waiting) {
+			var info = waiting[method];
 
-				target[method] = info.original;
-				info.args && target[method].apply(target, info.args);
-			}
+			target[method] = info.original;
+			info.args && target[method].apply(target, info.args);
+		}
 
-			target = waiting = null;
-		}, true);
+		target = waiting = null;
+	}, true);
 
 	array.forEach(methods, function (method:string):void {
 		var info:{ original:Function; args:IArguments; } = waiting[method] = {
@@ -81,13 +87,25 @@ export function deferMethods(target:Object, methods:string[], untilMethod:string
 		};
 
 		target[method] = function ():void {
-			info.args = arguments;
+			info.args = instead && instead.call(target, method, arguments) || arguments;
 		};
 	});
 }
 
-export function deferSetters(target:Object, methods:string[], untilMethod:string):void {
-	deferMethods(target, array.map(methods, method => '_' + method + 'Setter'), untilMethod);
+export function deferSetters(
+	target:Object,
+	methods:string[],
+	untilMethod:string,
+	instead?:(setter:string, value:any) => any
+):void {
+	deferMethods(
+		target,
+		array.map(methods, method => '_' + method + 'Setter'),
+		untilMethod,
+		instead ? function (method:string, args:IArguments):any[] {
+			return instead.call(this, method.slice(1, -6), args[0]);
+		} : undefined
+	);
 }
 
 /**

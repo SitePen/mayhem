@@ -13,7 +13,12 @@ class Master extends MultiNodeWidget implements IMaster {
 	set:Master.Setters;
 
 	constructor(kwArgs?:HashMap<any>) {
-		util.deferSetters(this, [ 'root', 'view' ], 'startup');
+		util.deferSetters(this, [ 'root', 'view' ], 'startup', function (setter:string, value:any):void {
+			if (setter === 'view') {
+				this._view = value;
+			}
+		});
+
 		super(kwArgs);
 	}
 
@@ -28,7 +33,18 @@ class Master extends MultiNodeWidget implements IMaster {
 	}
 
 	startup():IPromise<void> {
-		return <any> Promise.resolve(undefined);
+		if (typeof this._view === 'string') {
+			var self = this;
+			return util.getModule(<any> this._view).then(function (view:any):void {
+				if (typeof view === 'function') {
+					view = new view({ app: self._app });
+				}
+
+				self.set('view', view);
+			});
+		}
+
+		return Promise.resolve<void>(undefined);
 	}
 
 	_rootSetter(root:Element):void {
@@ -41,14 +57,16 @@ class Master extends MultiNodeWidget implements IMaster {
 		}
 	}
 
-	_viewSetter(view:View):void {
-		if (this._view) {
+	_viewSetter(view:View):void;
+	_viewSetter(view:string):void;
+	_viewSetter(view:any):void {
+		if (this._view && this._view.destroy) {
 			this._view.destroy();
 		}
 
 		this._view = view;
 
-		if (view) {
+		if (view && typeof view === 'object') {
 			view.set('model', this._app);
 
 			if (this._root) {
