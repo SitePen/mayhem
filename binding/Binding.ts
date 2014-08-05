@@ -14,7 +14,19 @@ var oid:number = 0;
  * @abstract
  */
 class Binding<SourceT, TargetT> extends Proxty<SourceT> {
+	/**
+	 * The identifier for this binding. Binding on the same object property will have the same identifier.
+	 */
 	id:string;
+
+	/**
+	 * Determines whether or not this binding constructor can be used to create a binding using the provided binding
+	 * arguments.
+	 *
+	 * @memberof module:mayhem/binding/Binding
+	 * @member test
+	 * @method
+	 */
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(undefined);
@@ -39,6 +51,39 @@ class Binding<SourceT, TargetT> extends Proxty<SourceT> {
 
 		this.id = 'Binding' + object[oidKey] + '/' + kwArgs.path;
 	}
+
+	/**
+	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
+	 *
+	 * @memberof module:mayhem/binding/Binding#
+	 * @member bindTo
+	 * @method
+	 */
+
+	/**
+	 * Destroys the binding.
+	 *
+	 * @memberof module:mayhem/binding/Binding#
+	 * @member destroy
+	 * @method
+	 */
+
+	/**
+	 * Gets the current value of the bound property.
+	 *
+	 * @memberof module:mayhem/binding/Binding#
+	 * @member get
+	 * @method
+	 */
+
+	/**
+	 * Sets the value of this property. This is intended to be used to update the value of this property from another
+	 * bound property and so will not be propagated to the target object, if one exists.
+	 *
+	 * @memberof module:mayhem/binding/Binding#
+	 * @member set
+	 * @method
+	 */
 }
 
 export = Binding;

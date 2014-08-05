@@ -11,6 +11,27 @@ interface Part {
 	get():string;
 }
 
+/**
+ * The CompositeBinding class enables source-only bindings composed of multiple data-binding sources plus static
+ * strings.
+ *
+ * @example
+ * Creating a composite data binding from multiple objects:
+ *
+ * ```ts
+ * var binding:CompositeBinding = new CompositeBinding({
+ *   object: user,
+ *   path: [
+ *     'Hello',
+ *     { path: 'name' },
+ *     '! You have ',
+ *     { object: user.getUpdates(), path: 'messages.length' },
+ *     ' messages.'
+ *   ],
+ *   binder: binder
+ * });
+ * ```
+ */
 class CompositeBinding extends Binding<any, string> implements binding.IBinding<any, string> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		// TODO: Make path generic instead of string?
@@ -18,6 +39,9 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		return util.isObject(kwArgs.object) && (<any> kwArgs.path) instanceof Array;
 	}
 
+	/**
+	 * The decomposed parts of the source binding.
+	 */
 	private _parts:Part[];
 
 	/**
@@ -51,9 +75,6 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		});
 	}
 
-	/**
-	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
-	 */
 	bindTo(target:binding.IBinding<string, any>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
@@ -74,9 +95,6 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		};
 	}
 
-	/**
-	 * Destroys the property binding.
-	 */
 	destroy():void {
 		this.destroy = function ():void {};
 
@@ -88,9 +106,6 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		this._target = this._parts = null;
 	}
 
-	/**
-	 * Gets the current value of this property.
-	 */
 	get():string {
 		var result:string[] = [];
 		for (var i = 0, part:Part; (part = this._parts[i]); ++i) {
@@ -100,10 +115,6 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		return result.join('');
 	}
 
-	/**
-	 * Sets the value of this property. This is intended to be used to update the value of this property from another
-	 * bound property and so will not be propagated to the target object, if one exists.
-	 */
 	set(value:string):void {
 		throw new Error('CompositeBinding is a source-only binding');
 	}

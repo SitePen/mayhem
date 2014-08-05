@@ -10,8 +10,9 @@ import util = require('../../util');
 var SEPARATOR:string = '.';
 
 /**
- * This property binder adds the ability to bind to arbitrarily deep children of the source object, including
- * properties that may not yet exist at the time the object is initially bound.
+ * The NestedBinding class enables binding to arbitrarily deep children of a source object. It can bind to properties
+ * that may not exist at the time the object is initially bound, or whose parents change during the course of the
+ * lifetime of the root object.
  */
 class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implements binding.IBinding<SourceT, TargetT> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
@@ -51,9 +52,6 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		this._rebind(kwArgs.object, 0);
 	}
 
-	/**
-	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
-	 */
 	bindTo(target:binding.IBinding<TargetT, TargetT>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
@@ -74,9 +72,6 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		};
 	}
 
-	/**
-	 * Destroys the property binding.
-	 */
 	destroy():void {
 		this.destroy = function ():void {};
 
@@ -88,19 +83,8 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		this._source = this._target = null;
 	}
 
-	/**
-	 * Gets the current value of this property.
-	 */
 	get():SourceT {
 		return this._source ? this._source.get() : undefined;
-	}
-
-	/**
-	 * Sets the value of this property. This is intended to be used to update the value of this property from another
-	 * bound property and so will not be propagated to the target object, if one exists.
-	 */
-	set(value:SourceT):void {
-		this._source && this._source.set(value);
 	}
 
 	/**
@@ -175,6 +159,10 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 
 		this._source = binding;
 		this._update(value);
+	}
+
+	set(value:SourceT):void {
+		this._source && this._source.set(value);
 	}
 
 	/**

@@ -12,6 +12,14 @@ has.add('webidl-bad-descriptors', function ():boolean {
 	return Boolean(element && Object.getOwnPropertyDescriptor(element, 'nodeValue') != null);
 });
 
+/**
+ * Retrieves a property descriptor from the given object or any of its inherited prototypes.
+ *
+ * @param object The object on which to look for the property.
+ * @param property The name of the property.
+ * @returns The property descriptor.
+ * @private
+ */
 function getAnyPropertyDescriptor(object:Object, property:string):PropertyDescriptor {
 	var descriptor:PropertyDescriptor;
 	do {
@@ -22,8 +30,8 @@ function getAnyPropertyDescriptor(object:Object, property:string):PropertyDescri
 }
 
 /**
- * This property binder enables the ability to bind directly to properties of plain JavaScript objects in environments
- * that support EcmaScript 5.
+ * The Es5Binding class enables two-way binding directly to properties of plain JavaScript objects in EcmaScript 5+
+ * environments.
  */
 class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
@@ -39,9 +47,29 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 			Object.isExtensible(kwArgs.object);
 	}
 
+	/**
+	 * The bound object.
+	 */
 	private _object:Object;
+
+	/**
+	 * The original property descriptor for the bound object.
+	 */
 	private _originalDescriptor:PropertyDescriptor;
+
+	/**
+	 * The property descriptor generated for this binding.
+	 */
+	private _ownDescriptor:PropertyDescriptor;
+
+	/**
+	 * The name of the property to bind on the source object.
+	 */
 	private _property:string;
+
+	/**
+	 * The target binding.
+	 */
 	private _target:binding.IBinding<T, T>;
 
 	constructor(kwArgs:binding.IBindingArguments) {
@@ -63,16 +91,10 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 
 		if (descriptor && (descriptor.get || descriptor.set)) {
 			newDescriptor.get = descriptor.get;
-
-			if (!descriptor.set) {
-				throw new BindingError('Binding to a read-only property is not possible because this binder does not support computed properties', kwArgs);
-			}
-			else {
-				newDescriptor.set = function (newValue:T):void {
-					descriptor.set.apply(this, arguments);
-					descriptor.get && self._update(descriptor.get.call(this));
-				};
-			}
+			newDescriptor.set = descriptor.get ? function (newValue:T):void {
+				descriptor.set && descriptor.set.apply(this, arguments);
+				self._update && self._update(descriptor.get.call(this));
+			} : descriptor.set;
 		}
 		else {
 			newDescriptor.get = function ():T {
@@ -80,11 +102,12 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 			};
 			newDescriptor.set = function (newValue:T):void {
 				value = newValue;
-				self._update(newValue);
+				self._update && self._update(newValue);
 			};
 		}
 
 		Object.defineProperty(object, property, newDescriptor);
+		this._ownDescriptor = newDescriptor;
 		this._update(value);
 	}
 
@@ -111,16 +134,23 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	destroy():void {
 		this.destroy = function ():void {};
 
-		// TODO: This breaks if there were multiple bindings to the same property; subsequent bindings will be lost
-		var descriptor = this._originalDescriptor || {
-			value: this._object[this._property],
-			writable: true,
-			enumerable: true,
-			configurable: true
-		};
+		// We can only replace the property's descriptor with the old one as long as we are in control of the
+		// descriptor; if another binding was made to the same property after us, then the descriptor functions will not
+		// be ours and we would incorrectly destroy the other bindings. If we are not in control, once `this._update` is
+		// null, our descriptor ends up functioning as a simple pass-through
+		var currentDescriptor:PropertyDescriptor = Object.getOwnPropertyDescriptor(this._object, this._property);
+		if (currentDescriptor.get === this._ownDescriptor.get && currentDescriptor.set === this._ownDescriptor.set) {
+			var descriptor = this._originalDescriptor || {
+				value: this._object[this._property],
+				writable: true,
+				enumerable: true,
+				configurable: true
+			};
 
-		Object.defineProperty(this._object, this._property, descriptor);
-		this._originalDescriptor = this._object = this._target = null;
+			Object.defineProperty(this._object, this._property, descriptor);
+		}
+
+		this._update = this._ownDescriptor = this._originalDescriptor = this._object = this._property = this._target = null;
 	}
 
 	get():T {
@@ -131,6 +161,9 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 		this._object && (this._object[this._property] = value);
 	}
 
+	/**
+	 * Updates the bound target property with the given value.
+	 */
 	private _update(value:T):void {
 		this._target && this._target.set(value);
 	}

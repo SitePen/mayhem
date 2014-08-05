@@ -5,7 +5,9 @@ import has = require('../../has');
 import util = require('../../util');
 
 /**
- * This property binder enables the ability to bind to arbitrary Objects (as a binding target only).
+ * The ObjectTargetBinding enables the use of any object as the target of a binding in all EcmaScript environments.
+ * This binding is only necessary when attempting to run in pre-EcmaScript 5 environments, or when attempting to bind
+ * to a host object in WebKit browsers impacted by https://code.google.com/p/chromium/issues/detail?id=43394.
  */
 class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
@@ -34,9 +36,6 @@ class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T
 		this._property = kwArgs.path;
 	}
 
-	/**
-	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
-	 */
 	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
@@ -57,25 +56,15 @@ class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T
 		};
 	}
 
-	/**
-	 * Destroys the property binding.
-	 */
 	destroy():void {
 		this.destroy = function ():void {};
 		this._object = this._target = null;
 	}
 
-	/**
-	 * Gets the current value of this property.
-	 */
 	get():T {
 		return this._object ? this._object[this._property] : undefined;
 	}
 
-	/**
-	 * Sets the value of this property. This is intended to be used to update the value of this property from another
-	 * bound property and so will not be propagated to the target object, if one exists.
-	 */
 	set(value:T):void {
 		if (util.isEqual(this.get(), value)) {
 			return;

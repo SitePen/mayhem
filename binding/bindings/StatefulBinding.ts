@@ -9,7 +9,7 @@ import Stateful = require('dojo/Stateful');
 import util = require('../../util');
 
 /**
- * This property binder enables the ability to bind to Dojo 1 Stateful objects.
+ * The StatefulBinding class enables binding to Dojo 1 {@link external:dojo/Stateful} objects.
  */
 class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
@@ -51,9 +51,6 @@ class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T>
 		});
 	}
 
-	/**
-	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
-	 */
 	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
@@ -74,9 +71,6 @@ class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T>
 		};
 	}
 
-	/**
-	 * Destroys the property binding.
-	 */
 	destroy():void {
 		this.destroy = function ():void {};
 
@@ -84,17 +78,10 @@ class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T>
 		this._handle = this._object = this._target = null;
 	}
 
-	/**
-	 * Gets the current value of this property.
-	 */
 	get():T {
 		return this._object ? this._object.get(this._property) : undefined;
 	}
 
-	/**
-	 * Sets the value of this property. This is intended to be used to update the value of this property from another
-	 * bound property and so will not be propagated to the target object, if one exists.
-	 */
 	set(value:T):void {
 		if (this._object) {
 			if (util.isEqual(this.get(), value)) {
@@ -105,9 +92,6 @@ class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T>
 		}
 	}
 
-	/**
-	 * Updates the bound target property with the given value.
-	 */
 	private _update(value:T):void {
 		this._target && this._target.set(value);
 	}

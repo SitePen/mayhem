@@ -8,21 +8,48 @@ import when = require('dojo/when');
 var methodExpression:RegExp = /^(.*?)\((.*)\)$/;
 
 /**
- * This property binder adds the ability to register methods that can be used to transform the value of a bound
- * property when its value is set on its bound target.
+ * The MethodBinding class enables pseudo-global functions to be registered that can be used in a binding to transform
+ * the target value of a bound property.
+ *
+ * @example
+ * Registering and using a method binding to convert a string to upper-case:
+ *
+ * ```ts
+ * MethodBinding.methods['toUpperCase'] = function (value:string):string {
+ *   return String(value).toUpperCase();
+ * };
+ *
+ * var binding:CompositeBinding = new MethodBinding({
+ *   object: { foo: 'bar' },
+ *   path: 'toUpperCase(foo)', // target binding will be set to `'BAR'`
+ *   binder: binder
+ * });
+ * ```
  */
 class MethodBinding<SourceT, TargetT> extends Binding<any, TargetT> implements binding.IBinding<any, TargetT> {
 	/**
 	 * The map of available transformation methods.
 	 */
 	static methods:{ [name:string]:(value:any) => any; } = {};
+
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		var matches:RegExpExecArray;
 		return Boolean((matches = methodExpression.exec(kwArgs.path)) && this.methods[matches[1]]);
 	}
 
+	/**
+	 * The mutator function to use to transform source value to target value.
+	 */
 	private _mutator:(value:SourceT) => TargetT;
+
+	/**
+	 * The source binding.
+	 */
 	private _source:binding.IBinding<SourceT, SourceT>;
+
+	/**
+	 * The target binding.
+	 */
 	private _target:binding.IBinding<TargetT, TargetT>;
 
 	constructor(kwArgs:binding.IBindingArguments) {

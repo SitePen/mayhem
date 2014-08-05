@@ -8,7 +8,7 @@ import lang = require('dojo/_base/lang');
 import util = require('../../util');
 
 /**
- * This property binder enables the ability to bind to mayhem Observable objects.
+ * The ObservableBinding class enables binding to {@link module:mayhem/Observable} objects.
  */
 class ObservableBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
@@ -50,9 +50,6 @@ class ObservableBinding<T> extends Binding<T, T> implements binding.IBinding<T, 
 		});
 	}
 
-	/**
-	 * Sets the target property to bind to. The target will have its value reset immediately upon binding.
-	 */
 	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
@@ -73,9 +70,6 @@ class ObservableBinding<T> extends Binding<T, T> implements binding.IBinding<T, 
 		};
 	}
 
-	/**
-	 * Destroys the property binding.
-	 */
 	destroy():void {
 		this.destroy = function ():void {};
 
@@ -83,17 +77,10 @@ class ObservableBinding<T> extends Binding<T, T> implements binding.IBinding<T, 
 		this._handle = this._object = this._target = null;
 	}
 
-	/**
-	 * Gets the current value of this property.
-	 */
 	get():T {
 		return this._object ? <any> this._object.get(this._property) : undefined;
 	}
 
-	/**
-	 * Sets the value of this property. This is intended to be used to update the value of this property from another
-	 * bound property and so will not be propagated to the target object, if one exists.
-	 */
 	set(value:T):void {
 		this._object && this._object.set(this._property, value);
 	}

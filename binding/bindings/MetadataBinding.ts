@@ -10,7 +10,8 @@ import util = require('../../util');
 var SEPARATOR:string = '%';
 
 /**
- * This property binder adds the ability to bind to metadata properties on instances of classes such as data/Model.
+ * The MetadataBinding class enables the ability to bind to metadata properties on instances of classes such as
+ * {@link module:mayhem/data/Model}.
  */
 class MetadataBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
