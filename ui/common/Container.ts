@@ -3,7 +3,8 @@ import Container = require('../Container');
 import Widget = require('../Widget');
 
 class ContainerMixin {
-	_children:Widget[];
+	private _children:Widget[];
+	private _isAttached:boolean;
 
 	get:Widget.Getters;
 
@@ -46,7 +47,7 @@ class ContainerMixin {
 		}
 	}
 
-	getIndexOfChild(child:Widget):number {
+	getChildIndex(child:Widget):number {
 		var children:Widget[] = this._children;
 
 		for (var i = 0, maybeChild:Widget; (maybeChild = children[i]); ++i) {
@@ -66,25 +67,15 @@ class ContainerMixin {
 		for (var i = 0, child:Widget; (child = children[i]); ++i) {
 			child.set('isAttached', value);
 		}
+		this._isAttached = value;
+	}
+
+	remove(child:Widget):void {
+		child.set({
+			attached: false,
+			parent: null
+		});
 	}
 }
 
-export function applyTo(Ctor:Function):void {
-	var prototype:Container = Ctor.prototype;
-
-	for (var key in ContainerMixin.prototype) {
-		if (prototype[key]) {
-			aspect.after(prototype, key, ContainerMixin[key], true);
-		}
-		else {
-			prototype[key] = ContainerMixin[key];
-		}
-	}
-}
-
-export function remove(child:Widget):void {
-	child.set({
-		attached: false,
-		parent: null
-	});
-}
+export = ContainerMixin;

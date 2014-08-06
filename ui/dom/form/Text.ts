@@ -9,6 +9,7 @@ class Text extends DijitWidget implements IText {
 	static setupMap = {
 		properties: {
 			disabled: 'disabled',
+			id: 'id',
 			placeHolder: 'placeholder',
 			readOnly: 'readOnly',
 			value: 'value'
@@ -22,7 +23,40 @@ class Text extends DijitWidget implements IText {
 			}
 		}
 	};
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_disabled:boolean;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_placeholder:string;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_readOnly:boolean;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_value:string;
 }
+
+Text.prototype._disabled = false;
+Text.prototype._placeholder = '';
+Text.prototype._readOnly = false;
+Text.prototype._value = '';
 
 module Text {
 	export interface Events extends DijitWidget.Events, IText.Events {}

@@ -14,6 +14,16 @@ class Container extends MultiNodeWidget implements IContainer {
 	on:Container.Events;
 	set:Container.Setters;
 
+	constructor(kwArgs?:HashMap<any>) {
+		super(kwArgs);
+		CommonContainerMixin.apply(this, arguments);
+	}
+
+	_initialize():void {
+		this._children = [];
+		super._initialize();
+	}
+
 	add(child:Widget, position?:AddPosition):IHandle;
 	add(child:Widget, position?:number):IHandle;
 	add(child:Widget, position:any = AddPosition.LAST):IHandle {
@@ -26,6 +36,7 @@ class Container extends MultiNodeWidget implements IContainer {
 		var parentNode:Node = nextNode || this._firstNode.parentNode;
 
 		parentNode.insertBefore(child.detach(), nextNode);
+		CommonContainerMixin.prototype.add.call(this, child);
 
 		var self = this;
 		return {
@@ -35,17 +46,41 @@ class Container extends MultiNodeWidget implements IContainer {
 				self = child = null;
 			}
 		};
+	}
 
-		// implemented by CommonContainerMixin
+	/**
+	 * @protected
+	 */
+	_childrenGetter():Widget[] {
+		return CommonContainerMixin.prototype._childrenGetter.apply(this, arguments);
+	}
+
+	/**
+	 * @protected
+	 */
+	_childrenSetter(children:Widget[]):void {
+		CommonContainerMixin.prototype._childrenSetter.apply(this, arguments);
+	}
+
+	destroy():void {
+		this.empty();
+		this._children = null;
+		super.destroy();
 	}
 
 	empty():void {
-		// implemented by CommonContainerMixin
+		CommonContainerMixin.prototype.empty.apply(this, arguments);
 	}
 
 	getChildIndex(child:Widget):number {
-		// implemented by CommonContainerMixin
-		return undefined;
+		return CommonContainerMixin.prototype.getChildIndex.apply(this, arguments);
+	}
+
+	/**
+	 * @protected
+	 */
+	_isAttachedSetter(value:boolean):void {
+		CommonContainerMixin.prototype._isAttachedSetter.apply(this, arguments);
 	}
 
 	remove(index:number):void;
@@ -70,11 +105,9 @@ class Container extends MultiNodeWidget implements IContainer {
 			}
 		}
 
-		CommonContainerMixin.remove(children.splice(index, 1)[0]);
+		CommonContainerMixin.prototype.remove.call(this, children.splice(index, 1)[0]);
 	}
 }
-
-CommonContainerMixin.applyTo(Container);
 
 module Container {
 	export interface Events extends MultiNodeWidget.Events, IContainer.Events {}

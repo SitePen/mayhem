@@ -7,10 +7,11 @@ import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 
 interface Widget extends ObservableEvented {
-	detach():any;
 	get:Widget.Getters;
 	on:Widget.Events;
 	set:Widget.Setters;
+
+	detach():any;
 }
 
 module Widget {

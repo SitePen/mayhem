@@ -25,8 +25,9 @@ var dojoConfig = {
 		<script>
 require([
 	'mayhem/WebApplication',
-	'mayhem/ui/form/Text'
-], function (WebApplication, Text) {
+	'mayhem/ui/form/Text',
+	'dstore/Memory'
+], function (WebApplication, Text, Memory) {
 	var app = window.app = new WebApplication({
 		components: {
 			router: null,
@@ -37,7 +38,11 @@ require([
 	});
 
 	var model = window.model = {
-		hello: 'hello'
+		hello: 'hello',
+		world: 'camels',
+		stuff: new Memory({
+			data: [ { id: 1, name: 'hello' }, { id: 2, name: 'world' } ]
+		})
 	};
 
 	app.startup().then(function () {

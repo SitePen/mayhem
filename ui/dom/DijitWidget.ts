@@ -16,23 +16,31 @@ class DijitWidget extends SingleNodeWidget {
 	 */
 	_widget:_WidgetBase;
 
+	_isAttachedSetter(value:boolean):void {
+		value && this._widget.startup();
+		this._isAttached = value;
+	}
+
 	/**
 	 * @protected
 	 */
 	_render():void {
 		var self = this;
+
 		var widget:_WidgetBase = new (<typeof DijitWidget> this.constructor).Ctor();
-		var setupMap:typeof DijitWidget.setupMap = (<typeof DijitWidget> this.constructor).setupMap;
 
 		var dijitName:string;
 		var mayhemName:string;
+		var setupMap:typeof DijitWidget.setupMap = (<typeof DijitWidget> this.constructor).setupMap;
 		for (dijitName in setupMap.properties) {
 			mayhemName = setupMap.properties[dijitName];
+			// Binding must be from the Mayhem object to the widget in order to set the correct default values from
+			// the Mayhem widget, not from the Dijit widget
 			this._app.get('binder').bind({
-				source: widget,
-				sourcePath: dijitName,
-				target: this,
-				targetPath: mayhemName,
+				source: this,
+				sourcePath: mayhemName,
+				target: widget,
+				targetPath: dijitName,
 				direction: BindDirection.TWO_WAY
 			});
 		}

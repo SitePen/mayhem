@@ -19,12 +19,15 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
 
 		if (value) {
 			placeholderNode.parentNode.insertBefore(value.detach(), placeholderNode);
+			value.set('isAttached', this._isAttached);
 		}
 
-		this[property] = value;
+		this._placeholders[property] = this[property] = value;
 	};
 }
 
+// TODO: This is using Container to manage some of the children lifecycle but the actual container APIs aren’t generally
+// applicable, so it should probably be extending MultiNodeWidget and using Container like a mixin
 class Element extends Container {
 	get:Element.Getters;
 	on:Element.Events;
@@ -34,22 +37,54 @@ class Element extends Container {
 	private _content:any[];
 	// TODO fix inheritance of _model
 	private _model:Object;
+	private _placeholders:{ [id:string]:Widget; };
 
 	_initialize():void {
 		super._initialize();
 		this._bindingHandles = [];
 		this._model = {};
+		this._placeholders = {};
+	}
+
+	/**
+	 * @override
+	 */
+	_childrenSetter(value:Widget[]):void {
+		// Children can only be set at construction time on this widget
+		this._children = value;
 	}
 
 	destroy():void {
-		super.destroy();
-
 		var handle:binding.IBindingHandle;
 		while ((handle = this._bindingHandles.pop())) {
 			handle.remove();
 		}
 
-		this._bindingHandles = this._model = null;
+		var placeholder:Widget;
+		for (var key in this._placeholders) {
+			placeholder = this._placeholders[key];
+			placeholder && placeholder.destroy();
+		}
+
+		this._bindingHandles = this._model = this._placeholders = null;
+		super.destroy();
+	}
+
+	_isAttachedSetter(value:boolean):void {
+		super._isAttachedSetter(value);
+
+		var placeholders:{ [id:string]:Widget; } = this._placeholders;
+		for (var key in placeholders) {
+			placeholders[key] && placeholders[key].set('isAttached', value);
+		}
+	}
+
+	_modelSetter(value:Object):void {
+		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindingHandles[i]); ++i) {
+			binding.setSource(value);
+		}
+
+		this._model = value;
 	}
 
 	_render():void {
@@ -64,13 +99,13 @@ class Element extends Container {
 				if (typeof part === 'string') {
 					htmlContent += part;
 				}
-				else if (part.$child) {
+				else if ('$child' in part) {
 					htmlContent += '<!--child ' + part.$child + '-->';
 				}
-				else if (part.$placeholder) {
+				else if ('$placeholder' in part) {
 					htmlContent += '<!--placeholder ' + part.$placeholder + '-->';
 				}
-				else if (part.$bind) {
+				else if ('$bind' in part) {
 					htmlContent += '<!--bind ' + part.$bind + '-->';
 				}
 			}
@@ -142,7 +177,7 @@ class Element extends Container {
 			else if (node.nextSibling) {
 				nextNode = node.nextSibling;
 			}
-			else if (node.parentNode !== content && node.parentNode.nextSibling) {
+			else if (node.parentNode && node.parentNode !== content && node.parentNode.nextSibling) {
 				nextNode = node.parentNode.nextSibling;
 			}
 			else {
@@ -156,20 +191,16 @@ class Element extends Container {
 		super._render();
 		this._fragment.insertBefore(content, this._lastNode);
 	}
-
-	_modelSetter(value:Object):void {
-		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindingHandles[i]); ++i) {
-			binding.setSource(value);
-		}
-
-		this._model = value;
-	}
 }
 
 module Element {
 	export interface Events extends Container.Events {}
-	export interface Getters extends Container.Getters {}
-	export interface Setters extends Container.Setters {}
+	export interface Getters extends Container.Getters {
+		(key:'model'):Object;
+	}
+	export interface Setters extends Container.Setters {
+		(key:'model', value:Object):void;
+	}
 }
 
 export = Element;
