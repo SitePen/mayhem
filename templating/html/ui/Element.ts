@@ -35,7 +35,7 @@ class Element extends Container {
 
 	private _bindingHandles:binding.IBindingHandle[];
 	private _content:any[];
-	// TODO fix inheritance of _model
+	// TODO: _model actually comes from the templating engine
 	private _model:Object;
 	private _placeholders:{ [id:string]:Widget; };
 
@@ -51,22 +51,21 @@ class Element extends Container {
 	 */
 	_childrenSetter(value:Widget[]):void {
 		// Children can only be set at construction time on this widget
+		for (var i = 0, child:Widget; (child = value[i]); ++i) {
+			child.set('parent', this);
+		}
+
 		this._children = value;
 	}
 
 	destroy():void {
-		var handle:binding.IBindingHandle;
-		while ((handle = this._bindingHandles.pop())) {
-			handle.remove();
-		}
-
 		var placeholder:Widget;
 		for (var key in this._placeholders) {
 			placeholder = this._placeholders[key];
 			placeholder && placeholder.destroy();
 		}
 
-		this._bindingHandles = this._model = this._placeholders = null;
+		this._placeholders = null;
 		super.destroy();
 	}
 
@@ -77,14 +76,6 @@ class Element extends Container {
 		for (var key in placeholders) {
 			placeholders[key] && placeholders[key].set('isAttached', value);
 		}
-	}
-
-	_modelSetter(value:Object):void {
-		for (var i = 0, binding:binding.IBindingHandle; (binding = this._bindingHandles[i]); ++i) {
-			binding.setSource(value);
-		}
-
-		this._model = value;
 	}
 
 	_render():void {
@@ -99,13 +90,13 @@ class Element extends Container {
 				if (typeof part === 'string') {
 					htmlContent += part;
 				}
-				else if ('$child' in part) {
+				else if (part.$child !== undefined) {
 					htmlContent += '<!--child ' + part.$child + '-->';
 				}
-				else if ('$placeholder' in part) {
+				else if (part.$placeholder !== undefined) {
 					htmlContent += '<!--placeholder ' + part.$placeholder + '-->';
 				}
-				else if ('$bind' in part) {
+				else if (part.$bind !== undefined) {
 					htmlContent += '<!--bind ' + part.$bind + '-->';
 				}
 			}

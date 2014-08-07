@@ -1,8 +1,10 @@
 /// <reference path="../../../dgrid" />
 /// <reference path="../../../dstore" />
 
+import core = require('../../../interfaces');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../../has');
+import LegacyObservable = require('dojo/store/Observable');
 import OnDemandList = require('dgrid/OnDemandList');
 import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
 import util = require('../../../util');
@@ -10,7 +12,20 @@ import util = require('../../../util');
 var oidKey:string = '__IteratorOid' + String(Math.random()).slice(2);
 
 class IteratorList<T> extends OnDemandList {
+	private _app:core.IApplication;
 	private _itemConstructor:Iterator.IItemConstructor<T>;
+
+	constructor(kwArgs?:HashMap<any>) {
+		super(kwArgs);
+
+		// dgrid kwArgs don't call setters
+		this._setApp(kwArgs['app']);
+		this._setItemConstructor(kwArgs['itemConstructor']);
+	}
+
+	_setApp(value:core.IApplication):void {
+		this._app = value;
+	}
 
 	_setItemConstructor(value:Iterator.IItemConstructor<T>):void {
 		this._itemConstructor = value;
@@ -26,22 +41,31 @@ class IteratorList<T> extends OnDemandList {
 	renderRow(model:Object, options?:Object):HTMLElement {
 		var Ctor:Iterator.IItemConstructor<T> = this._itemConstructor;
 		var widget:SingleNodeWidget = new Ctor({
+			app: this._app,
 			model: model
 		});
 
-		var row:HTMLElement = <HTMLElement> widget.get('firstNode');
+		var rowNode:HTMLElement = <HTMLElement> widget.detach();
+		// dgrid currently does not support rows that are not actually nodes
+		if (rowNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+			var surrogate:HTMLDivElement = document.createElement('div');
+			surrogate.appendChild(rowNode);
+			rowNode = surrogate;
+		}
 
 		if (has('es5')) {
-			Object.defineProperty(row, oidKey, {
+			Object.defineProperty(rowNode, oidKey, {
 				value: widget,
 				configurable: true
 			});
 		}
 		else {
-			row[oidKey] = widget;
+			rowNode[oidKey] = widget;
 		}
 
-		return row;
+		// TODO: Set `isAttached` on widget
+
+		return rowNode;
 	}
 
 	removeRow(row:HTMLElement, justCleanup:boolean):void {
@@ -75,8 +99,13 @@ class Iterator<T> extends SingleNodeWidget {
 	on:Iterator.Events<T>;
 	set:Iterator.Setters<T>;
 
+	constructor(kwArgs?:HashMap<any>) {
+		util.deferSetters(this, [ 'collection' ], '_render');
+		super(kwArgs);
+	}
+
 	_collectionSetter(value:dstore.ICollection<T>):void {
-		this._widget.set('store', new DstoreAdapter({ store: value }));
+		this._widget.set('store', value ? new LegacyObservable(new DstoreAdapter({ store: value })) : <any> value);
 		this._collection = value;
 	}
 
@@ -87,7 +116,11 @@ class Iterator<T> extends SingleNodeWidget {
 	}
 
 	_render():void {
-		this._widget = new IteratorList<T>({});
+		this._widget = new IteratorList<T>({
+			app: this._app,
+			itemConstructor: this._itemConstructor
+		});
+
 		this._node = this._widget.domNode;
 	}
 }

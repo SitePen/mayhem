@@ -26,13 +26,16 @@ var dojoConfig = {
 require([
 	'mayhem/WebApplication',
 	'mayhem/ui/form/Text',
-	'dstore/Memory'
-], function (WebApplication, Text, Memory) {
+	'dojo/_base/declare',
+	'dstore/Memory',
+	'dstore/Observable'
+], function (WebApplication, Text, declare, Memory, ObservableStore) {
 	var app = window.app = new WebApplication({
 		components: {
 			router: null,
 			ui: {
-				view: 'mayhem/templating/html!mayhem/tests/integration/basic-ui-templating.template.html'
+				// view: 'mayhem/templating/html!mayhem/tests/integration/basic-ui-templating.template.html'
+				view: 'mayhem/templating/html!mayhem/tests/integration/basic-ui-templating.iterator.template.html'
 			}
 		}
 	});
@@ -40,7 +43,7 @@ require([
 	var model = window.model = {
 		hello: 'hello',
 		world: 'camels',
-		stuff: new Memory({
+		stuff: new (declare([ Memory, ObservableStore ]))({
 			data: [ { id: 1, name: 'hello' }, { id: 2, name: 'world' } ]
 		})
 	};

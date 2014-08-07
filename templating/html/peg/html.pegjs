@@ -406,6 +406,8 @@ For '<for></for>'
 		// $ctor is a special flag to the template processor to pass the generated constructor function for the widget
 		// instead of generating an instance of the widget
 		kwArgs.itemConstructor = { $ctor: template };
+		kwArgs.collection = kwArgs.each;
+		kwArgs.each = undefined;
 		return kwArgs;
 	}
 
