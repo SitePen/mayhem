@@ -6,6 +6,7 @@ import BindDirection = require('./BindDirection');
 import binding = require('./interfaces');
 import BindingError = require('./BindingError');
 import core = require('../interfaces');
+import has = require('../has');
 import Observable = require('../Observable');
 import Promise = require('../Promise');
 import Proxty = require('../Proxty');
@@ -69,10 +70,15 @@ class Binder extends Observable implements binding.IBinder {
 			target.bindTo(source, { setValue: false });
 		}
 
-		return {
+		var handle:binding.IBindingHandle = {
 			setSource: function (newSource:Object, newSourcePath:string = kwArgs.sourcePath):void {
 				source.destroy();
 				source = self.createBinding<SourceT, TargetT>(newSource, newSourcePath, { scheduled: self._useScheduler });
+
+				if (has('debug')) {
+					this['_source'] = source;
+				}
+
 				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
 					target.bindTo(source, { setValue: false });
@@ -81,6 +87,11 @@ class Binder extends Observable implements binding.IBinder {
 			setTarget: function (newTarget:Object, newTargetPath:string = kwArgs.targetPath):void {
 				target.destroy();
 				target = self.createBinding<TargetT, SourceT>(newTarget, newTargetPath, { scheduled: self._useScheduler });
+
+				if (has('debug')) {
+					this['_target'] = target;
+				}
+
 				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
 					target.bindTo(source, { setValue: false });
@@ -96,6 +107,13 @@ class Binder extends Observable implements binding.IBinder {
 				source = target = null;
 			}
 		};
+
+		if (has('debug')) {
+			handle['_source'] = source;
+			handle['_target'] = target;
+		}
+
+		return handle;
 	}
 
 	createBinding<SourceT, TargetT>(object:Object, path:string, options:{ scheduled?:boolean; } = {}):binding.IBinding<SourceT, TargetT> {
