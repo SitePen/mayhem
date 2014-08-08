@@ -83,6 +83,11 @@ class IteratorList<T> extends OnDemandList {
 		var widget:Iterator.IItem<T> = row[oidKey];
 		widget.destroy();
 
+		// row was a surrogate node
+		if (row.parentNode) {
+			row.parentNode.removeChild(row);
+		}
+
 		// Avoid DOM-JS circular reference memory retention in IE8
 		if (!has('es5')) {
 			row[oidKey] = null;
