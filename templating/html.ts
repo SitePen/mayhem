@@ -136,7 +136,7 @@ function createViewConstructor(root:templating.INode):WidgetConstructor {
 			if (node.$ctor) {
 				node = node.$ctor;
 				return (function (staticArgs:HashMap<any>):WidgetConstructor {
-					return <any> function (kwArgs?:HashMap<any>) {
+					return <any> function (kwArgs?:HashMap<any>):Widget {
 						return instantiate(node.constructor, lang.mixin({}, staticArgs, kwArgs));
 					};
 				})(visit(node, null));
