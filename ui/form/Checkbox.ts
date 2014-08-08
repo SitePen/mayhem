@@ -21,7 +21,10 @@ module Checkbox {
 	}
 }
 
-var Checkbox:{ new (kwArgs:HashMap<any>):Checkbox; };
+var Checkbox:{
+	new (kwArgs:HashMap<any>):Checkbox;
+	prototype:Checkbox;
+};
 
 if (has('host-browser')) {
 	Checkbox = <typeof Checkbox> require('./dom/Checkbox');

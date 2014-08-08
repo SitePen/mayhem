@@ -2,18 +2,24 @@
 /// <reference path="../../../dstore" />
 
 import core = require('../../../interfaces');
+import ContainerMixin = require('../../../ui/common/Container');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../../has');
 import LegacyObservable = require('dojo/store/Observable');
 import OnDemandList = require('dgrid/OnDemandList');
 import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
 import util = require('../../../util');
+import Widget = require('../../../ui/dom/Widget');
 
 var oidKey:string = '__IteratorOid' + String(Math.random()).slice(2);
 
+/**
+ * The IteratorList class extends a dgrid OnDemandList with functionality for using
+ */
 class IteratorList<T> extends OnDemandList {
 	private _app:core.IApplication;
 	private _itemConstructor:Iterator.IItemConstructor<T>;
+	private _parent:Iterator<T>;
 
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
@@ -21,6 +27,8 @@ class IteratorList<T> extends OnDemandList {
 		// dgrid kwArgs don't call setters
 		this._setApp(kwArgs['app']);
 		this._setItemConstructor(kwArgs['itemConstructor']);
+		// they also do not use underscored property names
+		this._setParent(kwArgs['parent']);
 	}
 
 	_setApp(value:core.IApplication):void {
@@ -32,9 +40,13 @@ class IteratorList<T> extends OnDemandList {
 		this.refresh();
 	}
 
+	_setParent(value:Iterator<T>):void {
+		this._parent = value;
+	}
+
 	insertRow():HTMLElement {
 		var row:HTMLElement = super.insertRow.apply(this, arguments);
-		(<Iterator.IItem<T>> row[oidKey]).set('isAttached', true);
+		ContainerMixin.prototype.add.call(this._parent, row[oidKey]);
 		return row;
 	}
 
@@ -62,8 +74,6 @@ class IteratorList<T> extends OnDemandList {
 		else {
 			rowNode[oidKey] = widget;
 		}
-
-		// TODO: Set `isAttached` on widget
 
 		return rowNode;
 	}
@@ -115,10 +125,17 @@ class Iterator<T> extends SingleNodeWidget {
 		}
 	}
 
+	// TODO: Implement necessary container interfaces
+	remove(child:Widget):void {
+		child.detach();
+		ContainerMixin.prototype.remove.call(this, child);
+	}
+
 	_render():void {
 		this._widget = new IteratorList<T>({
 			app: this._app,
-			itemConstructor: this._itemConstructor
+			itemConstructor: this._itemConstructor,
+			parent: this
 		});
 
 		this._node = this._widget.domNode;
@@ -138,6 +155,7 @@ module Iterator {
 
 	export interface IItemConstructor<T> {
 		new (kwArgs?:HashMap<any>):Iterator.IItem<T>;
+		prototype:Iterator.IItem<T>;
 	}
 
 	export interface IItem<T> extends SingleNodeWidget {

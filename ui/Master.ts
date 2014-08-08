@@ -30,7 +30,10 @@ module Master {
  *
  * @constructor module:mayhem/ui/Master
  */
-var Master:{ new (kwArgs:HashMap<any>):Master; };
+var Master:{
+	new (kwArgs:HashMap<any>):Master;
+	prototype:Master;
+};
 
 /**
  * The root view of the user interface. This view will receive the {@link module:mayhem/Application} object as its

@@ -8,7 +8,8 @@ var sid:string = String(new Date().getTime() + Math.random());
 var uid:number = 0;
 
 /**
- * The
+ * The Widget class represents a user interface control. Common functionality for all UI controls is encapsulated by
+ * this class. End-users should use the available subclasses instead of instantiating Widget directly.
  *
  * @abstract
  */

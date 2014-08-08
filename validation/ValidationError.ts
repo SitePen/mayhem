@@ -14,6 +14,7 @@ interface ValidationError extends Error {
 
 var ValidationError:{
 	new (message:string, options?:{ [key:string]:any; }):ValidationError;
+	prototype:ValidationError;
 };
 
 function Ctor(message:string, options?:{ [key:string]:any; }):void {

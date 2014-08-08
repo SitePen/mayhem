@@ -23,7 +23,10 @@ module Text {
 	}
 }
 
-var Text:{ new (kwArgs:HashMap<any>):Text; };
+var Text:{
+	new (kwArgs:HashMap<any>):Text;
+	prototype:Text;
+};
 
 if (has('host-browser')) {
 	Text = <typeof Text> require('../dom/form/Text');

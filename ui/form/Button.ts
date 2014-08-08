@@ -13,13 +13,16 @@ interface Button extends Label {
 
 module Button {
 	export interface Events extends Label.Events {
-		(type:'activate', listener:core.IEventListener):IHandle;
+		(type:'activate', listener:core.IEventListener<core.IEvent>):IHandle;
 	}
 	export interface Getters extends Label.Getters {}
 	export interface Setters extends Label.Setters {}
 }
 
-var Button:{ new (kwArgs:HashMap<any>):Button; };
+var Button:{
+	new (kwArgs:HashMap<any>):Button;
+	prototype:Button;
+};
 
 if (has('host-browser')) {
 	Button = <typeof Button> require('./dom/Button');

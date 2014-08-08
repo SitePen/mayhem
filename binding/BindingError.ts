@@ -10,9 +10,10 @@ interface BindingError extends Error {
 
 var BindingError:{
 	new (message:string, kwArgs:binding.IBindingArguments):BindingError;
+	prototype:BindingError;
 };
 
-function Ctor(message:string, kwArgs:binding.IBindingArguments) {
+function Ctor(message:string, kwArgs:binding.IBindingArguments):void {
 	if (!message) {
 		message = 'Could not create Binding object for "{binding}" on {object}.';
 	}

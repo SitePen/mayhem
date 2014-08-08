@@ -55,7 +55,10 @@ module Widget {
  *
  * @constructor module:mayhem/ui/Widget
  */
-var Widget:{ new (kwArgs:HashMap<any>):Widget; };
+var Widget:{
+	new (kwArgs:HashMap<any>):Widget;
+	prototype:Widget;
+};
 
 if (has('host-browser')) {
 	Widget = <typeof Widget> require('./dom/Widget');

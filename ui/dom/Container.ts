@@ -1,5 +1,5 @@
 import AddPosition = require('../AddPosition');
-import CommonContainerMixin = require('../common/Container');
+import ContainerMixin = require('../common/Container');
 import IContainer = require('../Container');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Widget = require('./Widget');
@@ -16,12 +16,12 @@ class Container extends MultiNodeWidget implements IContainer {
 
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
-		CommonContainerMixin.apply(this, arguments);
+		ContainerMixin.apply(this, arguments);
 	}
 
 	_initialize():void {
-		this._children = [];
 		super._initialize();
+		ContainerMixin.prototype._initialize.call(this);
 	}
 
 	add(child:Widget, position?:AddPosition):IHandle;
@@ -36,7 +36,7 @@ class Container extends MultiNodeWidget implements IContainer {
 		var parentNode:Node = nextNode || this._firstNode.parentNode;
 
 		parentNode.insertBefore(child.detach(), nextNode);
-		CommonContainerMixin.prototype.add.call(this, child);
+		ContainerMixin.prototype.add.call(this, child);
 
 		var self = this;
 		return {
@@ -52,35 +52,34 @@ class Container extends MultiNodeWidget implements IContainer {
 	 * @protected
 	 */
 	_childrenGetter():Widget[] {
-		return CommonContainerMixin.prototype._childrenGetter.apply(this, arguments);
+		return ContainerMixin.prototype._childrenGetter.apply(this, arguments);
 	}
 
 	/**
 	 * @protected
 	 */
 	_childrenSetter(children:Widget[]):void {
-		CommonContainerMixin.prototype._childrenSetter.apply(this, arguments);
+		ContainerMixin.prototype._childrenSetter.apply(this, arguments);
 	}
 
 	destroy():void {
-		this.empty();
-		this._children = null;
 		super.destroy();
+		ContainerMixin.prototype.destroy.call(this);
 	}
 
 	empty():void {
-		CommonContainerMixin.prototype.empty.apply(this, arguments);
+		ContainerMixin.prototype.empty.apply(this, arguments);
 	}
 
 	getChildIndex(child:Widget):number {
-		return CommonContainerMixin.prototype.getChildIndex.apply(this, arguments);
+		return ContainerMixin.prototype.getChildIndex.apply(this, arguments);
 	}
 
 	/**
 	 * @protected
 	 */
 	_isAttachedSetter(value:boolean):void {
-		CommonContainerMixin.prototype._isAttachedSetter.apply(this, arguments);
+		ContainerMixin.prototype._isAttachedSetter.apply(this, arguments);
 	}
 
 	remove(index:number):void;
@@ -105,7 +104,7 @@ class Container extends MultiNodeWidget implements IContainer {
 			}
 		}
 
-		CommonContainerMixin.prototype.remove.call(this, children.splice(index, 1)[0]);
+		ContainerMixin.prototype.remove.call(this, children.splice(index, 1)[0]);
 	}
 }
 

@@ -13,11 +13,31 @@ import Proxty = require('../Proxty');
 import util = require('../util');
 
 /**
- * A data binder that uses Binding objects to enable binding between arbitrary properties of two different objects.
+ * The Binder class provides a default data binder that uses Binding objects to enable binding between arbitrary
+ * properties of two different objects.
+ *
+ * When creating a new Binder instance, a default list of Binding constructors can be provided through the
+ * `constructors` argument. This list of constructors can contain functions that implement
+ * {@link interface:binding.IBindingConstructor}, or module IDs that resolve to the same. When the Binder starts up,
+ * any module IDs in the list will be loaded and replaced with the value of those modules.
  */
 class Binder extends Observable implements binding.IBinder {
 	private _app:Application;
+
+	/**
+	 * The list of Binding constructors available for use by this data binder.
+	 *
+	 * @get
+	 */
 	private _constructors:binding.IBindingConstructor[];
+
+	/**
+	 * Whether or not to use the {@link module:mayhem/Scheduler event scheduler} when creating new bindings.
+	 *
+	 * @get
+	 * @set
+	 * @default false
+	 */
 	private _useScheduler:boolean;
 
 	_initialize():void {
@@ -25,6 +45,14 @@ class Binder extends Observable implements binding.IBinder {
 		this._useScheduler = false;
 	}
 
+	/**
+	 * Registers a new Binding constructor with the data binder. This method can be used to dynamically add and remove
+	 * support for different bindings at runtime.
+	 *
+	 * @param Ctor The Binding constructor.
+	 * @param index The priority of the newly added constructor. Constructors closer to zero are evaluated first.
+	 * @returns A handle that can be used to remove the Binding constructor from the data binder.
+	 */
 	add(Ctor:binding.IBindingConstructor, index:number = Infinity):IHandle {
 		var constructors = this._constructors;
 
@@ -46,6 +74,12 @@ class Binder extends Observable implements binding.IBinder {
 		};
 	}
 
+	/**
+	 * Creates a data binding between two objects.
+	 *
+	 * @param kwArgs The binding arguments for how a data binding should be created.
+	 * @returns A handle that can be used to remove the binding or change its source, target, or direction.
+	 */
 	bind<SourceT, TargetT>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
 		var self = this;
 
@@ -55,11 +89,6 @@ class Binder extends Observable implements binding.IBinder {
 
 		var source:binding.IBinding<SourceT, TargetT>;
 		var target:binding.IBinding<TargetT, SourceT>;
-
-		// TODO: This does not really make sense; if you already have a Binding object then why are you not just
-		// calling bindTo on it? This condition was removed
-		// For source and target, if binding string is provided use it to create Binding object, otherwise it should
-		// already be a proxty
 
 		source = this.createBinding<SourceT, TargetT>(kwArgs.source, kwArgs.sourcePath, { scheduled: this._useScheduler });
 		target = this.createBinding<TargetT, SourceT>(kwArgs.target, kwArgs.targetPath, { scheduled: this._useScheduler });
@@ -116,6 +145,18 @@ class Binder extends Observable implements binding.IBinder {
 		return handle;
 	}
 
+	/**
+	 * Creates a Binding object that can be used to observe changes to the property of an object.
+	 *
+	 * @param object The object to bind to.
+	 * @param path The binding path to use.
+	 * @param options Additional options to use when creating the binding.
+	 * @param options.scheduled Whether or not to use the event scheduler to defer notification of the changed value
+	 * until the next event loop. This improves binding efficiency by ensuring that a bound target property will only
+	 * change once per event loop, no matter how many times it is set. This defaults to the `useScheduler` property of
+	 * the Binder instance.
+	 * @returns A new Binding object.
+	 */
 	createBinding<SourceT, TargetT>(object:Object, path:string, options:{ scheduled?:boolean; } = {}):binding.IBinding<SourceT, TargetT> {
 		var binder = this;
 		var constructors = this._constructors;
@@ -247,6 +288,13 @@ class Binder extends Observable implements binding.IBinder {
 		return Promise.all(promises).then(function ():void {});
 	}
 
+	/**
+	 * Tests whether or not the data binder will be able to successfully create a data binding using the given
+	 * arguments.
+	 *
+	 * @param kwArgs The binding arguments to test.
+	 * @returns `true` if the binding is possible.
+	 */
 	test(kwArgs:binding.IBindArguments):boolean {
 		var sourceBindingValid:boolean = false;
 		var targetBindingValid:boolean = false;

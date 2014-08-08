@@ -17,7 +17,10 @@ module RadioButton {
 	export interface Setters extends Checkbox.Setters {}
 }
 
-var RadioButton:{ new (kwArgs:HashMap<any>):RadioButton; };
+var RadioButton:{
+	new (kwArgs:HashMap<any>):RadioButton;
+	prototype:RadioButton;
+};
 
 if (has('host-browser')) {
 	RadioButton = <typeof RadioButton> require('./dom/RadioButton');

@@ -30,7 +30,10 @@ module Container {
 	}
 }
 
-var Container:{ new (kwArgs:HashMap<any>):Container; };
+var Container:{
+	new (kwArgs:HashMap<any>):Container;
+	prototype:Container;
+};
 
 if (has('host-browser')) {
 	Container = <typeof Container> require('./dom/Container');

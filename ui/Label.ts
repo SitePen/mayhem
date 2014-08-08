@@ -23,7 +23,10 @@ module Label {
 	}
 }
 
-var Label:{ new (kwArgs:HashMap<any>):Label; };
+var Label:{
+	new (kwArgs:HashMap<any>):Label;
+	prototype:Label;
+};
 
 if (has('host-browser')) {
 	Label = <typeof Label> require('./dom/Label');

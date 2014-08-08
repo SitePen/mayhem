@@ -19,7 +19,10 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
 
 		if (value) {
 			placeholderNode.parentNode.insertBefore(value.detach(), placeholderNode);
-			value.set('isAttached', this._isAttached);
+			value.set({
+				isAttached: this._isAttached,
+				parent: this
+			});
 		}
 
 		this._placeholders[property] = this[property] = value;
@@ -28,15 +31,35 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
 
 // TODO: This is using Container to manage some of the children lifecycle but the actual container APIs aren’t generally
 // applicable, so it should probably be extending MultiNodeWidget and using Container like a mixin
+/**
+ * The Element class generates a Widget representing a string of arbitrary, data-bound HTML from the Mayhem HTML
+ * templating engine. This class is designed to work only with the construction format defined in the html.pegjs Element
+ * rule.
+ */
 class Element extends Container {
 	get:Element.Getters;
 	on:Element.Events;
 	set:Element.Setters;
 
 	private _bindingHandles:binding.IBindingHandle[];
+
+	/**
+	 * An array of raw content consisting of HTML strings and one of three special objects:
+	 *
+	 * * `$bind` objects representing data bindings;
+	 * * `$child` objects representing placeholders for positioned child widgets that existed within the HTML template;
+	 * * `$placeholder` objects representing placeholders for named placeholders
+	 *
+	 * This property is only designed to be set at construction time.
+	 */
 	private _content:any[];
+
 	// TODO: _model actually comes from the templating engine
 	private _model:Object;
+
+	/**
+	 * A map of widgets currently assigned to the different placeholder properties within the Element.
+	 */
 	private _placeholders:{ [id:string]:Widget; };
 
 	_initialize():void {

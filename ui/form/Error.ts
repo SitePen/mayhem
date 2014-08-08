@@ -15,7 +15,10 @@ module Error {
 	export interface Setters extends View.Setters {}
 }
 
-var Error:{ new (kwArgs:HashMap<any>):Error; };
+var Error:{
+	new (kwArgs:HashMap<any>):Error;
+	prototype:Error;
+};
 
 if (has('host-browser')) {
 	Error = <typeof Error> require('./dom/Error');

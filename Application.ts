@@ -12,6 +12,7 @@ import util = require('./util');
 
 interface ComponentConstructor {
 	new (kwArgs?:HashMap<any>):core.IApplicationComponent;
+	prototype:core.IApplicationComponent;
 }
 
 /**

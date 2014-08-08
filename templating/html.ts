@@ -1,3 +1,9 @@
+/**
+ * The HTML templating engine loader.
+ *
+ * @module mayhem/templating/html
+ */
+
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import Container = require('../ui/dom/Container');
@@ -7,11 +13,19 @@ import templating = require('./interfaces');
 import util = require('../util');
 import Widget = require('../ui/dom/Widget');
 
-interface WidgetConstructor {
+// TODO: This function typically comes from TypeScript itself so is available everywhere, but its use here is a hack.
+declare function __extends(d:WidgetConstructor, b:WidgetConstructor):WidgetConstructor;
+
+export interface WidgetConstructor {
 	new (kwArgs?:HashMap<any>):BindableWidget;
+	prototype:BindableWidget;
 }
 
-interface BindableWidget extends Widget {
+/**
+ * The BindableWidget interface defines a widget that can hold reference to a model object to bind to.
+ * TODO: Move this interface
+ */
+export interface BindableWidget extends Widget {
 	/**
 	 * @protected
 	 */
@@ -26,9 +40,20 @@ interface BindableWidget extends Widget {
 	 * @protected
 	 */
 	_modelSetter(value:Object):void;
+
+	/**
+	 * @protected
+	 */
+	_parentSetter(value:Container):void;
 }
 
-declare function __extends(d:WidgetConstructor, b:WidgetConstructor):WidgetConstructor;
+/**
+ * This method augments a normal Widget constructor with added functionality necessary for data binding properties from
+ * the template.
+ *
+ * @param BaseCtor A Widget constructor.
+ * @returns A BindableWidget constructor.
+ */
 function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	var Ctor:WidgetConstructor = <any> function (kwArgs?:HashMap<any>):void {
 		// The app property is needed early by the overridden `set` function, which will try to access the data binder
@@ -63,7 +88,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	};
 
 	// TODO: Need a way of identifying this as a computed property for the purpose of being able to have bindings
-	// correctly update when the parent model updates
+	// correctly update when the parent model updates, instead of using hacky parent/model observation
 	Ctor.prototype._modelGetter = function ():Object {
 		if (this._model) {
 			return this._model;
@@ -77,7 +102,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			this._notify(value && value.get('model'), this._parent && this._parent.get('model'), 'model');
 			// TODO: fix this to not leak
 			var self = this;
-			value.observe('model', function (newValue:Object, oldValue:Object):void {
+			value && value.observe('model', function (newValue:Object, oldValue:Object):void {
 				self._notify(newValue, oldValue, 'model');
 			});
 		}
@@ -110,8 +135,18 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	return Ctor;
 }
 
+/**
+ * A cache of generated BindableWidget constructors.
+ */
 var boundConstructors:{ [moduleId:string]:WidgetConstructor; } = {};
 
+/**
+ * Instantiates a widget.
+ *
+ * @param Ctor The constructor to use.
+ * @param kwArgs The arguments to pass to the constructor.
+ * @returns A BindableWidget instance.
+ */
 function instantiate(Ctor:WidgetConstructor, kwArgs:HashMap<any>):Widget;
 function instantiate(Ctor:string, kwArgs:HashMap<any>):Widget;
 function instantiate(Ctor:any, kwArgs:HashMap<any>):Widget {
@@ -122,6 +157,12 @@ function instantiate(Ctor:any, kwArgs:HashMap<any>):Widget {
 	return new (<WidgetConstructor> Ctor)(kwArgs);
 }
 
+/**
+ * Creates a BindableWidget constructor from a template AST node.
+ *
+ * @param root The AST node to use as the root node for the constructed widget.
+ * @returns A constructor that instantiates a composed view tree based on the contents of the AST.
+ */
 function createViewConstructor(root:templating.INode):WidgetConstructor {
 	return <any> function (kwArgs?:HashMap<any>):Widget {
 		var staticArgs:HashMap<any> = (function visit(node:templating.INode, parent?:templating.INode):any {
@@ -166,11 +207,28 @@ function createViewConstructor(root:templating.INode):WidgetConstructor {
 	};
 }
 
-export function load(resourceId:string, require:typeof require, load:(value:typeof Widget) => void):void {
+/**
+ * Creates a Widget constructor from an HTML template.
+ *
+ * @param template A Mayhem HTML template.
+ * @returns A promise that resolves to an BindableWidget constructor.
+ */
+export function create(template:string):IPromise<WidgetConstructor> {
+	var ast:templating.IParseTree = parser.parse(template);
+	return util.getModules(ast.constructors).then(function ():WidgetConstructor {
+		return createViewConstructor(ast.root);
+	});
+}
+
+/**
+ * Implementation of the AMD Loader Plugin API.
+ *
+ * @param resourceId The path to the template.
+ * @param require Context-specific require.
+ * @param load Callback function passed a templated widget constructor.
+ */
+export function load(resourceId:string, require:typeof require, load:(value:WidgetConstructor) => void):void {
 	util.getModule('dojo/text!' + resourceId).then(function (template:string):void {
-		var ast:templating.IParseTree = parser.parse(template);
-		util.getModules(ast.constructors).then(function ():void {
-			load(createViewConstructor(ast.root));
-		});
+		create(template).then(load);
 	});
 }

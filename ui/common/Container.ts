@@ -59,6 +59,10 @@ class ContainerMixin {
 		return -1;
 	}
 
+	_initialize():void {
+		this._children = [];
+	}
+
 	/**
 	 * @protected
 	 */

@@ -28,7 +28,10 @@ module View {
  *
  * @constructor module:mayhem/View
  */
-var View:{ new (kwArgs:HashMap<any>):View; };
+var View:{
+	new (kwArgs:HashMap<any>):View;
+	prototype:View;
+};
 
 /**
  * The data model used when binding to the view.
