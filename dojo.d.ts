@@ -126,6 +126,22 @@ declare module 'dojo/_base/window' {
 	export = window;
 }
 
+declare module 'dojo/AdapterRegistry' {
+	class AdapterRegistry<T> {
+		constructor(returnWrappers?:boolean);
+		register(
+			name:string,
+			check:(...args:any[]) => boolean,
+			wrap:(...args:any[]) => T,
+			directReturn?:boolean,
+			override?:boolean
+		):void;
+		match(...args:any[]):T;
+		unregister(name:string):boolean;
+	}
+	export = AdapterRegistry;
+}
+
 declare module 'dojo/aspect' {
 	var aspect:{
 		after(target:Object, methodName:string, advice:(...args:any[]) => any, receiveArguments?:boolean):IHandle;

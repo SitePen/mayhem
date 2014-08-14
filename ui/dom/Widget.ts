@@ -1,4 +1,6 @@
 import CommonWidget = require('../common/Widget');
+import core = require('../../interfaces');
+import Master = require('./Master');
 
 /**
  * @abstract
@@ -12,10 +14,17 @@ class Widget extends CommonWidget {
 	 * @abstract
 	 */
 	detach():Node {
-		super.detach();
-		return null;
+		return <any> super.detach();
 	}
 }
+
+Widget.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
+	var ui:Master = this._app.get('ui');
+	if (ui.isGlobalEventType(type)) {
+		return ui.registerGlobalListener(this, type, listener);
+	}
+	return CommonWidget.prototype.on.apply(this, arguments);
+};
 
 module Widget {
 	export interface Events extends CommonWidget.Events {}

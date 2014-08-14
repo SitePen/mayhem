@@ -22,6 +22,8 @@ if (typeof window !== 'undefined') {
 
 if (has('dom')) {
 	has.add('dom-tree-walker', typeof document.createTreeWalker !== 'undefined');
+	has.add('dom-mspointerevents', Boolean(window['MsPointerEvent']));
+	has.add('dom-pointerevents', Boolean(window['PointerEvent']));
 }
 
 export = has;
