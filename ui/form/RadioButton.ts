@@ -1,6 +1,5 @@
 /// <amd-dependency path="./dom/RadioButton" />
 
-import BaseEvent = require('../../Event');
 import Checkbox = require('./Checkbox');
 import core = require('../../interfaces');
 import has = require('../../has');

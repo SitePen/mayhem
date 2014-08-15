@@ -1,6 +1,5 @@
 /// <amd-dependency path="./dom/Checkbox" />
 
-import BaseEvent = require('../../Event');
 import core = require('../../interfaces');
 import has = require('../../has');
 import Widget = require('../Widget');

@@ -46,12 +46,14 @@ export interface IEvent {
 	cancelable:boolean;
 	currentTarget:any;
 	defaultPrevented:boolean;
+	immediatePropagationStopped:boolean;
 	propagationStopped:boolean;
 	target:any;
 	timeStamp:number;
 	type:string;
 
 	preventDefault():void;
+	stopImmediatePropagation():void;
 	stopPropagation():void;
 }
 

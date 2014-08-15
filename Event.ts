@@ -9,6 +9,7 @@ class Event implements core.IEvent {
 	cancelable:boolean;
 	currentTarget:any;
 	defaultPrevented:boolean;
+	immediatePropagationStopped:boolean;
 	propagationStopped:boolean;
 	target:any;
 	timeStamp:number = new Date().getTime();
@@ -32,9 +33,8 @@ class Event implements core.IEvent {
 	}
 
 	stopImmediatePropagation():void {
-		// TODO: implement this
-		if (has('debug')) {
-			throw new Error('Abstract method "stopImmediatePropagation" not implemented');
+		if (this.bubbles) {
+			this.immediatePropagationStopped = true;
 		}
 	}
 

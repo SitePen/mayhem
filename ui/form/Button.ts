@@ -1,6 +1,5 @@
 /// <amd-dependency path="./dom/Button" />
 
-import BaseEvent = require('../../Event');
 import core = require('../../interfaces');
 import has = require('../../has');
 import Label = require('../Label');
