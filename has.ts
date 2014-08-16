@@ -24,6 +24,10 @@ if (has('dom')) {
 	has.add('dom-tree-walker', typeof document.createTreeWalker !== 'undefined');
 	has.add('dom-mspointerevents', Boolean(window['MsPointerEvent']));
 	has.add('dom-pointerevents', Boolean(window['PointerEvent']));
+	has.add('dom-touch', 'ontouchstart' in document);
+	has.add('dom-mouse', 'onmousedown' in document);
+	// https://code.google.com/p/chromium/issues/detail?id=276941
+	has.add('dom-mouse-buttons', 'buttons' in document.createEvent('MouseEvent'));
 }
 
 export = has;

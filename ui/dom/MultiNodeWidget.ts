@@ -23,6 +23,16 @@ class MultiNodeWidget extends Widget {
 	on:MultiNodeWidget.Events;
 	set:MultiNodeWidget.Setters;
 
+	constructor(kwArgs?:HashMap<any>) {
+		super(kwArgs);
+		this._firstNode['widget'] = this._lastNode['widget'] = this;
+	}
+
+	destroy():void {
+		this._firstNode['widget'] = this._lastNode['widget'] = null;
+		super.destroy();
+	}
+
 	detach():DocumentFragment {
 		if (this._firstNode.parentNode !== this._fragment) {
 			this._fragment = domUtil.extractContents(this._firstNode, this._lastNode);

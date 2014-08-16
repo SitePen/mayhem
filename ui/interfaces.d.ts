@@ -8,7 +8,7 @@ export interface PointerEvent extends UIEvent {
 	clientY:number;
 	height:number;
 	isPrimary:boolean;
-	// TODO: Active modifiers
+	modifiers:PointerEvent.Modifiers;
 	pointerId:number;
 	pointerType:string;
 	pressure:number;
@@ -16,6 +16,16 @@ export interface PointerEvent extends UIEvent {
 	tiltX:number;
 	tiltY:number;
 	width:number;
+}
+
+export declare module PointerEvent {
+	export interface Modifiers {
+		alt:boolean;
+		control:boolean;
+		meta:boolean;
+		shift:boolean;
+		shortcut:boolean;
+	}
 }
 
 export interface UIEvent extends core.IEvent {

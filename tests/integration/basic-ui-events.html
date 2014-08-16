@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="../../third-party/dojo/resources/dojo.css">
+		<link rel="stylesheet" href="../../third-party/dijit/themes/claro/claro.css">
+	</head>
+	<body class="claro">
+		<script>
+var dojoConfig = {
+	async: true,
+	baseUrl: '../..',
+	packages: [
+		{ name: 'dojo', location: 'third-party/dojo' },
+		{ name: 'dijit', location: 'third-party/dijit' },
+		{ name: 'dgrid', location: 'third-party/dgrid' },
+		{ name: 'xstyle', location: 'third-party/xstyle' },
+		{ name: 'put-selector', location: 'third-party/put-selector' },
+		{ name: 'dstore', location: 'third-party/dstore' },
+		{ name: 'mayhem', location: '.' }
+	]
+};
+		</script>
+		<script src="../../third-party/dojo/dojo.js"></script>
+		<script>
+require([
+	'mayhem/WebApplication',
+	'mayhem/ui/form/Text',
+	'dojo/_base/declare',
+	'dstore/Memory',
+	'dstore/Observable'
+], function (WebApplication, Text, declare, Memory, ObservableStore) {
+	var app = window.app = new WebApplication({
+		components: {
+			router: null,
+			ui: {
+				view: 'mayhem/templating/html!mayhem/tests/integration/basic-ui-templating.template.html'
+				// view: 'mayhem/templating/html!mayhem/tests/integration/basic-ui-templating.iterator.template.html'
+			}
+		}
+	});
+
+	var model = window.model = {
+		hello: 'hello',
+		world: 'camels',
+		stuff: new (declare([ Memory, ObservableStore ]))({
+			data: [ { id: 1, name: 'hello' }, { id: 2, name: 'world' } ]
+		})
+	};
+
+	app.startup().then(function () {
+		var text = new Text({
+			app: app,
+			placeholder: 'lolol!?'
+		});
+
+		var view = window.view = app.get('ui').get('view');
+		view.set('model', model);
+		view.set('magic', text);
+
+		view.on('pointerover', function (event) {
+			console.log('view overing!');
+		});
+		view.on('pointerdown', function (event) {
+			console.log('view downing!');
+		});
+		view.on('pointerup', function (event) {
+			console.log('view upping!');
+		});
+		view.on('pointerout', function (event) {
+			console.log('view outing!');
+		});
+
+		var child = view.get('children')[0];
+		child.on('pointerover', function (event) {
+			console.log('its works, overing!', event.pointerType);
+		});
+		child.on('pointerdown', function (event) {
+			console.log('its works, downing! (go away view)', event.pointerType, event.buttons);
+			event.stopPropagation();
+		});
+		child.on('pointerup', function (event) {
+			console.log('its works, upping!', event.pointerType, event.buttons);
+		});
+		child.on('pointerout', function (event) {
+			console.log('its works, outing!', event.pointerType);
+		});
+	});
+});
+		</script>
+	</body>
+</html>

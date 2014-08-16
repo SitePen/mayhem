@@ -1,4 +1,5 @@
 import ClassList = require('../style/ClassList');
+import core = require('../../interfaces');
 import IContainer = require('../Container');
 import IWidget = require('../Widget');
 import ObservableEvented = require('../../ObservableEvented');
@@ -80,6 +81,20 @@ class Widget extends ObservableEvented implements IWidget {
 		this._parent && this._parent.remove(this);
 		this._classList = null;
 		super.destroy();
+	}
+
+	// TODO: Should bubbling be implemented throughout the event system?
+	emit(event:core.IEvent):boolean {
+		event.currentTarget = this;
+
+		ObservableEvented.prototype.emit.call(this, event);
+
+		var parent:IContainer = this.get('parent');
+		if (event.bubbles && !event.propagationStopped && parent) {
+			parent.emit(event);
+		}
+
+		return !event.defaultPrevented;
 	}
 
 	/**

@@ -19,14 +19,6 @@ class Widget extends CommonWidget {
 	}
 }
 
-Widget.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
-	var ui:Master = this._app.get('ui');
-	if (ui.isGlobalEventType(type)) {
-		return ui.registerGlobalListener(this, type, listener);
-	}
-	return CommonWidget.prototype.on.apply(this, arguments);
-};
-
 module Widget {
 	export interface Events extends CommonWidget.Events {}
 	export interface Getters extends CommonWidget.Getters {

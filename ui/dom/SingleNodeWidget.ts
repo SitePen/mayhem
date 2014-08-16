@@ -6,6 +6,16 @@ class SingleNodeWidget extends Widget {
 	 */
 	_node:Element;
 
+	constructor(kwArgs?:HashMap<any>) {
+		super(kwArgs);
+		this._node['widget'] = this;
+	}
+
+	destroy():void {
+		this._node['widget'] = null;
+		super.destroy();
+	}
+
 	detach():Element {
 		this._node.parentNode && this._node.parentNode.removeChild(this._node);
 		super.detach();
