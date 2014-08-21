@@ -21,7 +21,6 @@ class Widget extends CommonWidget {
 
 Widget.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
 	// TODO: Can we do this better?
-	console.log('listen for', type);
 	if (typeof type === 'string' && actions[type]) {
 		return actions[type](this, listener);
 	}
