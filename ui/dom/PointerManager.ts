@@ -148,6 +148,8 @@ class PointerManager {
 		} = this.pointers = { numActive: 0 };
 		var self = this;
 
+		// TODO: Maybe not all information should be cleared from the pointer? Due to issues with cancel/touchend where
+		// necessary properties disappeared before emitting the event
 		function clearPointer(pointerId:number):PointerManager.Pointer {
 			var pointer:PointerManager.Pointer = pointers[pointerId];
 			mixin(pointer.lastState, pointer);
@@ -247,6 +249,7 @@ class PointerManager {
 		}
 		else {
 			if (has('dom-touch')) {
+				var primaryId:number;
 				var FINGER_SIZE:number = 22;
 				var touchChanged = function (event:TouchEvent):void {
 					// Mouse is currently controlling, stop and ignore touch events
@@ -266,12 +269,16 @@ class PointerManager {
 							++pointers.numActive;
 						}
 
+						if (!primaryId) {
+							primaryId = touch.identifier;
+						}
+
 						pointer.lastState = mixin(pointer.lastState, pointer);
 						pointer.buttons = 1;
 						pointer.clientX = touch.clientX;
 						pointer.clientY = touch.clientY;
 						pointer.height = FINGER_SIZE;
-						pointer.isPrimary = touch === event.touches[0];
+						pointer.isPrimary = touch.identifier === primaryId;
 						pointer.modifiers = lang.mixin(<ui.PointerEvent.Modifiers> {}, keyboard),
 						pointer.pointerId = touch.identifier;
 						pointer.pointerType = 'touch';
@@ -291,6 +298,13 @@ class PointerManager {
 
 					for (var i:number = 0, touch:TouchEvent.Touch; (touch = event.changedTouches[i]); ++i) {
 						var pointer:PointerManager.Pointer = clearPointer(touch.identifier);
+
+						// Secondary pointers are not promoted to primary once the primary leaves the surface; a
+						// new primary can only exist after all touches are gone
+						if (!event.touches.length) {
+							primaryId = null;
+						}
+
 						self._emit(event, pointer);
 					}
 				};

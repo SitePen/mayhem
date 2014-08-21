@@ -39,6 +39,10 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 	return function (target:Widget, callback:(event?:ui.ClickEvent) => void):IHandle {
 		return util.createCompositeHandle(
 			target.on('pointerdown', function (event:ui.PointerEvent):void {
+				if (!event.isPrimary) {
+					return;
+				}
+
 				lastTimestamp = event.timestamp;
 				// only store the coordinates of the first tap down to avoid clicks crawing across the page
 				if (numClicks === 0) {
@@ -47,6 +51,10 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 				}
 			}),
 			target.on('pointerup', function (event:ui.PointerEvent):void {
+				if (!event.isPrimary) {
+					return;
+				}
+
 				if (
 					event.timestamp - lastTimestamp < CLICK_SPEED &&
 					event.clientX - lastX < MAX_DISTANCE[event.pointerType] &&

@@ -195,7 +195,7 @@ class EventManager {
 		var shouldCancel:boolean = false;
 
 		if (pointer.pointerType === 'touch') {
-			shouldCancel = this._emitPointerEvent('pointerup', pointer, target);
+			shouldCancel = this._emitPointerEvent('pointerup', pointer.lastState, target);
 		}
 
 		if (this._emitPointerEvent('pointerout', pointer, target)) {
