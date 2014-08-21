@@ -2,7 +2,8 @@ import core = require('./interfaces');
 import has = require('./has');
 
 /**
- * This is a base class for synthetic (non-DOM) events.
+ * The Event class is the base class for all Mayhem events. It provides an interface that is similar to the W3C event
+ * API, but includes corrections and extensions in order to function better.
  */
 class Event implements core.IEvent {
 	bubbles:boolean;
@@ -12,7 +13,7 @@ class Event implements core.IEvent {
 	immediatePropagationStopped:boolean;
 	propagationStopped:boolean;
 	target:any;
-	timeStamp:number = new Date().getTime();
+	timestamp:number = +new Date();
 	type:string;
 
 	constructor(kwArgs?:any) {

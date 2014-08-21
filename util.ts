@@ -18,6 +18,17 @@ export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
 	}
 }
 
+export function createCompositeHandle(...handles:IHandle[]):IHandle {
+	return {
+		remove: function ():void {
+			this.remove = function ():void {};
+			for (var i:number = 0, handle:IHandle; (handle = handles[i]); ++i) {
+				handle.remove();
+			}
+		}
+	};
+}
+
 export function createTimer(callback:(...args:any[]) => void, delay:number = 0):IHandle {
 	var timerId:number;
 	if (has('raf') && delay === 0) {

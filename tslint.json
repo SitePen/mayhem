@@ -26,7 +26,7 @@
 		"no-string-literal": false,
 		"no-trailing-whitespace": true,
 		"no-unused-expression": false,
-		"no-unused-variable": false,
+		"no-unused-variable": true,
 		"no-unreachable": true,
 		"no-use-before-declare": true,
 		"no-var-requires": false,

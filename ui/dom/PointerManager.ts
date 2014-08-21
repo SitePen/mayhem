@@ -359,7 +359,7 @@ class PointerManager {
 					pointer.pressure = pointer.buttons > 0 ? 0.5 : 0;
 					pointer.tiltX = 0;
 					pointer.tiltY = 0;
-					pointer.timestamp = event.timeStamp;
+					pointer.timestamp = event.timeStamp || /* has('ie') === 8 */ +new Date();
 					pointer.width = 0;
 					pointer.lastChanged = keyDiff(pointer.lastState, pointer);
 

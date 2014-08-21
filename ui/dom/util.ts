@@ -1,8 +1,6 @@
 /// <reference path="../../dojo" />
 
-import AdapterRegistry = require('dojo/AdapterRegistry');
 import has = require('../../has');
-import lang = require('dojo/_base/lang');
 import Master = require('./Master');
 import Widget = require('./Widget');
 
@@ -199,7 +197,7 @@ else {
  * @param master The master UI should be searched.
  * @returns The nearest widget.
  */
-function findNearestParent(master:Master, searchNode:Node):Widget {
+export function findNearestParent(master:Master, searchNode:Node):Widget {
 	var root:Element = master.get('root');
 
 	// The search node is not inside the root, so is definitely not from this application

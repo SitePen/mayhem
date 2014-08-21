@@ -1,11 +1,10 @@
-import core = require('../../interfaces');
 import domUtil = require('./util');
 import Event = require('../../Event');
 import lang = require('dojo/_base/lang');
 import Master = require('./Master');
+import KeyboardManager = require('./KeyboardManager');
 import PointerManager = require('./PointerManager');
 import ui = require('../interfaces');
-import util = require('../../util');
 import Widget = require('./Widget');
 
 var BUBBLES = {
@@ -28,25 +27,50 @@ var CANCELABLE = {
 class EventManager {
 	private _handles:IHandle[];
 	private _master:Master;
+	private _keyboardManager:KeyboardManager;
 	private _pointerManager:PointerManager;
 
 	constructor(master:Master) {
 		this._master = master;
-		this._pointerManager = new PointerManager(master.get('root'));
+		var root:Element = master.get('root');
+		this._pointerManager = new PointerManager(root);
+		this._keyboardManager = new KeyboardManager(root);
 		this._handles = [
-			this._pointerManager.on('add', lang.hitch(this, '_handleAdd')),
-			this._pointerManager.on('cancel', lang.hitch(this, '_handleCancel')),
-			this._pointerManager.on('change', lang.hitch(this, '_handleChange')),
-			this._pointerManager.on('remove', lang.hitch(this, '_handleRemove'))
+			this._pointerManager.on('add', lang.hitch(this, '_handlePointerAdd')),
+			this._pointerManager.on('cancel', lang.hitch(this, '_handlePointerCancel')),
+			this._pointerManager.on('change', lang.hitch(this, '_handlePointerChange')),
+			this._pointerManager.on('remove', lang.hitch(this, '_handlePointerRemove')),
+			this._keyboardManager.on('down', lang.hitch(this, '_emitKeyboardEvent', 'keydown')),
+			this._keyboardManager.on('repeat', lang.hitch(this, '_emitKeyboardEvent', 'keyrepeat')),
+			this._keyboardManager.on('up', lang.hitch(this, '_emitKeyboardEvent', 'keyup'))
 		];
 	}
 
-	private _createEvent(type:string, pointer:PointerManager.Pointer, target?:Widget, relatedTarget?:Widget):ui.PointerEvent {
+	private _emitKeyboardEvent(type:string, keyInfo:KeyboardManager.KeyInfo):boolean {
+		var target:Widget = domUtil.findNearestParent(this._master, document.activeElement);
+		var event:ui.KeyboardEvent = <any> new Event({
+			bubbles: true,
+			cancelable: true,
+			char: keyInfo.char,
+			code: keyInfo.code,
+			currentTarget: target,
+			// TODO: modifiers
+			key: keyInfo.key,
+			keyType: 'keyboard',
+			target: target,
+			type: type,
+			view: this._master
+		});
+
+		return !event.currentTarget.emit(event);
+	}
+
+	private _emitPointerEvent(type:string, pointer:PointerManager.Pointer, target?:Widget, relatedTarget?:Widget):boolean {
 		if (!target) {
 			target = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
 		}
 
-		return <any> new Event({
+		var event:ui.PointerEvent = <any> new Event({
 			bubbles: BUBBLES[type],
 			buttons: pointer.buttons,
 			cancelable: CANCELABLE[type],
@@ -67,26 +91,23 @@ class EventManager {
 			view: this._master,
 			width: pointer.width
 		});
-	}
 
-	private _emit(type:string, pointer:PointerManager.Pointer, target?:Widget, relatedTarget?:Widget):boolean {
-		var event:ui.PointerEvent = this._createEvent(type, pointer, target, relatedTarget);
 		return !event.currentTarget.emit(event);
 	}
 
-	private _handleAdd(pointer:PointerManager.Pointer):boolean {
+	private _handlePointerAdd(pointer:PointerManager.Pointer):boolean {
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
 
 		if (!target) {
 			return false;
 		}
 
-		var shouldCancel:boolean = this._emit('pointerover', pointer, target);
+		var shouldCancel:boolean = this._emitPointerEvent('pointerover', pointer, target);
 
-		this._emit('pointerenter', pointer, target);
+		this._emitPointerEvent('pointerenter', pointer, target);
 
 		if (pointer.pointerType === 'touch') {
-			if (this._emit('pointerdown', pointer, target)) {
+			if (this._emitPointerEvent('pointerdown', pointer, target)) {
 				shouldCancel = true;
 			}
 		}
@@ -94,25 +115,25 @@ class EventManager {
 		return shouldCancel;
 	}
 
-	private _handleCancel(pointer:PointerManager.Pointer):boolean {
+	private _handlePointerCancel(pointer:PointerManager.Pointer):boolean {
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY);
 
 		if (!target) {
 			return false;
 		}
 
-		var shouldCancel:boolean = this._emit('pointercancel', pointer, target);
+		var shouldCancel:boolean = this._emitPointerEvent('pointercancel', pointer, target);
 
-		if (this._emit('pointerout', pointer, target)) {
+		if (this._emitPointerEvent('pointerout', pointer, target)) {
 			shouldCancel = true;
 		}
 
-		this._emit('pointerleave', pointer, target);
+		this._emitPointerEvent('pointerleave', pointer, target);
 
 		return shouldCancel;
 	}
 
-	private _handleChange(pointer:PointerManager.Pointer):boolean {
+	private _handlePointerChange(pointer:PointerManager.Pointer):boolean {
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
 
 		if (!target) {
@@ -129,33 +150,33 @@ class EventManager {
 		}
 
 		if (hasMoved && target !== previousTarget) {
-			if (this._emit('pointerout', pointer, previousTarget, target)) {
+			if (this._emitPointerEvent('pointerout', pointer, previousTarget, target)) {
 				shouldCancel = true;
 			}
 
-			this._emit('pointerleave', pointer, previousTarget, target);
+			this._emitPointerEvent('pointerleave', pointer, previousTarget, target);
 		}
 
-		if (this._emit('pointermove', pointer, target)) {
+		if (this._emitPointerEvent('pointermove', pointer, target)) {
 			shouldCancel = true;
 		}
 
 		if (hasMoved && target !== previousTarget) {
-			if (this._emit('pointerover', pointer, target, previousTarget)) {
+			if (this._emitPointerEvent('pointerover', pointer, target, previousTarget)) {
 				shouldCancel = true;
 			}
 
-			this._emit('pointerenter', pointer, target, previousTarget);
+			this._emitPointerEvent('pointerenter', pointer, target, previousTarget);
 		}
 
 		if (changes.buttons) {
 			if (pointer.buttons > 0 && pointer.lastState.buttons === 0) {
-				if (this._emit('pointerdown', pointer, target)) {
+				if (this._emitPointerEvent('pointerdown', pointer, target)) {
 					shouldCancel = true;
 				}
 			}
 			else if (pointer.buttons === 0 && pointer.lastState.buttons > 0) {
-				if (this._emit('pointerup', pointer, target)) {
+				if (this._emitPointerEvent('pointerup', pointer, target)) {
 					shouldCancel = true;
 				}
 			}
@@ -164,7 +185,7 @@ class EventManager {
 		return shouldCancel;
 	}
 
-	private _handleRemove(pointer:PointerManager.Pointer):boolean {
+	private _handlePointerRemove(pointer:PointerManager.Pointer):boolean {
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY);
 
 		if (!target) {
@@ -174,10 +195,10 @@ class EventManager {
 		var shouldCancel:boolean = false;
 
 		if (pointer.pointerType === 'touch') {
-			shouldCancel = this._emit('pointerup', pointer, target);
+			shouldCancel = this._emitPointerEvent('pointerup', pointer, target);
 		}
 
-		if (this._emit('pointerout', pointer, target)) {
+		if (this._emitPointerEvent('pointerout', pointer, target)) {
 			shouldCancel = true;
 		}
 

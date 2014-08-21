@@ -1,14 +1,16 @@
-import arrayUtil = require('dojo/_base/array');
 import BindDirection = require('../../../binding/BindDirection');
 import binding = require('../../../binding/interfaces');
 import Container = require('../../../ui/dom/Container');
+import core = require('../../../interfaces');
 import domConstruct = require('dojo/dom-construct');
-import has = require('../../../has');
+import lang = require('dojo/_base/lang');
+import ui = require('../../../ui/interfaces');
 import Widget = require('../../../ui/dom/Widget');
 
 var BIND:RegExp = /^bind (.*)$/;
 var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)-->/g;
 var CHILD:RegExp = /^child ([0-9]+)$/;
+var EVENT_ATTRIBUTE:RegExp = /^on-(.*)$/g;
 var PLACEHOLDER:RegExp = /^placeholder (.*)$/;
 
 function createPlaceholderSetter(property:string, placeholderNode:Node):(value:Widget) => void {
@@ -33,13 +35,13 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
 // applicable, so it should probably be extending MultiNodeWidget and using Container like a mixin
 /**
  * The Element class generates a Widget representing a string of arbitrary, data-bound HTML from the Mayhem HTML
- * templating engine. This class is designed to work only with the construction format defined in the html.pegjs Element
- * rule.
+ * templating engine. This class is designed to work only with the construction format defined in the html.pegjs
+ * Element rule.
  */
-class Element extends Container {
-	get:Element.Getters;
-	on:Element.Events;
-	set:Element.Setters;
+class ElementWidget extends Container {
+	get:ElementWidget.Getters;
+	on:ElementWidget.Events;
+	set:ElementWidget.Setters;
 
 	private _bindingHandles:binding.IBindingHandle[];
 
@@ -58,7 +60,7 @@ class Element extends Container {
 	private _model:Object;
 
 	/**
-	 * A map of widgets currently assigned to the different placeholder properties within the Element.
+	 * A map of widgets currently assigned to the different placeholder properties within the ElementWidget.
 	 */
 	private _placeholders:{ [id:string]:Widget; };
 
@@ -175,6 +177,31 @@ class Element extends Container {
 							direction: BindDirection.ONE_WAY
 						}));
 					}
+					else if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
+						self.on(<string> result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
+							return character.toUpperCase();
+						}), <(event:core.IEvent) => void> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
+							var element:Element;
+
+							if ('key' in event) {
+								element = document.activeElement;
+							}
+							else if ('clientX' in event) {
+								element = document.elementFromPoint(
+									(<ui.PointerEvent> event).clientX,
+									(<ui.PointerEvent> event).clientY
+								);
+							}
+							else {
+								return;
+							}
+
+							if (element === node) {
+								// TODO: Figure out a better way to find a model method to invoke
+								self.get('model')[method] && self.get('model')[method](event);
+							}
+						}, node, nodeValue));
+					}
 				}
 			}
 		}
@@ -207,7 +234,7 @@ class Element extends Container {
 	}
 }
 
-module Element {
+module ElementWidget {
 	export interface Events extends Container.Events {}
 	export interface Getters extends Container.Getters {
 		(key:'model'):Object;
@@ -217,4 +244,4 @@ module Element {
 	}
 }
 
-export = Element;
+export = ElementWidget;

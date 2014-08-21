@@ -2,7 +2,11 @@ import core = require('../interfaces');
 import Master = require('./Master');
 import Widget = require('./Widget');
 
-export interface PointerEvent extends UIEvent {
+export interface ClickEvent extends PointerEvent {
+	numClicks:number;
+}
+
+export interface PointerEvent extends UiEvent {
 	buttons:number;
 	clientX:number;
 	clientY:number;
@@ -18,6 +22,13 @@ export interface PointerEvent extends UIEvent {
 	width:number;
 }
 
+export interface KeyboardEvent extends UiEvent {
+	char:string;
+	code:string;
+	key:string;
+	keyType:string;
+}
+
 export declare module PointerEvent {
 	export interface Modifiers {
 		alt:boolean;
@@ -28,7 +39,7 @@ export declare module PointerEvent {
 	}
 }
 
-export interface UIEvent extends core.IEvent {
+export interface UiEvent extends core.IEvent {
 	currentTarget:Widget;
 	target:Widget;
 	view:Master;

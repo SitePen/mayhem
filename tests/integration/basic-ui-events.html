@@ -45,7 +45,10 @@ require([
 		world: 'camels',
 		stuff: new (declare([ Memory, ObservableStore ]))({
 			data: [ { id: 1, name: 'hello' }, { id: 2, name: 'world' } ]
-		})
+		}),
+		boom: function (event) {
+			console.log('booooooooooom', event);
+		}
 	};
 
 	app.startup().then(function () {

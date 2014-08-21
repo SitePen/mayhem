@@ -28,6 +28,10 @@ if (has('dom')) {
 	has.add('dom-mouse', 'onmousedown' in document);
 	// https://code.google.com/p/chromium/issues/detail?id=276941
 	has.add('dom-mouse-buttons', 'buttons' in document.createEvent('MouseEvent'));
+	has.add('dom-keyboard-key', 'key' in document.createEvent('KeyboardEvent'));
+	has.add('dom-keyboard-keyIdentifier', 'keyIdentifier' in document.createEvent('KeyboardEvent'));
+	has.add('dom-keyboard-isComposing', 'isComposing' in document.createEvent('KeyboardEvent'));
+	has.add('dom-keyboard-code', 'code' in document.createEvent('KeyboardEvent'));
 }
 
 export = has;

@@ -49,7 +49,7 @@ export interface IEvent {
 	immediatePropagationStopped:boolean;
 	propagationStopped:boolean;
 	target:any;
-	timeStamp:number;
+	timestamp:number;
 	type:string;
 
 	preventDefault():void;
