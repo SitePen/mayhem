@@ -111,8 +111,56 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	};
 
 	Ctor.prototype.set = function (key:any, value?:any):void {
+		if (typeof key === 'string' && /^on[A-Z]/.test(key)) {
+			var eventName:string = key.charAt(2).toLowerCase() + key.slice(3);
+
+			if (value && value.$bind !== undefined) {
+				if (this._bindingHandles[key]) {
+					this._bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
+				}
+				else {
+					var listener:Function;
+					var binder:binding.IBinder = this._app.get('binder');
+					var binding:binding.IBinding<Function, Function>;
+					var rebind = function (object:Object, path:string = value.$bind):void {
+						binding && binding.destroy();
+						binding = binder.createBinding<Function, Function>(object || {}, path, { schedule: false });
+						binding.bindTo(<binding.IBinding<Function, void>> {
+							set: function (newValue:Function):void {
+								listener = newValue;
+							}
+						});
+					};
+
+					rebind(this.get('model'));
+
+					var handle:IHandle = this.on(eventName, function ():void {
+						// TODO: Update binding API to allow getting a reference to the parent object from the binding
+						// so the correct context can be used when invoking bound methods
+						typeof listener === 'function' && listener.apply(null, arguments);
+					});
+
+					this._bindingHandles[key] = {
+						setSource: rebind,
+						remove: function ():void {
+							this.remove = function ():void {};
+							binding.destroy();
+							handle.remove();
+							binder = value = binding = handle = null;
+						}
+					};
+				}
+			}
+			else {
+				this.on(eventName, function ():void {
+					var model:Object = this.get('model');
+					model[value] && model[value].apply(model, arguments);
+				});
+			}
+		}
 		// TODO: $bind should provide both object and path?
-		if (value && value.$bind !== undefined) {
+		else if (value && value.$bind !== undefined) {
+			// TODO: Need a way to hook from property changes that are widget-induced back to the view model
 			if (this._bindingHandles[key]) {
 				this._bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
 			}
@@ -125,11 +173,10 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 					direction: BindDirection.TWO_WAY
 				});
 			}
-
-			return;
 		}
-
-		return BaseCtor.prototype.set.call(this, key, value);
+		else {
+			BaseCtor.prototype.set.call(this, key, value);
+		}
 	};
 
 	return Ctor;

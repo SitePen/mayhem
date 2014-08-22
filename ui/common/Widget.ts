@@ -83,6 +83,13 @@ class Widget extends ObservableEvented implements IWidget {
 		super.destroy();
 	}
 
+	/**
+	 * @abstract
+	 */
+	detach():void {
+		this.set('isAttached', false);
+	}
+
 	// TODO: Should bubbling be implemented throughout the event system?
 	emit(event:core.IEvent):boolean {
 		event.currentTarget = this;
@@ -95,13 +102,6 @@ class Widget extends ObservableEvented implements IWidget {
 		}
 
 		return !event.defaultPrevented;
-	}
-
-	/**
-	 * @abstract
-	 */
-	detach():void {
-		this.set('isAttached', false);
 	}
 
 	/**

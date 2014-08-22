@@ -560,12 +560,7 @@ Attribute
 		// Treat attributes without values as true
 		return value === null ? true : value;
 	})? {
-		// Treat attributes without values as true
-		if (value === null) {
-			return { name: name, value: true };
-		}
-		// Treat undefined as null since we inverted it earlier
-		return { name: name, value: value === undefined ? null : value };
+		return { name: name, value: value };
 	}
 
 AttributeName

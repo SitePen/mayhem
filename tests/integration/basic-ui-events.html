@@ -48,6 +48,9 @@ require([
 		}),
 		boom: function (event) {
 			console.log('booooooooooom', event);
+		},
+		activation: function (event) {
+			console.log('activation occurred');
 		}
 	};
 
@@ -79,7 +82,7 @@ require([
 			console.log('its works, overing!', event.pointerType);
 		});
 		child.on('pointerdown', function (event) {
-			console.log('its works, downing! (go away view)', event.pointerType, event.buttons);
+			console.log('its works, downing! (go away view)', event.pointerType, event.buttons, event.modifiers);
 			event.stopPropagation();
 		});
 		child.on('pointerup', function (event) {

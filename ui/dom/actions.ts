@@ -7,12 +7,12 @@ export function activate(target:Widget, callback:(event?:ui.UiEvent) => void):IH
 	return util.createCompositeHandle(
 		click(target, function (event:ui.ClickEvent):void {
 			if (event.numClicks === 1) {
-				callback(event);
+				callback.call(this, event);
 			}
 		}),
 		target.on('keyup', function (event:ui.KeyboardEvent):void {
 			if (event.key === 'Enter' || event.key === ' ') {
-				callback(event);
+				callback.call(this, event);
 			}
 		})
 	);
@@ -63,7 +63,7 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 					++numClicks;
 					var newEvent:ui.ClickEvent = <any> new Event(event);
 					newEvent.numClicks = numClicks;
-					callback(newEvent);
+					callback.call(this, newEvent);
 					resetNumClicks();
 				}
 
