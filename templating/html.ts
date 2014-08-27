@@ -32,6 +32,16 @@ export interface BindableWidget extends Widget {
 	_bindingHandles:{ [key:string]:binding.IBindingHandle; };
 
 	/**
+	 * @private
+	 */
+	_modelHandle:IHandle;
+
+	/**
+	 * @private
+	 */
+	_parentModelHandle:IHandle;
+
+	/**
 	 * @protected
 	 */
 	_modelGetter():Object;
@@ -70,7 +80,9 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		this._bindingHandles = this._bindingHandles || {};
 
 		var self = this;
-		this.observe('model', function (value:Object):void {
+		// TODO: _modelHandle should not be necessary unless having the observer intact during destruction causes
+		// problems; test!
+		this._modelHandle = this.observe('model', function (value:Object):void {
 			var bindingHandles:{ [key:string]:binding.IBindingHandle; } = self._bindingHandles;
 			for (var key in bindingHandles) {
 				bindingHandles[key] && bindingHandles[key].setSource(value);
@@ -83,7 +95,9 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			this._bindingHandles[key].remove();
 		}
 
-		this._bindingHandles = this._model = null;
+		this._modelHandle.remove();
+		this._parentModelHandle && this._parentModelHandle.remove();
+		this._modelHandle = this._parentModelHandle = this._bindingHandles = this._model = null;
 		BaseCtor.prototype.destroy.call(this);
 	};
 
@@ -97,14 +111,24 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		return this._parent && this._parent.get('model');
 	};
 
+	Ctor.prototype._modelSetter = function (value:Object):void {
+		this._parentModelHandle && this._parentModelHandle.remove();
+		this._parentModelHandle = null;
+		this._model = value;
+	};
+
 	Ctor.prototype._parentSetter = function (value:Container):void {
+		this._parentModelHandle && this._parentModelHandle.remove();
+		this._parentModelHandle = null;
+
 		if (!this._model) {
 			this._notify('model', value && value.get('model'), this._parent && this._parent.get('model'));
-			// TODO: fix this to not leak
-			var self = this;
-			value && value.observe('model', function (newValue:Object, oldValue:Object):void {
-				self._notify('model', newValue, oldValue);
-			});
+			if (value) {
+				var self = this;
+				this._parentModelHandle = value.observe('model', function (newValue:Object, oldValue:Object):void {
+					self._notify('model', newValue, oldValue);
+				});
+			}
 		}
 
 		this._parent = value;
@@ -222,12 +246,7 @@ function createViewConstructor(root:templating.INode):WidgetConstructor {
 			// If the object is a special constructor token object, then it should actually be converted into a
 			// constructor function, not an instance
 			if (node.$ctor) {
-				node = node.$ctor;
-				return (function (staticArgs:HashMap<any>):WidgetConstructor {
-					return <any> function (kwArgs?:HashMap<any>):Widget {
-						return instantiate(node.constructor, lang.mixin({}, staticArgs, kwArgs));
-					};
-				})(visit(node, null));
+				return createViewConstructor(node.$ctor);
 			}
 
 			for (var key in node) {
