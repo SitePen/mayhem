@@ -6,6 +6,7 @@ import ContainerMixin = require('../../../ui/common/Container');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../../has');
 import LegacyObservable = require('dojo/store/Observable');
+import Mediator = require('../../../data/Mediator');
 import OnDemandList = require('dgrid/OnDemandList');
 import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
 import util = require('../../../util');
@@ -18,6 +19,7 @@ var oidKey:string = '__IteratorOid' + String(Math.random()).slice(2);
  */
 class IteratorList<T> extends OnDemandList {
 	private _app:core.IApplication;
+	private _as:string;
 	private _itemConstructor:Iterator.IItemConstructor<T>;
 	private _parent:Iterator<T>;
 
@@ -28,11 +30,16 @@ class IteratorList<T> extends OnDemandList {
 		this._setApp(kwArgs['app']);
 		this._setItemConstructor(kwArgs['itemConstructor']);
 		// they also do not use underscored property names
+		this._setAs(kwArgs['as']);
 		this._setParent(kwArgs['parent']);
 	}
 
 	_setApp(value:core.IApplication):void {
 		this._app = value;
+	}
+
+	_setAs(value:string):void {
+		this._as = value;
 	}
 
 	_setItemConstructor(value:Iterator.IItemConstructor<T>):void {
@@ -52,6 +59,18 @@ class IteratorList<T> extends OnDemandList {
 
 	renderRow(model:Object, options?:Object):HTMLElement {
 		var Ctor:Iterator.IItemConstructor<T> = this._itemConstructor;
+
+		if (this._as) {
+			model = new Mediator((function ():HashMap<any> {
+				var kwArgs:HashMap<any> = {
+					app: this._app,
+					model: model
+				};
+				kwArgs[this._as] = model;
+				return kwArgs;
+			}).call(this));
+		}
+
 		var widget:SingleNodeWidget = new Ctor({
 			app: this._app,
 			model: model
@@ -100,6 +119,12 @@ class Iterator<T> extends SingleNodeWidget {
 	 * @get
 	 * @set
 	 */
+	private _as:string;
+
+	/**
+	 * @get
+	 * @set
+	 */
 	private _collection:dstore.ICollection<T>;
 
 	/**
@@ -138,6 +163,7 @@ class Iterator<T> extends SingleNodeWidget {
 
 	_render():void {
 		this._widget = new IteratorList<T>({
+			as: this._as,
 			app: this._app,
 			itemConstructor: this._itemConstructor,
 			parent: this

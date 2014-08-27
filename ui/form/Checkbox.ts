@@ -1,6 +1,6 @@
-/// <amd-dependency path="./dom/Checkbox" />
+/// <amd-dependency path="../dom/form/Checkbox" />
 
-import core = require('../../interfaces');
+import CheckboxValue = require('./CheckboxValue');
 import has = require('../../has');
 import Widget = require('../Widget');
 
@@ -13,10 +13,12 @@ interface Checkbox extends Widget {
 module Checkbox {
 	export interface Events extends Widget.Events {}
 	export interface Getters extends Widget.Getters {
-		(key:'value'):boolean;
+		(key:'checked'):boolean;
+		(key:'value'):CheckboxValue;
 	}
 	export interface Setters extends Widget.Setters {
-		(key:'value', value:boolean):void;
+		(key:'checked', value:boolean):void;
+		(key:'value', value:CheckboxValue):void;
 	}
 }
 
@@ -26,7 +28,7 @@ var Checkbox:{
 };
 
 if (has('host-browser')) {
-	Checkbox = <typeof Checkbox> require('./dom/Checkbox');
+	Checkbox = <typeof Checkbox> require('../dom/form/Checkbox');
 }
 
 export = Checkbox;

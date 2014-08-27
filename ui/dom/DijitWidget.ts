@@ -9,7 +9,27 @@ class DijitWidget extends SingleNodeWidget {
 	static setupMap:{
 		events?:HashMap<(event?:Event) => void>;
 		properties?:HashMap<string>;
+	} = {
+		properties: {
+			disabled: 'disabled',
+			id: 'id'
+		},
+		events: {
+			blur: function ():void {
+				this.set('focused', false);
+			},
+			focus: function ():void {
+				this.set('focused', true);
+			}
+		}
 	};
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_disabled:boolean;
 
 	/**
 	 * @protected
@@ -32,8 +52,8 @@ class DijitWidget extends SingleNodeWidget {
 		var dijitName:string;
 		var mayhemName:string;
 		var setupMap:typeof DijitWidget.setupMap = (<typeof DijitWidget> this.constructor).setupMap;
-		for (dijitName in setupMap.properties) {
-			mayhemName = setupMap.properties[dijitName];
+		for (mayhemName in setupMap.properties) {
+			dijitName = setupMap.properties[mayhemName];
 			// Binding must be from the Mayhem object to the widget in order to set the correct default values from
 			// the Mayhem widget, not from the Dijit widget
 			this._app.get('binder').bind({
@@ -61,10 +81,16 @@ class DijitWidget extends SingleNodeWidget {
 	}
 }
 
+DijitWidget.prototype._disabled = false;
+
 module DijitWidget {
 	export interface Events extends SingleNodeWidget.Events {}
-	export interface Getters extends SingleNodeWidget.Getters {}
-	export interface Setters extends SingleNodeWidget.Setters {}
+	export interface Getters extends SingleNodeWidget.Getters {
+		(key:'disabled'):boolean;
+	}
+	export interface Setters extends SingleNodeWidget.Setters {
+		(key:'disabled', value:boolean):void;
+	}
 }
 
 export = DijitWidget;

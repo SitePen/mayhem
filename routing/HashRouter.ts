@@ -1,6 +1,5 @@
 /// <reference path="../dojo" />
 
-import Deferred = require('dojo/Deferred');
 import RouteEvent = require('./RouteEvent');
 import Router = require('./Router');
 import hash = require('dojo/hash');
@@ -12,8 +11,18 @@ import when = require('dojo/when');
  * A router implementation that operates using the window's location hash.
  */
 class HashRouter extends Router {
-	_pathPrefix:string;
 	private _changeHandle:IHandle;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_pathPrefix:string;
+
+	get:HashRouter.Getters;
+	on:HashRouter.Events;
+	set:HashRouter.Setters;
 
 	/**
 	 * Starts the router, using the current hash as the initial route to load. If no hash is set, the `defaultRoute`
@@ -115,8 +124,16 @@ class HashRouter extends Router {
 	}
 }
 
-HashRouter.defaults({
-	pathPrefix: '!/'
-});
+module HashRouter {
+	export interface Events extends Router.Events {}
+	export interface Getters extends Router.Getters {
+		(key:'pathPrefix'):string;
+	}
+	export interface Setters extends Router.Setters {
+		(key:'pathPrefix', value:string):void;
+	}
+}
+
+HashRouter.prototype._pathPrefix = '!/';
 
 export = HashRouter;

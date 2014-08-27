@@ -1,7 +1,6 @@
-/// <amd-dependency path="./dom/RadioButton" />
+/// <amd-dependency path="../dom/form/RadioButton" />
 
 import Checkbox = require('./Checkbox');
-import core = require('../../interfaces');
 import has = require('../../has');
 
 interface RadioButton extends Checkbox {
@@ -12,8 +11,14 @@ interface RadioButton extends Checkbox {
 
 module RadioButton {
 	export interface Events extends Checkbox.Events {}
-	export interface Getters extends Checkbox.Getters {}
-	export interface Setters extends Checkbox.Setters {}
+	export interface Getters extends Checkbox.Getters {
+		(key:'name'):string;
+		(key:'value'):boolean;
+	}
+	export interface Setters extends Checkbox.Setters {
+		(key:'name', value:string):void;
+		(key:'value', value:boolean):void;
+	}
 }
 
 var RadioButton:{
@@ -22,7 +27,7 @@ var RadioButton:{
 };
 
 if (has('host-browser')) {
-	RadioButton = <typeof RadioButton> require('./dom/RadioButton');
+	RadioButton = <typeof RadioButton> require('../dom/form/RadioButton');
 }
 
 export = RadioButton;

@@ -1,11 +1,13 @@
 import Widget = require('../Widget');
 
-class AbstractInput extends Widget {
+interface AbstractInput extends Widget {
 	get:AbstractInput.Getters;
+	on:AbstractInput.Events;
 	set:AbstractInput.Setters;
 }
 
 module AbstractInput {
+	export interface Events extends Widget.Events {}
 	export interface Getters extends Widget.Getters {
 		(key:'disabled'):boolean;
 		(key:'readOnly'):boolean;

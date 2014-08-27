@@ -20,7 +20,27 @@ import when = require('dojo/when');
 
 class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 	private _modelHandles:{ [key:string]:IHandle };
-	private _model:BaseModel;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_app:core.IApplication;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_model:BaseModel;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_store:any;
 
 	call:data.IMediatorCall;
 	get:data.IMediatorGet;
@@ -152,7 +172,7 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 			// only set up the model notifier if it hasn't already been set up
 			if (!this._modelHandles[key]) {
 				var notifier = (newValue:any, oldValue:any):void => {
-						this._notify(newValue, oldValue, key);
+						this._notify(key, newValue, oldValue);
 					},
 					model:data.IModel = this.get('model'),
 					modelPropertyHandle:IHandle = model && model.observe(key, notifier),
@@ -166,7 +186,7 @@ class Mediator extends BaseModel implements data.IMediator, core.IHasMetadata {
 						}
 
 						if (!util.isEqual(oldValue, newValue)) {
-							this._notify(newValue, oldValue, key);
+							this._notify(key, newValue, oldValue);
 						}
 					});
 
@@ -273,16 +293,18 @@ lang.mixin(Mediator.prototype, {
 			var newValue = this.get(key);
 
 			if (!util.isEqual(oldValue, newValue)) {
-				this._notify(newValue, oldValue, key);
+				this._notify(key, newValue, oldValue);
 			}
 		}
 	}
 });
 
-Mediator.defaults({
-	app: null,
-	model: null,
-	store: null
-});
+// These properties need to be defined explicitly or they will attempt to fall through to the model;
+// in the case of `model` falling through to `model`, it will be an infinite recursion. `app` and `store` always go
+// directly to the Mediator since they are per-object properties that should not be propagated directly back to the
+// model
+Mediator.prototype._app = null;
+Mediator.prototype._model = null;
+Mediator.prototype._store = null;
 
 export = Mediator;

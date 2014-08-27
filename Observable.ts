@@ -76,11 +76,11 @@ class Observable implements core.IObservable {
 	 * Notifies observers of the given property that its value has changed.
 	 *
 	 * @protected
+	 * @param {string} key The name of the property.
 	 * @param {any} newValue The new value for the property.
 	 * @param {any} oldValue The old value for the property.
-	 * @param {string} key The name of the property.
 	 */
-	_notify(newValue:any, oldValue:any, key:string):void {
+	_notify(key:string, newValue:any, oldValue:any):void {
 		var observers:core.IObserver<any>[] = has('es5') ?
 			this._observers[key] :
 			(this._observers.hasOwnProperty(key) && this._observers[key]);
@@ -167,7 +167,7 @@ Observable.prototype.set = function (key:any, value?:any):void {
 
 	var newValue = this.get(key);
 	if (!util.isEqual(oldValue, newValue)) {
-		this._notify(newValue, oldValue, key);
+		this._notify(key, newValue, oldValue);
 	}
 };
 

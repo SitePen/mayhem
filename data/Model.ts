@@ -74,9 +74,6 @@ class Model extends BaseModel implements data.IModel {
 	}
 
 	constructor(kwArgs:any = {}) {
-		if (kwArgs.store) {
-			kwArgs = util.omitKeys(kwArgs, ['store']);
-		}
 		super(kwArgs);
 	}
 
@@ -116,9 +113,6 @@ module Model {
 	export interface Setters extends data.IModelSet {}
 }
 
-Model.defaults({
-	scenario: 'insert',
-	store: null
-});
+Model.prototype._scenario = 'insert';
 
 export = Model;

@@ -41,7 +41,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		if (key === 'errors') {
 			this._errors.observe(():void => {
 				var errors:ObservableArray<core.IValidationError> = this._errors;
-				this._notify(errors, errors, 'errors');
+				this._notify('errors', errors, errors);
 			});
 		}
 
@@ -132,13 +132,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	}
 }
 
-Property.defaults({
-	dependencies: null,
-	errors: null,
-	model: null,
-	validators: null,
-	validateOnSet: true
-});
+Property.prototype._validateOnSet = true;
 
 lang.mixin(Property.prototype, {
 	get: function (key?:string):any {

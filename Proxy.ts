@@ -34,7 +34,7 @@ class Proxy extends Observable implements core.IProxy {
 		if (!this._targetHandles[key]) {
 			if (this._target != null) {
 				this._targetHandles[key] = this._target.observe(key, (newValue:any, oldValue:any, key?:string):void => {
-					this._notify(newValue, oldValue, key);
+					this._notify(key, newValue, oldValue);
 				});
 			}
 			else {
@@ -64,9 +64,9 @@ class Proxy extends Observable implements core.IProxy {
 
 			if (observable != null) {
 				handles[key] = observable.observe(key, (newValue:any, oldValue:any, key?:string):void => {
-					this._notify(newValue, oldValue, key);
+					this._notify(key, newValue, oldValue);
 				});
-				this._notify(observable.get(key), undefined, key);
+				this._notify(key, observable.get(key), undefined);
 			}
 		}
 	}

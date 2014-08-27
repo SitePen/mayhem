@@ -12,11 +12,24 @@ import routing = require('./interfaces');
 import when = require('dojo/when');
 import whenAll = require('dojo/promise/all');
 
+function emitError(error:Error):void {
+	this.get('app').emit(new Event({
+		type: 'error',
+		target: error,
+		message: error.message
+	}));
+}
+
 /**
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
  * URL.
  */
 class Router extends ObservableEvented implements routing.IRouter {
+	/**
+	 * The app for this router. @protected
+	 */
+	_app:core.IApplication;
+
 	/**
 	 * Hash map of routes, where the key is the unique ID of the route and the value is a Route object (or subclass of
 	 * Route), a hash map that is passed to the Route constructor, or a string that is used as the `path` property for a
@@ -35,17 +48,10 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * to their correct values.
 	 *
 	 * Once the router has been started, routes can no longer be changed.
-	 */
-
-	get:routing.IRouterGet;
-	set:routing.IRouterSet;
-	/**
-	 * The app for this router. @protected
-	 */
-	_app:core.IApplication;
-
-	/**
-	 * The routes managed by this router. @protected
+	 *
+	 * @get
+	 * @set
+	 * @protected
 	 */
 	_routes:{ [key:string]:Route };
 
@@ -68,6 +74,10 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * The previous path after a route transition. @protected
 	 */
 	_oldPath:string;
+
+	get:Router.Getters;
+	on:Router.Events;
+	set:Router.Setters;
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
 		this._routes = {};
@@ -101,7 +111,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 			route.exit();
 		}
 
-		var routes = this.get('routes');
+		var routes = this._routes;
 		for (var id in routes) {
 			route = routes[id];
 			route.destroy && route.destroy();
@@ -248,9 +258,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 			var parentDelimiterIndex = routeId.lastIndexOf('/');
 
 			if (parentDelimiterIndex === -1) {
-				// TODO: It feels weird to say the parent of a root route is the app, but it is the easiest way
-				// to place views into the main application view
-				route.set('parent', this.get('app'));
 				continue;
 			}
 
@@ -342,7 +349,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var startups:IPromise<Route>[] = [],
 			route:Route;
 
-		var routes = this.get('routes');
+		var routes = this._routes;
 		for (var id in routes) {
 			route = routes[id];
 			if (route.test(event.newPath)) {
@@ -377,17 +384,19 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 }
 
-Router.defaults({
-	defaultRoute: 'index',
-	notFoundRoute: 'error'
-});
+Router.prototype._defaultRoute = 'index';
+Router.prototype._notFoundRoute = 'error';
 
-function emitError(error:Error):void {
-	this.get('app').emit(new Event({
-		type: 'error',
-		target: error,
-		message: error.message
-	}));
+module Router {
+	export interface Events extends ObservableEvented.Events {}
+	export interface Getters extends ObservableEvented.Getters, routing.IRouter.Getters {
+		(key:'defaultRoute'):string;
+		(key:'notFoundRoute'):string;
+	}
+	export interface Setters extends ObservableEvented.Setters, routing.IRouter.Setters {
+		(key:'defaultRoute', value:string):void;
+		(key:'notFoundRoute', value:string):void;
+	}
 }
 
 export = Router;

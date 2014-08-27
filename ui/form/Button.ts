@@ -1,21 +1,29 @@
-/// <amd-dependency path="./dom/Button" />
+/// <amd-dependency path="../dom/form/Button" />
 
+import AbstractInput = require('./AbstractInput');
 import core = require('../../interfaces');
 import has = require('../../has');
-import Label = require('../Label');
 
-interface Button extends Label {
+interface Button extends AbstractInput {
 	get:Button.Getters;
 	on:Button.Events;
 	set:Button.Setters;
 }
 
 module Button {
-	export interface Events extends Label.Events {
+	export interface Events extends AbstractInput.Events {
 		(type:'activate', listener:core.IEventListener<core.IEvent>):IHandle;
 	}
-	export interface Getters extends Label.Getters {}
-	export interface Setters extends Label.Setters {}
+	export interface Getters extends AbstractInput.Getters {
+		(name:'formattedLabel'):string;
+		(name:'icon'):string;
+		(name:'label'):string;
+	}
+	export interface Setters extends AbstractInput.Setters {
+		(name:'formattedLabel', value:string):void;
+		(name:'icon', value:string):void;
+		(name:'label', value:string):void;
+	}
 }
 
 var Button:{
@@ -24,7 +32,7 @@ var Button:{
 };
 
 if (has('host-browser')) {
-	Button = <typeof Button> require('./dom/Button');
+	Button = <typeof Button> require('../dom/form/Button');
 }
 
 export = Button;

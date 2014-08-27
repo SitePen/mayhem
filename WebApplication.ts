@@ -1,9 +1,7 @@
 import Application = require('./Application');
-import binding = require('./binding/interfaces');
-import core = require('./interfaces');
 import Master = require('./ui/Master');
 import routing = require('./routing/interfaces');
-import util = require('dojo/request/util');
+import util = require('./util');
 
 /**
  * The WebApplication class provides a set of default components that are suitable for use when creating a client-side
@@ -43,6 +41,10 @@ class WebApplication extends Application {
 		viewPath: 'app/views',
 		viewModelPath: 'app/viewModels'
 	});
+
+	get:WebApplication.Getters;
+	on:WebApplication.Events;
+	set:WebApplication.Setters;
 
 	/**
 	 * The human-readable name of your application.

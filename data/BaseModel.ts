@@ -91,7 +91,7 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 
 		var connectDependency = (property:any, sourceName:string, destinationName:string):void => {
 			this.observe(sourceName, ():void => {
-				property._notify(property.get('value'), undefined, 'value');
+				property._notify('value', property.get('value'), undefined);
 			});
 		};
 		for (key in properties) {
@@ -234,8 +234,6 @@ module BaseModel {
 	}
 }
 
-BaseModel.defaults({
-	isExtensible: false
-});
+BaseModel.prototype._isExtensible = false;
 
 export = BaseModel;

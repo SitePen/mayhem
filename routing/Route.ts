@@ -1,16 +1,13 @@
 /// <reference path="../dojo" />
 
-import all = require('dojo/promise/all');
-import array = require('dojo/_base/array');
 import BaseRoute = require('./BaseRoute');
-import core = require('../interfaces');
-import Deferred = require('dojo/Deferred');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
 import RouteEvent = require('./RouteEvent');
 import routing = require('./interfaces');
-import ui = require('../ui/interfaces');
 import util = require('../util');
+import View = require('../ui/View');
+import WebApplication = require('../WebApplication');
 import when = require('dojo/when');
 
 function resolve(value:string):string {
@@ -57,7 +54,7 @@ class Route extends BaseRoute implements routing.IRoute {
 	/**
 	 * @protected
 	 */
-	_app:core.IApplication;
+	_app:WebApplication;
 
 	constructor(kwArgs?:any) {
 		kwArgs = lang.mixin({
@@ -78,7 +75,7 @@ class Route extends BaseRoute implements routing.IRoute {
 
 	_modelGetter():string {
 		if (typeof this._model === 'string') {
-			return this._resolveModuleId(this.get('modelPath'), this._model);
+			return this._resolveModuleId(this._app.get('modelPath'), this._model);
 		}
 
 		return this._model;
@@ -126,22 +123,14 @@ class Route extends BaseRoute implements routing.IRoute {
 			return value;
 		}
 
-		value = this._resolveModuleId(this.get(key + 'Path'), value);
-
-		if (key === 'template') {
-			value = this.get('templatePlugin') + '!' + value;
-
-			if (value.slice(-5) !== '.html') {
-				value += '.html';
-			}
-		}
+		value = this._resolveModuleId(<any> this._app.get(key + 'Path'), value);
 
 		return value;
 	}
 
 	_viewModelGetter():string {
 		if (!this._viewModel || typeof this._viewModel === 'string') {
-			return this._resolveModuleId(this.get('viewModelPath'), this._viewModel);
+			return this._resolveModuleId(this._app.get('viewModelPath'), this._viewModel);
 		}
 		return this._viewModel;
 	}
@@ -164,7 +153,18 @@ class Route extends BaseRoute implements routing.IRoute {
 	enter(event:RouteEvent):void {
 		var id = this.get('id');
 
-		this._subViewHandles.push(this.get('parent').add(this._viewInstance, this.get('placeholder')));
+		var parentRoute:Route = this.get('parent');
+		var parentView:View;
+		if (!parentRoute) {
+			parentView = this._app.get('ui').get('view');
+		}
+		else {
+			parentView = parentRoute.get('viewInstance');
+		}
+
+		// TODO: this used to push to _subViewHandles when it was getting an IHAndle to remove the thing, but with the
+		// way placeholders in views currently work, this does not make sense
+		parentView.set(this.get('placeholder'), this._viewInstance);
 
 		has('debug') && console.debug('entering', id);
 
@@ -255,14 +255,6 @@ class Route extends BaseRoute implements routing.IRoute {
 	}
 }
 
-util.applicationGetters(Route, [
-	'modelPath', 'storePath', 'templatePath',
-	'templatePlugin', 'viewPath', 'viewModelPath'
-]);
-
-// Default primitive property values
-Route.defaults({
-	placeholder: 'default'
-});
+Route.prototype._placeholder = 'default';
 
 export = Route;

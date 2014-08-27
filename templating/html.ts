@@ -99,11 +99,11 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 
 	Ctor.prototype._parentSetter = function (value:Container):void {
 		if (!this._model) {
-			this._notify(value && value.get('model'), this._parent && this._parent.get('model'), 'model');
+			this._notify('model', value && value.get('model'), this._parent && this._parent.get('model'));
 			// TODO: fix this to not leak
 			var self = this;
 			value && value.observe('model', function (newValue:Object, oldValue:Object):void {
-				self._notify(newValue, oldValue, 'model');
+				self._notify('model', newValue, oldValue);
 			});
 		}
 
@@ -278,4 +278,12 @@ export function load(resourceId:string, require:typeof require, load:(value:Widg
 	util.getModule('dojo/text!' + resourceId).then(function (template:string):void {
 		create(template).then(load);
 	});
+}
+
+export function normalize(resourceId:string, normalize:(id:string) => string):string {
+	if (!/\.html(?:$|\?)/.test(resourceId)) {
+		return normalize(resourceId.replace(/(\?|$)/, '.html$1'));
+	}
+
+	return normalize(resourceId);
 }

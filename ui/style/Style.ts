@@ -32,7 +32,7 @@ class Style extends Observable implements style.IStyle {
 	}
 
 	_notify(newValue:any, oldValue:any, key:string):void {
-		super._notify(newValue, oldValue, key);
+		super._notify(key, newValue, oldValue);
 
 		var observers = this._globalObservers.slice(0);
 		for (var i = 0, observer:core.IObserver<any>; (observer = observers[i]); ++i) {

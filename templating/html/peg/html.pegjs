@@ -302,10 +302,25 @@ Element 'HTML'
 		return element;
 	}
 
+// Users should be able to comment out widgets, at which point they are treated like part of the HTML content string
+HtmlComment 'HTML comment'
+	= '<!--'
+		content:(
+			[^-]
+			/ dashed:('-' [^-]) {
+				return dashed.join('');
+			}
+		)*
+		'-->'
+	{
+		return '<!--' + content.join('') + '-->';
+	}
+
 HtmlFragment 'HTML'
 	= content:(
+		HtmlComment
 		// TODO: Not sure how valid these exclusions are
-		!(
+		/ !(
 			// Optimization: Only check tag rules when the current position matches the tag opening token
 			& '<'
 
@@ -332,8 +347,16 @@ HtmlFragment 'HTML'
 // Curly brackets are escaped (\x7b, \x7d) due to https://github.com/dmajda/pegjs/issues/89
 BoundText
 	= (
-		Binding
-		/ !'{' value:('\\{' { return '\x7b'; } / [^{])+ { return value.join(''); }
+		HtmlComment
+		/ Binding
+		/ !'{' value:(
+			// an escaped curly bracket
+			'\\{' { return '\x7b'; }
+			// a list of characters that do not start an HtmlComment
+			/ !'<!--' char:([^{]) { return char; }
+		)+ {
+			return value.join('');
+		}
 	)*
 
 Binding
@@ -407,7 +430,7 @@ For '<for></for>'
 		// instead of generating an instance of the widget
 		kwArgs.itemConstructor = { $ctor: template };
 		kwArgs.collection = kwArgs.each;
-		kwArgs.each = undefined;
+		kwArgs.as = kwArgs.as;
 		return kwArgs;
 	}
 

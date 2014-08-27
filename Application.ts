@@ -6,7 +6,6 @@ import has = require('./has');
 import lang = require('dojo/_base/lang');
 import ObservableEvented = require('./ObservableEvented');
 import Promise = require('./Promise');
-import requestUtil = require('dojo/request/util');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
 
@@ -137,7 +136,7 @@ class Application extends ObservableEvented {
 
 	constructor(kwArgs?:HashMap<any>) {
 		// TODO: more robust configuration merging
-		kwArgs = requestUtil.deepCopy((<typeof Application> this.constructor)._defaultConfig, kwArgs);
+		kwArgs = util.deepCopy((<typeof Application> this.constructor)._defaultConfig, kwArgs);
 		super(kwArgs);
 	}
 

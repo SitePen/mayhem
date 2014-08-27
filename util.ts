@@ -2,9 +2,9 @@
 
 import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
-import core = require('./interfaces');
 import Deferred = require('dojo/Deferred');
 import has = require('./has');
+import requestUtil = require('dojo/request/util');
 import whenAll = require('dojo/promise/all');
 
 export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
@@ -68,6 +68,9 @@ export function debounce<T extends (...args:any[]) => void>(callback:T, delay:nu
 		}, delay);
 	};
 }
+
+export var deepCopy = requestUtil.deepCopy;
+export var deepCreate = requestUtil.deepCreate;
 
 // TODO: Not sure if `instead` is a good idea; talk to Bryan
 export function deferMethods(
@@ -188,7 +191,7 @@ export function escapedSplit(source:string, separator:string):string[] {
 /**
  * Escapes a string of text for injection into a serialization of HTML or XML.
  */
-export function escapeXml(text:string, forAttribute:boolean = false):string {
+export function escapeXml(text:string, forAttribute:boolean = true):string {
 	text = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 	if (forAttribute) {
@@ -321,21 +324,26 @@ export function deepMixin(target:any, source:any):any {
 	return target;
 }
 
-// TODO: Remove
-export function omitKeys(object:any, keys:string[]):any {
-	var keyHash:any = {},
-		result:any = {};
+export function unescapeXml(text:string):string {
+	var entityMap = {
+		lt: '<',
+		gt: '>',
+		amp: '&',
+		quot: '"',
+		apos: '\''
+	};
 
-	for (var i = 0; i < keys.length; i++) {
-		keyHash[keys[i]] = 1;
-	}
-
-	for (var key in object) {
-		if (keyHash.hasOwnProperty(key)) {
-			continue;
+	return text.replace(/&([^;]+);/g, function (_:string, entity:string):string {
+		if (entityMap[entity]) {
+			return entityMap[entity];
 		}
-		result[key] = object[key];
-	}
 
-	return result;
+		if (entity.charAt(0) === '#') {
+			if (entity.charAt(1) === 'x') {
+				return String.fromCharCode(Number('0' + entity.slice(1)));
+			}
+
+			return String.fromCharCode(Number(entity.slice(1)));
+		}
+	});
 }
