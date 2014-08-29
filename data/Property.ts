@@ -23,7 +23,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	set:data.IProperty.Setters<T>;
 
 	constructor(kwArgs?:HashMap<any>) {
-		super();
+		super(kwArgs);
 
 		var self = this;
 		this.observe('value', function ():void {
