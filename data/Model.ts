@@ -1,12 +1,9 @@
-import array = require('dojo/_base/array');
+/// <reference path="../dstore" />
+
 import BaseModel = require('./BaseModel');
-import core = require('../interfaces');
 import data = require('./interfaces');
-import Deferred = require('dojo/Deferred');
-import lang = require('dojo/_base/lang');
-import Property = require('./Property');
-import util = require('../util');
-import when = require('dojo/when');
+// TODO: Update dstore, then remove this crutch
+import Promise = require('../Promise');
 
 // TODO: The clarity:
 // Model schema is implemented in _schema; this could be implemented another way later, but this is the way we are
@@ -15,79 +12,43 @@ import when = require('dojo/when');
 // The value itself is stored on the Model, at property.model[property.key]
 // Mediators are just observables, so creating mutable properties for them is very easy
 
-class Model extends BaseModel implements data.IModel {
-	_store:dstore.ICollection<data.IModel>;
+class PersistentModel extends BaseModel implements data.IPersistentModel {
+	/**
+	 * @get
+	 * @set
+	 */
 	_scenario:string;
 
-	private static _store:dstore.ICollection<data.IModel>;
-	static store(ctor:{ new (kwArgs?:any):dstore.ICollection<data.IModel>; }, kwArgs?:any):void {
-		this.prototype._store = this._store = new ctor(lang.mixin({}, kwArgs, { model: this }));
-	}
+	/**
+	 * @get
+	 * @set
+	 */
+	_store:dstore.ICollection<data.IModel>;
 
-	static add(model:data.IModel, options:any):IPromise<data.IModel> {
-		return when(this._store.add(model, options));
-	}
+	call:PersistentModel.Callers;
+	get:PersistentModel.Getters;
+	set:PersistentModel.Setters;
 
-	static get(id:any):IPromise<data.IModel> {
-		return when(this._store.get(id));
-	}
-
-	static put(model:data.IModel, options:any):IPromise<data.IModel> {
-		return when(this._store.put(model, options));
-	}
-
-	static remove(id:any):IPromise<data.IModel> {
-		return when(this._store.remove(id));
-	}
-
-	static track():dstore.ICollection<data.IModel> {
-		return this._store.track();
-	}
-
-	static filter(query:string):dstore.ICollection<data.IModel>;
-	static filter(query:Object):dstore.ICollection<data.IModel>;
-	static filter(query:(item:data.IModel, index:number) => boolean):dstore.ICollection<data.IModel>;
-	static filter(query:any):dstore.ICollection<data.IModel> {
-		return this._store.filter(query);
-	}
-
-	static sort(property:string, descending?:boolean):dstore.ICollection<data.IModel>;
-	static sort(property:(a:data.IModel, b:data.IModel) => number, descending?:boolean):dstore.ICollection<data.IModel>;
-	static sort(property:any, descending?:boolean):dstore.ICollection<data.IModel> {
-		return this._store.sort(property, descending);
-	}
-
-	static range(start:number, end?:number):dstore.ICollection<data.IModel> {
-		return this._store.range(start, end);
-	}
-
-	static forEach(callback:(item:data.IModel, index:number) => void, thisObject?:any):IPromise<void> {
-		return when(this._store.forEach(callback, thisObject));
-	}
-
-	static map<T>(callback:(item:data.IModel, index:number) => T, thisObject?:any):dstore.ICollection<T> {
-		return this._store.map(callback, thisObject);
-	}
-
-	static fetch():IPromise<data.IModel[]> {
-		return when(this._store.fetch());
-	}
-
-	constructor(kwArgs:any = {}) {
-		super(kwArgs);
+	static store:dstore.ICollection<data.IModel>;
+	static setDefaultStore(store:dstore.ICollection<data.IModel>):void {
+		store.model = this;
+		this.prototype._store = this.store = store;
 	}
 
 	remove():IPromise<any> {
-		return when(this.get('store').remove(this.get('store').getIdentity(this))).then(<T>(returnValue:T):T => {
-			this.set('scenario', 'insert');
+		var store = this._store;
+		var self = this;
+		return Promise.resolve(store.remove(store.getIdentity(this))).then(function <T>(returnValue:T):T {
+			self.set('scenario', 'insert');
 			return returnValue;
 		});
 	}
 
 	save(skipValidation?:boolean):IPromise<void> {
 		var self = this;
+
 		function save():IPromise<void> {
-			return when(self._store.put(self)).then(function ():void {
+			return Promise.resolve(self._store.put(self)).then(function ():void {
 				self.set('scenario', 'update');
 			});
 		}
@@ -108,11 +69,12 @@ class Model extends BaseModel implements data.IModel {
 	}
 }
 
-module Model {
-	export interface Getters extends data.IModelGet {}
-	export interface Setters extends data.IModelSet {}
+module PersistentModel {
+	export interface Callers extends BaseModel.Callers, data.IModel.Callers {}
+	export interface Getters extends BaseModel.Getters, data.IModel.Getters {}
+	export interface Setters extends BaseModel.Setters, data.IModel.Setters {}
 }
 
-Model.prototype._scenario = 'insert';
+PersistentModel.prototype._scenario = 'insert';
 
-export = Model;
+export = PersistentModel;

@@ -1,127 +1,110 @@
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import data = require('./interfaces');
-import Deferred = require('dojo/Deferred');
 import lang = require('dojo/_base/lang');
+import Memory = require('dstore/Memory');
 import Observable = require('../Observable');
+import Promise = require('../Promise');
 import Property = require('./Property');
 import util = require('../util');
+import ValidationError = require('../validation/ValidationError');
 
-class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata {
-	static property<T>(propertyKwArgs:data.IPropertyArguments<T>):any {
-		return (kwArgs:data.IPropertyArguments<T>):Property<T> => {
-			return new Property<T>(lang.mixin({}, propertyKwArgs, kwArgs));
+class Model extends Observable implements data.IModel {
+	static property<T>(staticArgs:data.IProperty.KwArgs<T>):any {
+		return function (kwArgs:data.IProperty.KwArgs<T>):Property<T> {
+			return new Property<T>(lang.mixin({}, staticArgs, kwArgs));
 		};
 	}
 
-	static schema(schema:BaseModel.ISchema):void;
-	static schema(schemaCreator:(parentSchema?:BaseModel.ISchema) => BaseModel.ISchema):void
+	static schema(schema:HashMap<Model.IPropertyConstructor>):void;
+	static schema(schemaCreator:(parentSchema?:HashMap<Model.IPropertyConstructor>) => HashMap<Model.IPropertyConstructor>):void;
 	static schema(schema:any):void {
-		var proto = this.prototype;
+		var prototype = this.prototype;
 
 		if (typeof schema === 'function') {
-			proto._schema = schema(proto._schema);
+			prototype._schema = schema(prototype._schema);
 		}
 		else {
-			proto._schema = schema;
+			prototype._schema = schema;
 		}
 	}
 
-	_schema:BaseModel.ISchema;
+	/**
+	 * @protected
+	 */
 	_app:core.IApplication;
+
+	/**
+	 * @protected
+	 */
+	_schema:HashMap<Model.IPropertyConstructor>;
+
+	/**
+	 * @protected
+	 */
 	_isExtensible:boolean;
-	_validatorInProgress:IPromise<void>;
 
-	call:data.IBaseModelCall;
-	get:data.IBaseModelGet;
-	set:data.IBaseModelSet;
+	private _validatorInProgress:IPromise<boolean>;
 
-	addError(key:string, error:core.IValidationError):void {
-		this._getProperties()[key].get('errors').push(error);
+	call:Model.Callers;
+	get:Model.Getters;
+	set:Model.Setters;
+
+	addError(key:string, error:ValidationError):void {
+		var property = this._getProperty(key);
+		property.addError(error);
 	}
 
-	clearErrors():void {
+	clearErrors(key?:string):void {
 		var properties = this._getProperties();
-		for (var key in properties) {
-			properties[key].get('errors').splice(0, Infinity);
+
+		if (key) {
+			properties[key] && properties[key].clearErrors();
+			return;
+		}
+
+		for (key in properties) {
+			properties[key].clearErrors();
 		}
 	}
 
 	destroy():void {
-		super.destroy();
 		this._getProperties = null;
+		super.destroy();
 	}
 
-	// TODO: Destroy?
-	// TODO: _errorsGetter?
-	// TODO: ObservableArray?
-	getErrors(key?:string):core.IValidationError[] {
-		var properties:BaseModel.IProperties = this._getProperties();
-		if (key) {
-			return properties[key].get('errors');
-		}
-
-		var errors:core.IValidationError[] = [];
-
-		for (key in properties) {
-			Array.prototype.push.apply(errors, properties[key].get('errors'));
-		}
-
-		return errors;
-	}
-
-	// TODO: Something else?
+	// TODO: Something else? Descriptor
 	getMetadata(key:string):data.IProperty<any> {
+		// uses _getProperties to avoid automatic generation of descriptors for properties that do not exist,
+		// for some reason. TODO: Figure out that reason!
 		return this._getProperties()[key];
 	}
 
-	/* protected */ _getProperties():BaseModel.IProperties {
+	/* protected */ _getProperties():HashMap<data.IProperty<any>> {
 		var properties:any = {};
 		for (var key in this._schema) {
-			var PropertyCtor:BaseModel.IPropertyConstructor<any> = this._schema[key];
+			var PropertyCtor:Model.IPropertyConstructor = this._schema[key];
 			properties[key] = new PropertyCtor({
 				key: key,
 				model: this
 			});
 		}
 
-		this._getProperties = ():BaseModel.IProperties => {
+		this._getProperties = function ():HashMap<data.IProperty<any>> {
 			return properties;
 		};
-
-		var connectDependency = (property:any, sourceName:string, destinationName:string):void => {
-			this.observe(sourceName, ():void => {
-				property._notify('value', property.get('value'), undefined);
-			});
-		};
-		for (key in properties) {
-			var property:any = properties[key],
-				dependencies:any = property.get('dependencies');
-
-			if (!dependencies) {
-				continue;
-			}
-
-			if (dependencies instanceof Array) {
-				for (var i = 0; i < dependencies.length; i++) {
-					connectDependency.call(this, property, dependencies[i], dependencies[i]);
-				}
-			}
-			else {
-				for (var name in dependencies) {
-					connectDependency.call(this, property, dependencies[name], name);
-				}
-			}
-		}
 
 		return properties;
 	}
 
+	// TODO: The way in which this method is used is very weird, there are lots of places where _getProperties is used
+	// directly (presumably) in order to avoid the implied property creation semantics. This indicates an issue with
+	// this API.
 	private _getProperty(key:string):data.IProperty<any> {
-		var properties:BaseModel.IProperties = this._getProperties(),
-			property:data.IProperty<any> = properties[key];
+		var properties:HashMap<data.IProperty<any>> = this._getProperties();
+		var property:data.IProperty<any> = properties[key];
 
-		if (!property && !(('_' + key) in this) && this.get('isExtensible')) {
+		if (!property && !(('_' + key) in this) && this._isExtensible) {
 			property = properties[key] = new Property<any>({
 				model: this,
 				key: key
@@ -134,7 +117,7 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 	isValid():boolean {
 		var properties = this._getProperties();
 		for (var key in properties) {
-			if (properties[key].get('errors').length) {
+			if ((<Memory<ValidationError>> properties[key].get('errors')).data.length) {
 				return false;
 			}
 		}
@@ -144,96 +127,97 @@ class BaseModel extends Observable implements data.IBaseModel, core.IHasMetadata
 
 	observe(key:string, observer:core.IObserver<any>):IHandle {
 		var property = this._getProperty(key);
-		return property
-			? property.observe('value', (newValue:any, oldValue:any):void => observer(newValue, oldValue, key))
-			: super.observe(key, observer);
+		return property ?
+			property.observe('value', function (newValue:any, oldValue:any):void {
+				observer(newValue, oldValue, key);
+			}) : super.observe(key, observer);
 	}
 
-	_restore(Ctor:new (...args:any[]) => BaseModel):BaseModel {
+	// TODO: dstore interface?
+	_restore(Ctor:new (...args:any[]) => Model):Model {
 		return new Ctor(this);
 	}
 
 	validate(keysToValidate?:string[]):IPromise<boolean> {
 		if (this._validatorInProgress) {
-			this._validatorInProgress.cancel('Validation restarted');
-			this._validatorInProgress = null;
+			this._validatorInProgress.cancel(new Error('Validation restarted'));
 		}
 
 		this.clearErrors();
 
-		var self = this,
-			dfd = new Deferred<boolean>(),
-			properties = this._getProperties(),
-			propertiesKeys = util.getObjectKeys(properties),
-			i = 0;
+		var self = this;
+		var promise:Promise<boolean> = this._validatorInProgress = new Promise<boolean>(function (
+			resolve:Promise.IResolver<boolean>,
+			reject:Promise.IRejecter,
+			progress:Promise.IProgress,
+			setCanceler:(canceler:Promise.ICanceler) => void
+		):void {
+			var properties = self._getProperties();
+			var propertiesKeys = util.getObjectKeys(properties);
+			var i = 0;
+			var currentValidator:Promise<void>;
 
-		(function validateNextField():void {
-			var key = propertiesKeys[i++];
+			setCanceler(function (reason:Error):void {
+				currentValidator && currentValidator.cancel(reason);
+				i = Infinity;
+				throw reason;
+			});
 
-			if (!key) {
-				// all fields have been validated
-				self._validatorInProgress = null;
-				dfd.resolve(self.isValid());
-			}
-			else if (keysToValidate && array.indexOf(keysToValidate, key) === -1) {
-				validateNextField();
-			}
-			else {
-				self._validatorInProgress = properties[key].validate().then(validateNextField, function (error:Error):void {
-					dfd.reject(error);
-				});
-			}
-		})();
+			(function validateNextField():void {
+				var key = propertiesKeys[i++];
 
-		return dfd.promise;
-	}
-}
-
-lang.mixin(BaseModel.prototype, {
-	call(method:string, ...args:any[]):any {
-		if (this[method]) {
-			return this[method].apply(this, args);
-		}
-	},
-	get(key:string):any {
-		var property:data.IProperty<any> = this._getProperties()[key];
-		return property ? property.get('value') : Observable.prototype.get.call(this, key);
-	},
-	set(key:any, value?:any):void {
-		if (util.isObject(key)) {
-			var kwArgs:{ [key:string]: any; } = key;
-			for (key in kwArgs) {
-				if (key === 'constructor') {
-					continue;
+				if (!key) {
+					// all fields have been validated
+					self._validatorInProgress = currentValidator = null;
+					resolve(self.isValid());
 				}
-				this.set(key, kwArgs[key]);
-			}
+				else if (keysToValidate && array.indexOf(keysToValidate, key) === -1) {
+					validateNextField();
+				}
+				else {
+					currentValidator = properties[key].validate().then(validateNextField, reject);
+				}
+			})();
+		});
 
-			return;
-		}
-
-		var property:data.IProperty<any> = this._getProperty(key);
-		if (property) {
-			property.set('value', value);
-		}
-		else {
-			Observable.prototype.set.call(this, key, value);
-		}
-	}
-});
-
-module BaseModel {
-	export interface IProperties {
-		[key:string]:data.IProperty<any>;
-	}
-	export interface IPropertyConstructor<T> {
-		new (kwArgs:data.IPropertyArguments<T>):data.IProperty<T>;
-	}
-	export interface ISchema {
-		[key:string]:IPropertyConstructor<any>;
+		return promise;
 	}
 }
 
-BaseModel.prototype._isExtensible = false;
+Model.prototype.call = function (method:string, ...args:any[]):any {
+	return this[method] && this[method].apply(this, args);
+};
 
-export = BaseModel;
+Model.prototype.get = function (key:string):any {
+	var property:data.IProperty<any> = this._getProperty(key);
+	return property ? property.get('value') : Observable.prototype.get.call(this, key);
+};
+
+Model.prototype.set = function (key:any, value?:any):void {
+	if (util.isObject(key)) {
+		Observable.prototype.set.apply(this, arguments);
+		return;
+	}
+
+	var property:data.IProperty<any> = this._getProperty(key);
+	if (property) {
+		property.set('value', value);
+	}
+	else {
+		Observable.prototype.set.call(this, key, value);
+	}
+};
+
+module Model {
+	export interface Callers extends data.IModel.Callers {}
+	export interface Getters extends Observable.Getters, data.IModel.Getters {}
+	export interface Setters extends Observable.Setters, data.IModel.Setters {}
+
+	export interface IPropertyConstructor {
+		new (kwArgs:data.IProperty.KwArgs<any>):data.IProperty<any>;
+	}
+}
+
+Model.prototype._isExtensible = false;
+
+export = Model;

@@ -1,17 +1,28 @@
-/// <reference path="../dstore.d.ts" />
+/// <reference path="../dstore" />
 
 import core = require('../interfaces');
-import ObservableArray = require('../ObservableArray');
+import ValidationError = require('../validation/ValidationError');
+import Validator = require('../validation/Validator');
 
-export interface IBaseModel extends core.IApplicationComponent {
-	addError(key:string, error:core.IValidationError):void;
-
-	call:IBaseModelCall;
+export interface IModel extends core.IObservable {
+	/**
+	 * TODO: Figure out how to get rid of this.
+	 */
+	call:IModel.Callers;
 
 	/**
 	 * Retrieves the value of a property on the model.
 	 */
-	get:IBaseModelGet;
+	get:IModel.Getters;
+
+	/**
+	 * Sets the value of a property on the model.
+	 */
+	set:IModel.Setters;
+
+	addError(key:string, error:ValidationError):void;
+
+	clearErrors(key?:string):void;
 
 	/**
 	 * Retrieves the proxty for a property on the model.
@@ -22,11 +33,6 @@ export interface IBaseModel extends core.IApplicationComponent {
 	 * Returns whether or not the model currently contains any validation errors.
 	 */
 	isValid():boolean;
-
-	/**
-	 * Sets the value of a property on the model.
-	 */
-	set:IBaseModelSet;
 
 	/**
 	 * Validates the data model.
@@ -45,131 +51,112 @@ export interface IBaseModel extends core.IApplicationComponent {
 	validate(keys?:string[]):IPromise<boolean>;
 }
 
-export interface IBaseModelCall {
-	(method:string, ...args:any[]):any;
+export declare module IModel {
+	export interface Callers {
+		(method:string, ...args:any[]):any;
+	}
+
+	export interface Getters extends core.IObservable.Getters {
+		(key:'isExtensible'):boolean;
+		(key:'scenario'):string;
+	}
+	export interface Setters extends core.IObservable.Setters {
+		(key:'isExtensible', value:boolean):void;
+		(key:'scenario', value:string):void;
+	}
 }
 
-export interface IBaseModelGet extends core.IApplicationComponentGet {
-	(key:'isExtensible'):boolean;
-}
+export interface IPersistentModel extends IModel {
+	call:IPersistentModel.Callers;
+	get:IPersistentModel.Getters;
+	set:IPersistentModel.Setters;
 
-export interface IBaseModelSet extends core.IApplicationComponentSet {
-}
-
-export interface IMediator extends IBaseModel {
-	call:IMediatorCall;
-	get:IMediatorGet;
-	set:IMediatorSet;
-}
-
-export interface IMediatorCall extends IBaseModelCall {
-	(method:'save', skipValidation?:boolean):IPromise<void>;
-	(method:'remove'):IPromise<void>;
-}
-
-export interface IMediatorGet extends IBaseModelGet {
-	(key:'model'):IModel;
-}
-
-export interface IMediatorSet extends IBaseModelSet {
-	(key:'model', value:IModel):void;
-}
-
-/**
- * The IModel interface should be implemented by any object that is intended to be used as a data model within the
- * framework.
- */
-export interface IModel extends IBaseModel {
-	/**
-	 * Retrieves the value of a property on the model.
-	 */
-	get:IModelGet;
-
-	/**
-	 * Removes the model from its source store.
-	 */
-	remove():any;
-
-	/**
-	 * Saves the model to its source store.
-	 *
-	 * @param skipValidation
-	 * Passing `true` will cause the validation step to be skipped. By default, validation will occur before the
-	 * model is saved.
-	 *
-	 * @returns
-	 * A promise that resolves when the data has been successfully saved, or is rejected with error if the store
-	 * reports a failure to save the data or if valiation fails.
-	 */
+	remove():IPromise<void>;
 	save(skipValidation?:boolean):IPromise<void>;
-
-	/**
-	 * Sets the value of a property on the model.
-	 */
-	set:IModelSet;
 }
 
-export interface IModelGet extends IBaseModelGet {
-	(key:'store'):dstore.ICollection<any>;
-	(key:'scenario'):string;
-	(key:'isExtensible'):boolean;
+export declare module IPersistentModel {
+	export interface Callers extends IModel.Callers {
+		(method:'remove'):IPromise<void>;
+		(method:'save', skipValidation?:boolean):IPromise<void>;
+	}
+
+	export interface Getters extends IModel.Getters {
+		(key:'store'):dstore.ICollection<IPersistentModel>;
+	}
+
+	export interface Setters extends IModel.Setters {
+		(key:'store', value:dstore.ICollection<IPersistentModel>):void;
+	}
 }
 
-export interface IModelSet extends IBaseModelSet {
-	(key:'scenario', value:string):void;
+export interface IProxyModel<T> extends IModel {
+	call:IProxyModel.Callers<T>;
+	get:IProxyModel.Getters<T>;
+	set:IProxyModel.Setters<T>;
+}
+
+export declare module IProxyModel {
+	export interface Callers<T> extends IModel.Callers {}
+	export interface Getters<T> extends IModel.Getters {
+		(key:'model'):T;
+	}
+	export interface Setters<T> extends IModel.Setters {
+		(key:'model', value:T):void;
+	}
 }
 
 export interface IModelConstructor {
-	new (kwArgs?:{ [key:string]: any; }):IModel;
+	new (kwArgs?:HashMap<any>):IModel;
 	create(schema:any):IModelConstructor;
-	property<T>(kwArgs:IPropertyArguments<T>):IProperty<T>;
+	property<T>(kwArgs:IProperty.KwArgs<T>):IProperty<T>;
 }
 
-/**
- * The IModelProxty interface extends a standard proxty with additional methods for data validation.
- */
 export interface IProperty<T> extends core.IObservable {
-	get:IPropertyGet<T>;
-	set:IPropertySet<T>;
+	get:IProperty.Getters<T>;
+	set:IProperty.Setters<T>;
+
+	addError(error:ValidationError):void;
+	clearErrors():void;
 	validate():IPromise<boolean>;
 }
 
-export interface IPropertyGet<T> extends core.IObservableGet {
-	(key:'default'):T;
-	(key:'dependencies'):string[];
-	// TODO: Make into ObservableArray?
-	(key:'errors'):ObservableArray<core.IValidationError>;
-	(key:'key'):string;
-	(key:'model'):IModel;
-	(key:'label'):string;
-	(key:'validateOnSet'):boolean;
-	(key:'validators'):core.IValidator[];
-	(key:'value'):T;
-	():Object;
-}
+export declare module IProperty {
+	export interface KwArgs<T> {
+		default?:T;
+		dependencies?:string[];
+		get?:() => T;
+		key?:string;
+		label?:string;
+		set?:(value:T) => void;
+		validateOnSet?:boolean;
+		validators?:Validator[];
+		value?:T;
+	}
 
-export interface IPropertySet<T> extends core.IObservableSet {
-	(key:'default', value:T):void;
-	(key:'dependencies', value:string[]):void;
-	(key:'errors', value:ObservableArray<core.IValidationError>):void;
-	(key:'key', value:string):void;
-	(key:'model', value:IModel):void;
-	(key:'label', value:string):void;
-	(key:'validateOnSet', value:boolean):void;
-	(key:'validators', value:core.IValidator[]):void;
-	(key:'value', value:T):void;
-}
+	export interface Getters<T> extends core.IObservable.Getters {
+		(key:'default'):T;
+		(key:'dependencies'):string[];
+		(key:'errors'):dstore.ICollection<ValidationError>;
+		(key:'key'):string;
+		(key:'model'):IModel;
+		(key:'label'):string;
+		(key:'validateOnSet'):boolean;
+		(key:'validators'):Validator[];
+		(key:'value'):T;
+	}
 
-export interface IPropertyArguments<T> {
-	[key:string]:any;
-	get?:() => T;
-	dependencies?:string[];
-	key?:string;
-	label?:string;
-	set?:(value:T) => void;
-	value?:T;
-	validateOnSet?:boolean;
-	validators?:core.IValidator[];
+	export interface Setters<T> extends core.IObservable.Setters {
+		(key:'default', value:T):void;
+		(key:'dependencies', value:string[]):void;
+		(key:'errors', value:dstore.ICollection<ValidationError>):void;
+		(key:'key', value:string):void;
+		(key:'model', value:IModel):void;
+		(key:'label', value:string):void;
+		(key:'validateOnSet', value:boolean):void;
+		(key:'validators', value:Validator[]):void;
+		(key:'value', value:T):void;
+	}
 }
 
 // TODO: Rename interfaces.d.ts to ../<package name>.d.ts

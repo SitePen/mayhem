@@ -2,39 +2,37 @@ import core = require('./interfaces');
 import has = require('./has');
 import Observable = require('./Observable');
 
-class Proxy extends Observable implements core.IProxy {
-	private _target:core.IObservable;
-	private _targetHandles:{ [key:string]: IHandle };
+class Proxy extends Observable {
+	/**
+	 * @protected
+	 */
+	_target:core.IObservable;
+	private _targetHandles:HashMap<IHandle>;
 
-	constructor(observable:core.IObservable) {
+	get:Proxy.Getters;
+	set:Proxy.Setters;
+
+	// TODO: Does not match normal kwArgs API; is this really OK?
+	constructor(target:core.IObservable) {
 		super();
-
-		this._target = observable;
+		this._target = target;
 	}
 
 	_initialize():void {
-		if (has('es5')) {
-			this._targetHandles = Object.create(null);
-		}
-		else {
-			this._targetHandles = {};
-		}
+		this._targetHandles = has('es5') ? Object.create(null) : {};
 	}
 
 	destroy():void {
-		super.destroy();
-
 		this.setTarget(null);
+		super.destroy();
 	}
 
 	observe(key:any, observer:core.IObserver<any>):IHandle {
-		var observers:core.IObserver<any>[] = this._observers[key];
-
-		var handleKey = key;
 		if (!this._targetHandles[key]) {
 			if (this._target != null) {
-				this._targetHandles[key] = this._target.observe(key, (newValue:any, oldValue:any, key?:string):void => {
-					this._notify(key, newValue, oldValue);
+				var self = this;
+				this._targetHandles[key] = this._target.observe(key, function (newValue:any, oldValue:any, key?:string):void {
+					self._notify(key, newValue, oldValue);
 				});
 			}
 			else {
@@ -45,16 +43,11 @@ class Proxy extends Observable implements core.IProxy {
 		return super.observe(key, observer);
 	}
 
-	setTarget(observable:core.IObservable):void {
+	setTarget(target:core.IObservable):void {
 		var handles = this._targetHandles;
 
-		this._target = observable;
-		if (has('es5')) {
-			this._targetHandles = Object.create(null);
-		}
-		else {
-			this._targetHandles = {};
-		}
+		this._target = target;
+		this._targetHandles = has('es5') ? Object.create(null) : {};
 
 		for (var key in handles) {
 			if (has('es5') ? !(key in handles) : !handles.hasOwnProperty(key)) {
@@ -62,11 +55,11 @@ class Proxy extends Observable implements core.IProxy {
 			}
 			handles[key] && handles[key].remove();
 
-			if (observable != null) {
-				handles[key] = observable.observe(key, (newValue:any, oldValue:any, key?:string):void => {
+			if (target != null) {
+				handles[key] = target.observe(key, (newValue:any, oldValue:any, key?:string):void => {
 					this._notify(key, newValue, oldValue);
 				});
-				this._notify(key, observable.get(key), undefined);
+				this._notify(key, target.get(key), undefined);
 			}
 		}
 	}
@@ -81,5 +74,10 @@ Proxy.prototype.set = function (key:any, value?:any):void {
 		this._target.set(key, value);
 	}
 };
+
+module Proxy {
+	export interface Getters extends Observable.Getters {}
+	export interface Setters extends Observable.Setters {}
+}
 
 export = Proxy;

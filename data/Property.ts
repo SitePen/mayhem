@@ -1,165 +1,133 @@
 /// <reference path="../dojo" />
 
 import array = require('dojo/_base/array');
-import core = require('../interfaces');
 import data = require('./interfaces');
-import Deferred = require('dojo/Deferred');
-import lang = require('dojo/_base/lang');
+import Memory = require('dstore/Memory');
 import Observable = require('../Observable');
-import ObservableArray = require('../ObservableArray');
-import Proxty = require('../Proxty');
-import when = require('dojo/when');
+import Promise = require('../Promise');
+import Validator = require('../validation/Validator');
+import ValidationError = require('../validation/ValidationError');
 
 class Property<T> extends Observable implements data.IProperty<T> {
 	_dependencies:string[];
-	_errors:ObservableArray<core.IValidationError>;
+	_errors:Memory<ValidationError>;
 	_key:string;
 	_model:data.IModel;
 	_label:string;
-	_validators:core.IValidator[];
+	_validators:Validator[];
 	_validateOnSet:boolean;
 	_value:T;
-	_validatorInProgress:IPromise<void>;
+	private _validatorInProgress:IPromise<boolean>;
 
-	private _valueGetter:() => T;
+	get:data.IProperty.Getters<T>;
+	set:data.IProperty.Setters<T>;
 
-	get:data.IPropertyGet<T>;
-	set:data.IPropertySet<T>;
+	constructor(kwArgs?:HashMap<any>) {
+		super();
 
-	constructor(kwArgs?:any) {
-		this._errors = new ObservableArray<core.IValidationError>();
-		this._validators = [];
-
-		super(kwArgs);
+		var self = this;
+		this.observe('value', function ():void {
+			self._validateOnSet && self.validate();
+		});
 	}
 
-	observe<T>(key:string, observer:core.IObserver<T>):IHandle {
-		var handle = super.observe(key, observer);
+	addError(error:ValidationError):void {
+		this._errors.put(error);
+	}
 
-		// TODO: This is a hack to enable observers to be notified whenever the errors array is mutated; there needs
-		// to be a proper way to observe these types of arrays instead in the binding system.
-		if (key === 'errors') {
-			this._errors.observe(():void => {
-				var errors:ObservableArray<core.IValidationError> = this._errors;
-				this._notify('errors', errors, errors);
-			});
-		}
+	clearErrors():void {
+		this._errors.setData([]);
+	}
 
-		return handle;
+	/**
+	 * @protected
+	 */
+	_initialize():void {
+		super._initialize();
+		this._errors = new Memory<ValidationError>();
+		this._validators = [];
 	}
 
 	validate():IPromise<boolean> {
-		var dfd:IDeferred<boolean> = new Deferred<boolean>(<T>(reason:T):T => {
-				if (this._validatorInProgress) {
-					this._validatorInProgress.cancel(reason);
-					this._validatorInProgress = null;
-				}
-
-				return reason;
-			}),
-			self = this,
-			model = this.get('model'),
-			key = this.get('key'),
-			validators = this.get('validators'),
-			errors = this.get('errors'),
-			i = 0;
-
 		if (this._validatorInProgress) {
-			this._validatorInProgress.cancel('Validation restarted');
-			this._validatorInProgress = null;
+			this._validatorInProgress.cancel(new Error('Validation restarted'));
 		}
 
-		errors.splice(0, Infinity);
+		this.clearErrors();
 
-		(function runNextValidator():void {
-			var validator = validators[i++],
-				value:any = self.get('value');
+		var self = this;
+		var promise:Promise<boolean> = this._validatorInProgress = new Promise<boolean>(function (
+			resolve:Promise.IResolver<boolean>,
+			reject:Promise.IRejecter,
+			progress:Promise.IProgress,
+			setCanceler:(canceler:Promise.ICanceler) => void
+		):void {
+			var validators = self._validators;
+			var model = self._model;
+			var key = self._key;
+			var errors = self._errors;
+			var i = 0;
+			var currentValidator:Promise<void>;
 
-			// end of list of validators for this field reached
-			if (!validator) {
-				dfd.resolve(errors.length === 0);
-				return;
-			}
-
-			if (validator.options) {
-				// Simply skip validators that are defined as allowing empty fields when the value is
-				// empty (null, undefined, or empty string)
-				if (validator.options.allowEmpty && (value == null || value === '')) {
-					runNextValidator();
-					return;
-				}
-
-				// Skip validators that are limited to certain scenarios and do not match the currently
-				// defined model scenario
-				if (validator.options.scenarios && validator.options.scenarios.length &&
-						array.indexOf(validator.options.scenarios, model.get('scenario')) === -1) {
-					runNextValidator();
-					return;
-				}
-			}
-
-			// If a validator throws an error, validation processing halts
-			self._validatorInProgress = when(validator.validate(model, key, value)).then(function ():void {
-				self._validatorInProgress = null;
-				runNextValidator();
-			}, function (error:Error):void {
-				self._validatorInProgress = null;
-				dfd.reject(error);
+			setCanceler(function (reason:Error):void {
+				currentValidator && currentValidator.cancel(reason);
+				i = Infinity;
+				throw reason;
 			});
-		})();
 
-		return dfd.promise;
+			(function runNextValidator():void {
+				var validator = validators[i++];
+
+				// end of list of validators for this field reached
+				if (!validator) {
+					resolve(errors.data.length === 0);
+					return;
+				}
+
+				// value may also be mutated by validators, so needs to be retrieved after each execution
+				var value:any = self.get('value');
+
+				if (validator.options) {
+					// Simply skip validators that are defined as allowing empty fields when the value is
+					// empty (null, undefined, or empty string)
+					if (validator.options.allowEmpty && (value == null || value === '')) {
+						runNextValidator();
+						return;
+					}
+
+					// Skip validators that are limited to certain scenarios and do not match the currently
+					// defined model scenario
+					if (validator.options.scenarios && validator.options.scenarios.length &&
+							array.indexOf(validator.options.scenarios, model.get('scenario')) === -1) {
+						runNextValidator();
+						return;
+					}
+				}
+
+				// If a validator throws an error, validation processing halts
+				currentValidator = Promise.resolve(validator.validate(model, key, value)).then(runNextValidator, reject);
+			})();
+		});
+
+		return promise;
 	}
 
 	valueOf():T {
 		return this.get('value');
 	}
-
-	_valueGetterSetter(getter:() => T):void {
-		this._valueGetter = getter;
-	}
-
-	_valueSetter(value:T):void {
-		this._value = value;
-		this._validateOnSet && this.validate();
-	}
-
-	_valueSetterSetter(setter:(value:T) => void):void {
-		this._valueSetter = function ():void {
-			setter.apply(this, arguments);
-			this._validateOnSet && this.validate();
-		};
-	}
 }
 
-Property.prototype._validateOnSet = true;
-
-lang.mixin(Property.prototype, {
-	get: function (key?:string):any {
-		if (key == null) {
-			var serialized:Object = {};
-			for (var property in this) {
-				if (property.charAt(0) !== '_' || typeof this[property] === 'function') {
-					continue;
-				}
-
-				serialized[property.slice(1)] = this[property];
-			}
-			return serialized;
-		}
-
-		return Observable.prototype.get.call(this, key);
-	},
-
-	set: function (key:any, value?:any):void {
-		if (key === 'get') {
-			key = 'valueGetter';
-		}
-		else if (key === 'set') {
-			key = 'valueSetter';
-		}
-		Observable.prototype.set.call(this, key, value);
+Property.prototype.set = function (key:any, value?:any):void {
+	if (key === 'get') {
+		key = 'valueGetter';
 	}
-});
+	else if (key === 'set') {
+		key = 'valueSetter';
+	}
+
+	Observable.prototype.set.call(this, key, value);
+};
+
+Property.prototype._validateOnSet = true;
 
 export = Property;

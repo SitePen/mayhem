@@ -12,6 +12,8 @@ var SEPARATOR:string = '%';
 /**
  * The MetadataBinding class enables the ability to bind to metadata properties on instances of classes such as
  * {@link module:mayhem/data/Model}.
+ *
+ * TODO: Rename metadata to descriptor or property?
  */
 class MetadataBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
