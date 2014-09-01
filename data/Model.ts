@@ -2,8 +2,6 @@
 
 import BaseModel = require('./BaseModel');
 import data = require('./interfaces');
-// TODO: Update dstore, then remove this crutch
-import Promise = require('../Promise');
 
 // TODO: The clarity:
 // Model schema is implemented in _schema; this could be implemented another way later, but this is the way we are
@@ -38,7 +36,7 @@ class PersistentModel extends BaseModel implements data.IPersistentModel {
 	remove():IPromise<any> {
 		var store = this._store;
 		var self = this;
-		return Promise.resolve(store.remove(store.getIdentity(this))).then(function <T>(returnValue:T):T {
+		return store.remove(store.getIdentity(this)).then(function <T>(returnValue:T):T {
 			self.set('scenario', 'insert');
 			return returnValue;
 		});
@@ -48,7 +46,7 @@ class PersistentModel extends BaseModel implements data.IPersistentModel {
 		var self = this;
 
 		function save():IPromise<void> {
-			return Promise.resolve(self._store.put(self)).then(function ():void {
+			return self._store.put(self).then(function ():void {
 				self.set('scenario', 'update');
 			});
 		}

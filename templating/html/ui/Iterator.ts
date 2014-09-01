@@ -5,7 +5,6 @@ import core = require('../../../interfaces');
 import ContainerMixin = require('../../../ui/common/Container');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../../has');
-import LegacyObservable = require('dojo/store/Observable');
 import Mediator = require('../../../data/Mediator');
 import OnDemandList = require('dgrid/OnDemandList');
 import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
@@ -145,7 +144,7 @@ class Iterator<T> extends SingleNodeWidget {
 	}
 
 	_collectionSetter(value:dstore.ICollection<T>):void {
-		this._widget.set('store', value ? new LegacyObservable(new DstoreAdapter({ store: value })) : <any> value);
+		this._widget.set('store', value ? new DstoreAdapter(value) : <any> value);
 		this._collection = value;
 	}
 

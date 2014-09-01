@@ -32,7 +32,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	}
 
 	addError(error:ValidationError):void {
-		this._errors.put(error);
+		this._errors.putSync(error);
 	}
 
 	clearErrors():void {

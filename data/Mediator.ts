@@ -59,15 +59,18 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 			};
 		}
 
-		var put = wrapperCollection.put;
-		var remove = wrapperCollection.remove;
+		var put = wrapperCollection.putSync;
+		var remove = wrapperCollection.removeSync;
 
-		wrapperCollection.add = wrapSetter('add');
-		wrapperCollection.put = wrapSetter('put');
-		wrapperCollection.remove = lang.hitch(collection, 'remove');
+		wrapperCollection.add = wrapperCollection.addSync = wrapSetter('add');
+		wrapperCollection.put = wrapperCollection.putSync = wrapSetter('put');
+		wrapperCollection.remove = wrapperCollection.removeSync = lang.hitch(collection, 'remove');
 
-		collection.on('add, update', function (event:dstore.ChangeEvent):void {
+		collection.on('add', function (event:dstore.ChangeEvent):void {
 			put.call(wrapperCollection, new Ctor({ model: event.target }), { index: event.index });
+		});
+		collection.on('update', function (event:dstore.ChangeEvent):void {
+			put.call(wrapperCollection, wrapperCollection.getSync(collection.getIdentity(event.target)), { index: event.index });
 		});
 		collection.on('delete', function (event:dstore.ChangeEvent):void {
 			remove.call(wrapperCollection, event.id);
@@ -77,8 +80,12 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 	}
 
 	constructor(kwArgs?:{ [key:string]: any; }) {
-		this._modelHandles = {};
 		super(kwArgs);
+	}
+
+	_initialize():void {
+		super._initialize();
+		this._modelHandles = {};
 	}
 
 	// TODO: Move this functionality to routing
