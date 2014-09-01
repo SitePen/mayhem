@@ -4,6 +4,13 @@
 @import 'fonts/soin';
 @import 'fonts/input';
 
+/*
+ * vertical rhythm: 36px (2rem)
+ * minimum width: 320px
+ * maximum width: 1440px (80rem)
+ * breakpoints: 490 570 920
+ */
+
 $baseFontSize = 18px;
 $baseLineHeight = 2rem;
 
@@ -26,6 +33,7 @@ body {
 	background-color: $backgroundColor;
 	color: $color;
 	font: $baseFontSize/$baseLineHeight Soin, sans-serif;
+	min-width: 320px;
 }
 
 ::selection {
@@ -65,6 +73,9 @@ tt {
 	background-color: $mayhemPurple;
 	color: $mayhemPurpleInvert;
 	margin-bottom: $baseLineHeight * 2.25;
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
 
 	.search {
 		background-color: $mayhemPurpleInvert;
@@ -72,19 +83,21 @@ tt {
 		box-shadow: inset 1px 1px 0 darken($mayhemPurple, 20%);
 		cursor: text;
 		float: right;
-		line-height: 0;
-		margin-top: 0.75rem;
-		padding: 2px 4px 0 4px;
+		height: 1.5rem;
+		line-height: 1.5rem;
+		margin-top: 0.25rem;
+		padding: 2px 4px 0 6px;
 
-		.icon-search {
-			font-size: 1rem;
-			line-height: 0;
-			vertical-align: top;
+		> * {
+			display: inline-block;
+			line-height: normal;
+			padding: 0.25rem 0 0;
+			vertical-align: middle;
+		}
 
-			&:before {
-				color: $mayhemPurple;
-				margin-right: 0;
-			}
+		.icon-search:before {
+			color: $mayhemPurple;
+			margin-right: 0;
 		}
 
 		[type='text'] {
@@ -92,20 +105,27 @@ tt {
 			background: transparent;
 			border: none;
 			color: $mayhemPurple;
-			font: bold 14px/1rem Soin, sans-serif;
-			height: 1em;
+			font: bold 14px Soin, sans-serif;
 			margin: 0;
-			padding: 0;
 			text-transform: uppercase;
-			transition: width 0.2s;
-			vertical-align: bottom;
+			vertical-align: middle;
 			width: 10rem;
 
 			@media (min-width: 920px) {
+				transition: width 0.2s;
+
 				&:focus {
 					width: 20rem;
 				}
 			}
+
+			@media (max-width: 490px) {
+				width: calc(100% - 1.3rem);
+			}
+		}
+
+		@media (max-width: 490px) {
+			width: calc(100% - 2rem);
 		}
 	}
 
@@ -131,6 +151,14 @@ tt {
 		@media (max-width: 920px) {
 			display: block;
 		}
+
+		@media (max-width: 570px) {
+			left: 0.1rem;
+		}
+
+		@media (max-width: 490px) {
+			left: 1.5rem;
+		}
 	}
 
 	.title {
@@ -138,6 +166,13 @@ tt {
 		line-height: 1rem;
 		text-transform: uppercase;
 		vertical-align: bottom;
+
+		@media (max-width: 490px) {
+			display: block;
+			height: 4rem;
+			line-height: 3.25rem;
+			text-align: center;
+		}
 	}
 }
 
@@ -145,12 +180,19 @@ tt {
 	margin: 0 auto;
 	max-width: 80rem;
 	padding: 0 4rem;
+
+	@media (max-width: 570px) {
+		padding: 0 2rem;
+	}
 }
 
 .content {
 	.nav {
 		float: left;
 		max-width: 12rem;
+		position: -webkit-sticky;
+		position: sticky;
+		top: 6.5rem;
 	}
 
 	.main {
@@ -161,16 +203,29 @@ tt {
 		.nav {
 			background-color: $backgroundColor;
 			bottom: 0;
+			display: none;
 			left: 0;
 			overflow: auto;
 			-webkit-overflow-scrolling: touch;
 			padding: 0.5rem 1rem;
 			position: fixed;
 			top: 2rem;
+
+			&.open {
+				display: block;
+			}
 		}
 
 		.main {
 			margin-left: 0;
+		}
+	}
+
+	@media (max-width: 490px) {
+		.nav {
+			max-width: none;
+			right: 0;
+			top: 4rem;
 		}
 	}
 }
@@ -206,7 +261,6 @@ tt {
 		line-height: 1.5rem;
 		padding-top: 0.25rem;
 		margin-bottom: 0.25rem;
-		font-weight: bold;
 	}
 
 	h4 {
@@ -223,6 +277,8 @@ tt {
 
 	pre {
 		line-height: 1.25rem; // 8 lines per rhythm
+		overflow: auto;
+		-webkit-overflow-scrolling: touch;
 		padding-top: 0.444rem;
 		margin-bottom: 1.556rem;
 	}

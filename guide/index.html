@@ -21,7 +21,7 @@
 
 		<div class="content">
 			<div class="wrapper">
-				<ul role="nav" class="nav">
+				<ul role="nav" class="nav" id="nav">
 					<li class="active">
 						<a href="">Getting started</a>
 						<ul class="subsections">
@@ -105,5 +105,29 @@
 					<p>Aliquam sem dui, sodales a accumsan eget, rhoncus a orci. Nam non gravida ligula, non imperdiet risus. Praesent vitae quam placerat massa vestibulum ornare. Donec auctor, lacus in scelerisque luctus, nulla leo posuere tellus, semper molestie turpis metus quis quam. Vivamus gravida facilisis ligula, at scelerisque est sagittis non. Integer at arcu et magna interdum molestie. Nam sagittis magna id lorem consequat efficitur. Donec placerat sapien eget nibh scelerisque accumsan.</p>
 				</main>
 			</div>
+		</div>
+		<script>
+(function () {
+	var showMenu = document.getElementById('showMenu');
+	var menu = document.getElementById('nav');
+	var isOpen = false;
+	showMenu.ontouchstart = showMenu.onpointerdown = showMenu.onclick = function (event) {
+		if (!event.pointerType || event.pointerType === 'touch') {
+			event.preventDefault();
+		}
+
+		isOpen = !isOpen;
+		menu.classList.toggle('open', isOpen);
+	};
+
+	document.ontouchstart = document.onpointerdown = document.onmousedown = function (event) {
+		if (isOpen && !menu.contains(event.target) && !showMenu.contains(event.target)) {
+			event.preventDefault();
+			isOpen = false;
+			menu.classList.remove('open');
+		}
+	};
+})();
+		</script>
 	</body>
 </html>
