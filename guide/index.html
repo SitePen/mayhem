@@ -23,49 +23,59 @@
 			<div class="wrapper">
 				<ul role="nav" class="nav" id="nav">
 					<li class="active">
-						<a href="">Getting started</a>
+						<a href="1-getting_started.html">Getting started</a>
+						<ul class="subsections">
+							<li><a href="1-getting_started.html#what-is-mayhem">What is Mayhem?</a></li>
+							<li><a href="1-getting_started.html#reading-guide">Reading this guide</a></li>
+							<li><a href="1-getting_started.html#installation">Installation</a></li>
+							<li><a href="1-getting_started.html#first-app">Creating your first app</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="">Fundamentals</a>
+						<ul class="subsections">
+							<li><a href="#overview">Overview</a></li>
+							<li><a href="#typescript">The TypeScript language</a></li>
+							<li><a href="#mvvm">The MVVM pattern</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="">Applications</a>
 						<ul class="subsections">
 							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
 							<li><a href="#installation">Installation</a></li>
 						</ul>
 					</li>
 					<li>
-						<a href="">The Application subsystem</a>
+						<a href="">Data binding</a>
 						<ul class="subsections">
 							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
 							<li><a href="#installation">Installation</a></li>
 						</ul>
 					</li>
 					<li>
-						<a href="">Binding<br>things</a>
+						<a href="">Views</a>
 						<ul class="subsections">
 							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
 							<li><a href="#installation">Installation</a></li>
 						</ul>
 					</li>
 					<li>
-						<a href="">Binding</a>
+						<a href="">Data models</a>
 						<ul class="subsections">
 							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
 							<li><a href="#installation">Installation</a></li>
 						</ul>
 					</li>
 					<li>
-						<a href="">Binding<br>things</a>
+						<a href="">Data models</a>
 						<ul class="subsections">
 							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
 							<li><a href="#installation">Installation</a></li>
 						</ul>
 					</li>
 					<li>
-						<a href="">Binding<br>things</a>
-						<ul class="subsections">
-							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
-							<li><a href="#installation">Installation</a></li>
-						</ul>
-					</li>
-					<li>
-						<a href="">Binding<br>things</a>
+						<a href="">Testing</a>
 						<ul class="subsections">
 							<li><a href="#what-is-mayhem">What is Mayhem?</a></li>
 							<li><a href="#installation">Installation</a></li>
@@ -74,12 +84,41 @@
 				</ul>
 
 				<main class="main">
-					<h2>The Application subsystem</h2>
+					<h2>Welcome to Mayhem</h2>
 
-					<h3>Fundamental design thing</h3>
-					<p>Lorem ipsum dolor sit amet, <code>var x = 1234;</code> consectetur adipiscing elit. Pellentesque non elit iaculis mi tincidunt efficitur. Integer justo nisl, scelerisque vitae ligula a, consequat viverra magna. Sed egestas accumsan lectus. Nullam dapibus, neque sit amet fermentum dapibus, risus purus consectetur dui, ut dignissim nulla arcu id velit. Proin ultricies, sapien sit amet molestie consequat, velit dui convallis ante, in pellentesque turpis urna at eros. Morbi quis metus dapibus, euismod risus a, pretium ligula. Nam nec quam nibh. Mauris nec urna mattis nunc gravida pretium ut id purus. Ut in enim in ex ultricies ultricies. Praesent faucibus sem sapien, quis maximus turpis lobortis in.</p>
+					<h3 id="what-is-mayhem">What is Mayhem?</h3>
 
-					<p>Pellentesque velit libero, scelerisque fringilla lectus eu, interdum faucibus velit. Nulla ut venenatis orci. Morbi luctus tempus vulputate. Aliquam tempus mollis risus, quis cursus libero porta at. Donec tincidunt porta placerat. Aliquam et ligula at felis scelerisque rhoncus. Etiam blandit nisl in nulla sollicitudin tincidunt. Maecenas ac tortor sodales, iaculis leo vel, gravida est. Duis efficitur nisi eget diam imperdiet, sed accumsan nibh sollicitudin. Proin id vulputate ligula, quis mattis tellus. Proin in eleifend mauris, in commodo odio. Aenean sagittis auctor odio non porttitor.</p>
+					<p>Mayhem is an all-in-one framework for developing large applications in TypeScript or JavaScript, following these key tenants:</p>
+
+					<ul>
+						<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
+						<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written.</li>
+						<li><strong>Correctness</strong>: When writing applications on a deadline, it’s frustrating to run into defects in tools. Mayhem was architected from the ground up to be extremely modular, testable, and easy to understand in order to reduce the maintenance costs of using Mayhem for your own apps.</li>
+					</ul>
+
+					<p>While you will see some performance optimisations within Mayhem that are designed to ensure it is as fast as possible, Mayhem is not built for speed. We will not compromise clarity and maintainability for the sake of performance. If a particular design is faster but extremely difficult to troubleshoot, we will choose the simpler, clearer design. We hope that you will see the benefit of this decision in increased productivity and less time spent troubleshooting your Mayhem apps!</p>
+
+					<h3 id="reading-guide">Reading this guide</h3>
+
+					<p>Lorem ipsum</p>
+
+					<p>TODO info boxes</p>
+
+					<h3 id="installation">Installation</h3>
+
+					<p>Depending upon the platform you are planning on developing against with Mayhem, there are three different ways in which installation can be performed:</p>
+
+					<ul>
+						<li><strong>For Node.js</strong>: Mayhem can be installed on Node.js by running <code>npm install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for Node.js using the CommonJS module format, plus TypeScript ambient declarations that can be used when writing a Mayhem application for Node.js.</li>
+						<li><strong>For browsers &amp; mobile devices</strong>: Mayhem can be installed for browsers &amp; mobile devices by running <code>bower install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for asynchronous environments using the <abbr title="Asynchronous Module Definition">AMD</abbr> module format, plus TypeScript ambient declarations that can be used when writing a Mayhem application for browsers or mobile devices.</li>
+						<li><strong>For developing Mayhem</strong>: The original TypeScript source for Mayhem can be installed from our <a href="https://github.com/SitePen/mayhem" title="Mayhem on GitHub">GitHub repository</a> by running <code>git clone --recursive git@github.com:SitePen/mayhem.git</code>. The README contains additional instructions on completing installation of the development version of Mayhem.</li>
+					</ul>
+
+					<p>Because Mayhem is written in TypeScript, future versions of Mayhem can be compiled to the standard EcmaScript 6 module format once it has been finalised and is available within the TypeScript compiler.</p>
+
+					<h3 id="first-app">Creating your first app</h3>
+
+					<p>Lorem ipsum dolor sit amet</p>
 
 					<figure class="figure">
 						<pre><code class="hljs typescript"><span class="hljs-keyword">class</span> MyClass {
@@ -91,18 +130,17 @@
   <span class="hljs-keyword">import</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">"fs"</span>);
   <span class="hljs-module"><span class="hljs-keyword">module</span> MyModule </span>{
     <span class="hljs-keyword">export</span> <span class="hljs-interface"><span class="hljs-keyword">interface</span> MyInterface extends OtherInterface </span>{
-      myProperty: <span class="hljs-built_in">any</span>;
+      myProperty: <span class="hljs-built_in">any</span>; <span class="hljs-comment">// foo</span>
     }
   }
-  <span class="hljs-keyword">declare</span> magicNumber <span class="hljs-built_in">number</span>;
-  myArray.forEach(() =&gt; {
-    <span class="hljs-comment">// fat arrow syntax</span>
-  });</code></pre>
-						<figcaption class="caption">The use of Application in <code>app/main.ts</code></figcaption>
+  in tempo again</code></pre>
+						<figcaption class="caption">The use of Application in <code>app/main.ts</code><br>lorem ipsum dolor sit amet</figcaption>
 					</figure>
 
 					<h4>Level four</h4>
 					<p>Aliquam sem dui, sodales a accumsan eget, rhoncus a orci. Nam non gravida ligula, non imperdiet risus. Praesent vitae quam placerat massa vestibulum ornare. Donec auctor, lacus in scelerisque luctus, nulla leo posuere tellus, semper molestie turpis metus quis quam. Vivamus gravida facilisis ligula, at scelerisque est sagittis non. Integer at arcu et magna interdum molestie. Nam sagittis magna id lorem consequat efficitur. Donec placerat sapien eget nibh scelerisque accumsan.</p>
+
+					<p>Lorem ipsum dolor sit amet, <code>var x = 1234;</code> consectetur adipiscing elit. Pellentesque non elit iaculis mi tincidunt efficitur. Integer justo nisl, scelerisque vitae ligula a, consequat viverra magna. Sed egestas accumsan lectus. Nullam dapibus, neque sit amet fermentum dapibus, risus purus consectetur dui, ut dignissim nulla arcu id velit. Proin ultricies, sapien sit amet molestie consequat, velit dui convallis ante, in pellentesque turpis urna at eros. Morbi quis metus dapibus, euismod risus a, pretium ligula. Nam nec quam nibh. Mauris nec urna mattis nunc gravida pretium ut id purus. Ut in enim in ex ultricies ultricies. Praesent faucibus sem sapien, quis maximus turpis lobortis in.</p>
 				</main>
 			</div>
 		</div>

@@ -5,19 +5,26 @@
 @import 'fonts/input';
 
 /*
- * vertical rhythm: 36px (2rem)
+ * vertical rhythm: 32px (~1.77rem)
  * minimum width: 320px
  * maximum width: 1440px (80rem)
  * breakpoints: 490 570 920
  */
 
-$baseFontSize = 18px;
-$baseLineHeight = 2rem;
+$lh = 32px;
 
-$backgroundColor = #fff;
+$backgroundColor = #FFF;
 $color = #000;
-$mayhemPurple = #9d0fd1;
-$mayhemPurpleInvert = #fff;
+$mayhemPurple = #5C2699;
+$mayhemPurpleInvert = #FFF;
+$mayhemLightPurple = #9D0FD1;
+$mayhemLightPurpleInvert = #FFF;
+$mayhemOrange = #F06800;
+$mayhemOrangeInvert = #FFF;
+$mayhemPink = #AA0D91;
+$mayhemPinkInvert = #FFF;
+$mayhemGrey = #A0A0A0;
+$mayhemGreyInvert = #000;
 
 global-reset();
 reset-html5();
@@ -32,17 +39,17 @@ html,
 body {
 	background-color: $backgroundColor;
 	color: $color;
-	font: $baseFontSize/$baseLineHeight Soin, sans-serif;
+	font: 18px/$lh Soin, sans-serif;
 	min-width: 320px;
 }
 
 ::selection {
-	background-color: lighten($mayhemPurple, 10%);
-	color: $mayhemPurpleInvert;
+	background-color: $mayhemPink;
+	color: $mayhemPinkInvert;
 }
 ::-moz-selection {
-	background-color: lighten($mayhemPurple, 10%);
-	color: $mayhemPurpleInvert;
+	background-color: $mayhemPink;
+	color: $mayhemPinkInvert;
 }
 
 strong,
@@ -56,42 +63,51 @@ em {
 
 code,
 tt {
-	font: 13px/1rem Input, monospace;
+	font: 13px/1 Input, monospace;
 }
 
 :link,
 :visited {
-	color: $mayhemPurple;
-	text-decoration: none;
+	color: $mayhemPink;
+	text-decoration: underline;
 }
 
 :link:hover {
-	text-decoration: underline;
+	text-decoration: none;
 }
 
 .header {
 	background-color: $mayhemPurple;
+	background-image: linear-gradient(330deg, #5C2699, #A6474D 80%, #5C2699);
 	color: $mayhemPurpleInvert;
-	margin-bottom: $baseLineHeight * 2.25;
+	margin-bottom: $lh * 2;
 	position: -webkit-sticky;
 	position: sticky;
 	top: 0;
+	z-index: 1;
+
+	@media (max-width: 920px) {
+		background-image: linear-gradient(to left, #5C2699, #A6474D);
+	}
+
+	@media (max-width: 490px) {
+		background-image: none;
+	}
 
 	.search {
 		background-color: $mayhemPurpleInvert;
 		border-radius: 0.5em;
-		box-shadow: inset 1px 1px 0 darken($mayhemPurple, 20%);
 		cursor: text;
 		float: right;
-		height: 1.5rem;
-		line-height: 1.5rem;
-		margin-top: 0.25rem;
-		padding: 2px 4px 0 6px;
+		height: $lh * 0.75;
+		line-height: @height;
+		margin-top: $lh * 0.25 * 0.33; // TODO: wrong formula
+		padding: ($lh * 0.25 * 0.25) 4px 0 6px;
 
 		> * {
 			display: inline-block;
 			line-height: normal;
-			padding: 0.25rem 0 0;
+			padding: ($lh * 0.25 * 0.25) 0 0;
 			vertical-align: middle;
 		}
 
@@ -105,7 +121,8 @@ tt {
 			background: transparent;
 			border: none;
 			color: $mayhemPurple;
-			font: bold 14px Soin, sans-serif;
+			// 'normal' line-height for inputs must be used for cross-browser consistency
+			font: bold 14px/normal Soin, sans-serif;
 			margin: 0;
 			text-transform: uppercase;
 			vertical-align: middle;
@@ -135,12 +152,11 @@ tt {
 		display: none;
 		font-size: 0;
 		left: 0.6rem;
-		line-height: 1rem;
+		line-height: 1em;
 		margin: 0;
 		padding: 0;
 		position: absolute;
-		top: 0.25rem;
-		vertical-align: bottom;
+		top: 0;
 
 		&:before {
 			font-size: 1.25rem;
@@ -163,14 +179,14 @@ tt {
 
 	.title {
 		display: inline-block;
-		line-height: 1rem;
+		line-height: 1;
 		text-transform: uppercase;
 		vertical-align: bottom;
 
 		@media (max-width: 490px) {
 			display: block;
-			height: 4rem;
-			line-height: 3.25rem;
+			height: $lh * 2;
+			line-height: $lh * 1.75;
 			text-align: center;
 		}
 	}
@@ -192,7 +208,7 @@ tt {
 		max-width: 12rem;
 		position: -webkit-sticky;
 		position: sticky;
-		top: 6.5rem;
+		top: $lh * 2;
 	}
 
 	.main {
@@ -207,9 +223,9 @@ tt {
 			left: 0;
 			overflow: auto;
 			-webkit-overflow-scrolling: touch;
-			padding: 0.5rem 1rem;
+			padding: $lh 1rem;
 			position: fixed;
-			top: 2rem;
+			top: $lh;
 
 			&.open {
 				display: block;
@@ -225,7 +241,7 @@ tt {
 		.nav {
 			max-width: none;
 			right: 0;
-			top: 4rem;
+			top: $lh * 2;
 		}
 	}
 }
@@ -233,10 +249,10 @@ tt {
 .hljs {
 //	display: block;
 
-	.hljs-keyword { color: #aa0d91; font-weight: bold; }
-	.hljs-built_in { color: #5c2699; }
-	.hljs-string { color: #c41a16; }
-	.hljs-comment { color: #006a00; }
+	.hljs-keyword { color: $mayhemPink; font-weight: bold; }
+	.hljs-built_in { color: $mayhemPurple; }
+	.hljs-string { color: #C41A16; }
+	.hljs-comment { color: #006A00; }
 }
 
 .main {
@@ -248,26 +264,40 @@ tt {
 	h6,
 	p,
 	pre,
+	ol,
+	ul,
 	.figure {
-		margin-bottom: 2rem;
+		margin-bottom: $lh;
 	}
 
 	h2 {
+		padding-top: $lh * 0.25;
+		margin-bottom: $lh * 2 - $lh * 0.25;
 		text-transform: uppercase;
 	}
 
 	h3 {
 		font-size: 1.25rem;
-		line-height: 1.5rem;
-		padding-top: 0.25rem;
-		margin-bottom: 0.25rem;
+		padding-top: $lh * 0.25;
+		margin-bottom: $lh * -0.25;
+
+		+ p:first-line {
+			font-style: italic;
+		}
 	}
 
 	h4 {
 		font-size: 1.1rem;
 		font-weight: bold;
-		margin-bottom: 0;
-		padding-top: 0.05rem;
+		margin-bottom: $lh * -0.25;
+		padding-top: $lh * 0.25;
+	}
+
+	p,
+	ul,
+	ol {
+		padding-top: $lh * 0.25;
+		margin-bottom: $lh * 0.75;
 	}
 
 	p {
@@ -275,12 +305,27 @@ tt {
 		text-align-last: left;
 	}
 
+	// TODO: padding in isolation of <figure>?
 	pre {
-		line-height: 1.25rem; // 8 lines per rhythm
+		line-height: $lh * 0.625; // 12 lines / rhythm
 		overflow: auto;
 		-webkit-overflow-scrolling: touch;
-		padding-top: 0.444rem;
-		margin-bottom: 1.556rem;
+	}
+
+	ul > li {
+		text-align: justify;
+		text-align-last: left;
+		text-indent: -1rem;
+
+		&:before {
+			@extend [class^='icon-']:before, [class*=' icon-']:before;
+			@extend .icon-right-open:before;
+			margin-right: 0;
+		}
+	}
+
+	ol > li {
+		list-style: numeric;
 	}
 
 	.caption {
@@ -292,37 +337,54 @@ tt {
 	}
 
 	.figure {
-		border-top: 1px solid #f0f0f0;
-		margin-bottom: 3rem; // TODO: Maybe wrong, ends on a half-beat otherwise with a 16-liner
+		margin-bottom: $lh * 1.625;
 		margin-left: -2rem;
 		margin-right: -2rem;
 		padding-left: 2rem;
 		padding-right: 2rem;
-		padding-top: calc(1.39rem - 1px);
+		padding-top: $lh * 0.9375;
 
 		pre {
 			padding-top: 0;
-			margin-bottom: 1.61rem;
+			margin-bottom: $lh;
 		}
 
 		.caption {
-			background-color: #f0f0f0;
+			border-left: 6px solid $mayhemPink;
 			margin-left: -2rem;
 			margin-right: -2rem;
-			padding-left: 2rem;
+			padding-bottom: $lh * 0.1250;
+			padding-left: calc(2rem - 6px);
 			padding-right: 2rem;
+			padding-top: $lh * 0.1875;
 		}
 	}
 }
 
 .nav {
 	a {
+		color: $mayhemGrey;
 		display: block;
-		font-weight: bold;
-		line-height: $baseLineHeight * 0.5;
-		margin-bottom: 0.5rem;
-		padding-top: 0.5rem;
+		line-height: $lh * 0.5;
+		margin-bottom: 0;
+		padding-top: $lh * 0.5;
+		text-decoration: none;
 		text-transform: uppercase;
+		transition: color 0.25s;
+
+		&:hover {
+			color: $mayhemPurple;
+			text-decoration: underline;
+		}
+	}
+
+	.active {
+		margin-bottom: $lh * 0.5;
+	}
+
+	.active a {
+		font-weight: bold;
+		color: $mayhemPurple;
 
 		&:hover {
 			color: $color;
