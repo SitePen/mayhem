@@ -44,7 +44,6 @@ body {
 	background-color: $backgroundColor;
 	color: $color;
 	font: 18px/$lh Soin, sans-serif;
-	min-width: 320px;
 }
 
 body {
@@ -95,6 +94,7 @@ a:hover {
 .wrapper {
 	margin: 0 auto;
 	max-width: 80rem;
+	min-width: calc(320px - 4rem);
 	padding: 0 4rem;
 
 	@media (max-width: 570px) {
