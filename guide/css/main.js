@@ -26,7 +26,7 @@
 
 	var main = document.getElementById('main');
 	var headers = main.querySelectorAll('h3');
-	var foldPoint = window.innerHeight * 0.4;
+	var foldPoint = window.innerHeight * 0.3;
 	var activeItem;
 
 	function findActiveSection() {
@@ -44,7 +44,7 @@
 	}
 
 	window.addEventListener('resize', function () {
-		foldPoint = window.innerHeight * 0.4;
+		foldPoint = window.innerHeight * 0.3;
 		findActiveSection();
 	}, false);
 	window.addEventListener('scroll', findActiveSection, false);
