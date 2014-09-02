@@ -12,13 +12,17 @@
 		menu.classList.toggle('open', isOpen);
 	};
 
-	document.ontouchstart = document.onpointerdown = document.onmousedown = function (event) {
+	function close(event) {
 		if (isOpen && !menu.contains(event.target) && !showMenu.contains(event.target)) {
 			event.preventDefault();
 			isOpen = false;
 			menu.classList.remove('open');
 		}
-	};
+	}
+
+	document.addEventListener('touchstart', close, false);
+	document.addEventListener('pointerdown', close, false);
+	document.addEventListener('mousedown', close, false);
 
 	var main = document.getElementById('main');
 	var headers = main.querySelectorAll('h3');
@@ -39,12 +43,12 @@
 		}
 	}
 
-	window.onresize = function () {
+	window.addEventListener('resize', function () {
 		foldPoint = window.innerHeight * 0.4;
 		findActiveSection();
-	};
-	window.onscroll = findActiveSection;
-	findActiveSection();
+	}, false);
+	window.addEventListener('scroll', findActiveSection, false);
 
 	hljs.initHighlighting();
+	findActiveSection();
 })();

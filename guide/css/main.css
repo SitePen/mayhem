@@ -238,6 +238,9 @@ body {
   font: 18px/32px Soin, sans-serif;
   min-width: 320px;
 }
+body {
+  padding-top: 96px;
+}
 ::selection {
   background-color: #aa0d91;
   color: #fff;
@@ -307,10 +310,9 @@ a:hover {
   background-image: -ms-linear-gradient(120deg, #5c2699, #a6474d 80%, #5c2699);
   background-image: linear-gradient(330deg, #5c2699, #a6474d 80%, #5c2699);
   color: #fff;
-  margin-bottom: 64px;
-  position: -webkit-sticky;
-  position: sticky;
+  position: fixed;
   top: 0;
+  width: 100%;
   z-index: 1;
 }
 @media (max-width: 920px) {
@@ -430,6 +432,7 @@ a:hover {
 .nav {
   float: left;
   max-width: 12rem;
+  position: fixed;
   position: -webkit-sticky;
   position: sticky;
   top: 64px;
@@ -499,7 +502,7 @@ a:hover {
 }
 .nav .support a:before {
   color: inherit;
-  line-height: 0;
+  line-height: inherit;
   margin-right: 0;
   text-decoration: none;
 }

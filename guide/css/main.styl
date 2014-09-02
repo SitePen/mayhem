@@ -47,6 +47,10 @@ body {
 	min-width: 320px;
 }
 
+body {
+	padding-top: $lh * 3;
+}
+
 ::selection {
 	background-color: $mayhemPink;
 	color: $mayhemPinkInvert;
@@ -109,10 +113,9 @@ a:hover {
 	background-color: $mayhemPurple;
 	background-image: linear-gradient(330deg, #5C2699, #A6474D 80%, #5C2699);
 	color: $mayhemPurpleInvert;
-	margin-bottom: $lh * 2;
-	position: -webkit-sticky;
-	position: sticky;
+	position: fixed;
 	top: 0;
+	width: 100%;
 	z-index: 1;
 
 	@media (max-width: 920px) {
@@ -224,6 +227,7 @@ a:hover {
 .nav {
 	float: left;
 	max-width: 12rem;
+	position: fixed;
 	position: -webkit-sticky;
 	position: sticky;
 	top: $lh * 2;
@@ -308,7 +312,7 @@ a:hover {
 				@extend .icon-lifebuoy:before;
 
 				color: inherit;
-				line-height: 0;
+				line-height: inherit;
 				margin-right: 0;
 				text-decoration: none;
 			}
