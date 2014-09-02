@@ -1,9 +1,6 @@
 import arrayUtil = require('dojo/_base/array');
 import binding = require('../interfaces');
 import Binding = require('../Binding');
-import core = require('../../interfaces');
-import has = require('../../has');
-import lang = require('dojo/_base/lang');
 import util = require('../../util');
 
 interface Part {

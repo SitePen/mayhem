@@ -1,5 +1,3 @@
-import aspect = require('dojo/aspect');
-import Container = require('../Container');
 import Widget = require('../Widget');
 
 class ContainerMixin {
@@ -42,7 +40,9 @@ class ContainerMixin {
 	empty():void {
 		var children:Widget[] = this._children;
 		var child:Widget;
-		while ((child = children.pop())) {
+		// When `destroy` is called, the child must remove itself from the `children` array
+		// (usually by calling `Container#remove`)
+		while ((child = children[0])) {
 			child.destroy();
 		}
 	}
@@ -68,15 +68,20 @@ class ContainerMixin {
 	 */
 	_isAttachedSetter(value:boolean):void {
 		var children:Widget[] = this._children;
-		for (var i = 0, child:Widget; (child = children[i]); ++i) {
-			child.set('isAttached', value);
+		// When a container is destroyed, its children are all first destroyed and its `children` property is nulled.
+		// Then, the container itself is removed from the DOM and destroyed; when the container itself is removed from
+		// the DOM, `detach` is called, which triggers a change to the `isAttached` property
+		if (this._children) {
+			for (var i = 0, child:Widget; (child = children[i]); ++i) {
+				child.set('isAttached', value);
+			}
 		}
 		this._isAttached = value;
 	}
 
 	remove(child:Widget):void {
 		child.set({
-			attached: false,
+			isAttached: false,
 			parent: null
 		});
 	}

@@ -190,14 +190,14 @@ declare module 'dstore/objectQueryEngine' {
 	export = engine;
 }
 
-declare module 'dstore/Observable' {
-	class Observable<T> {
+declare module 'dstore/Trackable' {
+	class Trackable<T> {
 		currentRange:any[];
 
 		track():dstore.ICollection<T>;
 	}
 
-	export = Observable;
+	export = Trackable;
 }
 
 declare module 'dstore/Request' {

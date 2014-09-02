@@ -4,6 +4,7 @@
  * @module mayhem/templating/html
  */
 
+import arrayUtil = require('dojo/_base/array');
 import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import Container = require('../ui/dom/Container');
@@ -83,6 +84,8 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		// TODO: _modelHandle should not be necessary unless having the observer intact during destruction causes
 		// problems; test!
 		this._modelHandle = this.observe('model', function (value:Object):void {
+			value = value || {};
+
 			var bindingHandles:{ [key:string]:binding.IBindingHandle; } = self._bindingHandles;
 			for (var key in bindingHandles) {
 				bindingHandles[key] && bindingHandles[key].setSource(value);
@@ -184,6 +187,18 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		}
 		// TODO: $bind should provide both object and path?
 		else if (value && value.$bind !== undefined) {
+			// TODO: Composite arrays should get to here and be made up of strings and { path: 'binding' } objects, not
+			// { $bind: 'binding' } objects
+			if (value.$bind instanceof Array) {
+				value.$bind = arrayUtil.map(value.$bind, function (item:any):any {
+					if (item.$bind) {
+						return { path: item.$bind };
+					}
+
+					return item;
+				});
+			}
+
 			// TODO: Need a way to hook from property changes that are widget-induced back to the view model
 			if (this._bindingHandles[key]) {
 				this._bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
@@ -194,7 +209,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 					sourcePath: value.$bind,
 					target: this,
 					targetPath: key,
-					direction: BindDirection.TWO_WAY
+					direction: value.$bind instanceof Array ? BindDirection.ONE_WAY : BindDirection.TWO_WAY
 				});
 			}
 		}

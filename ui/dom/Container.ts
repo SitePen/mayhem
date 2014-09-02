@@ -63,8 +63,8 @@ class Container extends MultiNodeWidget implements IContainer {
 	}
 
 	destroy():void {
-		super.destroy();
 		ContainerMixin.prototype.destroy.call(this);
+		super.destroy();
 	}
 
 	empty():void {

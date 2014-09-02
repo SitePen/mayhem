@@ -9,7 +9,7 @@ import has = require('dojo/has');
 import lang = require('dojo/_base/lang');
 import MemoryStore = require('dstore/Memory');
 import PropertyProxy = require('./PropertyProxy');
-import ObservableStore = require('dstore/Observable');
+import TrackableStore = require('dstore/Trackable');
 import util = require('../util');
 
 class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyModel<T> {
@@ -41,7 +41,7 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 	set:Mediator.Setters<T>;
 
 	static forCollection(collection:dstore.ICollection<data.IModel>):dstore.ICollection<Mediator<data.IModel>> {
-		var Store:any = <any> declare([ MemoryStore, ObservableStore ], {
+		var Store:any = <any> declare([ MemoryStore, TrackableStore ], {
 			model: null
 		});
 		var wrapperCollection:dstore.ICollection<Mediator<data.IModel>> = new Store().track();
