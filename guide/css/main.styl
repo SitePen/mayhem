@@ -227,10 +227,14 @@ a:hover {
 .nav {
 	float: left;
 	max-width: 12rem;
-	position: fixed;
 	position: -webkit-sticky;
 	position: sticky;
 	top: $lh * 2;
+
+	.no-sticky & {
+		position: fixed;
+		top: $lh * 3;
+	}
 
 	a {
 		color: $mayhemGrey;
