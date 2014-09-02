@@ -19,57 +19,9 @@
       "src": "entypo"
     },
     {
-      "uid": "14017aae737730faeda4a6fd8fb3a5f0",
-      "css": "check",
-      "code": 59393,
-      "src": "entypo"
-    },
-    {
-      "uid": "c709da589c923ba3c2ad48d9fc563e93",
-      "css": "cancel",
-      "code": 59394,
-      "src": "entypo"
-    },
-    {
-      "uid": "3a230e539a4f3b904debd04c6c155034",
-      "css": "help",
-      "code": 59395,
-      "src": "entypo"
-    },
-    {
-      "uid": "de9a631a7d18106aea1c89ba51b1990a",
-      "css": "help-circled",
-      "code": 59396,
-      "src": "entypo"
-    },
-    {
-      "uid": "63b86fedd4ee9ad2105f54f4888e7088",
-      "css": "info",
-      "code": 59397,
-      "src": "entypo"
-    },
-    {
-      "uid": "7e4164950ffa4990961958b2d6318658",
-      "css": "info-circled",
-      "code": 59398,
-      "src": "entypo"
-    },
-    {
-      "uid": "25fc99a30fecc4021fdcae5fff5ba9ac",
-      "css": "eye",
-      "code": 59399,
-      "src": "entypo"
-    },
-    {
       "uid": "429fba993b729174468a9493613ad1ba",
       "css": "thumbs-down",
       "code": 59401,
-      "src": "entypo"
-    },
-    {
-      "uid": "97902f87200ce74d181044df02a0458d",
-      "css": "attention",
-      "code": 59400,
       "src": "entypo"
     },
     {
@@ -85,27 +37,15 @@
       "src": "entypo"
     },
     {
-      "uid": "289b5f92f23acf1059c93fbf401c1ad5",
-      "css": "down-open-big",
-      "code": 59407,
+      "uid": "749e7d90a9182938180f1d2d8c33584e",
+      "css": "right-open",
+      "code": 59409,
       "src": "entypo"
     },
     {
-      "uid": "884cfc3e6e2d456dd2a2ca0dbb9e6337",
-      "css": "left-open-big",
-      "code": 59405,
-      "src": "entypo"
-    },
-    {
-      "uid": "004882ab2d5c418c5b2060e80596279b",
-      "css": "right-open-big",
-      "code": 59404,
-      "src": "entypo"
-    },
-    {
-      "uid": "0805cca616b3c12714f35af4d0912c10",
-      "css": "up-open-big",
-      "code": 59406,
+      "uid": "2f9f67ee4354feef8c1f51e03bac6ef3",
+      "css": "lifebuoy",
+      "code": 59393,
       "src": "entypo"
     }
   ]

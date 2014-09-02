@@ -17,14 +17,18 @@ $backgroundColor = #FFF;
 $color = #000;
 $mayhemPurple = #5C2699;
 $mayhemPurpleInvert = #FFF;
-$mayhemLightPurple = #9D0FD1;
-$mayhemLightPurpleInvert = #FFF;
 $mayhemOrange = #F06800;
-$mayhemOrangeInvert = #FFF;
 $mayhemPink = #AA0D91;
 $mayhemPinkInvert = #FFF;
 $mayhemGrey = #A0A0A0;
-$mayhemGreyInvert = #000;
+$mayhemLightGrey = #F0F0F0;
+
+pushout() {
+	margin-left: -2rem;
+	margin-right: -2rem;
+	padding-left: 2rem;
+	padding-right: 2rem;
+}
 
 global-reset();
 reset-html5();
@@ -66,14 +70,39 @@ tt {
 	font: 13px/1 Input, monospace;
 }
 
-:link,
-:visited {
-	color: $mayhemPink;
-	text-decoration: underline;
+abbr {
+	border-bottom: 1px dotted $color;
+	cursor: help;
+	display: inline-block;
+	line-height: 0.7em;
 }
 
-:link:hover {
+a {
+	color: $mayhemPink;
+	text-decoration: underline;
+	transition: color 0.25s;
+}
+
+a:hover {
+	color: $color;
 	text-decoration: none;
+}
+
+.wrapper {
+	margin: 0 auto;
+	max-width: 80rem;
+	padding: 0 4rem;
+
+	@media (max-width: 570px) {
+		padding: 0 2rem;
+	}
+}
+
+.hljs {
+	.hljs-keyword { color: $mayhemPink; font-weight: bold; }
+	.hljs-built_in { color: $mayhemPurple; }
+	.hljs-string { color: #C41A16; }
+	.hljs-comment { color: #006A00; }
 }
 
 .header {
@@ -192,176 +221,13 @@ tt {
 	}
 }
 
-.wrapper {
-	margin: 0 auto;
-	max-width: 80rem;
-	padding: 0 4rem;
-
-	@media (max-width: 570px) {
-		padding: 0 2rem;
-	}
-}
-
-.content {
-	.nav {
-		float: left;
-		max-width: 12rem;
-		position: -webkit-sticky;
-		position: sticky;
-		top: $lh * 2;
-	}
-
-	.main {
-		margin-left: 16rem;
-	}
-
-	@media (max-width: 920px) {
-		.nav {
-			background-color: $backgroundColor;
-			bottom: 0;
-			display: none;
-			left: 0;
-			overflow: auto;
-			-webkit-overflow-scrolling: touch;
-			padding: $lh 1rem;
-			position: fixed;
-			top: $lh;
-
-			&.open {
-				display: block;
-			}
-		}
-
-		.main {
-			margin-left: 0;
-		}
-	}
-
-	@media (max-width: 490px) {
-		.nav {
-			max-width: none;
-			right: 0;
-			top: $lh * 2;
-		}
-	}
-}
-
-.hljs {
-//	display: block;
-
-	.hljs-keyword { color: $mayhemPink; font-weight: bold; }
-	.hljs-built_in { color: $mayhemPurple; }
-	.hljs-string { color: #C41A16; }
-	.hljs-comment { color: #006A00; }
-}
-
-.main {
-	h1,
-	h2,
-	h3,
-	h4,
-	h5,
-	h6,
-	p,
-	pre,
-	ol,
-	ul,
-	.figure {
-		margin-bottom: $lh;
-	}
-
-	h2 {
-		padding-top: $lh * 0.25;
-		margin-bottom: $lh * 2 - $lh * 0.25;
-		text-transform: uppercase;
-	}
-
-	h3 {
-		font-size: 1.25rem;
-		padding-top: $lh * 0.25;
-		margin-bottom: $lh * -0.25;
-
-		+ p:first-line {
-			font-style: italic;
-		}
-	}
-
-	h4 {
-		font-size: 1.1rem;
-		font-weight: bold;
-		margin-bottom: $lh * -0.25;
-		padding-top: $lh * 0.25;
-	}
-
-	p,
-	ul,
-	ol {
-		padding-top: $lh * 0.25;
-		margin-bottom: $lh * 0.75;
-	}
-
-	p {
-		text-align: justify;
-		text-align-last: left;
-	}
-
-	// TODO: padding in isolation of <figure>?
-	pre {
-		line-height: $lh * 0.625; // 12 lines / rhythm
-		overflow: auto;
-		-webkit-overflow-scrolling: touch;
-	}
-
-	ul > li {
-		text-align: justify;
-		text-align-last: left;
-		text-indent: -1rem;
-
-		&:before {
-			@extend [class^='icon-']:before, [class*=' icon-']:before;
-			@extend .icon-right-open:before;
-			margin-right: 0;
-		}
-	}
-
-	ol > li {
-		list-style: numeric;
-	}
-
-	.caption {
-		font-style: italic;
-
-		code {
-			font-style: italic;
-		}
-	}
-
-	.figure {
-		margin-bottom: $lh * 1.625;
-		margin-left: -2rem;
-		margin-right: -2rem;
-		padding-left: 2rem;
-		padding-right: 2rem;
-		padding-top: $lh * 0.9375;
-
-		pre {
-			padding-top: 0;
-			margin-bottom: $lh;
-		}
-
-		.caption {
-			border-left: 6px solid $mayhemPink;
-			margin-left: -2rem;
-			margin-right: -2rem;
-			padding-bottom: $lh * 0.1250;
-			padding-left: calc(2rem - 6px);
-			padding-right: 2rem;
-			padding-top: $lh * 0.1875;
-		}
-	}
-}
-
 .nav {
+	float: left;
+	max-width: 12rem;
+	position: -webkit-sticky;
+	position: sticky;
+	top: $lh * 2;
+
 	a {
 		color: $mayhemGrey;
 		display: block;
@@ -378,16 +244,24 @@ tt {
 		}
 	}
 
-	.active {
+	> ul > .active {
 		margin-bottom: $lh * 0.5;
-	}
 
-	.active a {
-		font-weight: bold;
-		color: $mayhemPurple;
+		a {
+			font-weight: bold;
+			color: $mayhemPurple;
 
-		&:hover {
-			color: $color;
+			&:hover {
+				color: $color;
+			}
+		}
+
+		.subsections {
+			display: block;
+
+			a {
+				font-weight: normal;
+			}
 		}
 	}
 
@@ -395,12 +269,260 @@ tt {
 		display: none;
 
 		a {
-			font-weight: normal;
 			text-transform: none;
+		}
+
+		.active a {
+			text-indent: -1rem;
+
+			* {
+				text-indent: 0;
+			}
+
+			&:before {
+				@extend [class^='icon-']:before, [class*=' icon-']:before;
+				@extend .icon-right-open:before;
+				line-height: 0;
+				margin-right: 0;
+				text-decoration: none;
+			}
 		}
 	}
 
-	.active .subsections {
-		display: block;
+	.support {
+		margin-top: $lh;
+
+		a {
+			text-indent: -1rem;
+
+			&:hover {
+				color: $mayhemOrange;
+			}
+
+			* {
+				text-indent: 0;
+			}
+
+			&:before {
+				@extend [class^='icon-']:before, [class*=' icon-']:before;
+				@extend .icon-lifebuoy:before;
+
+				color: inherit;
+				line-height: 0;
+				margin-right: 0;
+				text-decoration: none;
+			}
+		}
+	}
+
+	@media (max-width: 920px) {
+		background-color: $backgroundColor;
+		bottom: 0;
+		display: none;
+		left: 0;
+		overflow: auto;
+		-webkit-overflow-scrolling: touch;
+		padding: $lh 2rem;
+		position: fixed;
+		top: $lh;
+
+		&.open {
+			display: block;
+		}
+	}
+
+	@media (max-width: 490px) {
+		max-width: none;
+		right: 0;
+		top: $lh * 2;
+	}
+}
+
+.main {
+	margin-left: 16rem;
+
+	@media (max-width: 920px) {
+		margin-left: 0;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6,
+	p,
+	pre,
+	ol,
+	ul,
+	figure {
+		margin-bottom: $lh;
+	}
+
+	h2 {
+		padding-top: $lh * 0.25;
+		margin-bottom: $lh * 2 - $lh * 0.25;
+		text-transform: uppercase;
+	}
+
+	h3 {
+		font-size: 1.25rem;
+		margin-bottom: $lh * -0.25;
+		padding-top: $lh * 0.25;
+
+		+ p:first-line {
+			font-style: italic;
+		}
+	}
+
+	h4 {
+		font-size: 1.1rem;
+		font-weight: bold;
+		margin-bottom: $lh * -0.25;
+		padding-top: $lh * 0.25;
+	}
+
+	p,
+	ul,
+	ol,
+	table {
+		padding-top: $lh * 0.25;
+		margin-bottom: $lh * 0.75;
+	}
+
+	p {
+		text-align: justify;
+		text-align-last: left;
+	}
+
+	pre {
+		line-height: $lh * 0.625; // 8 lines / rhythm
+		margin-bottom: $lh * 0.4375;
+		overflow: auto;
+		-webkit-overflow-scrolling: touch;
+		padding-top: $lh * 0.4375;
+		tab-size: 2;
+	}
+
+	ul > li {
+		text-align: justify;
+		text-align-last: left;
+		text-indent: -1rem;
+
+		* {
+			text-indent: 0;
+		}
+
+		&:before {
+			@extend [class^='icon-']:before, [class*=' icon-']:before;
+			@extend .icon-right-open:before;
+			margin-right: 0;
+		}
+	}
+
+	ol > li {
+		list-style: numeric;
+	}
+
+	table {
+		pushout();
+		padding-left: 0;
+		padding-right: 0;
+
+		tr:nth-child(2n) {
+			background-color: $mayhemLightGrey;
+		}
+
+		td {
+			padding-left: 1rem;
+
+			&:first-child {
+				padding-left: 2rem;
+			}
+
+			&:last-child {
+				padding-right: 2rem;
+			}
+		}
+	}
+
+	figcaption {
+		font-style: italic;
+
+		code {
+			font-style: italic;
+		}
+	}
+
+	figure {
+		pushout();
+
+		margin-bottom: $lh * 1.625;
+		padding-top: $lh * 0.9375;
+
+		pre {
+			padding-top: 0;
+			margin-bottom: $lh;
+		}
+
+		figcaption {
+			pushout();
+
+			border-left: 6px solid $mayhemPink;
+			padding-bottom: $lh * 0.1250;
+			padding-left: calc(2rem - 6px);
+			padding-top: $lh * 0.1875;
+		}
+	}
+}
+
+.tip,
+.deprecated,
+.whatAreYouCrazy {
+	pushout();
+
+	border-left: 6px solid $mayhemPurple;
+	padding-left: calc(2rem - 6px);
+
+	:first-child {
+		text-indent: -1rem;
+
+		* {
+			text-indent: 0;
+		}
+
+		&:before {
+			@extend [class^='icon-']:before, [class*=' icon-']:before;
+
+			color: $mayhemPurple;
+			font-size: 1rem;
+			margin-right: 0;
+			padding: 0 0.05rem 0 0.45rem;
+			width: 0.5rem;
+		}
+	}
+}
+
+.tip {
+	:first-child:before {
+		@extend .icon-lamp:before;
+	}
+}
+
+.deprecated {
+	border-left-color: $mayhemGrey;
+
+	:first-child:before {
+		@extend .icon-thumbs-down:before;
+		color: $mayhemGrey;
+	}
+}
+
+.whatAreYouCrazy {
+	border-left-color: $mayhemOrange;
+
+	:first-child:before {
+		@extend .icon-alert:before;
+		color: $mayhemOrange;
 	}
 }
