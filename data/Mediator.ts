@@ -62,9 +62,12 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 		var put = wrapperCollection.putSync;
 		var remove = wrapperCollection.removeSync;
 
-		wrapperCollection.add = wrapperCollection.addSync = wrapSetter('add');
-		wrapperCollection.put = wrapperCollection.putSync = wrapSetter('put');
-		wrapperCollection.remove = wrapperCollection.removeSync = lang.hitch(collection, 'remove');
+		wrapperCollection.add = wrapSetter('add');
+		wrapperCollection.addSync = wrapSetter('addSync');
+		wrapperCollection.put = wrapSetter('put');
+		wrapperCollection.putSync = wrapSetter('putSync');
+		wrapperCollection.remove = lang.hitch(collection, 'remove');
+		wrapperCollection.removeSync = lang.hitch(collection, 'removeSync');
 
 		collection.on('add', function (event:dstore.ChangeEvent):void {
 			put.call(wrapperCollection, new Ctor({ model: event.target }), { index: event.index });
@@ -72,7 +75,7 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 		collection.on('update', function (event:dstore.ChangeEvent):void {
 			put.call(wrapperCollection, wrapperCollection.getSync(collection.getIdentity(event.target)), { index: event.index });
 		});
-		collection.on('delete', function (event:dstore.ChangeEvent):void {
+		collection.on('remove', function (event:dstore.ChangeEvent):void {
 			remove.call(wrapperCollection, event.id);
 		});
 

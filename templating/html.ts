@@ -181,7 +181,15 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			else {
 				this.on(eventName, function ():void {
 					var model:Object = this.get('model');
-					model[value] && model[value].apply(model, arguments);
+
+					if (model.call) {
+						var args = Array.prototype.slice.call(arguments, 0);
+						args.unshift(value);
+						model.call.apply(model, args);
+					}
+					else if (model[value]) {
+						model[value].apply(model, arguments);
+					}
 				});
 			}
 		}

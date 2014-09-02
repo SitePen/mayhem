@@ -198,7 +198,13 @@ class ElementWidget extends Container {
 
 							if (element === node) {
 								// TODO: Figure out a better way to find a model method to invoke
-								self.get('model')[method] && self.get('model')[method](event);
+								var model = self.get('model');
+								if (model.call) {
+									model.call(method, event);
+								}
+								else {
+									self.get('model')[method] && self.get('model')[method](event);
+								}
 							}
 						}, node, nodeValue));
 					}
