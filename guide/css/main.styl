@@ -334,6 +334,10 @@ a:hover {
 		position: fixed;
 		top: $lh;
 
+		.no-sticky & {
+			top: $lh;
+		}
+
 		&.open {
 			display: block;
 		}
@@ -343,6 +347,10 @@ a:hover {
 		max-width: none;
 		right: 0;
 		top: $lh * 2;
+
+		.no-sticky & {
+			top: $lh * 2;
+		}
 	}
 }
 
