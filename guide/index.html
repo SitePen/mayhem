@@ -228,9 +228,9 @@
 						<p>The architecture of Mayhem is divided up into eight primary subsystems:</p>
 
 						<ul>
-							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application dependencies at runtime, and providing a central “application” object for each application currently running.</li>
+							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application dependencies at runtime, and providing a main application-wide object for each application that is currently running in the environment.</li>
 							<li><strong>Data binding</strong>: The <dfn>data binding subsystem</dfn> is responsible for all functionality related to binding properties between two objects, and observing properties on objects for changes. This subsystem is essential to implement the MVVM pattern, which will be discussed shortly.</li>
-							<li><strong>Data modelling</strong>: The <dfn>data modelling subsystem</dfn> provides functionality related to business object creation, data validation, and communication with databases.</li>
+							<li><strong>Data modelling</strong>: The <dfn>data modelling subsystem</dfn> provides functionality related to business logic, data object creation, data validation, and communication with databases.</li>
 							<li><strong>Foundation</strong>: The <dfn>foundation subsystem</dfn> provides core functionality for the entire Mayhem application framework, like observable proxy objects, utility functions, and other critical miscellaneous functionality.</li>
 							<li><strong>Routing</strong>: The <dfn>routing subsystem</dfn> is responsible for discovering, loading, and linking together data models and subviews in response to navigation within an application.</li>
 							<li><strong>Security</strong>: The <dfn>security subsystem</dfn> is responsible for providing user authentication &amp; authorization, access control, and other security-oriented application functionality.</li>
