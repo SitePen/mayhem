@@ -366,6 +366,11 @@ a:hover {
 }
 
 .main {
+	// Fixes h2[id] negative margin-top at the top of .main causing position: sticky on the nav to not work properly
+	// by preventing the negative top-margin from collapsing to outside the container
+	border-top: 1px solid transparent;
+	margin-top: -1px;
+
 	margin-left: 16rem;
 
 	@media (max-width: 920px) {
