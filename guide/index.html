@@ -7,10 +7,14 @@
 		<link rel="stylesheet" href="css/main.css">
 		<script>(function () {
 			var test = document.createElement('b');
-			test.style.position = 'sticky';
-			if (test.style.position !== 'sticky') {
-				document.documentElement.classList.add('no-sticky');
+			for (var prefix in { '': 1, '-webkit-': 1 }) {
+				var position = prefix + 'sticky';
+				test.style.position = position;
+				if (test.style.position === position) {
+					return;
+				}
 			}
+			document.documentElement.classList.add('no-sticky');
 		})();</script>
 	</head>
 	<body>
