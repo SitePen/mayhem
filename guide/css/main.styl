@@ -386,32 +386,6 @@ a:hover {
 		margin-bottom: $lh;
 	}
 
-	.a {
-		height: 0;
-		position: relative;
-		top: $lh * -2;
-
-		.no-sticky & {
-			top: $lh * -3;
-		}
-
-		@media (max-width: 920px) {
-			top: $lh * -1.625;
-
-			.no-sticky & {
-				top: $lh * -1.625;
-			}
-		}
-
-		@media (max-width: 490px) {
-			top: $lh * -2.75;
-
-			.no-sticky & {
-				top: $lh * -2.75;
-			}
-		}
-	}
-
 	article {
 		margin-bottom: $lh * 8;
 		position: relative;
@@ -431,6 +405,37 @@ a:hover {
 			position: absolute;
 			right: 0;
 			text-align: center;
+		}
+	}
+
+	h2[id],
+	h3[id] {
+		border-top: $lh * 2 solid transparent;
+		margin-top: $lh * -2;
+
+		.no-sticky & {
+			border-top-width: $lh * 3;
+			margin-top: $lh * -3;
+		}
+
+		@media (max-width: 920px) {
+			border-top-width: $lh * 1.625;
+			margin-top: $lh * -1.625;
+
+			.no-sticky & {
+				border-top-width: $lh * 1.625;
+				margin-top: $lh * -1.625;
+			}
+		}
+
+		@media (max-width: 490px) {
+			border-top-width: $lh * 2.75;
+			margin-top: $lh * -2.75;
+
+			.no-sticky & {
+				border-top-width: $lh * 2.75;
+				margin-top: $lh * -2.75;
+			}
 		}
 	}
 
