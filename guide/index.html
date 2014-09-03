@@ -16,12 +16,15 @@
 	<body>
 		<header class="header">
 			<div class="wrapper">
-				<label class="search">
+				<label class="search" role="search">
 					<input type="text">
 					<span class="icon-search"></span>
 				</label>
 
-				<span role="button" id="showMenu" class="icon-menu" title="Table of contents">Menu</span>
+				<span role="button" id="showMenu" class="icon-menu"
+					aria-controls="nav"
+					aria-expanded="false"
+					title="Table of contents">Menu</span>
 				<h1 class="title"><span class="bold">Mayhem</span> user guide</h1>
 			</div>
 		</header>
@@ -30,25 +33,26 @@
 			<div class="wrapper">
 				<nav class="nav" id="nav">
 					<ul>
-						<li class="active">
-							<a href="1-getting_started.html">Getting started</a>
+						<li data-id="getting-started">
+							<a href="#getting-started">Getting started</a>
 							<ul class="subsections">
-								<li data-id="what-is-mayhem"><a href="1-getting_started.html#what-is-mayhem">What is Mayhem?</a></li>
-								<li data-id="system-requirements"><a href="1-getting_started.html#system-requirements">System requirements</a></li>
-								<li data-id="installation"><a href="1-getting_started.html#installation">Installation</a></li>
-								<li data-id="reading-guide"><a href="1-getting_started.html#reading-guide">Reading this guide</a></li>
-								<li data-id="first-app"><a href="1-getting_started.html#first-app">Creating your first app</a></li>
+								<li data-id="what-is-mayhem"><a href="#what-is-mayhem">What is Mayhem?</a></li>
+								<li data-id="system-requirements"><a href="#system-requirements">System requirements</a></li>
+								<li data-id="installation"><a href="#installation">Installation</a></li>
+								<li data-id="reading-guide"><a href="#reading-guide">Reading this guide</a></li>
+								<li data-id="first-app"><a href="#first-app">Creating your first app</a></li>
 							</ul>
 						</li>
-						<li>
-							<a href="">Fundamentals</a>
+						<li data-id="fundamentals">
+							<a href="#fundamentals">Fundamentals</a>
 							<ul class="subsections">
-								<li data-id="overview"><a href="#overview">Overview</a></li>
+								<li data-id="fundamentals-overview"><a href="#fundamentals-overview">Overview</a></li>
 								<li data-id="typescript"><a href="#typescript">The TypeScript language</a></li>
 								<li data-id="mvvm"><a href="#mvvm">The MVVM pattern</a></li>
+								<li data-id="conventions"><a href="#conventions">Conventions</a></li>
 							</ul>
 						</li>
-						<li>
+						<li data-id="data-binding">
 							<a href="">Data binding</a>
 							<ul class="subsections">
 							</ul>
@@ -84,124 +88,173 @@
 				</nav>
 
 				<main class="main" id="main">
-					<h2>Welcome to Mayhem</h2>
+					<article>
+						<div class="a" id="getting-started"></div>
+						<h2 data-id="getting-started">Welcome to Mayhem</h2>
 
-					<h3 id="what-is-mayhem">What is Mayhem?</h3>
+						<div class="a" id="what-is-mayhem"></div>
+						<h3 data-id="what-is-mayhem">What is Mayhem?</h3>
 
-					<p>Mayhem is a framework for developing large, complex applications with TypeScript or JavaScript. Unlike other Web libraries and frameworks that place their emphasis on performance or file size, Mayhem is designed around three key tenants:</p>
+						<p>Mayhem is a framework for developing large, complex applications with TypeScript or JavaScript. Unlike other Web libraries and frameworks that place their emphasis on performance or file size, Mayhem is designed around these three key tenets:</p>
 
-					<ul>
-						<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
-						<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written.</li>
-						<li><strong>Correctness</strong>: When writing large applications, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be extremely modular, testable, and easy to understand in order to reduce the maintenance cost of using Mayhem for your own apps.</li>
-					</ul>
+						<ul>
+							<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
+							<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written, using the same basic set of tools.</li>
+							<li><strong>Correctness</strong>: When writing software, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be extremely modular, testable, and easy to understand in order to minimise the maintenance cost of using Mayhem.</li>
+						</ul>
 
-					<p>While you will see some performance optimisation within Mayhem, we believe that good architecture, in combination with optimisations available in today’s JavaScript engines, ensures an acceptable level of performance in nearly all use cases. As such, we will never compromise clarity and maintainability for the sake of performance. If a particular design is faster but confusing to understand or difficult to troubleshoot, we will choose the slower but simpler design. We hope that you will see the benefit of this decision in increased productivity and less time spent troubleshooting your apps with Mayhem!</p>
+						<p>We believe that good architecture, in combination with today’s superfast JavaScript engines, offers a very high level of performance in nearly all use cases. As such, we will never compromise the clarity or maintainability of the Mayhem codebase for the sake of performance. We hope that you will see the benefit of this decision in increased productivity and less time spent troubleshooting your apps!</p>
 
-					<h3 id="system-requirements">System requirements</h3>
+						<h4>What is Mayhem best for?</h4>
 
-					<p>End-users of Mayhem applications must meet the following minimum system requirements:</p>
+						<p>Mayhem is a generic application development framework that can be used for developing virtually any type of client-side, server-side, or mobile application. Because of its emphasis on strict architectural patterns and conventions, it is especially well-suited for extremely large, “enterprise-level” applications that must be maintained by large teams of developers with varying skill levels.</p>
 
-					<table>
-						<tr>
-							<td>Android</td>
-							<td>4.1.2+</td>
-						</tr>
-						<tr>
-							<td>Chrome</td>
-							<td>Latest</td>
-						</tr>
-						<tr>
-							<td>Firefox</td>
-							<td>Latest <abbr title="Extended Support Release">ESR</abbr> or rapid release</td>
-						</tr>
-						<tr>
-							<td>Internet Explorer</td>
-							<td>8+</td>
-						</tr>
-						<tr>
-							<td>iOS</td>
-							<td>6.1+</td>
-						</tr>
-						<tr>
-							<td>Opera</td>
-							<td>Latest</td>
-						</tr>
-						<tr>
-							<td>Safari (Mac OS)</td>
-							<td>Latest</td>
-						</tr>
-					</table>
+						<p>This first release of Mayhem focuses primarily on the development of form-based client-side Web applications, but we plan on rapidly expanding functionality for other types of apps. <a href="https://github.com/SitePen/mayhem/blob/master/CONTRIBUTING.md">Pull requests are accepted!</a></p>
 
-					<p>Developers using Mayhem must also meet the following additional requirements:</p>
+						<div class="a" id="system-requirements"></div>
+						<h3 data-id="system-requirements">System requirements</h3>
 
-					<table>
-						<tr>
-							<td><a href="http://bower.io">Bower</a></td>
-							<td>1.3.9+</td>
-							<td>for client-side package installation</td>
-						</tr>
-						<tr>
-							<td><a href="http://nodejs.org">Node.js</a></td>
-							<td>0.10.28+</td>
-							<td>for builds &amp; functional testing</td>
-						</tr>
-						<tr>
-							<td><a href="http://npmjs.org">npm</a></td>
-							<td>1.4.4+</td>
-							<td>for Node.js package installation</td>
-						</tr>
-						<tr>
-							<td><a href="http://www.typescriptlang.org/">TypeScript</a></td>
-							<td>1.0.1.0</td>
-							<td>for authoring in TypeScript (optional)</td>
-						</tr>
-					</table>
+						<p>End-users of Mayhem applications must meet the following minimum system requirements:</p>
 
-					<h3 id="installation">Installation</h3>
+						<table>
+							<tr>
+								<td>Android</td>
+								<td>4.1.2+</td>
+							</tr>
+							<tr>
+								<td>Chrome</td>
+								<td>Latest</td>
+							</tr>
+							<tr>
+								<td>Firefox</td>
+								<td>Latest <abbr title="Extended Support Release">ESR</abbr> or rapid release</td>
+							</tr>
+							<tr>
+								<td>Internet Explorer</td>
+								<td>8+</td>
+							</tr>
+							<tr>
+								<td>iOS</td>
+								<td>6.1+</td>
+							</tr>
+							<tr>
+								<td>Opera</td>
+								<td>Latest</td>
+							</tr>
+							<tr>
+								<td>Safari (Mac OS)</td>
+								<td>Latest</td>
+							</tr>
+						</table>
 
-					<p>Depending upon the platform you are planning on developing for, there are three different ways in which installation can be performed:</p>
+						<p>Developers using Mayhem must also meet the following additional requirements:</p>
 
-					<ul>
-						<li><strong>For Node.js</strong>: Mayhem can be installed for use with Node.js by running <code>npm install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for Node.js using the CommonJS module format, plus TypeScript ambient declarations that can be used when writing Mayhem applications for Node.js.</li>
-						<li><strong>For browsers &amp; mobile devices</strong>: Mayhem can be installed for browsers &amp; mobile devices by running <code>bower install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for asynchronously loaded environments using the <abbr title="Asynchronous Module Definition">AMD</abbr> module format, plus TypeScript ambient declarations that can be used when writing Mayhem applications for browsers or mobile devices.</li>
-						<li><strong>For development of Mayhem</strong>: The original TypeScript source for Mayhem can be installed from our <a href="https://github.com/SitePen/mayhem" title="Mayhem on GitHub">GitHub repository</a> by running <code>git clone --recursive git@github.com:SitePen/mayhem.git</code>. The README contains additional instructions on completing installation of the development version of Mayhem.</li>
-					</ul>
+						<table>
+							<tr>
+								<td><a href="http://bower.io">Bower</a></td>
+								<td>1.3.9+</td>
+								<td>for client-side package installation</td>
+							</tr>
+							<tr>
+								<td><a href="http://nodejs.org">Node.js</a></td>
+								<td>0.10.28+</td>
+								<td>for builds &amp; functional testing</td>
+							</tr>
+							<tr>
+								<td><a href="http://npmjs.org">npm</a></td>
+								<td>1.4.4+</td>
+								<td>for Node.js package installation</td>
+							</tr>
+						</table>
 
-					<p>Because Mayhem is written in TypeScript, future versions of Mayhem can be compiled to the standard EcmaScript 6 module format once it has been finalised and is available within the TypeScript compiler.</p>
+						<div class="a" id="installation"></div>
+						<h3 data-id="installation">Installation</h3>
 
-					<h3 id="reading-guide">Reading this guide</h3>
+						<p>Depending upon the platform you are planning on developing for, there are three different ways in which installation can be performed:</p>
 
-					<p>Throughout this guide, you will find certain pieces of information are called out specifically, as we have found them to be especially important or problematic for users.</p>
+						<ul>
+							<li><strong>For writing Node.js apps</strong>: Mayhem can be installed for use with Node.js by running <code>npm install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for Node.js using the CommonJS module format, plus ambient declarations that can be used when writing Mayhem applications for Node.js with TypeScript.</li>
+							<li><strong>For writing browser &amp; mobile apps</strong>: Mayhem can be installed for browsers &amp; mobile devices by running <code>bower install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for asynchronously loaded environments using the <abbr title="Asynchronous Module Definition">AMD</abbr> module format, plus ambient declarations that can be used when writing Mayhem applications for browsers or mobile devices with TypeScript.</li>
+							<li><strong>For working on Mayhem, or compiling your own modules</strong>: The original TypeScript source for Mayhem can be installed from our <a href="https://github.com/SitePen/mayhem" title="Mayhem on GitHub">GitHub repository</a> by running <code>git clone --recursive git@github.com:SitePen/mayhem.git</code>. The README file in the repository contains additional instructions on installation and usage of the development version of Mayhem.</li>
+						</ul>
 
-					<div class="tip">
-						<p>Sections that look like this contain advanced tips and tricks that can help you get the most out of Mayhem.</p>
-					</div>
+						<p>Because Mayhem is written in TypeScript, future versions of Mayhem will also be compiled to standard EcmaScript 6 modules once that format has been finalised.</p>
 
-					<div class="deprecated">
-						<p>Sections that look like this tell you about functionality that is deprecated and will be removed from a future version of Mayhem.</p>
-					</div>
+						<div class="a" id="reading-guide"></div>
+						<h3 data-id="reading-guide">Reading this guide</h3>
 
-					<div class="whatAreYouCrazy">
-						<p>Sections that look like this tell you about dangerous anti-patterns that can break, slow down, or make your application less maintainable.</p>
-					</div>
+						<p>Throughout this guide, you will find certain pieces of information are called out specifically, as we have found them to be especially important or problematic for users.</p>
 
-					<h3 id="first-app">Creating your first app</h3>
+						<aside class="tip">
+							<p>Sections that look like this contain advanced tips and tricks that can help you get the most out of Mayhem.</p>
+						</aside>
 
-					<p>In order to simplify the creation of new applications, Mayhem comes with a command-line generator that can be used to rapidly scaffold a new application.</p>
+						<aside class="deprecated">
+							<p>Sections that look like this tell you about functionality that is deprecated and will be removed from a future version of Mayhem.</p>
+						</aside>
 
-					<pre><code class="bash">$ yo mayhem app
-$ yo mayhem app
-$ yo mayhem app
-$ yo mayhem app
-$ yo mayhem app
-$ yo mayhem app
-$ yo mayhem app
-$ yo mayhem app
-in tempo again</code></pre>
+						<aside class="whatAreYouCrazy">
+							<p>Sections that look like this tell you about dangerous anti-patterns that can break, slow down, or make your application less maintainable.</p>
+						</aside>
 
-					<figure>
-						<pre><code class="typescript">class MyClass {
+						<p>Later sections of this guide are designed to be built upon knowledge presented in earlier parts. If you jump into the middle and feel confused, step back a section or two; the information you are seeking is in here!</p>
+
+						<div class="a" id="first-app"></div>
+						<h3 data-id="first-app">Creating your first app</h3>
+
+						<p>In order to simplify the creation of new applications, Mayhem comes with a command-line generator that can be used to instantly generate new applications.</p>
+
+						<aside class="tip"><p>In the first release of Mayhem, the <span class="sc">Mayhem generator</span> generates Web applications only. Future versions will contain additional default application profiles for many other kinds of apps.</p></aside>
+
+						<p>To get started, run the generator as follows:</p>
+
+						<pre class="m1"><code class="bash">$ yo mayhem webapp src</code></pre>
+
+						<p>This will create a new skeleton Web application in the <code>src</code> directory (actually, a TodoMVC app). All that needs to be done now is to open the test application in a browser:</p>
+
+						<pre class="m1"><tt>http://localhost/path/to/src/index.html</tt></pre>
+
+						<p>Navigating to this index page should display a fully functioning client-side TodoMVC application, ready for you to start hacking away!</p>
+
+						<aside class="tip"><p>The <span class="sc">Mayhem generator</span> does more than just scaffold a basic app: It automatically generate new models quickly and easily; allows you to generate routing configurations for apps that don’t have direct access to the filesystem to safely auto-discover the available views; and watches for and automatically recompiles changed TypeScript and Stylus files. Just run <tt>yo mayhem</tt> to get an overview of all the available commands.</p></aside>
+
+						<p>TODO: Continue tutorialising the basic TodoMVC app; maybe add in user authentication or something.</p>
+					</article>
+
+					<article>
+						<div class="a" id="fundamentals"></div>
+						<h2 data-id="fundamentals">Fundamentals</h2>
+
+						<div class="a" id="fundamentals-overview"></div>
+						<h3 data-id="fundamentals-overview">Overview</h3>
+
+						<figure>
+							<img src="http://placepuppy.it/1000/608">
+							<figcaption>The subsystems of Mayhem</figcaption>
+						</figure>
+
+						<p>The architecture of Mayhem is divided up into eight primary subsystems:</p>
+
+						<ul>
+							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application dependencies at runtime, and providing a central “application” object for each application currently running.</li>
+							<li><strong>Data binding</strong>: The <dfn>data binding subsystem</dfn> is responsible for all functionality related to binding properties between two objects, and observing properties on objects for changes. This subsystem is essential to implement the MVVM pattern, which will be discussed shortly.</li>
+							<li><strong>Data modelling</strong>: The <dfn>data modelling subsystem</dfn> provides functionality related to business object creation, data validation, and communication with databases.</li>
+							<li><strong>Foundation</strong>: The <dfn>foundation subsystem</dfn> provides core functionality for the entire Mayhem application framework, like observable proxy objects, utility functions, and other critical miscellaneous functionality.</li>
+							<li><strong>Routing</strong>: The <dfn>routing subsystem</dfn> is responsible for discovering, loading, and linking together data models and subviews in response to navigation within an application.</li>
+							<li><strong>Security</strong>: The <dfn>security subsystem</dfn> is responsible for providing user authentication &amp; authorization, access control, and other security-oriented application functionality.</li>
+							<li><strong>Templating</strong>: The <dfn>templating subsystem</dfn> is responsible for creating views and linking data objects to the views using easy-to-write declarative templates.</li>
+							<li><strong>Views</strong>: The <dfn>view subsystem</dfn> is responsible for handling all <abbr title="User Interface">UI</abbr> input and output.</li>
+						</ul>
+
+						<div class="a" id="typescript"></div>
+						<h3 data-id="typescript">The TypeScript language</h3>
+
+						<p>
+
+						</p>
+
+						<figure>
+							<pre><code class="typescript">class MyClass {
 	public static myValue: string;
 	constructor(init: string) {
 		this.myValue = init;
@@ -214,13 +267,14 @@ module MyModule {
 	}
 }
 in tempo again</code></pre>
-						<figcaption>The use of Application in <code>app/main.ts</code><br>lorem ipsum dolor sit amet</figcaption>
-					</figure>
+							<figcaption>The use of Application in <code>app/main.ts</code><br>lorem ipsum dolor sit amet</figcaption>
+						</figure>
 
-					<h4>Level four</h4>
-					<p>Aliquam sem dui, sodales a accumsan eget, rhoncus a orci. Nam non gravida ligula, non imperdiet risus. Praesent vitae quam placerat massa vestibulum ornare. Donec auctor, lacus in scelerisque luctus, nulla leo posuere tellus, semper molestie turpis metus quis quam. Vivamus gravida facilisis ligula, at scelerisque est sagittis non. Integer at arcu et magna interdum molestie. Nam sagittis magna id lorem consequat efficitur. Donec placerat sapien eget nibh scelerisque accumsan.</p>
+						<h4>Level four</h4>
+						<p>Aliquam sem dui, sodales a accumsan eget, rhoncus a orci. Nam non gravida ligula, non imperdiet risus. Praesent vitae quam placerat massa vestibulum ornare. Donec auctor, lacus in scelerisque luctus, nulla leo posuere tellus, semper molestie turpis metus quis quam. Vivamus gravida facilisis ligula, at scelerisque est sagittis non. Integer at arcu et magna interdum molestie. Nam sagittis magna id lorem consequat efficitur. Donec placerat sapien eget nibh scelerisque accumsan.</p>
 
-					<p>Lorem ipsum dolor sit amet, <code>var x = 1234;</code> consectetur adipiscing elit. Pellentesque non elit iaculis mi tincidunt efficitur. Integer justo nisl, scelerisque vitae ligula a, consequat viverra magna. Sed egestas accumsan lectus. Nullam dapibus, neque sit amet fermentum dapibus, risus purus consectetur dui, ut dignissim nulla arcu id velit. Proin ultricies, sapien sit amet molestie consequat, velit dui convallis ante, in pellentesque turpis urna at eros. Morbi quis metus dapibus, euismod risus a, pretium ligula. Nam nec quam nibh. Mauris nec urna mattis nunc gravida pretium ut id purus. Ut in enim in ex ultricies ultricies. Praesent faucibus sem sapien, quis maximus turpis lobortis in.</p>
+						<p>Lorem ipsum dolor sit amet, <code>var x = 1234;</code> consectetur adipiscing elit. Pellentesque non elit iaculis mi tincidunt efficitur. Integer justo nisl, scelerisque vitae ligula a, consequat viverra magna. Sed egestas accumsan lectus. Nullam dapibus, neque sit amet fermentum dapibus, risus purus consectetur dui, ut dignissim nulla arcu id velit. Proin ultricies, sapien sit amet molestie consequat, velit dui convallis ante, in pellentesque turpis urna at eros. Morbi quis metus dapibus, euismod risus a, pretium ligula. Nam nec quam nibh. Mauris nec urna mattis nunc gravida pretium ut id purus. Ut in enim in ex ultricies ultricies. Praesent faucibus sem sapien, quis maximus turpis lobortis in.</p>
+					</article>
 				</main>
 			</div>
 		</div>

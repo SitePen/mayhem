@@ -10,6 +10,7 @@
 
 		isOpen = !isOpen;
 		menu.classList.toggle('open', isOpen);
+		showMenu.setAttribute('aria-expanded', String(isOpen));
 	};
 
 	function close(event) {
@@ -17,6 +18,7 @@
 			event.preventDefault();
 			isOpen = false;
 			menu.classList.remove('open');
+			showMenu.setAttribute('aria-expanded', 'false');
 		}
 	}
 
@@ -27,17 +29,23 @@
 	var main = document.getElementById('main');
 	var headers = main.querySelectorAll('h3');
 	var foldPoint = window.innerHeight * 0.3;
-	var activeItem;
+	var activeSection;
+	var activeSubsection;
 
 	function findActiveSection() {
 		var i = headers.length - 1;
 		var header;
-		var scrollY = window.scrollY;
 		for (; (header = headers[i]); --i) {
-			if (header.offsetTop - scrollY < foldPoint) {
-				activeItem && activeItem.classList.remove('active');
-				activeItem = menu.querySelector('[data-id="' + header.id + '"]');
-				activeItem && activeItem.classList.add('active');
+			if (header.getBoundingClientRect().top < foldPoint) {
+				activeSubsection && activeSubsection.classList.remove('active');
+				activeSubsection = menu.querySelector('[data-id="' + header.dataset.id + '"]');
+				activeSubsection && activeSubsection.classList.add('active');
+				var newActiveSection = activeSubsection && activeSubsection.parentNode.parentNode;
+				if (newActiveSection !== activeSection) {
+					activeSection && activeSection.classList.remove('active');
+					activeSection = newActiveSection;
+					activeSection && activeSection.classList.add('active');
+				}
 				return;
 			}
 		}

@@ -77,7 +77,10 @@ abbr {
 	border-bottom: 1px dotted $color;
 	cursor: help;
 	display: inline-block;
-	line-height: 0.7em;
+	font-size: 1.2rem;
+	font-variant: small-caps;
+	line-height: 0.7rem;
+	text-transform: lowercase;
 }
 
 a {
@@ -265,7 +268,8 @@ a:hover {
 		}
 
 		.subsections {
-			display: block;
+			max-height: 10rem;
+			overflow: visible;
 
 			a {
 				font-weight: normal;
@@ -274,7 +278,9 @@ a:hover {
 	}
 
 	.subsections {
-		display: none;
+		max-height: 0;
+		overflow: hidden;
+		transition: max-height 0.25s;
 
 		a {
 			text-transform: none;
@@ -333,6 +339,7 @@ a:hover {
 		padding: $lh 2rem;
 		position: fixed;
 		top: $lh;
+		z-index: 1;
 
 		.no-sticky & {
 			top: $lh;
@@ -340,6 +347,10 @@ a:hover {
 
 		&.open {
 			display: block;
+		}
+
+		.support {
+			margin-bottom: $lh * 2;
 		}
 	}
 
@@ -375,6 +386,54 @@ a:hover {
 		margin-bottom: $lh;
 	}
 
+	.a {
+		height: 0;
+		position: relative;
+		top: $lh * -2;
+
+		.no-sticky & {
+			top: $lh * -3;
+		}
+
+		@media (max-width: 920px) {
+			top: $lh * -1.625;
+
+			.no-sticky & {
+				top: $lh * -1.625;
+			}
+		}
+
+		@media (max-width: 490px) {
+			top: $lh * -2.75;
+
+			.no-sticky & {
+				top: $lh * -2.75;
+			}
+		}
+	}
+
+	article {
+		margin-bottom: $lh * 8;
+		position: relative;
+
+		&:last-child {
+			&:after {
+				content: 'fin ◇';
+			}
+		}
+
+		&:after {
+			bottom: $lh * -4.5;
+			color: $mayhemGrey;
+			content: 'take a breath ◇';
+			display: block;
+			left: 0;
+			position: absolute;
+			right: 0;
+			text-align: center;
+		}
+	}
+
 	h2 {
 		padding-top: $lh * 0.25;
 		margin-bottom: $lh * 2 - $lh * 0.25;
@@ -383,7 +442,7 @@ a:hover {
 
 	h3 {
 		font-size: 1.25rem;
-		margin-bottom: $lh * -0.25;
+		margin-bottom: $lh * 0.25;
 		padding-top: $lh * 0.25;
 
 		+ p:first-line {
@@ -481,6 +540,13 @@ a:hover {
 			margin-bottom: $lh;
 		}
 
+		img {
+			display: block;
+			margin-bottom: $lh;
+			max-width: 100%;
+			min-width: 100%;
+		}
+
 		figcaption {
 			pushout();
 
@@ -490,6 +556,16 @@ a:hover {
 			padding-top: $lh * 0.1875;
 		}
 	}
+
+	dfn,
+	.sc {
+		font-size: 1.1rem;
+		font-variant: small-caps;
+		text-transform: lowercase;
+	}
+
+	.m1 { margin-bottom: $lh; }
+	.m2 { margin-bottom: $lh * 0.5; }
 }
 
 .tip,
@@ -520,7 +596,7 @@ a:hover {
 }
 
 .tip {
-	:first-child:before {
+	> :first-child:before {
 		@extend .icon-lamp:before;
 	}
 }
@@ -528,7 +604,7 @@ a:hover {
 .deprecated {
 	border-left-color: $mayhemGrey;
 
-	:first-child:before {
+	> :first-child:before {
 		@extend .icon-thumbs-down:before;
 		color: $mayhemGrey;
 	}
@@ -537,7 +613,7 @@ a:hover {
 .whatAreYouCrazy {
 	border-left-color: $mayhemOrange;
 
-	:first-child:before {
+	> :first-child:before {
 		@extend .icon-alert:before;
 		color: $mayhemOrange;
 	}
