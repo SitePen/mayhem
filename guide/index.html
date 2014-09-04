@@ -77,7 +77,7 @@
 							</ul>
 						</li>
 						<li>
-							<a href="">User authentication</a>
+							<a href="">Security</a>
 							<ul class="subsections">
 							</ul>
 						</li>
@@ -232,43 +232,74 @@
 						<p>The architecture of Mayhem is divided up into eight primary subsystems:</p>
 
 						<ul>
-							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application dependencies at runtime, and providing a main application-wide object for each application that is currently running in the environment.</li>
-							<li><strong>Data binding</strong>: The <dfn>data binding subsystem</dfn> is responsible for all functionality related to binding properties between two objects, and observing properties on objects for changes. This subsystem is essential to implement the MVVM pattern, which will be discussed shortly.</li>
+							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application dependencies at runtime using dependency injection, and providing a main application-wide object for each application that is currently running in the environment.</li>
+							<li><strong>Data binding</strong>: The <dfn>data binding subsystem</dfn> is responsible for all functionality related to binding properties between two objects, and observing properties on objects for changes. This subsystem is essential for implementing the MVVM pattern, which will be discussed shortly.</li>
 							<li><strong>Data modelling</strong>: The <dfn>data modelling subsystem</dfn> provides functionality related to business logic, data object creation, data validation, and communication with databases.</li>
-							<li><strong>Foundation</strong>: The <dfn>foundation subsystem</dfn> provides core functionality for the entire Mayhem application framework, like observable proxy objects, utility functions, and other critical miscellaneous functionality.</li>
-							<li><strong>Routing</strong>: The <dfn>routing subsystem</dfn> is responsible for discovering, loading, and linking together data models and subviews in response to navigation within an application.</li>
+							<li><strong>Foundation</strong>: The <dfn>foundation subsystem</dfn> provides core functionality for the entire Mayhem application framework, like observable proxy objects, utility functions, and other miscellaneous critical functionality.</li>
+							<li><strong>Routing</strong>: The <dfn>routing subsystem</dfn> is responsible for discovering, loading, and linking together data models and sub-views in response to navigation within an application.</li>
 							<li><strong>Security</strong>: The <dfn>security subsystem</dfn> is responsible for providing user authentication &amp; authorization, access control, and other security-oriented application functionality.</li>
-							<li><strong>Templating</strong>: The <dfn>templating subsystem</dfn> is responsible for creating views and linking data objects to the views using easy-to-write declarative templates.</li>
+							<li><strong>Templating</strong>: The <dfn>templating subsystem</dfn> is responsible for creating views and linking data models to the views using easy-to-write declarative templates.</li>
 							<li><strong>Views</strong>: The <dfn>view subsystem</dfn> is responsible for handling all <abbr title="User Interface">UI</abbr> input and output.</li>
 						</ul>
 
 						<h3 id="typescript">The TypeScript language</h3>
 
-						<p>
+						<p>Mayhem is written in <a href="http://typescriptlang.org">TypeScript</a> in order to take advantage of the significant maintenance benefits that come with optional strict typing and the ability to define strong interfaces. Since these features are also critical to keeping large applications maintainable over many years—especially with teams of varying disciplines and skill levels—we strongly encourage all users of Mayhem to explore using TypeScript directly when writing apps with Mayhem. However, the TypeScript compiler does generate highly-readable, well-formed JavaScript, so if you prefer to use vanilla JavaScript, go right ahead!</p>
 
-						</p>
+						<div class="tip"><p>If you’re unfamiliar with TypeScript but want to learn how to use it, check out SitePen’s <a href="http://www.sitepen.com/blog/2013/12/31/definitive-guide-to-typescript/">Definitive Guide to TypeScript</a>. Remember that TypeScript is a full superset of JavaScript, so you can always write JavaScript and migrate to TypeScript over time—or vice-versa!</p></div>
+
+						<p>Mayhem uses certain conventions to provide support for Proxy-like objects in pre-EcmaScript 6 environments, which are key to providing easy-to-use view-models. In order to work around limitations within the first version of TypeScript, … TODO (talking about Callers/Events/Getters/Setters interfaces here)</p>
 
 						<figure>
-							<pre><code class="typescript">class MyClass {
-	public static myValue: string;
-	constructor(init: string) {
-		this.myValue = init;
+							<pre><code class="typescript">import Observable = require('mayhem/Observable');
+
+class User extends Observable {
+	get:User.Getters;
+	set:User.Setters;
+}
+
+module User {
+	export interface Getters extends Observable.Getters {
+		(key:'username'):string;
+		(key:'password'):string;
+	}
+
+	export interface Setters extends Observable.Setters {
+		(key:'username', value:string):void;
+		(key:'password', value:string):void;
 	}
 }
-import fs = require("fs");
-module MyModule {
-	export interface MyInterface extends OtherInterface {
-		myProperty: any; // foo
-	}
-}
-in tempo again</code></pre>
-							<figcaption>The use of Application in <code>app/main.ts</code><br>lorem ipsum dolor sit amet</figcaption>
+
+export = User;</code></pre>
+							<figcaption>Creating a basic Mayhem class in TypeScript</figcaption>
 						</figure>
 
-						<h4>Level four</h4>
-						<p>Aliquam sem dui, sodales a accumsan eget, rhoncus a orci. Nam non gravida ligula, non imperdiet risus. Praesent vitae quam placerat massa vestibulum ornare. Donec auctor, lacus in scelerisque luctus, nulla leo posuere tellus, semper molestie turpis metus quis quam. Vivamus gravida facilisis ligula, at scelerisque est sagittis non. Integer at arcu et magna interdum molestie. Nam sagittis magna id lorem consequat efficitur. Donec placerat sapien eget nibh scelerisque accumsan.</p>
+						<div class="tip"><p>The <span class="sc">Mayhem generator</span> can create these more verbose data interfaces for you automatically. As the TypeScript language continues to mature, improved code generation and annotations will be used in order to eliminate the need to write longhand interface definitions. (One useful side-benefit of having to define getters and setters separately is that it becomes possible to type properties as being read-only or write-only within the compiler.)</p></div>
 
-						<p>Lorem ipsum dolor sit amet, <code>var x = 1234;</code> consectetur adipiscing elit. Pellentesque non elit iaculis mi tincidunt efficitur. Integer justo nisl, scelerisque vitae ligula a, consequat viverra magna. Sed egestas accumsan lectus. Nullam dapibus, neque sit amet fermentum dapibus, risus purus consectetur dui, ut dignissim nulla arcu id velit. Proin ultricies, sapien sit amet molestie consequat, velit dui convallis ante, in pellentesque turpis urna at eros. Morbi quis metus dapibus, euismod risus a, pretium ligula. Nam nec quam nibh. Mauris nec urna mattis nunc gravida pretium ut id purus. Ut in enim in ex ultricies ultricies. Praesent faucibus sem sapien, quis maximus turpis lobortis in.</p>
+						<h3 id="mvvm">The MVVM pattern</h3>
+
+						<figure>
+							<img src="http://placepuppy.it/600/320">
+							<figcaption>An overview of the MVVM pattern</figcaption>
+						</figure>
+
+						<p>Mayhem implements the model–view–view-model (<dfn><abbr title="model–view–view-model">MVVM</abbr></dfn>) architectural pattern, which separates business logic, user interface logic, and the user interface itself into three distinct layers. This pattern is similar to the Smalltalk <abbr title="model-view-controller">MVC</abbr> pattern (not to be confused with <a href="https://en.wikipedia.org/wiki/Model_2">Model 2 MVC</a>, a pattern used by server-side “MVC” frameworks), but it uses an improved mode of interaction between the different layers in order to avoid the “fat controller” anti-pattern common to many MVC apps.</p>
+
+						<h4>Model</h4>
+
+						<p>The term <dfn>model</dfn> in the context of the MVVM pattern refers to a “business” object—an object that contains code and data that performs the actual work of the business. Models operate completely independently from any user interface, so can be fully reused across many different systems. For example, if you were writing software for managing a bank, <em>bank accounts</em> and <em>transactions</em> would be two different types of <em>models</em>. Models within Mayhem are normally created by subclassing the <a href="#TODO"><code>mayhem/data/Model</code></a> class, which provides standard functionality for defining, loading, validating, and saving data.</p>
+
+						<h4>View-model</h4>
+
+						<p>The term <dfn>view-model</dfn> refers to a Model object that exposes properties that are required by a specific view. For example, if you had a <em>transaction history view</em> in your application, you would create an associated view-model that exposed a <a href="TODO">Collection</a> of <code>Transaction</code> objects to display in the list, plus additional properties that could be updated by the view in order to dynamically change the contents of the <code>Transactions</code> collection.</p>
+
+						<p>One of the key differences between an MVVM view-model and an MVC controller is that the view-model is never given a reference to its associated view. Instead, properties are [TODO: should talk about data binding before getting here?] data-bound between the view and the view-model, so that when something in the view changes, a bound property of the view-model is updated, and vice-versa. This approach allows view-models to be decoupled from and reused by multiple different views, and also allows their logic to be tested completely independently from any user interface. It also has the added benefit of preventing any UI-specific code from ending up outside of the view subsystem.</p>
+
+						<p>In many cases, view-models are simple proxies back to real data models. For example, while a Transaction model may store the amount of a transaction in USD cents, your view may want to display the transaction amount in its equivalent in euros, with the correct currency symbol and locale-specific number formatting. Since all other information—like the transaction ID and recipient—can be taken as-is from the original data model, there is no reason to create an entirely separate view-model that re-exposes these properties just to add this one extra piece for the view. <a href="TODO"><code>mayhem/data/ProxyModel</code>s</a> allow you to wrap an existing model object with extra properties for display in a view, with all other properties delegating back to the original data model.</p>
+
+						<h4>View</h4>
+
+						<p>The term <dfn>view</dfn> refers to a user interface component that an end-user interacts with. In Mayhem, View objects are normally generated from templates.</p>
 					</article>
 				</main>
 			</div>
