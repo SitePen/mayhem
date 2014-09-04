@@ -289,6 +289,10 @@ export = User;</code></pre>
 
 						<p>The term <dfn>model</dfn> in the context of the MVVM pattern refers to a “business” object—an object that contains code and data that performs the actual work of the business. Models operate completely independently from any user interface, so can be fully reused across many different systems. For example, if you were writing software for managing a bank, <em>bank accounts</em> and <em>transactions</em> would be two different types of <em>models</em>. Models within Mayhem are normally created by subclassing the <a href="#TODO"><code>mayhem/data/Model</code></a> class, which provides standard functionality for defining, loading, validating, and saving data.</p>
 
+						<h4>View</h4>
+
+						<p>The term <dfn>view</dfn> in the context of the MVVM pattern refers to an object representing part of the interactive user interface of an application. Views encapsulate both input and output: they display data to the user in the form of widgets and sub-views, and collect and dispatch user input (mouse, touch, pen, keyboard, Kinect, etc.) from the user interface to the rest of the system.</p>
+
 						<h4>View-model</h4>
 
 						<p>The term <dfn>view-model</dfn> refers to a Model object that exposes properties that are required by a specific view. For example, if you had a <em>transaction history view</em> in your application, you would create an associated view-model that exposed a <a href="TODO">Collection</a> of <code>Transaction</code> objects to display in the list, plus additional properties that could be updated by the view in order to dynamically change the contents of the <code>Transactions</code> collection.</p>
@@ -297,9 +301,49 @@ export = User;</code></pre>
 
 						<p>In many cases, view-models are simple proxies back to real data models. For example, while a Transaction model may store the amount of a transaction in USD cents, your view may want to display the transaction amount in its equivalent in euros, with the correct currency symbol and locale-specific number formatting. Since all other information—like the transaction ID and recipient—can be taken as-is from the original data model, there is no reason to create an entirely separate view-model that re-exposes these properties just to add this one extra piece for the view. <a href="TODO"><code>mayhem/data/ProxyModel</code>s</a> allow you to wrap an existing model object with extra properties for display in a view, with all other properties delegating back to the original data model.</p>
 
-						<h4>View</h4>
+						<h3 id="conventions">Conventions</h3>
 
-						<p>The term <dfn>view</dfn> refers to a user interface component that an end-user interacts with. In Mayhem, View objects are normally generated from templates.</p>
+						<h4>Application components</h4>
+
+						<p>Mayhem Application classes include a default set of application components that are required to run an application of a given type. These components can be overridden with custom implementations, but various parts of framework code expect these essential components to exist at specific keys on the main Application object:</p>
+
+						<ul>
+							<li><code><strong>binder</strong></code>: An implementation of the <code>mayhem/binding/interfaces.IBinder</code> interface. Provides data binding.</li>
+							<li><code><strong>router</strong></code>: An implementation of the <code>mayhem/routing/interfaces.IRouter</code> interface. Provides navigation and on-demand component loading for applications with discrete navigation points.</li>
+							<li><code><strong>scheduler</strong></code>: An implementation of the <code>mayhem/interfaces.IScheduler</code> interface. Provides next-turn event scheduling and debouncing.</li>
+							<li><code><strong>ui</strong></code>: An implementation of the <code>mayhem/ui/Master</code> interface. Provides user interface support for applications that interact directly with users through a terminal or window server.</li>
+						</ul>
+
+						<h4>Module paths</h4>
+
+						<p>Mayhem assumes that a Mayhem application will use a default set of module ID paths. Each of them can be customised if needed.</p>
+
+						<ul>
+							<li><code><strong>app/models</strong></code>: This directory holds all application data models. It can be customised via <a href="TODO"><code>Application#modelPath</code></a>.</li>
+							<li><code><strong>app/viewModels</strong></code>: This directory holds all application view models. It can be customised via <a href="TODO"><code>Application#viewModelPath</code></a>.</li>
+							<li><code><strong>app/views</strong></code>: This directory holds all application views and templates. It can be customised via <a href="TODO"><code>Application#viewPath</code></a> and <a href="TODO"><code>Application#templatePath</code></a>.</li>
+						</ul>
+
+						<p>The physical location of the <code>app</code> package on the filesystem can be modified by setting [TODO: Need some Dojo configuration stuff] <code>dojoConfig.packages = [ { name: 'app', location: 'path/to/app' } ];</code> in your application’s <code>index.html</code> file.
+
+						<h4>Routes</h4>
+
+						<p>The default router in Mayhem will automatically generate missing keys for a route based on the route ID of a route. These keys will be generated as follows: TODO these defaults suck and will change</p>
+
+						<ul>
+							<li><code><strong>path</strong></code>: The same as the route ID.</li>
+							<li><code><strong>model</strong></code>: The <code>Application#modelPath</code>, joined with the route ID, with the first letter of the last segment of the route ID capitalised. For example, given a route ID <code>transactions/account</code>, the model would become <code>app/models/transactions/Account</code>.</li>
+							<li><code><strong>viewModel</strong></code>: The <code>Application#viewModelPath</code>, joined with the route ID, with the first letter of the last segment of the route ID capitalised. For example, given a route ID <code>transactions/account</code>, the view-model would become <code>app/viewModels/transactions/Account</code>.</li>
+							<li><code><strong>view</strong></code>: The <code>Application#templatePath</code>, joined with the route ID, with the first letter of the last segment of the route ID capitalised. For example, given a route ID <code>transactions/account</code>, the view would become <code>mayhem/templating/html!transactions/Account.html</code>.</li>
+						</ul>
+
+						<h4>Code conventions</h4>
+
+						<p>Mayhem follows most normal TypeScript code conventions, although spaces are not placed before type definitions in order to provide better disambiguation between a type value (no space) and an object literal value (space). All modules within Mayhem are defined as external modules.</p>
+					</article>
+
+					<article>
+						<p>Views can be created pro [TODO: Currently Widget in the code] the <a href="TODO"><code>mayhem/ui/View</code></a> class and constructed programmatically, or they can be generated declaratively by using a templating engine.</p>
 					</article>
 				</main>
 			</div>
