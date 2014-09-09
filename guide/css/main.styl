@@ -118,6 +118,38 @@ a:hover {
 	.hljs-comment { color: #006A00; }
 }
 
+.icon-menu {
+	color: $mayhemPurpleInvert;
+	cursor: pointer;
+	display: none;
+	font-size: 0;
+	left: 0.6rem;
+	line-height: 1em;
+	margin: 0;
+	padding: 0;
+	position: fixed;
+	top: 0;
+	z-index: 3;
+
+	&:before {
+		font-size: 1.25rem;
+		padding: 0.25rem;
+		margin: 0;
+	}
+
+	@media (max-width: 920px) {
+		display: block;
+	}
+
+	@media (max-width: 570px) {
+		left: 0.1rem;
+	}
+
+	@media (max-width: 490px) {
+		left: 1.5rem;
+	}
+}
+
 .header {
 	background-color: $mayhemPurple;
 	background-image: linear-gradient(330deg, #5C2699, #A6474D);
@@ -127,7 +159,7 @@ a:hover {
 	position: sticky;
 	top: $lh * -1;
 	width: 100%;
-	z-index: 1;
+	z-index: 2;
 
 	.no-sticky & {
 		position: fixed;
@@ -139,6 +171,7 @@ a:hover {
 
 	@media (max-width: 490px) {
 		background-image: none;
+		top: 0;
 	}
 
 	.search {
@@ -190,37 +223,6 @@ a:hover {
 
 		@media (max-width: 490px) {
 			width: calc(100% - 2rem);
-		}
-	}
-
-	.icon-menu {
-		color: $mayhemPurpleInvert;
-		cursor: pointer;
-		display: none;
-		font-size: 0;
-		left: 0.6rem;
-		line-height: 1em;
-		margin: 0;
-		padding: 0;
-		position: absolute;
-		top: 0;
-
-		&:before {
-			font-size: 1.25rem;
-			padding: 0.25rem;
-			margin: 0;
-		}
-
-		@media (max-width: 920px) {
-			display: block;
-		}
-
-		@media (max-width: 570px) {
-			left: 0.1rem;
-		}
-
-		@media (max-width: 490px) {
-			left: 1.5rem;
 		}
 	}
 

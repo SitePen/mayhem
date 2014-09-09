@@ -18,6 +18,11 @@
 		})();</script>
 	</head>
 	<body>
+		<span role="button" id="showMenu" class="icon-menu"
+			aria-controls="nav"
+			aria-expanded="false"
+			tabindex="0"
+			title="Table of contents">Menu</span>
 		<header class="header">
 			<div class="wrapper">
 				<div class="preTitle">
@@ -36,14 +41,15 @@
 						<input type="text">
 						<span class="icon-search"></span>
 					</label>
-
-					<span role="button" id="showMenu" class="icon-menu"
-						aria-controls="nav"
-						aria-expanded="false"
-						tabindex="0"
-						title="Table of contents">Menu</span>
 					<h1 class="title"><span class="bold">Mayhem</span> user guide</h1>
 				</div>
+				<script>(function () {
+					if (window.scrollY === 0 && !document.documentElement.classList.contains('no-sticky')) {
+						document.documentElement.style.minHeight = (window.innerHeight + /* $lh */ 32) + 'px';
+						var scrollTo = document.getElementById('initialScrollPoint');
+						window.scrollTo(window.scrollX, scrollTo.getBoundingClientRect().top);
+					}
+				})();</script>
 			</div>
 		</header>
 
