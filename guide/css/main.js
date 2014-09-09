@@ -38,7 +38,7 @@
 		for (; (header = headers[i]); --i) {
 			if (header.getBoundingClientRect().top < foldPoint) {
 				activeSubsection && activeSubsection.classList.remove('active');
-				activeSubsection = menu.querySelector('[data-id="' + header.id + '"]');
+				activeSubsection = menu.querySelector('[data-id="' + header.dataset.id + '"]');
 				activeSubsection && activeSubsection.classList.add('active');
 				var newActiveSection = activeSubsection && activeSubsection.parentNode.parentNode;
 				if (newActiveSection !== activeSection) {

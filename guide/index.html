@@ -93,9 +93,11 @@
 
 				<main class="main" id="main">
 					<article>
-						<h2 id="getting-started">Welcome to Mayhem</h2>
+						<div class="a" id="getting-started"></div>
+						<h2 data-id="getting-started">Welcome to Mayhem</h2>
 
-						<h3 id="what-is-mayhem">What is Mayhem?</h3>
+						<div class="a" id="what-is-mayhem"></div>
+						<h3 data-id="what-is-mayhem">What is Mayhem?</h3>
 
 						<p>Mayhem is a framework for developing large, complex applications with TypeScript or JavaScript. Unlike other Web libraries and frameworks that place their emphasis on performance or file size, Mayhem is designed around these three key tenets:</p>
 
@@ -113,7 +115,8 @@
 
 						<p>This first release of Mayhem focuses primarily on the development of form-based client-side Web applications, but we plan on rapidly expanding functionality for other types of apps. <a href="https://github.com/SitePen/mayhem/blob/master/CONTRIBUTING.md">Pull requests are accepted!</a></p>
 
-						<h3 id="system-requirements">System requirements</h3>
+						<div class="a" id="system-requirements"></div>
+						<h3 data-id="system-requirements">System requirements</h3>
 
 						<p>End-users of Mayhem applications must meet the following minimum system requirements:</p>
 
@@ -168,7 +171,8 @@
 							</tr>
 						</table>
 
-						<h3 id="installation">Installation</h3>
+						<div class="a" id="installation"></div>
+						<h3 data-id="installation">Installation</h3>
 
 						<p>Depending upon the platform you are planning on developing for, there are three different ways in which installation can be performed:</p>
 
@@ -180,7 +184,8 @@
 
 						<p>Because Mayhem is written in TypeScript, future versions of Mayhem will also be compiled to standard EcmaScript 6 modules once that format has been finalised.</p>
 
-						<h3 id="reading-guide">Reading this guide</h3>
+						<div class="a" id="reading-guide"></div>
+						<h3 data-id="reading-guide">Reading this guide</h3>
 
 						<p>Throughout this guide, you will find certain pieces of information are called out specifically, as we have found them to be especially important or problematic for users.</p>
 
@@ -198,7 +203,8 @@
 
 						<p>Later sections of this guide are designed to be built upon knowledge presented in earlier parts. If you jump into the middle and feel confused, step back a section or two; the information you are seeking is in here!</p>
 
-						<h3 id="first-app">Creating your first app</h3>
+						<div class="a" id="first-app"></div>
+						<h3 data-id="first-app">Creating your first app</h3>
 
 						<p>In order to simplify the creation of new applications, Mayhem comes with a command-line generator that can be used to instantly generate new applications.</p>
 
@@ -220,9 +226,11 @@
 					</article>
 
 					<article>
-						<h2 id="fundamentals">Fundamentals</h2>
+						<div class="a" id="fundamentals"></div>
+						<h2 data-id="fundamentals">Fundamentals</h2>
 
-						<h3 id="fundamentals-overview">Overview</h3>
+						<div class="a" id="fundamentals-overview"></div>
+						<h3 data-id="fundamentals-overview">Overview</h3>
 
 						<figure>
 							<img src="http://placepuppy.it/1000/608">
@@ -242,11 +250,12 @@
 							<li><strong>Views</strong>: The <dfn>view subsystem</dfn> is responsible for handling all <abbr title="User Interface">UI</abbr> input and output.</li>
 						</ul>
 
-						<h3 id="typescript">The TypeScript language</h3>
+						<div class="a" id="typescript"></div>
+						<h3 data-id="typescript">The TypeScript language</h3>
 
 						<p>Mayhem is written in <a href="http://typescriptlang.org">TypeScript</a> in order to take advantage of the significant maintenance benefits that come with optional strict typing and the ability to define strong interfaces. Since these features are also critical to keeping large applications maintainable over many years—especially with teams of varying disciplines and skill levels—we strongly encourage all users of Mayhem to explore using TypeScript directly when writing apps with Mayhem. However, the TypeScript compiler does generate highly-readable, well-formed JavaScript, so if you prefer to use vanilla JavaScript, go right ahead!</p>
 
-						<div class="tip"><p>If you’re unfamiliar with TypeScript but want to learn how to use it, check out SitePen’s <a href="http://www.sitepen.com/blog/2013/12/31/definitive-guide-to-typescript/">Definitive Guide to TypeScript</a>. Remember that TypeScript is a full superset of JavaScript, so you can always write JavaScript and migrate to TypeScript over time—or vice-versa!</p></div>
+						<aside class="tip"><p>If you’re unfamiliar with TypeScript but want to learn how to use it, check out SitePen’s <a href="http://www.sitepen.com/blog/2013/12/31/definitive-guide-to-typescript/">Definitive Guide to TypeScript</a>. Remember that TypeScript is a full superset of JavaScript, so you can always write JavaScript and migrate to TypeScript over time—or vice-versa!</p></aside>
 
 						<p>Mayhem uses certain conventions to provide support for Proxy-like objects in pre-EcmaScript 6 environments, which are key to providing easy-to-use view-models. In order to work around limitations within the first version of TypeScript, … TODO (talking about Callers/Events/Getters/Setters interfaces here)</p>
 
@@ -274,9 +283,10 @@ export = User;</code></pre>
 							<figcaption>Creating a basic Mayhem class in TypeScript</figcaption>
 						</figure>
 
-						<div class="tip"><p>The <span class="sc">Mayhem generator</span> can create these more verbose data interfaces for you automatically. As the TypeScript language continues to mature, improved code generation and annotations will be used in order to eliminate the need to write longhand interface definitions. (One useful side-benefit of having to define getters and setters separately is that it becomes possible to type properties as being read-only or write-only within the compiler.)</p></div>
+						<aside class="tip"><p>The <span class="sc">Mayhem generator</span> can create these more verbose data interfaces for you automatically. As the TypeScript language continues to mature, improved code generation and annotations will be used in order to eliminate the need to write longhand interface definitions. (One useful side-benefit of having to define getters and setters separately is that it becomes possible to type properties as being read-only or write-only within the compiler.)</p></aside>
 
-						<h3 id="mvvm">The MVVM pattern</h3>
+						<div class="a" id="mvvm"></div>
+						<h3 data-id="mvvm">The MVVM pattern</h3>
 
 						<figure>
 							<img src="http://placepuppy.it/600/320">
@@ -301,7 +311,8 @@ export = User;</code></pre>
 
 						<p>In many cases, view-models are simple proxies back to real data models. For example, while a Transaction model may store the amount of a transaction in USD cents, your view may want to display the transaction amount in its equivalent in euros, with the correct currency symbol and locale-specific number formatting. Since all other information—like the transaction ID and recipient—can be taken as-is from the original data model, there is no reason to create an entirely separate view-model that re-exposes these properties just to add this one extra piece for the view. <a href="TODO"><code>mayhem/data/ProxyModel</code>s</a> allow you to wrap an existing model object with extra properties for display in a view, with all other properties delegating back to the original data model.</p>
 
-						<h3 id="conventions">Conventions</h3>
+						<div class="a" id="conventions"></div>
+						<h3 data-id="conventions">Conventions</h3>
 
 						<h4>Application components</h4>
 
