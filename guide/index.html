@@ -77,12 +77,13 @@
 							</ul>
 						</li>
 						<li data-id="data-binding">
-							<a href="">Data binding</a>
+							<a href="#data-binding">Data binding</a>
 							<ul class="subsections">
+								<li data-id="what-is-data-binding"><a href="#what-is-data-binding">What is data binding?</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Views</a>
+							<a href="#views">Views</a>
 							<ul class="subsections">
 							</ul>
 						</li>
@@ -124,7 +125,7 @@
 						<ul>
 							<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
 							<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written, using the same basic set of tools.</li>
-							<li><strong>Correctness</strong>: When writing software, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be extremely modular, testable, and easy to understand in order to minimise the maintenance cost of using Mayhem.</li>
+							<li><strong>Correctness</strong>: When writing software, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be extremely modular, testable, and easy to understand in order to minimise the maintenance cost of using it.</li>
 						</ul>
 
 						<p>We believe that good architecture, in combination with today’s superfast JavaScript engines, offers a very high level of performance in nearly all use cases. As such, we will never compromise the clarity or maintainability of the Mayhem codebase for the sake of performance. We hope that you will see the benefit of this decision in increased productivity and less time spent troubleshooting your apps!</p>
@@ -321,7 +322,7 @@ export = User;</code></pre>
 
 						<h4>View</h4>
 
-						<p>The term <dfn>view</dfn> in the context of the MVVM pattern refers to an object representing part of the interactive user interface of an application. Views encapsulate both input and output: they display data to the user in the form of widgets and sub-views, and collect and dispatch user input (mouse, touch, pen, keyboard, Kinect, etc.) from the user interface to the rest of the system.</p>
+						<p>The term <dfn>view</dfn> in the context of the MVVM pattern refers to an object representing part of the interactive user interface of an application. Views encapsulate both input and output: they display data to the user in the form of widgets and sub-views, and collect and dispatch user input (mouse, touch, pen, keyboard, Kinect, etc.) from the user interface back to the rest of the system, usually by calling a method on a view-model.</p>
 
 						<h4>View-model</h4>
 
