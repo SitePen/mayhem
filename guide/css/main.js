@@ -1,7 +1,7 @@
 (function () {
 	/* global hljs:false */
 	var showMenu = document.getElementById('showMenu');
-	var menu = document.getElementById('nav');
+	var menu = document.getElementById('tableOfContents');
 	var isOpen = false;
 	showMenu.ontouchstart = showMenu.onpointerdown = showMenu.onclick = function (event) {
 		if (!event.pointerType || event.pointerType === 'touch') {

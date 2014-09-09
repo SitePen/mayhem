@@ -7,8 +7,8 @@
 /*
  * vertical rhythm: 32px (~1.77rem)
  * minimum width: 320px
- * maximum width: 1440px (80rem)
- * breakpoints: 490 570 680 920
+ * maximum width: 1170px (65rem)
+ * breakpoints: 490 570 680 920 1080
  */
 
 $lh = 32px;
@@ -102,7 +102,7 @@ a:hover {
 
 .wrapper {
 	margin: 0 auto;
-	max-width: 80rem;
+	max-width: 65rem;
 	min-width: calc(320px - 4rem);
 	padding: 0 4rem;
 
@@ -424,10 +424,13 @@ a:hover {
 }
 
 .main {
-	margin-left: 16rem;
+	margin-left: auto;
+	margin-right: 0;
+	max-width: 44rem;
+	padding-left: 16rem;
 
 	@media (max-width: 920px) {
-		margin-left: 0;
+		padding-left: 0;
 	}
 
 	h1,
