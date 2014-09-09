@@ -44,7 +44,7 @@
 					<h1 class="title"><span class="bold">Mayhem</span> user guide</h1>
 				</div>
 				<script>(function () {
-					if (window.scrollY === 0 && !document.documentElement.classList.contains('no-sticky')) {
+					if (window.scrollY === 0 && !location.hash && !document.documentElement.classList.contains('no-sticky')) {
 						document.documentElement.style.minHeight = (window.innerHeight + /* $lh */ 32) + 'px';
 						var scrollTo = document.getElementById('initialScrollPoint');
 						window.scrollTo(window.scrollX, scrollTo.getBoundingClientRect().top);
