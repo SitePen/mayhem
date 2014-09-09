@@ -8,7 +8,7 @@
  * vertical rhythm: 32px (~1.77rem)
  * minimum width: 320px
  * maximum width: 1440px (80rem)
- * breakpoints: 490 570 920
+ * breakpoints: 490 570 680 920
  */
 
 $lh = 32px;
@@ -46,8 +46,14 @@ body {
 	font: 18px/$lh Soin, sans-serif;
 }
 
-body {
+.no-sticky body {
 	padding-top: $lh * 3;
+}
+
+@media (max-width: 680px) {
+	.hide-680 {
+		display: none;
+	}
 }
 
 ::selection {
@@ -77,9 +83,9 @@ abbr {
 	border-bottom: 1px dotted $color;
 	cursor: help;
 	display: inline-block;
-	font-size: 1.2rem;
+	font-size: 1.166666rem;
 	font-variant: small-caps;
-	line-height: 0.7rem;
+	line-height: 0.619047em;
 	text-transform: lowercase;
 }
 
@@ -116,10 +122,16 @@ a:hover {
 	background-color: $mayhemPurple;
 	background-image: linear-gradient(330deg, #5C2699, #A6474D);
 	color: $mayhemPurpleInvert;
-	position: fixed;
-	top: 0;
+	margin-bottom: $lh * 2;
+	position: -webkit-sticky;
+	position: sticky;
+	top: $lh * -1;
 	width: 100%;
 	z-index: 1;
+
+	.no-sticky & {
+		position: fixed;
+	}
 
 	@media (max-width: 920px) {
 		background-image: linear-gradient(330deg, #5C2699, #A6474D);
@@ -225,6 +237,43 @@ a:hover {
 			text-align: center;
 		}
 	}
+
+	a {
+		color: $mayhemPurpleInvert;
+	}
+
+	.logo {
+		text-decoration: none;
+
+		img {
+			max-height: $lh;
+			vertical-align: middle;
+		}
+	}
+
+	@media (max-width: 490px) {
+		.preTitle {
+			display: none;
+		}
+	}
+
+	nav {
+		display: inline-block;
+		height: $lh;
+		float: right;
+
+		ul {
+			display: inline;
+		}
+
+		li {
+			display: inline-block;
+			font-size: 0.75rem;
+			padding-left: 1rem;
+			padding-top: 0.2rem;
+			text-transform: uppercase;
+		}
+	}
 }
 
 .nav {
@@ -233,6 +282,10 @@ a:hover {
 	position: -webkit-sticky;
 	position: sticky;
 	top: $lh * 2;
+
+	// To fix text rendering in at least Safari 7
+	background-color: $backgroundColor;
+	-webkit-font-smoothing: subpixel-antialiased;
 
 	.no-sticky & {
 		position: fixed;
@@ -296,8 +349,11 @@ a:hover {
 			&:before {
 				@extend [class^='icon-']:before, [class*=' icon-']:before;
 				@extend .icon-right-open:before;
-				line-height: 0;
 				margin-right: 0;
+				// Icon font is taller than body font so generates extra line spacing which is not desired and causes
+				// popping when the icon moves from one line to the next; attempting to zero out the line-height causes
+				// incorrect alignment in at least Safari 7, but negative top margin works OK everywhere
+				margin-top: -1em;
 				text-decoration: none;
 			}
 		}

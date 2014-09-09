@@ -26,6 +26,13 @@
 	document.addEventListener('pointerdown', close, false);
 	document.addEventListener('mousedown', close, false);
 
+	if (window.scrollY === 0) {
+		var scrollTo = document.getElementById('initialScrollPoint');
+		if (scrollTo) {
+			window.scrollTo(window.scrollX, scrollTo.getBoundingClientRect().top);
+		}
+	}
+
 	var main = document.getElementById('main');
 	var headers = main.querySelectorAll('h3');
 	var foldPoint = window.innerHeight * 0.3;
