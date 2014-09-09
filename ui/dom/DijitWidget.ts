@@ -45,8 +45,6 @@ class DijitWidget extends SingleNodeWidget {
 	 * @protected
 	 */
 	_render():void {
-		var self = this;
-
 		var widget:_WidgetBase = new (<typeof DijitWidget> this.constructor).Ctor();
 
 		var dijitName:string;
@@ -76,6 +74,14 @@ class DijitWidget extends SingleNodeWidget {
 
 	destroy():void {
 		super.destroy();
+
+		// The `focused` property of a widget will be changed by `dijit/focus` after it is destroyed if it was focused
+		// at the time of its destruction. This will cause `_CssStateMixin` to crash later on, because it fails to check
+		// whether or not the widget has been destroyed before trying to access the `className` property of the DOM node
+		if (this._widget['_setStateClass']) {
+			this._widget['_setStateClass'] = function ():void {};
+		}
+
 		this._widget.destroyRecursive();
 		this._widget = this._node = null;
 	}

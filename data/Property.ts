@@ -1,16 +1,21 @@
 /// <reference path="../dojo" />
 
 import array = require('dojo/_base/array');
+import binding = require('../binding/interfaces');
+import core = require('../interfaces');
 import data = require('./interfaces');
 import Memory = require('dstore/Memory');
 import Observable = require('../Observable');
 import Promise = require('../Promise');
+import util = require('../util');
 import Validator = require('../validation/Validator');
 import ValidationError = require('../validation/ValidationError');
 
 class Property<T> extends Observable implements data.IProperty<T> {
+	private _app:core.IApplication;
 	_dependencies:string[];
-	_errors:Memory<ValidationError>;
+	private _dependencyBindings:binding.IBinding<any, any>[];
+	_errors:ValidationError[];
 	_key:string;
 	_model:data.IModel;
 	_label:string;
@@ -23,6 +28,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	set:data.IProperty.Setters<T>;
 
 	constructor(kwArgs?:HashMap<any>) {
+		util.deferMethods(this, [ '_updateDependencies' ], 'startup');
 		super(kwArgs);
 
 		var self = this;
@@ -32,11 +38,41 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	}
 
 	addError(error:ValidationError):void {
-		this._errors.putSync(error);
+		this._errors.push(error);
+	}
+
+	_appSetter(value:core.IApplication):void {
+		this._app = value;
+		if (this._model && this._dependencies.length) {
+			this._updateDependencies();
+		}
+	}
+
+	private _clearDependencies():void {
+		var bindings:binding.IBinding<any, any>[] = this._dependencyBindings;
+		var binding:binding.IBinding<any, any>;
+		while ((binding = bindings.pop())) {
+			binding.destroy();
+		}
 	}
 
 	clearErrors():void {
-		this._errors.setData([]);
+		this._errors.splice(0, Infinity);
+	}
+
+	destroy():void {
+		this._clearDependencies();
+		super.destroy();
+	}
+
+	/**
+	 * @protected
+	 */
+	_dependenciesSetter(value:string[]):void {
+		this._dependencies = value;
+		if (this._app && this._model) {
+			this._updateDependencies();
+		}
 	}
 
 	/**
@@ -44,9 +80,45 @@ class Property<T> extends Observable implements data.IProperty<T> {
 	 */
 	_initialize():void {
 		super._initialize();
-		this._errors = new Memory<ValidationError>();
+		this._errors = [];
 		this._validators = [];
+		this._dependencies = [];
+		this._dependencyBindings = [];
 	}
+
+	/**
+	 * @protected
+	 */
+	_modelSetter(value:data.IModel):void {
+		this._model = value;
+		if (value && this._app && this._dependencies.length) {
+			this._updateDependencies();
+		}
+	}
+
+	private _updateDependencies():void {
+		this._clearDependencies();
+
+		var dependencies:string[] = this._dependencies;
+		var bindings:binding.IBinding<any, any>[] = this._dependencyBindings;
+		var model:data.IModel = this._model;
+		var binder:binding.IBinder = this._app.get('binder');
+		var self = this;
+		for (var i = 0, path:string; (path = dependencies[i]); ++i) {
+			console.log('updating dependency', path);
+			var binding:binding.IBinding<any, any> = binder.createBinding(model, path, { scheduled: false });
+			binding.bindTo(<binding.IBinding<any, any>> {
+				set: function (value:any):void {
+					console.log('need to update value', self._key);
+					self._notify('value', self.get('value'), undefined);
+				}
+			});
+
+			bindings.push(binding);
+		}
+	}
+
+	startup():void {}
 
 	validate():IPromise<boolean> {
 		if (this._validatorInProgress) {
@@ -80,7 +152,7 @@ class Property<T> extends Observable implements data.IProperty<T> {
 
 				// end of list of validators for this field reached
 				if (!validator) {
-					resolve(errors.data.length === 0);
+					resolve(errors.length === 0);
 					return;
 				}
 

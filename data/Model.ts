@@ -68,9 +68,9 @@ class PersistentModel extends BaseModel implements data.IPersistentModel {
 }
 
 module PersistentModel {
-	export interface Callers extends BaseModel.Callers, data.IModel.Callers {}
-	export interface Getters extends BaseModel.Getters, data.IModel.Getters {}
-	export interface Setters extends BaseModel.Setters, data.IModel.Setters {}
+	export interface Callers extends BaseModel.Callers, data.IPersistentModel.Callers {}
+	export interface Getters extends BaseModel.Getters, data.IPersistentModel.Getters {}
+	export interface Setters extends BaseModel.Setters, data.IPersistentModel.Setters {}
 }
 
 PersistentModel.prototype._scenario = 'insert';

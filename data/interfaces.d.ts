@@ -57,6 +57,7 @@ export declare module IModel {
 	}
 
 	export interface Getters extends core.IObservable.Getters {
+		(key:'app'):core.IApplication;
 		(key:'isExtensible'):boolean;
 		(key:'scenario'):string;
 	}
@@ -137,7 +138,7 @@ export declare module IProperty {
 	export interface Getters<T> extends core.IObservable.Getters {
 		(key:'default'):T;
 		(key:'dependencies'):string[];
-		(key:'errors'):dstore.ICollection<ValidationError>;
+		(key:'errors'):Array<ValidationError>;
 		(key:'key'):string;
 		(key:'model'):IModel;
 		(key:'label'):string;
@@ -149,7 +150,7 @@ export declare module IProperty {
 	export interface Setters<T> extends core.IObservable.Setters {
 		(key:'default', value:T):void;
 		(key:'dependencies', value:string[]):void;
-		(key:'errors', value:dstore.ICollection<ValidationError>):void;
+		(key:'errors', value:Array<ValidationError>):void;
 		(key:'key', value:string):void;
 		(key:'model', value:IModel):void;
 		(key:'label', value:string):void;

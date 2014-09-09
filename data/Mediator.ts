@@ -20,21 +20,7 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 	 * @set
 	 * @protected
 	 */
-	_app:core.IApplication;
-
-	/**
-	 * @get
-	 * @set
-	 * @protected
-	 */
 	_model:BaseModel;
-
-	/**
-	 * @get
-	 * @set
-	 * @protected
-	 */
-	_store:any;
 
 	call:Mediator.Callers<T>;
 	get:Mediator.Getters<T>;
@@ -48,6 +34,9 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 		var Ctor = this;
 
 		collection = collection.track();
+		// TODO: Hack(?) to make indexes show up
+		collection.fetch();
+		wrapperCollection.fetch();
 
 		function wrapSetter(method:string):(object:any, options?:Object) => any {
 			return function (object:any, options?:Object):any {
@@ -70,7 +59,7 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 		wrapperCollection.removeSync = lang.hitch(collection, 'removeSync');
 
 		collection.on('add', function (event:dstore.ChangeEvent):void {
-			put.call(wrapperCollection, new Ctor({ model: event.target }), { index: event.index });
+			put.call(wrapperCollection, new Ctor({ app: event.target.get('app'), model: event.target }), { index: event.index });
 		});
 		collection.on('update', function (event:dstore.ChangeEvent):void {
 			put.call(wrapperCollection, wrapperCollection.getSync(collection.getIdentity(event.target)), { index: event.index });
@@ -82,7 +71,7 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 		return wrapperCollection;
 	}
 
-	constructor(kwArgs?:{ [key:string]: any; }) {
+	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
 	}
 
@@ -274,17 +263,9 @@ Mediator.prototype.set = function (key:any, value?:any):void {
 	}
 };
 
-// TypeScript does not create default properties on the prototype, but they are necessary to allow these fields to be
-// set at runtime and to prevent infinite recursion with the default model getter implementation (using `this.get`
-// to allow accessor overrides)
-
-// These properties need to be defined explicitly or they will attempt to fall through to the model;
-// in the case of `model` falling through to `model`, it will be an infinite recursion. `app` and `store` always go
-// directly to the Mediator since they are per-object properties that should not be propagated directly back to the
-// model
-Mediator.prototype._app = null;
+// This property needs to be defined explicitly or it will attempt to fall through to the model;
+// in the case of `model` falling through to `model`, it will be an infinite recursion
 Mediator.prototype._model = null;
-Mediator.prototype._store = null;
 
 module Mediator {
 	export interface Callers<T> extends data.IProxyModel.Callers<T> {}

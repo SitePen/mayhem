@@ -2,7 +2,6 @@ import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import data = require('./interfaces');
 import lang = require('dojo/_base/lang');
-import Memory = require('dstore/Memory');
 import Observable = require('../Observable');
 import Promise = require('../Promise');
 import Property = require('./Property');
@@ -10,6 +9,11 @@ import util = require('../util');
 import ValidationError = require('../validation/ValidationError');
 
 class Model extends Observable implements data.IModel {
+	/**
+	 * @protected
+	 */
+	static _app:any;
+
 	static property<T>(staticArgs:data.IProperty.KwArgs<T>):any {
 		return function (kwArgs:data.IProperty.KwArgs<T>):Property<T> {
 			return new Property<T>(lang.mixin({}, staticArgs, kwArgs));
@@ -27,6 +31,12 @@ class Model extends Observable implements data.IModel {
 		else {
 			prototype._schema = schema;
 		}
+	}
+
+	// Because `app` can be something other than an actual Application object, it is set on the constructor and then
+	// resolved at construction time
+	static setDefaultApp(app:any):void {
+		this._app = app;
 	}
 
 	/**
@@ -49,6 +59,29 @@ class Model extends Observable implements data.IModel {
 	call:Model.Callers;
 	get:Model.Getters;
 	set:Model.Setters;
+
+	constructor(kwArgs?:any) {
+		// TODO: This happens somewhere else too I think
+		// `app` needs to be set early since it is used when constructing the Property objects inside the model
+		if (kwArgs && kwArgs['app'] !== undefined) {
+			this._app = kwArgs['app'];
+		}
+		else {
+			var app:any = (<typeof Model> this.constructor)._app;
+			var type:string = typeof app;
+			if (type === 'object') {
+				this._app = app;
+			}
+			else if (type === 'string') {
+				this._app = <any> require(app);
+			}
+			else if (type === 'function') {
+				this._app = app(this);
+			}
+		}
+
+		super(kwArgs);
+	}
 
 	addError(key:string, error:ValidationError):void {
 		var property = this._getProperty(key);
@@ -82,17 +115,23 @@ class Model extends Observable implements data.IModel {
 
 	/* protected */ _getProperties():HashMap<data.IProperty<any>> {
 		var properties:any = {};
+
+		this._getProperties = function ():HashMap<data.IProperty<any>> {
+			return properties;
+		};
+
 		for (var key in this._schema) {
 			var PropertyCtor:Model.IPropertyConstructor = this._schema[key];
 			properties[key] = new PropertyCtor({
+				app: this._app,
 				key: key,
 				model: this
 			});
 		}
 
-		this._getProperties = function ():HashMap<data.IProperty<any>> {
-			return properties;
-		};
+		for (key in properties) {
+			properties[key].startup();
+		}
 
 		return properties;
 	}
@@ -106,9 +145,11 @@ class Model extends Observable implements data.IModel {
 
 		if (!property && !(('_' + key) in this) && this._isExtensible) {
 			property = properties[key] = new Property<any>({
+				app: this._app,
 				model: this,
 				key: key
 			});
+			property.startup();
 		}
 
 		return property;
@@ -117,7 +158,7 @@ class Model extends Observable implements data.IModel {
 	isValid():boolean {
 		var properties = this._getProperties();
 		for (var key in properties) {
-			if ((<Memory<ValidationError>> properties[key].get('errors')).data.length) {
+			if (properties[key].get('errors').length) {
 				return false;
 			}
 		}
@@ -189,7 +230,8 @@ Model.prototype.call = function (method:string, ...args:any[]):any {
 };
 
 Model.prototype.get = function (key:string):any {
-	var property:data.IProperty<any> = this._getProperty(key);
+	// use _getProperties to avoid auto-generation of property objects for undefined or non-Property properties
+	var property:data.IProperty<any> = this._getProperties()[key];
 	return property ? property.get('value') : Observable.prototype.get.call(this, key);
 };
 
@@ -218,6 +260,8 @@ module Model {
 	}
 }
 
+// `app` must always be assignable directly to the model since it is used internally and is a reserved name
+Model.prototype._app = null;
 Model.prototype._isExtensible = false;
 
 export = Model;
