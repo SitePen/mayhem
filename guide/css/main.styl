@@ -448,7 +448,7 @@ a:hover {
 	}
 
 	article {
-		margin-bottom: $lh * 8;
+		margin-bottom: $lh * 8.25;
 		position: relative;
 
 		&:last-child {
@@ -473,41 +473,61 @@ a:hover {
 		position: relative;
 		top: $lh * -2;
 
+		&.half {
+			top: $lh * -1.5;
+		}
+
 		.no-sticky & {
 			top: $lh * -3;
+
+			&.half {
+				top: $lh * -2.5;
+			}
 		}
 
 		@media (max-width: 920px) {
 			top: $lh * -1.625;
 
+			&.half {
+				top: $lh * -1.125;
+			}
+
 			.no-sticky & {
 				top: $lh * -1.625;
+
+				&.half {
+					top: $lh * -1.125;
+				}
 			}
 		}
 
 		@media (max-width: 490px) {
 			top: $lh * -2.75;
 
+			&.half {
+				top: $lh * -2.25;
+			}
+
 			.no-sticky & {
 				top: $lh * -2.75;
+
+				&.half {
+					top: $lh * -2.25;
+				}
 			}
 		}
 	}
 
 	h2 {
 		padding-top: $lh * 0.25;
-		margin-bottom: $lh * 2 - $lh * 0.25;
+		margin-bottom: $lh * 1.5;
 		text-transform: uppercase;
 	}
 
 	h3 {
 		font-size: 1.25rem;
 		margin-bottom: $lh * 0.25;
-		padding-top: $lh * 0.25;
-
-		+ p:first-line {
-			font-style: italic;
-		}
+		padding-top: $lh * 0.75;
 	}
 
 	h4 {
@@ -531,10 +551,13 @@ a:hover {
 	}
 
 	pre {
+		pushout();
+		background-color: $mayhemLightGrey;
 		line-height: $lh * 0.625; // 8 lines / rhythm
-		margin-bottom: $lh * 0.4375;
+		margin-bottom: $lh * 0.53125;
 		overflow: auto;
 		-webkit-overflow-scrolling: touch;
+		padding-bottom: $lh * 0.4375;
 		padding-top: $lh * 0.4375;
 		tab-size: 2;
 	}
@@ -596,7 +619,7 @@ a:hover {
 		padding-top: $lh * 0.9375;
 
 		pre {
-			padding-top: 0;
+			margin-top: $lh * -0.4375;
 			margin-bottom: $lh;
 		}
 
@@ -626,6 +649,43 @@ a:hover {
 
 	.m1 { margin-bottom: $lh; }
 	.m2 { margin-bottom: $lh * 0.5; }
+}
+
+.codeMirror {
+	pushout();
+	background-color: $mayhemLightGrey;
+	display: table;
+	margin-bottom: $lh * 0.53125;
+	padding-left: 0;
+	padding-right: 0;
+	table-layout: fixed;
+	width: calc(100% + 4rem);
+
+	pre {
+		display: table-cell;
+	}
+
+	pre:first-child {
+		border-right: 0.5rem solid $backgroundColor;
+		padding-left: 2rem;
+		padding-right: $lh * 0.4375;
+		width: 60%;
+	}
+
+	pre:last-child {
+		padding-left: $lh * 0.4375;
+		padding-right: 2rem;
+		width: 40%;
+	}
+
+	pre:first-child:last-child {
+		padding-left: 2rem;
+		border: none;
+	}
+
+	.align-bottom {
+		vertical-align: bottom;
+	}
 }
 
 .tip,

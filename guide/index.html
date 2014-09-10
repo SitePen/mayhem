@@ -76,10 +76,18 @@
 								<li data-id="conventions"><a href="#conventions">Conventions</a></li>
 							</ul>
 						</li>
+						<li data-id="application">
+							<a href="#application">Applications</a>
+							<ul class="subsections">
+								<li data-id="application-class"><a href="#application-class">Creating an application</a></li>
+								<li data-id="application-components"><a href="#application-components">Application components</a></li>
+							</ul>
+						</li>
 						<li data-id="data-binding">
 							<a href="#data-binding">Data binding</a>
 							<ul class="subsections">
 								<li data-id="what-is-data-binding"><a href="#what-is-data-binding">What is data binding?</a></li>
+								<li data-id="extending-binding"><a href="#extending-binding">Adding and extending bindings</a></li>
 							</ul>
 						</li>
 						<li>
@@ -107,6 +115,11 @@
 							<ul class="subsections">
 							</ul>
 						</li>
+						<li>
+							<a href="">Community</a>
+							<ul class="subsections">
+							</ul>
+						</li>
 					</ul>
 
 					<p class="support"><a href="https://sitepen.com/support/index.html">Commercial support</a></p>
@@ -117,18 +130,18 @@
 						<div class="a" id="getting-started"></div>
 						<h2 data-id="getting-started">Welcome to Mayhem</h2>
 
-						<div class="a" id="what-is-mayhem"></div>
+						<div class="a half" id="what-is-mayhem"></div>
 						<h3 data-id="what-is-mayhem">What is Mayhem?</h3>
 
 						<p>Mayhem is a framework for developing large, complex applications with TypeScript or JavaScript. Unlike other Web libraries and frameworks that place their emphasis on performance or file size, Mayhem is designed around these three key tenets:</p>
 
 						<ul>
 							<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
-							<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written, using the same basic set of tools.</li>
-							<li><strong>Correctness</strong>: When writing software, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be extremely modular, testable, and easy to understand in order to minimise the maintenance cost of using it.</li>
+							<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written, using the same standard set of tools.</li>
+							<li><strong>Correctness</strong>: When writing software, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be modular, testable, and easy to understand in order to minimise the maintenance cost surrounding its use.</li>
 						</ul>
 
-						<p>We believe that good architecture, in combination with today’s superfast JavaScript engines, offers a very high level of performance in nearly all use cases. As such, we will never compromise the clarity or maintainability of the Mayhem codebase for the sake of performance. We hope that you will see the benefit of this decision in increased productivity and less time spent troubleshooting your apps!</p>
+						<p>We believe that good architecture, in combination with today’s superfast JavaScript engines, ensures a very high level of performance in nearly all use cases. As such, the clarity and maintainability of the Mayhem codebase will always be given priority over performance tweaks in all but the hottest code paths. We hope that you will see the benefit of this decision in increased productivity and less time spent troubleshooting your apps!</p>
 
 						<h4>What is Mayhem best for?</h4>
 
@@ -136,7 +149,7 @@
 
 						<p>This first release of Mayhem focuses primarily on the development of form-based client-side Web applications, but we plan on rapidly expanding functionality for other types of apps. <a href="https://github.com/SitePen/mayhem/blob/master/CONTRIBUTING.md">Pull requests are accepted!</a></p>
 
-						<div class="a" id="system-requirements"></div>
+						<div class="a half" id="system-requirements"></div>
 						<h3 data-id="system-requirements">System requirements</h3>
 
 						<p>End-users of Mayhem applications must meet the following minimum system requirements:</p>
@@ -192,7 +205,7 @@
 							</tr>
 						</table>
 
-						<div class="a" id="installation"></div>
+						<div class="a half" id="installation"></div>
 						<h3 data-id="installation">Installation</h3>
 
 						<p>Depending upon the platform you are planning on developing for, there are three different ways in which installation can be performed:</p>
@@ -205,7 +218,7 @@
 
 						<p>Because Mayhem is written in TypeScript, future versions of Mayhem will also be compiled to standard EcmaScript 6 modules once that format has been finalised.</p>
 
-						<div class="a" id="reading-guide"></div>
+						<div class="a half" id="reading-guide"></div>
 						<h3 data-id="reading-guide">Reading this guide</h3>
 
 						<p>Throughout this guide, you will find certain pieces of information are called out specifically, as we have found them to be especially important or problematic for users.</p>
@@ -222,20 +235,20 @@
 							<p>Sections that look like this tell you about dangerous anti-patterns that can break, slow down, or make your application less maintainable.</p>
 						</aside>
 
-						<p>Later sections of this guide are designed to be built upon knowledge presented in earlier parts. If you jump into the middle and feel confused, step back a section or two; the information you are seeking is in here!</p>
+						<p>Later sections of this guide are designed to be built upon knowledge presented in earlier parts. If you jump into the middle and feel confused, step back a section or two until you find the information you need to move forward. We also accept <a href="TODO">pull requests</a> to the documentation in order to improve its flow and clarity.</p>
 
-						<div class="a" id="first-app"></div>
+						<div class="a half" id="first-app"></div>
 						<h3 data-id="first-app">Creating your first app</h3>
 
 						<p>In order to simplify the creation of new applications, Mayhem comes with a command-line generator that can be used to instantly generate new applications.</p>
 
 						<aside class="tip"><p>In the first release of Mayhem, the <span class="sc">Mayhem generator</span> generates Web applications only. Future versions will contain additional default application profiles for many other kinds of apps.</p></aside>
 
-						<p>To get started, run the generator as follows:</p>
+						<p>To get started, just run the generator for starting a Web application:</p>
 
 						<pre class="m1"><code class="bash">$ yo mayhem webapp src</code></pre>
 
-						<p>This will create a new skeleton Web application in the <code>src</code> directory (actually, a TodoMVC app). All that needs to be done now is to open the test application in a browser:</p>
+						<p>This will create a new skeleton Web app in the <code>src</code> directory (actually, a TodoMVC app). All that needs to be done now is to open the test application in a browser:</p>
 
 						<pre class="m1"><tt>http://localhost/path/to/src/index.html</tt></pre>
 
@@ -250,7 +263,7 @@
 						<div class="a" id="fundamentals"></div>
 						<h2 data-id="fundamentals">Fundamentals</h2>
 
-						<div class="a" id="fundamentals-overview"></div>
+						<div class="a half" id="fundamentals-overview"></div>
 						<h3 data-id="fundamentals-overview">Overview</h3>
 
 						<figure>
@@ -261,7 +274,8 @@
 						<p>The architecture of Mayhem is divided up into eight primary subsystems:</p>
 
 						<ul>
-							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application dependencies at runtime using dependency injection, and providing a main application-wide object for each application that is currently running in the environment.</li>
+							<!-- repeated in #application-class -->
+							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application components at runtime using dependency injection, and providing a main application-wide object for each application that is currently running in the environment.</li>
 							<li><strong>Data binding</strong>: The <dfn>data binding subsystem</dfn> is responsible for all functionality related to binding properties between two objects, and observing properties on objects for changes. This subsystem is essential for implementing the MVVM pattern, which will be discussed shortly.</li>
 							<li><strong>Data modelling</strong>: The <dfn>data modelling subsystem</dfn> provides functionality related to business logic, data object creation, data validation, and communication with databases.</li>
 							<li><strong>Foundation</strong>: The <dfn>foundation subsystem</dfn> provides core functionality for the entire Mayhem application framework, like observable proxy objects, utility functions, and other miscellaneous critical functionality.</li>
@@ -271,7 +285,7 @@
 							<li><strong>Views</strong>: The <dfn>view subsystem</dfn> is responsible for handling all <abbr title="User Interface">UI</abbr> input and output.</li>
 						</ul>
 
-						<div class="a" id="typescript"></div>
+						<div class="a half" id="typescript"></div>
 						<h3 data-id="typescript">The TypeScript language</h3>
 
 						<p>Mayhem is written in <a href="http://typescriptlang.org">TypeScript</a> in order to take advantage of the significant maintenance benefits that come with optional strict typing and the ability to define strong interfaces. Since these features are also critical to keeping large applications maintainable over many years—especially with teams of varying disciplines and skill levels—we strongly encourage all users of Mayhem to explore using TypeScript directly when writing apps with Mayhem. However, the TypeScript compiler does generate highly-readable, well-formed JavaScript, so if you prefer to use vanilla JavaScript, go right ahead!</p>
@@ -306,7 +320,7 @@ export = User;</code></pre>
 
 						<aside class="tip"><p>The <span class="sc">Mayhem generator</span> can create these more verbose data interfaces for you automatically. As the TypeScript language continues to mature, improved code generation and annotations will be used in order to eliminate the need to write longhand interface definitions. (One useful side-benefit of having to define getters and setters separately is that it becomes possible to type properties as being read-only or write-only within the compiler.)</p></aside>
 
-						<div class="a" id="mvvm"></div>
+						<div class="a half" id="mvvm"></div>
 						<h3 data-id="mvvm">The MVVM pattern</h3>
 
 						<figure>
@@ -314,7 +328,7 @@ export = User;</code></pre>
 							<figcaption>An overview of the MVVM pattern</figcaption>
 						</figure>
 
-						<p>Mayhem implements the model–view–view-model (<dfn><abbr title="model–view–view-model">MVVM</abbr></dfn>) architectural pattern, which separates business logic, user interface logic, and the user interface itself into three distinct layers. This pattern is similar to the Smalltalk <abbr title="model-view-controller">MVC</abbr> pattern (not to be confused with <a href="https://en.wikipedia.org/wiki/Model_2">Model 2 MVC</a>, a pattern used by server-side “MVC” frameworks), but it uses an improved mode of interaction between the different layers in order to avoid the “fat controller” anti-pattern common to many MVC apps.</p>
+						<p>Mayhem implements the model–view–view-model (<dfn><abbr title="model–view–view-model">MVVM</abbr></dfn>) architectural pattern, which separates business logic, user interface logic, and the user interface itself into three distinct layers. This pattern is similar to the Smalltalk <abbr title="model-view-controller">MVC</abbr> pattern (not to be confused with <a href="https://en.wikipedia.org/wiki/Model_2">Model 2 MVC</a>, a pattern used by server-side MVC frameworks), but it uses an improved mode of interaction between the different layers in order to avoid the “fat controller” anti-pattern common to many MVC apps.</p>
 
 						<h4>Model</h4>
 
@@ -332,12 +346,47 @@ export = User;</code></pre>
 
 						<p>In many cases, view-models are simple proxies back to real data models. For example, while a Transaction model may store the amount of a transaction in USD cents, your view may want to display the transaction amount in its equivalent in euros, with the correct currency symbol and locale-specific number formatting. Since all other information—like the transaction ID and recipient—can be taken as-is from the original data model, there is no reason to create an entirely separate view-model that re-exposes these properties just to add this one extra piece for the view. <a href="TODO"><code>mayhem/data/ProxyModel</code>s</a> allow you to wrap an existing model object with extra properties for display in a view, with all other properties delegating back to the original data model.</p>
 
-						<div class="a" id="conventions"></div>
+						<div class="a half" id="conventions"></div>
 						<h3 data-id="conventions">Conventions</h3>
 
-						<h4>Application components</h4>
+						<h4>Object construction</h4>
 
-						<p>Mayhem Application classes include a default set of application components that are required to run an application of a given type. These components can be overridden with custom implementations, but various parts of framework code expect these essential components to exist at specific keys on the main Application object:</p>
+						<p>All constructors in Mayhem share the same constructor signature, with a single optional <dfn>keyword arguments</dfn> object accepted as the sole argument:</p>
+
+						<pre><code class="typescript">{ new (kwArgs?:Object):&lt;ClassType>; }</code></pre>
+
+						<p>By passing all arguments to a constructor using a keyword arguments object instead of allowing arbitrary constructor parameters, many things become easier:</p>
+
+						<ul>
+							<li>Constructors can always be extended in a backwards-compatible manner, since new properties can simply be added to the list of accepted properties without a signature change</li>
+							<li>Constructors can always be indirectly invoked using the <code>new</code> keyword, with <a href="https://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible" title="“Use of .apply() with 'new' operator. Is this possible?” on Stack Overflow">no additional overhead</a></li>
+							<li>All arguments are clear from the call itself and do not <a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-Event-initMouseEvent" title="The DOM 2 Event#initMouseEvent API, featuring 6 number and 6 boolean parameters">require looking at the constructor’s parameter list</a></li>
+							<li>No extra code is necessary for parameters that need to go through accessors/mutators, as the keyword arguments object is mass-assigned using <a href="TODO"><code>Observable#set</code></a></li>
+						</ul>
+
+						<h4>Object usage</h4>
+
+						<p>Getting and setting the properties of most Mayhem class instances is done using <a href="TODO"><code>object.get(key)</code></a> and <a href="TODO"><code>object.set(key, value)</code></a> methods instead of using the normal property accessor (<code>.</code>) operator. This is necessary to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty#Custom_setters_and_getters">accessor/mutator functions</a> in pre-ES5 environments, and to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy-like behaviour</a> in pre-ES6 environments.</p>
+
+						<h4>Object destruction</h4>
+
+						<p>When you are done working with a class instance in Mayhem, it should always be destroyed by calling <a href="TODO"><code>object.destroy</code></a>. Doing this ensures that any all internally held references to other objects that may still be retained elsewhere are broken, and that any necessary clean-up work is completed.</p>
+
+						<h4>Event registration</h4>
+
+						<p>Mayhem continues the best practice established in the <a href="http://dojotoolkit.org">Dojo Toolkit</a> of returning an <a href="TODO"><code>IHandle</code></a> object from methods that perform registrations (event listeners, method aspects, data bindings, registry entries, etc.) instead of providing symmetric add/remove APIs. This practice offers many significant benefits over symmetric APIs:</p>
+
+						<ul>
+							<li>You only need to keep a reference to the <code>IHandle</code> object, instead of needing to keep references to all arguments passed to the event registration function, or using hacks like namespaced events</li>
+							<li>Anonymous functions can be used when registering event listeners that need to be removed later</li>
+							<li>You only need to remember one way to remove any type of object registration (<code>handle.remove()</code>)</li>
+							<li>Convenience APIs for mass-removal of registrations can be created without needing to know every possible type of registration</li>
+							<li>Handles can be extended with additional context-specific APIs for modifying registrations (for example, to change the source or target of a data binding)</li>
+						</ul>
+
+						<h4>Application components TODO This is the wrong place for this</h4>
+
+						<p>Mayhem application classes include a default set of <a href="#application-components">application components</a> that are required to run an application of a given type. These components can be overridden with custom implementations, but various parts of framework code expect these essential components to exist at specific keys on the main Application object:</p>
 
 						<ul>
 							<li><code><strong>binder</strong></code>: An implementation of the <code>mayhem/binding/interfaces.IBinder</code> interface. Provides data binding.</li>
@@ -346,14 +395,16 @@ export = User;</code></pre>
 							<li><code><strong>ui</strong></code>: An implementation of the <code>mayhem/ui/Master</code> interface. Provides user interface support for applications that interact directly with users through a terminal or window server.</li>
 						</ul>
 
+						<p>Application components constructed by the <a href="TODO"><code>mayhem/Application</code> class</a> will be passed their owner Application instance through the <code>app</code> keyword argument.</p>
+
 						<h4>Module paths</h4>
 
 						<p>Mayhem assumes that a Mayhem application will use a default set of module ID paths. Each of them can be customised if needed.</p>
 
 						<ul>
-							<li><code><strong>app/models</strong></code>: This directory holds all application data models. It can be customised via <a href="TODO"><code>Application#modelPath</code></a>.</li>
-							<li><code><strong>app/viewModels</strong></code>: This directory holds all application view models. It can be customised via <a href="TODO"><code>Application#viewModelPath</code></a>.</li>
-							<li><code><strong>app/views</strong></code>: This directory holds all application views and templates. It can be customised via <a href="TODO"><code>Application#viewPath</code></a> and <a href="TODO"><code>Application#templatePath</code></a>.</li>
+							<li><code><strong>app/models</strong></code>: This path holds all application data models. It can be customised via <a href="TODO"><code>Application#modelPath</code></a>.</li>
+							<li><code><strong>app/viewModels</strong></code>: This path holds all application view models. It can be customised via <a href="TODO"><code>Application#viewModelPath</code></a>.</li>
+							<li><code><strong>app/views</strong></code>: This path holds all application views and templates. It can be customised via <a href="TODO"><code>Application#viewPath</code></a> and <a href="TODO"><code>Application#templatePath</code></a>.</li>
 						</ul>
 
 						<p>The physical location of the <code>app</code> package on the filesystem can be modified by setting [TODO: Need some Dojo configuration stuff] <code>dojoConfig.packages = [ { name: 'app', location: 'path/to/app' } ];</code> in your application’s <code>index.html</code> file.
@@ -371,11 +422,274 @@ export = User;</code></pre>
 
 						<h4>Code conventions</h4>
 
-						<p>Mayhem follows most normal TypeScript code conventions, although spaces are not placed before type definitions in order to provide better disambiguation between a type value (no space) and an object literal value (space). All modules within Mayhem are defined as external modules.</p>
+						<p>Mayhem follows most normal TypeScript code conventions, with the exception that spaces are not normally placed before type definitions in order to provide better disambiguation at a glance between a type value (no space) and an object literal value (space). A <a href="https://github.com/palantir/tslint">tslint</a> profile for Mayhem, along with an up-to-date description of all code conventions, is available in the TODO <a href="https://github.com/SitePen/mayhem/blob/master/README.md">README</a> within the Mayhem repository.</p>
 					</article>
 
 					<article>
-						<p>Views can be created pro [TODO: Currently Widget in the code] the <a href="TODO"><code>mayhem/ui/View</code></a> class and constructed programmatically, or they can be generated declaratively by using a templating engine.</p>
+						<div class="a" id="application"></div>
+						<h2 data-id="application">The Application subsystem</h2>
+
+						<div class="a half" id="application-class"></div>
+						<h3 data-id="application-class">Creating an application</h3>
+
+						<p>Mayhem provides a base <a href="TODO"><code>mayhem/Application</code> class</a> for creating new applications:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');</code></pre>
+
+						<p>New applications are created simply by instantiating a new Application object:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application();</code></pre>
+
+						<p>A Mayhem application can be easily customised by passing a configuration object to the constructor:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers'
+});
+
+app.get('name');</code></pre>
+							<pre class="align-bottom"><code class="javascript">'Bob’s Burgers'</code></pre>
+						</div>
+
+						<aside class="tip"><p>The <code>name</code> property of an application will be used as the title of the application in user interfaces that support titles.</p></aside>
+
+						<p>It is also possible to create custom applications by subclassing an existing Application class. For example, the <a href="TODO"><code>mayhem/WebApplication</code> class</a> is a subclass of <code>mayhem/Application</code> with a different default configuration suitable for writing Web applications.</p>
+
+						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside></p>
+
+						<p>Once your application object is finished being created, call <code>app.run()</code> to start it:</p>
+
+
+
+						<div class="a half" id="application-components"></div>
+						<h3 data-id="application-components">Application components</h3>
+
+						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load different <dfn>application components</dfn> that implement the individual features necessary to create a complete application. For example, the <a href="TODO"><code>mayhem/binding/Binder</code> class</a> is an application component that is used to perform all data binding within an application, and the <a href="TODO"><code>mayhem/ui/Master</code> class</a> is an application component that is used to provide a user interface.</p>
+
+						<p>Application components can be dynamically added to an application at runtime using the <a href="TODO"><code>components</code></a> property. The configuration object passed to Application is <a href="TODO">deep copied</a> into the default configuration, so any default application components will still be included when it is set:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+
+	components: {
+		burgerStore: {
+			constructor: 'app/stores/BurgerRestStore',
+			target: '/rest/burgers/'
+		}
+	}
+});
+
+app.get('components');</code></pre>
+							<pre class="align-bottom"><code class="javascript">{
+	binding: {
+		constructor: 'mayhem/binding/Binder',
+		bindings: [ /* … */ ]
+	},
+	/* … */
+	burgerStore: {
+		constructor: 'app/stores/BurgerRestStore',
+		target: '/rest/burgers/'
+	}
+}</code></pre>
+						</div>
+
+						<p>Default application components can be disabled by explicitly setting them to <code>null</code>:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+
+	components: {
+		binding: null,
+		/* … */
+		burgerStore: {
+			constructor: 'app/stores/BurgerRestStore',
+			target: '/rest/burgers/'
+		}
+	}
+});
+
+app.get('components');</code></pre>
+							<pre class="align-bottom"><code class="javascript">{
+	binding: null,
+	/* … */
+	burgerStore: {
+		constructor: 'app/stores/BurgerRestStore',
+		target: '/rest/burgers/'
+	}
+}</code></pre>
+						</div>
+
+						<aside class="whatAreYouCrazy"><p>Removing default application components from any of the built-in Application classes will probably cause Mayhem to break! Only use this technique to disable default application components in your own Application subclasses.</p></aside>
+
+						<p>Application component constructors can also be explicitly imported and used, which helps to automate <a href="TODO">build-time dependency resolution</a>:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+import BurgerRestStore = require('./stores/BurgerRestStore');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+
+	components: {
+		binding: null,
+		burgerStore: {
+			constructor: BurgerRestStore,
+			target: '/rest/burgers/'
+		}
+	}
+});
+
+app.get('components');</code></pre>
+							<pre class="align-bottom"><code class="javascript">{
+	binding: null,
+	scheduler: { /* ... */ },
+	burgerStore: {
+		constructor: BurgerRestStore,
+		target: '/rest/burgers/'
+	}
+}</code></pre>
+						</div>
+
+						<p>Once the application has been started, its application components will be loaded and instantiated.</p>
+
+						<p>Application components can implement a <a href="TODO"><code>startup</code></a> method of their own, which will be called when the application itself is started:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+
+	components: {
+		burgerStore: {
+			constructor: 'app/stores/BurgerRestStore',
+			target: '/rest/burgers/'
+		}
+	}
+});
+
+// TODO: `run`
+app.startup().then(function () {
+	console.log(app);
+});</code></pre>
+							<pre><code class="javascript">&lt;Application> {
+	name: 'Bob’s Burgers',
+	burgerStore: &lt;BurgerRestStore> {
+		target: '/rest/burgers/'
+	}
+}</code></pre>
+						</div>
+
+						<p>By exporting the application object, it will be available to be referenced directly by other modules—although as we will see later, this is only necessary in rare instances:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+
+	components: {
+		burgerStore: {
+			constructor: 'app/stores/BurgerRestStore',
+			target: '/rest/burgers/'
+		}
+	}
+});
+
+// TODO: `run`
+app.startup();
+
+export = app;</code></pre>
+						</div>
+
+<!--
+						<p>Mayhem provides a base <a href="TODO"><code>mayhem/Application</code> class</a> for creating new applications. The Application class accepts a configuration object, so it is very easy to quickly create a new custom application containing all of the components and application-wide settings you need:</p>
+
+						<figure>
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Buy Stuff Shop',
+
+	components: {
+		productStore: {
+			constructor: 'app/stores/ProductRestStore',
+			url: '/rest/products/'
+		},
+		user: {
+			constructor: 'app/User'
+		}
+	}
+});
+
+// TODO: `run`
+app.startup().then(function () {
+	// everything is loaded
+}, function (error:Error) {
+	// there was a failure
+});
+
+export = app;</code></pre>
+							<figcaption><code>app/main.ts</code>: A basic Application instance</figcaption>
+						</figure>
+
+						<p>An alternative way to customise an application is to create an Application subclass. For example, the <a href="TODO"><code>mayhem/WebApplication</code> class</a> is a subclass of <code>mayhem/Application</code> with a different default configuration suitable for writing Web applications.</p>
+
+						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside>
+
+						<p>Once an application is fully configured, the TODO <code>startup</code> method must be called to load and instantiate application components. After this point, the application’s <code>components</code> configuration is frozen, though all the other properties of the application can continue to be modified using normal <code>get</code> and <code>set</code> calls.</p>
+
+						<div class="a half" id="application-components"></div>
+						<h3 data-id="application-components">Application components</h3>
+
+						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load different <dfn>application components</dfn> that implement the individual features necessary to create a complete application. For example, the <a href="TODO"><code>mayhem/binding/Binder</code> class</a> is an application component that is used to perform all data binding within an application, and the <a href="TODO"><code>mayhem/ui/Master</code> class</a> is an appliaction component that is used to provide a user interface.</p>
+
+						<p>The special <a href="TODO"><code>components</code></a> key of an Application instance defines which application components should be created when an application is started. For example, a custom User object containing the correct code for authenticating with a remote service would be added like this:</p>
+
+						<figure>
+							<pre><code class="typescript">// ...
+var app = new Application({
+	components: {
+		user: {
+			constructor: 'app/User'
+		}
+	}
+});
+// ...</code></pre>
+							<figcaption>Defining a custom User application component</figcaption>
+						</figure>
+
+						<p>Totally custom application components can be added, as with the <code>productStore</code> example above, but <a href="#conventions">by convention</a>, some reserved keys are expected to contain application components that implement specific interfaces.</p>
+
+						<p>Default application components can be disabled by setting their values to <code>null</code>:</p>
+
+						<figure>
+							<pre><code class="typescript">// ...
+var app = new Application({
+	components: {
+		user: null
+	}
+});
+// ...</code></pre>
+							<figcaption>Disabling a default application component</figcaption>
+						</figure>
+
+						<p>In order to allow multiple applications to run within the same environment concurrently, and in order to simplify testing of Mayhem components, every application component loaded through <a href="TODO"><code>Application#components</code></a> is expected to implement the <a href="TODO"><code>core.IApplicationComponent</code></a> interface.</p>
+
+					</article>
+
+					<article>
+						<p>Views can be created pro [TODO: Currently Widget in the code] the <a href="TODO"><code>mayhem/ui/View</code></a> class and constructed programmatically, or they can be generated declaratively by using a templating engine.</p> -->
 					</article>
 				</main>
 			</div>
