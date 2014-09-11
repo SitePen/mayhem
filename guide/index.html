@@ -116,8 +116,15 @@
 							</ul>
 						</li>
 						<li>
+							<a href="">Optimising</a>
+							<ul class="subsections">
+							</ul>
+						</li>
+						<li>
 							<a href="">Community</a>
 							<ul class="subsections">
+								<li data-id="getting-help"><a href="#getting-help">Getting help</a></li>
+								<li data-id="contributing"><a href="#contributing">Contributing</a></li>
 							</ul>
 						</li>
 					</ul>
@@ -274,7 +281,6 @@
 						<p>The architecture of Mayhem is divided up into eight primary subsystems:</p>
 
 						<ul>
-							<!-- repeated in #application-class -->
 							<li><strong>Application</strong>: The <dfn>application subsystem</dfn> is responsible for providing a mechanism for creating new applications by configuration, dynamically loading application components at runtime using dependency injection, and providing a main application-wide object for each application that is currently running in the environment.</li>
 							<li><strong>Data binding</strong>: The <dfn>data binding subsystem</dfn> is responsible for all functionality related to binding properties between two objects, and observing properties on objects for changes. This subsystem is essential for implementing the MVVM pattern, which will be discussed shortly.</li>
 							<li><strong>Data modelling</strong>: The <dfn>data modelling subsystem</dfn> provides functionality related to business logic, data object creation, data validation, and communication with databases.</li>
@@ -384,19 +390,6 @@ export = User;</code></pre>
 							<li>Handles can be extended with additional context-specific APIs for modifying registrations (for example, to change the source or target of a data binding)</li>
 						</ul>
 
-						<h4>Application components TODO This is the wrong place for this</h4>
-
-						<p>Mayhem application classes include a default set of <a href="#application-components">application components</a> that are required to run an application of a given type. These components can be overridden with custom implementations, but various parts of framework code expect these essential components to exist at specific keys on the main Application object:</p>
-
-						<ul>
-							<li><code><strong>binder</strong></code>: An implementation of the <code>mayhem/binding/interfaces.IBinder</code> interface. Provides data binding.</li>
-							<li><code><strong>router</strong></code>: An implementation of the <code>mayhem/routing/interfaces.IRouter</code> interface. Provides navigation and on-demand component loading for applications with discrete navigation points.</li>
-							<li><code><strong>scheduler</strong></code>: An implementation of the <code>mayhem/interfaces.IScheduler</code> interface. Provides next-turn event scheduling and debouncing.</li>
-							<li><code><strong>ui</strong></code>: An implementation of the <code>mayhem/ui/Master</code> interface. Provides user interface support for applications that interact directly with users through a terminal or window server.</li>
-						</ul>
-
-						<p>Application components constructed by the <a href="TODO"><code>mayhem/Application</code> class</a> will be passed their owner Application instance through the <code>app</code> keyword argument.</p>
-
 						<h4>Module paths</h4>
 
 						<p>Mayhem assumes that a Mayhem application will use a default set of module ID paths. Each of them can be customised if needed.</p>
@@ -442,7 +435,7 @@ export = User;</code></pre>
 
 var app = new Application();</code></pre>
 
-						<p>A Mayhem application can be easily customised by passing a configuration object to the constructor:</p>
+						<p>A Mayhem application can be very easily customised just by passing a configuration object to the constructor:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -451,7 +444,7 @@ var app = new Application({
 	name: 'Bob’s Burgers'
 });
 
-app.get('name');</code></pre>
+log(app.get('name'));</code></pre>
 							<pre class="align-bottom"><code class="javascript">'Bob’s Burgers'</code></pre>
 						</div>
 
@@ -461,16 +454,38 @@ app.get('name');</code></pre>
 
 						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside></p>
 
-						<p>Once your application object is finished being created, call <code>app.run()</code> to start it:</p>
+						<p>Once the application object is ready for use, call <code>app.startup()</code> to start it:</p>
 
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
 
+var app = new Application({
+	name: 'Bob’s Burgers'
+});
+
+log(app.startup().then(function () {
+	// started successfully
+}, function (error:Error) {
+	// an error occurred during startup
+}));</code></pre>
+							<pre class="align-bottom"><code class="javascript">&lt;Promise></code></pre>
+						</div>
 
 						<div class="a half" id="application-components"></div>
 						<h3 data-id="application-components">Application components</h3>
 
-						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load different <dfn>application components</dfn> that implement the individual features necessary to create a complete application. For example, the <a href="TODO"><code>mayhem/binding/Binder</code> class</a> is an application component that is used to perform all data binding within an application, and the <a href="TODO"><code>mayhem/ui/Master</code> class</a> is an application component that is used to provide a user interface.</p>
+						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load and instantiate different <dfn>application components</dfn> that implement the individual functions necessary to create a complete application. For example, the <a href="TODO"><code>mayhem/binding/Binder</code> class</a> is an application component that is used to perform all data binding within an application, and the <a href="TODO"><code>mayhem/ui/Master</code> class</a> is an application component that is used to provide a user interface.</p>
 
-						<p>Application components can be dynamically added to an application at runtime using the <a href="TODO"><code>components</code></a> property. The configuration object passed to Application is <a href="TODO">deep copied</a> into the default configuration, so any default application components will still be included when it is set:</p>
+						<p>The default Mayhem application components can be overridden with custom implementations. However, keep in mind that some parts of the framework that require features from application components expect them to exist at specific keys on the Application instance:</p>
+
+						<ul>
+							<li><code><strong>binder</strong></code>: An implementation of the <a href="TODO"><code>mayhem/binding/interfaces.IBinder</code></a> interface. Provides data binding.</li>
+							<li><code><strong>router</strong></code>: An implementation of the <a href="TODO"><code>mayhem/routing/interfaces.IRouter</code></a> interface. Provides navigation &amp; application state management.</li>
+							<li><code><strong>scheduler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IScheduler</code></a> interface. Provides event scheduling.</li>
+							<li><code><strong>ui</strong></code>: An implementation of the <a href="TODO"><code>mayhem/ui/Master</code></a> interface. Provides user interface support.</li>
+						</ul>
+
+						<p>Application components can be dynamically added to an application at runtime using the <a href="TODO"><code>components</code></a> property of the configuration object. The configuration object gets <a href="TODO">deep copied</a> onto the default configuration, so default application components will continue to exist even if they are not set in the configuration object:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -480,13 +495,13 @@ var app = new Application({
 
 	components: {
 		burgerStore: {
-			constructor: 'app/stores/BurgerRestStore',
+			constructor: 'app/stores/RestStore',
 			target: '/rest/burgers/'
 		}
 	}
 });
 
-app.get('components');</code></pre>
+log(app.get('components'));</code></pre>
 							<pre class="align-bottom"><code class="javascript">{
 	binding: {
 		constructor: 'mayhem/binding/Binder',
@@ -494,13 +509,13 @@ app.get('components');</code></pre>
 	},
 	/* … */
 	burgerStore: {
-		constructor: 'app/stores/BurgerRestStore',
+		constructor: 'app/stores/RestStore',
 		target: '/rest/burgers/'
 	}
 }</code></pre>
 						</div>
 
-						<p>Default application components can be disabled by explicitly setting them to <code>null</code>:</p>
+						<p>The default application components can be disabled by explicitly setting them to <code>null</code>:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -512,30 +527,58 @@ var app = new Application({
 		binding: null,
 		/* … */
 		burgerStore: {
-			constructor: 'app/stores/BurgerRestStore',
+			constructor: 'app/stores/RestStore',
 			target: '/rest/burgers/'
 		}
 	}
 });
 
-app.get('components');</code></pre>
+log(app.get('components'));</code></pre>
 							<pre class="align-bottom"><code class="javascript">{
 	binding: null,
 	/* … */
 	burgerStore: {
-		constructor: 'app/stores/BurgerRestStore',
+		constructor: 'app/stores/RestStore',
 		target: '/rest/burgers/'
 	}
 }</code></pre>
 						</div>
 
-						<aside class="whatAreYouCrazy"><p>Removing default application components from any of the built-in Application classes will probably cause Mayhem to break! Only use this technique to disable default application components in your own Application subclasses.</p></aside>
+						<aside class="whatAreYouCrazy"><p>Removing default application components from any of the built-in Application classes will probably cause Mayhem to break! Only use this technique to disable optional components in your own Application subclasses.</p></aside>
 
-						<p>Application component constructors can also be explicitly imported and used, which helps to automate <a href="TODO">build-time dependency resolution</a>:</p>
+						<p>Deep copying also means that the properties of default application components can be tweaked without having to rewrite the entire component declaration:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
-import BurgerRestStore = require('./stores/BurgerRestStore');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+
+	components: {
+		binding: {
+			useScheduler: false
+		},
+		/* … */
+	}
+});
+
+log(app.get('components'));</code></pre>
+							<pre class="align-bottom"><code class="javascript">{
+	binding: {
+		constructor: 'mayhem/binding/Binder',
+		useScheduler: false
+	},
+	/* … */
+}</code></pre>
+						</div>
+
+						<p>Using a string value for a <code>constructor</code> property causes the Application instance to dynamically load a module matching the given string once it is started. The value of the module will be used as the constructor function to create a component.</p>
+
+						<p>Application component constructors can also be explicitly imported and provided directly, which helps to automate <a href="TODO">build-time dependency resolution</a>:</p>
+
+						<div class="codeMirror">
+							<pre><code class="typescript">import Application = require('mayhem/Application');
+import RestStore = require('./stores/RestStore');
 
 var app = new Application({
 	name: 'Bob’s Burgers',
@@ -543,54 +586,106 @@ var app = new Application({
 	components: {
 		binding: null,
 		burgerStore: {
-			constructor: BurgerRestStore,
+			constructor: RestStore,
 			target: '/rest/burgers/'
 		}
 	}
 });
 
-app.get('components');</code></pre>
+log(app.get('components'));</code></pre>
 							<pre class="align-bottom"><code class="javascript">{
 	binding: null,
 	scheduler: { /* ... */ },
 	burgerStore: {
-		constructor: BurgerRestStore,
+		constructor: RestStore(),
 		target: '/rest/burgers/'
 	}
 }</code></pre>
 						</div>
 
-						<p>Once the application has been started, its application components will be loaded and instantiated.</p>
+						<p>Once the application has been started, it will perform these actions:</p>
 
-						<p>Application components can implement a <a href="TODO"><code>startup</code></a> method of their own, which will be called when the application itself is started:</p>
+						<ol>
+							<li>Freeze the <code>components</code> property so it can no longer be modified</li>
+							<li>Load modules for any unloaded application components whose <code>constructor</code> properties were strings</li>
+							<li>Instantiate all the application components, assigning them each to the corresponding key directly on the Application instance</li>
+							<li>Call the <code>startup</code> method on all application components that need to perform additional startup actions</li>
+							<li>Wait for all application components to finish starting</li>
+							<li>Resolve the returned <code>startup</code> promise</li>
+						</ol>
+
+						<p>Application components are instantiated using the value of the <a href="TODO"><code>constructor</code></a> property from the configuration object as the constructor function. The rest of the properties on the configuration object, plus an extra <code>app</code> property pointing to the Application instance, are passed as keyword arguments to the constructor:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
+import Observable = require('mayhem/Observable');
+import Promise = require('mayhem/Promise');
+
+class BurgerComponent extends Observable {
+	constructor(kwArgs?:Object) {
+		super(kwArgs);
+		log(kwArgs);
+	}
+
+	startup():Promise&lt;void> {
+		// a component can do its own startup work here,
+		// and optionally return a Promise for asynchronous
+		// work
+		return new Promise(function (resolve:Promise.IResolver&lt;void>) {
+			setTimeout(resolve, 1000);
+		});
+	}
+}
 
 var app = new Application({
-	name: 'Bob’s Burgers',
-
 	components: {
-		burgerStore: {
-			constructor: 'app/stores/BurgerRestStore',
-			target: '/rest/burgers/'
+		burgers: {
+			constructor: BurgerComponent,
+			buns: [ 'regular', 'sesame' ],
+			meats: [ 'beef', 'turkey', 'veggie' ],
+			toppings: [ 'cheese', 'onion', 'tomato' ]
 		}
 	}
 });
 
-// TODO: `run`
 app.startup().then(function () {
-	console.log(app);
-});</code></pre>
-							<pre><code class="javascript">&lt;Application> {
-	name: 'Bob’s Burgers',
-	burgerStore: &lt;BurgerRestStore> {
-		target: '/rest/burgers/'
-	}
+	log(app.get('burgers'));
+});
+</code></pre>
+							<pre><code class="javascript">
+
+
+
+
+
+{
+	app: &lt;Application> { /* … */ },
+	buns: [ /* … */ ],
+	meats: [ /* … */ ],
+	toppings: [ /* … */ ]
+}
+
+
+
+
+
+
+
+
+
+
+
+&lt;BurgerComponent> {
+	get('app'): &lt;Application> { /* … */ },
+	get('buns'): [ /* … */ ],
+	get('meats'): [ /* … */ ],
+	get('toppings'): [ /* … */ ]
 }</code></pre>
 						</div>
 
-						<p>By exporting the application object, it will be available to be referenced directly by other modules—although as we will see later, this is only necessary in rare instances:</p>
+						<aside class="whatAreYouCrazy"><p>Application components should always use their own <code>app</code> property to find their owner Application instance. Using an explicit module reference with <code>import</code> or <code>require()</code> is an anti-pattern that makes testing and reuse of application components more difficult. Application components that instantiate other objects should pass the <code>app</code> property to these objects if they also need a reference back to the application.</p></aside>
+
+						<p>Exporting the application object makes it available for direct reference by other modules later:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -600,7 +695,7 @@ var app = new Application({
 
 	components: {
 		burgerStore: {
-			constructor: 'app/stores/BurgerRestStore',
+			constructor: 'app/stores/RestStore',
 			target: '/rest/burgers/'
 		}
 	}
@@ -612,84 +707,20 @@ app.startup();
 export = app;</code></pre>
 						</div>
 
-<!--
-						<p>Mayhem provides a base <a href="TODO"><code>mayhem/Application</code> class</a> for creating new applications. The Application class accepts a configuration object, so it is very easy to quickly create a new custom application containing all of the components and application-wide settings you need:</p>
+						<aside class="whatAreYouCrazy"><p>It is strongly recommended to pass the application object directly to constructors instead of having constructor modules explicitly reference the application module. For convenience, the <a href="TODO">data modelling subsystem</a> can be configured with a default application object based on module identifier. This is the only place where this functionality should normally be used.</p></aside>
 
-						<figure>
-							<pre><code class="typescript">import Application = require('mayhem/Application');
-
-var app = new Application({
-	name: 'Buy Stuff Shop',
-
-	components: {
-		productStore: {
-			constructor: 'app/stores/ProductRestStore',
-			url: '/rest/products/'
-		},
-		user: {
-			constructor: 'app/User'
-		}
-	}
-});
-
-// TODO: `run`
-app.startup().then(function () {
-	// everything is loaded
-}, function (error:Error) {
-	// there was a failure
-});
-
-export = app;</code></pre>
-							<figcaption><code>app/main.ts</code>: A basic Application instance</figcaption>
-						</figure>
-
-						<p>An alternative way to customise an application is to create an Application subclass. For example, the <a href="TODO"><code>mayhem/WebApplication</code> class</a> is a subclass of <code>mayhem/Application</code> with a different default configuration suitable for writing Web applications.</p>
-
-						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside>
-
-						<p>Once an application is fully configured, the TODO <code>startup</code> method must be called to load and instantiate application components. After this point, the application’s <code>components</code> configuration is frozen, though all the other properties of the application can continue to be modified using normal <code>get</code> and <code>set</code> calls.</p>
-
-						<div class="a half" id="application-components"></div>
-						<h3 data-id="application-components">Application components</h3>
-
-						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load different <dfn>application components</dfn> that implement the individual features necessary to create a complete application. For example, the <a href="TODO"><code>mayhem/binding/Binder</code> class</a> is an application component that is used to perform all data binding within an application, and the <a href="TODO"><code>mayhem/ui/Master</code> class</a> is an appliaction component that is used to provide a user interface.</p>
-
-						<p>The special <a href="TODO"><code>components</code></a> key of an Application instance defines which application components should be created when an application is started. For example, a custom User object containing the correct code for authenticating with a remote service would be added like this:</p>
-
-						<figure>
-							<pre><code class="typescript">// ...
-var app = new Application({
-	components: {
-		user: {
-			constructor: 'app/User'
-		}
-	}
-});
-// ...</code></pre>
-							<figcaption>Defining a custom User application component</figcaption>
-						</figure>
-
-						<p>Totally custom application components can be added, as with the <code>productStore</code> example above, but <a href="#conventions">by convention</a>, some reserved keys are expected to contain application components that implement specific interfaces.</p>
-
-						<p>Default application components can be disabled by setting their values to <code>null</code>:</p>
-
-						<figure>
-							<pre><code class="typescript">// ...
-var app = new Application({
-	components: {
-		user: null
-	}
-});
-// ...</code></pre>
-							<figcaption>Disabling a default application component</figcaption>
-						</figure>
-
-						<p>In order to allow multiple applications to run within the same environment concurrently, and in order to simplify testing of Mayhem components, every application component loaded through <a href="TODO"><code>Application#components</code></a> is expected to implement the <a href="TODO"><code>core.IApplicationComponent</code></a> interface.</p>
-
+<!--					<article>
+						<p>Views can be created pro [TODO: Currently Widget in the code] the <a href="TODO"><code>mayhem/ui/View</code></a> class and constructed programmatically, or they can be generated declaratively by using a templating engine.</p> -->
 					</article>
 
 					<article>
-						<p>Views can be created pro [TODO: Currently Widget in the code] the <a href="TODO"><code>mayhem/ui/View</code></a> class and constructed programmatically, or they can be generated declaratively by using a templating engine.</p> -->
+						<div class="a" id="data-binding"></div>
+						<h2 data-id="data-binding">Data binding subsystem</h2>
+
+						<div class="a half" id="what-is-data-binding"></div>
+						<h3 data-id="what-is-data-binding">What is data binding?</h3>
+
+						<p>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br></p>
 					</article>
 				</main>
 			</div>

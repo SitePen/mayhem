@@ -8,7 +8,7 @@
  * vertical rhythm: 32px (~1.77rem)
  * minimum width: 320px
  * maximum width: 1170px (65rem)
- * breakpoints: 490 570 680 920 1080
+ * breakpoints: 490 570 680 892 920 1080 1180
  */
 
 $lh = 32px;
@@ -578,8 +578,25 @@ a:hover {
 		}
 	}
 
-	ol > li {
-		list-style: numeric;
+	ol {
+		counter-reset: list;
+
+		> li {
+			counter-increment: list;
+
+			&:before {
+				content: counter(list) '.';
+				display: inline-block;
+				-webkit-font-feature-settings: 'tnum';
+				-moz-font-feature-settings: 'tnum';
+				font-feature-settings: 'tnum';
+				font-weight: bold;
+				margin-left: -2rem;
+				padding-right: 0.5rem;
+				text-align: right;
+				width: 1.5rem;
+			}
+		}
 	}
 
 	table {
@@ -663,28 +680,74 @@ a:hover {
 
 	pre {
 		display: table-cell;
-	}
 
-	pre:first-child {
-		border-right: 0.5rem solid $backgroundColor;
-		padding-left: 2rem;
-		padding-right: $lh * 0.4375;
-		width: 60%;
-	}
+		&:first-child {
+			border-right: 0.5rem solid $backgroundColor;
+			padding-left: 2rem;
+			padding-right: $lh * 0.4375;
+			width: 60%;
+		}
 
-	pre:last-child {
-		padding-left: $lh * 0.4375;
-		padding-right: 2rem;
-		width: 40%;
-	}
+		&:last-child {
+			padding-left: $lh * 0.4375;
+			padding-right: 2rem;
+			width: 40%;
+		}
 
-	pre:first-child:last-child {
-		padding-left: 2rem;
-		border: none;
+		&:first-child:last-child {
+			padding-left: 2rem;
+			border: none;
+		}
 	}
 
 	.align-bottom {
 		vertical-align: bottom;
+	}
+
+	@media (min-width: 920px) and (max-width: 1180px), (max-width: 892px) {
+		background-color: transparent;
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: auto;
+
+		pre {
+			display: block;
+
+			&:first-child,
+			&:last-child {
+				margin-bottom: $lh * 0.25;
+				border-right: none;
+				padding-left: 2rem;
+				padding-right: 2rem;
+				width: auto;
+			}
+
+			&:last-child:before {
+				pushout();
+
+				background-color: $backgroundColor;
+				content: 'Output:';
+				display: block;
+				font-style: italic;
+				margin-top: $lh * -0.4375; // .main pre padding-top
+				margin-bottom: $lh * 0.5;
+				padding-bottom: $lh * 0.125;
+				padding-top: $lh * 0.4375;
+			}
+
+			&:first-child:last-child {
+				border-bottom: none;
+
+				&:before {
+					display: none;
+				}
+			}
+		}
+
+		.align-bottom {
+			vertical-align: baseline;
+		}
 	}
 }
 
