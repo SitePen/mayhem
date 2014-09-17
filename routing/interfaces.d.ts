@@ -6,12 +6,13 @@ export interface IRoute extends core.IObservable {
 	enter(event:RouteEvent):void;
 	exit(event:RouteEvent):void;
 	set:IRoute.Setters;
-	startup():IPromise<IRoute>;
+	startup():IPromise<void>;
 }
 
 export declare module IRoute {
 	export interface Getters extends core.IObservable.Getters {
 		(key:'app'):core.IApplication;
+		(key:'parent'):IRoute;
 		(key:'router'):IRouter;
 	}
 

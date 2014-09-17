@@ -2,23 +2,13 @@
 
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
-import Deferred = require('dojo/Deferred');
 import Event = require('../Event');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
+import Promise = require('../Promise');
 import Route = require('./Route');
 import RouteEvent = require('./RouteEvent');
 import routing = require('./interfaces');
-import when = require('dojo/when');
-import whenAll = require('dojo/promise/all');
-
-function emitError(error:Error):void {
-	this.get('app').emit(new Event({
-		type: 'error',
-		target: error,
-		message: error.message
-	}));
-}
 
 /**
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
@@ -26,7 +16,9 @@ function emitError(error:Error):void {
  */
 class Router extends ObservableEvented implements routing.IRouter {
 	/**
-	 * The app for this router. @protected
+	 * The app for this router.
+	 *
+	 * @protected
 	 */
 	_app:core.IApplication;
 
@@ -53,25 +45,33 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * @set
 	 * @protected
 	 */
-	_routes:{ [key:string]:Route };
+	_routes:HashMap<Route>;
 
 	/**
-	 * The default route when the application is loaded without an existing route. @protected
+	 * The default route when the application is loaded without an existing route.
+	 *
+	 * @protected
 	 */
 	_defaultRoute:string;
 
 	/**
-	 * The route to load when an unmatched route is loaded. @protected
+	 * The route to load when an unmatched route is loaded.
+	 *
+	 * @protected
 	 */
 	_notFoundRoute:string;
 
 	/**
-	 * The currently active routes. @protected
+	 * The currently active routes.
+	 *
+	 * @protected
 	 */
 	_activeRoutes:Array<Route>;
 
 	/**
-	 * The previous path after a route transition. @protected
+	 * The previous path after a route transition.
+	 *
+	 * @protected
 	 */
 	_oldPath:string;
 
@@ -87,15 +87,13 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
-	 * Starts listening for new path changes.
+	 * Creates a unique identifier for the given route.
 	 */
-	startup():IPromise<void> {
-		var dfd:IDeferred<void> = new Deferred<void>();
-		dfd.resolve(null);
-		this._routesSetter = function ():void {};
-		this.startup = function ():IPromise<void> { return dfd.promise; };
-		this.resume();
-		return dfd.promise;
+	createPath(path:string, kwArgs?:Object):string {
+		if (has('debug')) {
+			throw new Error('Abstract method "createPath" not implemented');
+		}
+		return null;
 	}
 
 	/**
@@ -106,7 +104,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 		this.pause();
 
 		var route:Route;
-
 		while ((route = this._activeRoutes.pop())) {
 			route.exit();
 		}
@@ -120,21 +117,52 @@ class Router extends ObservableEvented implements routing.IRouter {
 		this._activeRoutes = this._routes = null;
 	}
 
-	/**
-	 * Starts the router responding to route changes.
-	 */
-	resume():void {
-		if (has('debug')) {
-			throw new Error('Abstract method "resume" not implemented');
-		}
+	private _emitError(error:Error):void {
+		this._app.emit(new Event({
+			type: 'error',
+			target: error,
+			message: error.message
+		}));
 	}
 
-	/**
-	 * Stops the router from responding to any route changes.
-	 */
-	pause():void {
-		if (has('debug')) {
-			throw new Error('Abstract method "pause" not implemented');
+	_enterRoutes(event:RouteEvent):IPromise<any> {
+		var promises:Promise<void>[] = [];
+		var route:Route;
+
+		var routes:HashMap<Route> = this._routes;
+		var newRoutes:Route[] = [];
+		for (var id in routes) {
+			route = routes[id];
+			if (route.test(event.newPath)) {
+				promises.push(route.startup());
+
+				if (array.indexOf(this._activeRoutes, route) === -1) {
+					this._activeRoutes.push(route);
+					newRoutes.push(route);
+				}
+			}
+		}
+
+		var self = this;
+		return Promise.all(promises).then(function ():void {
+			var route:Route;
+			for (var i:number = 0; (route = newRoutes[i]); ++i) {
+				route.enter(event);
+			}
+		}).otherwise(function (error:Error):void {
+			self._emitError(error);
+			throw error;
+		});
+	}
+
+	_exitRoutes(event:RouteEvent):void {
+		var activeRoutes:Route[] = this._activeRoutes;
+
+		for (var i:number = activeRoutes.length - 1, route:Route; (route = activeRoutes[i]); --i) {
+			if (!route.test(event.newPath)) {
+				route.exit();
+				activeRoutes.splice(i, 1);
+			}
 		}
 	}
 
@@ -147,26 +175,43 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 	}
 
-	/**
-	 * Resets the path of the underlying state mechanism without triggering a routing update.
-	 *
-	 * @param path The path to set.
-	 * @param replace Whether or not to replace the previous path in history with the provided path.
-	 */
-	resetPath(path:string, replace?:boolean):void {
-		if (has('debug')) {
-			throw new Error('Abstract method "resetPath" not implemented');
-		}
+	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
+		var self = this;
+		var notFoundRoute = this._routes[this._notFoundRoute];
+		this._activeRoutes.push(notFoundRoute);
+		return Promise.resolve(notFoundRoute.startup()).then(function ():void {
+			notFoundRoute.enter(event);
+		}).otherwise(function (error:Error):void {
+			self._emitError(error);
+			throw error;
+		});
 	}
 
-	/**
-	 * Creates a unique identifier for the given route.
-	 */
-	createPath(path:string, kwArgs?:Object):string {
-		if (has('debug')) {
-			throw new Error('Abstract method "createPath" not implemented');
+	_handlePathChange(newPath:string):void {
+		newPath = this.normalizeId(newPath);
+
+		if (newPath === this._oldPath) {
+			return;
 		}
-		return null;
+
+		var event = new RouteEvent({
+				type: 'change',
+				cancelable: true,
+				pausable: true,
+				oldPath: this._oldPath,
+				newPath: newPath,
+				router: this
+			}),
+			self = this;
+
+		this._exitRoutes(event);
+		this._enterRoutes(event).then(function ():any {
+			self._oldPath = newPath;
+
+			if (!self._activeRoutes.length) {
+				self._handleNotFoundRoute(event);
+			}
+		});
 	}
 
 	/**
@@ -191,6 +236,36 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	/**
+	 * Stops the router from responding to any route changes.
+	 */
+	pause():void {
+		if (has('debug')) {
+			throw new Error('Abstract method "pause" not implemented');
+		}
+	}
+
+	/**
+	 * Resets the path of the underlying state mechanism without triggering a routing update.
+	 *
+	 * @param path The path to set.
+	 * @param replace Whether or not to replace the previous path in history with the provided path.
+	 */
+	resetPath(path:string, replace?:boolean):void {
+		if (has('debug')) {
+			throw new Error('Abstract method "resetPath" not implemented');
+		}
+	}
+
+	/**
+	 * Starts the router responding to route changes.
+	 */
+	resume():void {
+		if (has('debug')) {
+			throw new Error('Abstract method "resume" not implemented');
+		}
+	}
+
+	/**
 	 * Setter for the _routes property.
 	 *
 	 * @param routeMap A mapping of route IDs to some sort of route descriptor. The descriptor may be a an object, a
@@ -201,17 +276,15 @@ class Router extends ObservableEvented implements routing.IRouter {
 	_routesSetter(routeMap:{ [id:string]: any }):void {
 		var routes = this._routes = {};
 
-		if (!routeMap[this.get('notFoundRoute')]) {
-			routeMap[this.get('notFoundRoute')] = {
-				viewModel: this.get('app'),
-				template: require.toAbsMid('../views/Error.html'),
-				model: false
+		if (!routeMap[this._notFoundRoute]) {
+			routeMap[this._notFoundRoute] = {
+				model: this._app,
+				view: require.toAbsMid('../templating/html!../views/Error.html')
 			};
 		}
 
-		var kwArgs:any,
-			defaultRoute:string,
-			route:Route;
+		var kwArgs:any;
+		var route:Route;
 
 		for (var routeId in routeMap) {
 			kwArgs = routeMap[routeId];
@@ -224,31 +297,26 @@ class Router extends ObservableEvented implements routing.IRouter {
 				});
 			}
 			else {
-				if (typeof kwArgs === 'string') {
-					kwArgs = { path: kwArgs };
-				}
-
 				kwArgs.id = routeId;
 				kwArgs.router = this;
-				kwArgs.app = this.get('app');
+				kwArgs.app = this._app;
 
-				// Path might be the empty string, and this is OK, but it cannot be null or undefined. Then,
+				// Path might be the empty string, and this is OK, but it cannot be null or undefined. Also,
 				// because of the way path nesting works, only the last part of the route identifier is used as
 				// the default path; the remainder is picked up when the parent relationship is established
 				kwArgs.path == null && (kwArgs.path = routeId.replace(/^.*\//, ''));
 
+				// TODO: Too magic?
+				if (typeof kwArgs.view === 'string') {
+					if (/\.[^\/]+$/.test(kwArgs.view)) {
+						kwArgs.view = { constructor: this._app.get('templatePath') + '!' + kwArgs.view };
+					}
+				}
+
 				route = new Route(kwArgs);
 			}
 
-			if (route.get('default')) {
-				defaultRoute = routeId;
-			}
-
 			routes[routeId] = route;
-		}
-
-		if (defaultRoute) {
-			this.set('defaultRoute', defaultRoute);
 		}
 
 		// TODO: This is a naive, inefficient algorithm that could do with being less awful if someone wants to
@@ -275,112 +343,17 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 	}
 
-	/**
-	 * Activates and deactivates routes in response to a path change.
-	 *
-	 * @protected
-	 *
-	 * TODO: Better name for this function?
-	 */
-	_handlePathChange(newPath:string):void {
-		newPath = this.normalizeId(newPath);
+	startup():IPromise<void> {
+		var promise:Promise<void> = Promise.resolve<void>(undefined);
 
-		if (newPath === this._oldPath) {
-			return;
-		}
+		this._routesSetter = function ():void {};
+		this.startup = function ():IPromise<void> {
+			return promise;
+		};
 
-		var event = new RouteEvent({
-				type: 'change',
-				cancelable: true,
-				pausable: true,
-				oldPath: this._oldPath,
-				newPath: newPath,
-				router: this
-			}),
-			self = this;
+		this.resume();
 
-		if (this.emit(event)) {
-			// only do this if a listener didn't cancel the change event
-			whenAll([
-				this._exitRoutes(event),
-				this._enterRoutes(event)
-			]).then(function ():any {
-				function emitIdle():void {
-					self.emit(new RouteEvent({
-						type: 'idle',
-						oldPath: event.oldPath,
-						newPath: event.newPath,
-						router: self
-					}));
-				}
-
-				self._oldPath = newPath;
-
-				if (!self._activeRoutes.length) {
-					return self._handleNotFoundRoute(event).then(emitIdle);
-				}
-				else {
-					emitIdle();
-				}
-			});
-		}
-	}
-
-	/**
-	 * Exits active routes that do not match the new path given in `event`.
-	 */
-	_exitRoutes(event:RouteEvent):void {
-		var activeRoutes = this._activeRoutes;
-
-		for (var i = activeRoutes.length - 1, route:Route; (route = activeRoutes[i]); --i) {
-			if (!route.test(event.newPath)) {
-				route.exit();
-				activeRoutes.splice(i, 1);
-			}
-		}
-	}
-
-	/**
-	 * Enters routes that match the new path given in `event`.
-	 *
-	 * @returns A promise that is resolved once all matching routes have finished activating.
-	 */
-	_enterRoutes(event:RouteEvent):IPromise<any> {
-		var startups:IPromise<Route>[] = [],
-			route:Route;
-
-		var routes = this._routes;
-		for (var id in routes) {
-			route = routes[id];
-			if (route.test(event.newPath)) {
-				startups.push(route.startup());
-
-				if (array.indexOf(this._activeRoutes, route) === -1) {
-					this._activeRoutes.push(route);
-				}
-			}
-		}
-
-		return whenAll(startups).then((routes:Route[]):void => {
-			for (var i = 0; i < routes.length; i++) {
-				routes[i].enter(event);
-			}
-		}).otherwise((error:any):void => {
-			emitError(error);
-		});
-	}
-
-	/**
-	 * Handles not found routes by activating the not-found route.
-	 */
-	_handleNotFoundRoute(event:RouteEvent):IPromise<any> {
-		var notFoundRoute = this.get('routes')[this.get('notFoundRoute')];
-		this._activeRoutes.push(notFoundRoute);
-		return when(notFoundRoute.startup()).then((route:Route):any => {
-			return route.enter(event);
-		}).otherwise((error:any):void => {
-			emitError(error);
-		});
+		return promise;
 	}
 }
 

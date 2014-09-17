@@ -101,6 +101,13 @@ class Model extends Observable implements data.IModel {
 		}
 	}
 
+	commit():void {
+		var properties = this._getProperties();
+		for (var key in properties) {
+			properties[key].commit();
+		}
+	}
+
 	destroy():void {
 		this._getProperties = null;
 		super.destroy();
@@ -155,6 +162,17 @@ class Model extends Observable implements data.IModel {
 		return property;
 	}
 
+	isDirty():boolean {
+		var properties = this._getProperties();
+		for (var key in properties) {
+			if (properties[key].get('isDirty')) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	isValid():boolean {
 		var properties = this._getProperties();
 		for (var key in properties) {
@@ -177,6 +195,13 @@ class Model extends Observable implements data.IModel {
 	// TODO: dstore interface?
 	_restore(Ctor:new (...args:any[]) => Model):Model {
 		return new Ctor(this);
+	}
+
+	revert():void {
+		var properties = this._getProperties();
+		for (var key in properties) {
+			properties[key].revert();
+		}
 	}
 
 	validate(keysToValidate?:string[]):IPromise<boolean> {

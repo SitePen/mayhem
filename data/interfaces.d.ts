@@ -118,7 +118,10 @@ export interface IProperty<T> extends core.IObservable {
 	set:IProperty.Setters<T>;
 
 	addError(error:ValidationError):void;
+	commit():void;
 	clearErrors():void;
+	revert():void;
+	startup?():void;
 	validate():IPromise<boolean>;
 }
 

@@ -1,5 +1,6 @@
 /// <reference path="./dojo" />
 
+import binding = require('./binding/interfaces');
 import ObservableEvented = require('./ObservableEvented');
 
 export interface IApplication extends ObservableEvented {
@@ -11,7 +12,9 @@ export interface IApplication extends ObservableEvented {
 
 export declare module IApplication {
 	export interface Events extends ObservableEvented.Events {}
-	export interface Getters extends ObservableEvented.Getters {}
+	export interface Getters extends ObservableEvented.Getters {
+		(key:'binder'):binding.IBinder;
+	}
 	export interface Setters extends ObservableEvented.Setters {}
 }
 
@@ -20,7 +23,8 @@ export declare module IApplication {
 export interface IApplicationComponent extends IObservable {
 	get:IApplicationComponent.Getters;
 	set:IApplicationComponent.Setters;
-	startup():IPromise<void>;
+	prepare?():IPromise<void>;
+	startup?():IPromise<void>;
 }
 
 export declare module IApplicationComponent {

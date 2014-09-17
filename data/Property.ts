@@ -4,7 +4,6 @@ import array = require('dojo/_base/array');
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import data = require('./interfaces');
-import Memory = require('dstore/Memory');
 import Observable = require('../Observable');
 import Promise = require('../Promise');
 import util = require('../util');
@@ -13,6 +12,7 @@ import ValidationError = require('../validation/ValidationError');
 
 class Property<T> extends Observable implements data.IProperty<T> {
 	private _app:core.IApplication;
+	private _committedValue:T;
 	_dependencies:string[];
 	private _dependencyBindings:binding.IBinding<any, any>[];
 	_errors:ValidationError[];
@@ -60,6 +60,10 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		this._errors.splice(0, Infinity);
 	}
 
+	commit():void {
+		this._committedValue = this._value;
+	}
+
 	destroy():void {
 		this._clearDependencies();
 		super.destroy();
@@ -73,6 +77,14 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		if (this._app && this._model) {
 			this._updateDependencies();
 		}
+	}
+
+	/**
+	 * @protected
+	 * @get
+	 */
+	_isDirtyGetter():boolean {
+		return this._value !== this._committedValue;
 	}
 
 	/**
@@ -116,6 +128,12 @@ class Property<T> extends Observable implements data.IProperty<T> {
 
 			bindings.push(binding);
 		}
+	}
+
+	revert():void {
+		var oldValue = this.get('value');
+		this._value = this._committedValue;
+		this._notify('value', oldValue, this._value);
 	}
 
 	startup():void {}

@@ -140,25 +140,6 @@ class Application extends ObservableEvented {
 		super(kwArgs);
 	}
 
-	// TODO: There needs to be only one of these, there is another one in Route
-	_resolveModuleId(path:string, value:string):string {
-		if (!value) {
-			return;
-		}
-
-		path = path ? path.replace(/\/*$/, '/') : '';
-		if (value.charAt(0) !== '.') {
-			if (value.indexOf('/') === -1) {
-				value = path + value;
-			}
-		}
-		else {
-			value = path + value;
-		}
-
-		return require.toAbsMid(value);
-	}
-
 	/**
 	 * Starts the application. Once this method has been called, the {@link module:mayhem/Application#components}
 	 * property may no longer be modified.
@@ -199,7 +180,7 @@ class Application extends ObservableEvented {
 		function instantiateComponents(ctors:HashMap<ComponentConstructor>):IPromise<any> {
 			var instance:core.IApplicationComponent;
 			var instances:core.IApplicationComponent[] = [];
-			var startups:IPromise<any>[] = [];
+			var promises:Promise<any>[] = [];
 
 			for (var key in ctors) {
 				instance = new ctors[key](lang.mixin({ app: self }, components[key], { constructor: undefined }));
@@ -207,11 +188,20 @@ class Application extends ObservableEvented {
 				instances.push(instance);
 			}
 
-			while ((instance = instances.shift())) {
-				instance.startup && startups.push(instance.startup());
+			// Some application components have a two-stage startup that needs to coordinate with other application
+			// components; for example, a UI view must be loaded before the router can send routes
+			for (var i = 0; (instance = instances[i]); ++i) {
+				instance.prepare && promises.push(instance.prepare());
 			}
 
-			return Promise.all(startups);
+			return Promise.all(promises).then(function ():Promise<any> {
+				var promises:Promise<any>[] = [];
+				for (var i = 0; (instance = instances[i]); ++i) {
+					instance.startup && promises.push(instance.startup());
+				}
+
+				return Promise.all(promises);
+			});
 		}
 
 		// TODO: Nothing does this right now
