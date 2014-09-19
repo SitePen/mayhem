@@ -1,14 +1,10 @@
 /// <reference path="../../dojo" />
-import core = require('../../interfaces');
 import EventManager = require('./EventManager');
-import has = require('../../has');
 import IMaster = require('../Master');
-import lang = require('dojo/_base/lang');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Promise = require('../../Promise');
 import util = require('../../util');
 import View = require('./View');
-import Widget = require('./Widget');
 
 class Master extends MultiNodeWidget implements IMaster {
 	private _eventManager:EventManager;
@@ -53,10 +49,13 @@ class Master extends MultiNodeWidget implements IMaster {
 		root && this._view && this._initializeView();
 	}
 
-	startup():IPromise<void> {
+	startup():Promise<void> {
+		var self = this;
+		var promise:Promise<void>;
+
 		if (typeof this._view === 'string') {
-			var self = this;
-			return util.getModule(<any> this._view).then(function (view:any):void {
+			promise = util.getModule(<any> this._view).then(function (view:any):void {
+				// TODO: Should it really be valid to provide an existing view object and not a constructor?
 				if (typeof view === 'function') {
 					view = new view({ app: self._app });
 				}
@@ -64,8 +63,15 @@ class Master extends MultiNodeWidget implements IMaster {
 				self.set('view', view);
 			});
 		}
+		else {
+			promise = Promise.resolve<void>(undefined);
+		}
 
-		return Promise.resolve<void>(undefined);
+		this.startup = function ():Promise<void> {
+			return promise;
+		};
+
+		return promise;
 	}
 
 	_viewSetter(view:View):void;

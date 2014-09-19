@@ -117,11 +117,9 @@ class Property<T> extends Observable implements data.IProperty<T> {
 		var binder:binding.IBinder = this._app.get('binder');
 		var self = this;
 		for (var i = 0, path:string; (path = dependencies[i]); ++i) {
-			console.log('updating dependency', path);
 			var binding:binding.IBinding<any, any> = binder.createBinding(model, path, { scheduled: false });
 			binding.bindTo(<binding.IBinding<any, any>> {
 				set: function (value:any):void {
-					console.log('need to update value', self._key);
 					self._notify('value', self.get('value'), undefined);
 				}
 			});

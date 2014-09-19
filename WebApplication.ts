@@ -37,7 +37,7 @@ class WebApplication extends Application {
 		},
 		// TODO: Probably wrong
 		modelPath: 'app/models',
-		templatePath: require.toAbsMid('./templating/html') + '!app/views/',
+		templatePath: require.toAbsMid('./templating/html'),
 		viewPath: 'app/views',
 		viewModelPath: 'app/viewModels'
 	});

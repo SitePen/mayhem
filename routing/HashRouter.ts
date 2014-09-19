@@ -55,6 +55,10 @@ class HashRouter extends Router {
 		}
 	}
 
+	_handlePathChange(newPath:string):void {
+		super._handlePathChange(newPath.slice(this._pathPrefix.length));
+	}
+
 	/**
 	 * Stops the router from responding to any hash changes.
 	 */

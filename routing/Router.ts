@@ -1,7 +1,6 @@
 /// <reference path="../dojo" />
 
 import array = require('dojo/_base/array');
-import core = require('../interfaces');
 import Event = require('../Event');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
@@ -9,6 +8,7 @@ import Promise = require('../Promise');
 import Route = require('./Route');
 import RouteEvent = require('./RouteEvent');
 import routing = require('./interfaces');
+import WebApplication = require('../WebApplication');
 
 /**
  * The Router module is a base component designed to be extended and used with a path-based routing mechanism, like a
@@ -16,11 +16,48 @@ import routing = require('./interfaces');
  */
 class Router extends ObservableEvented implements routing.IRouter {
 	/**
+	 * The currently active routes.
+	 *
+	 * @protected
+	 */
+	_activeRoutes:Route[];
+
+	/**
 	 * The app for this router.
 	 *
 	 * @protected
 	 */
-	_app:core.IApplication;
+	_app:WebApplication;
+
+	/**
+	 * The currently active path.
+	 *
+	 * @protected
+	 * @get
+	 * @set
+	 */
+	_currentPath:string;
+
+	/**
+	 * The default route when the application is loaded without an existing route.
+	 *
+	 * @protected
+	 */
+	_defaultRoute:string;
+
+	/**
+	 * The previous path after a route transition.
+	 *
+	 * @protected
+	 */
+	_lastPath:string;
+
+	/**
+	 * The route to load when an unmatched route is loaded.
+	 *
+	 * @protected
+	 */
+	_notFoundRoute:string;
 
 	/**
 	 * Hash map of routes, where the key is the unique ID of the route and the value is a Route object (or subclass of
@@ -46,34 +83,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 * @protected
 	 */
 	_routes:HashMap<Route>;
-
-	/**
-	 * The default route when the application is loaded without an existing route.
-	 *
-	 * @protected
-	 */
-	_defaultRoute:string;
-
-	/**
-	 * The route to load when an unmatched route is loaded.
-	 *
-	 * @protected
-	 */
-	_notFoundRoute:string;
-
-	/**
-	 * The currently active routes.
-	 *
-	 * @protected
-	 */
-	_activeRoutes:Array<Route>;
-
-	/**
-	 * The previous path after a route transition.
-	 *
-	 * @protected
-	 */
-	_oldPath:string;
 
 	get:Router.Getters;
 	on:Router.Events;
@@ -135,10 +144,10 @@ class Router extends ObservableEvented implements routing.IRouter {
 			route = routes[id];
 			if (route.test(event.newPath)) {
 				promises.push(route.startup());
+				newRoutes.push(route);
 
 				if (array.indexOf(this._activeRoutes, route) === -1) {
 					this._activeRoutes.push(route);
-					newRoutes.push(route);
 				}
 			}
 		}
@@ -188,25 +197,25 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	_handlePathChange(newPath:string):void {
-		newPath = this.normalizeId(newPath);
-
-		if (newPath === this._oldPath) {
+		if (newPath === this._lastPath) {
 			return;
 		}
 
-		var event = new RouteEvent({
-				type: 'change',
-				cancelable: true,
-				pausable: true,
-				oldPath: this._oldPath,
-				newPath: newPath,
-				router: this
-			}),
-			self = this;
+		this.set('currentPath', newPath);
 
+		var event = new RouteEvent({
+			type: 'change',
+			cancelable: true,
+			pausable: true,
+			oldPath: this._lastPath,
+			newPath: newPath,
+			router: this
+		});
+
+		var self = this;
 		this._exitRoutes(event);
 		this._enterRoutes(event).then(function ():any {
-			self._oldPath = newPath;
+			self._lastPath = newPath;
 
 			if (!self._activeRoutes.length) {
 				self._handleNotFoundRoute(event);
@@ -219,17 +228,17 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 */
 	normalizeId(id:string):string {
 		// Normalize relative IDs
-		var activeRoutes = this._activeRoutes,
-			idPrefix = activeRoutes.length ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
+		var activeRoutes = this._activeRoutes;
+		var idPrefix = activeRoutes.length ? (activeRoutes[activeRoutes.length - 1].get('path') + '/') : '';
 
 		id = id.replace(/^\.\//, idPrefix);
 
 		if (id === '') {
-			id = this.get('defaultRoute');
+			id = this._defaultRoute;
 		}
 
 		if (id.charAt(id.length - 1) === '/') {
-			id += this.get('defaultRoute');
+			id += this._defaultRoute;
 		}
 
 		return id;
@@ -265,21 +274,13 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 	}
 
-	/**
-	 * Setter for the _routes property.
-	 *
-	 * @param routeMap A mapping of route IDs to some sort of route descriptor. The descriptor may be a an object, a
-	 * string, or a Route. An object descriptor may have the properties `viewModel`, `view`, `code`, or `path`.
-	 *
-	 * @returns the routeMap
-	 */
-	_routesSetter(routeMap:{ [id:string]: any }):void {
+	_routesSetter(routeMap:HashMap<any>):void {
 		var routes = this._routes = {};
 
 		if (!routeMap[this._notFoundRoute]) {
 			routeMap[this._notFoundRoute] = {
 				model: this._app,
-				view: require.toAbsMid('../templating/html!../views/Error.html')
+				view: require.toAbsMid('../templating/html!') + require.toAbsMid('../views/Error.html')
 			};
 		}
 
@@ -293,7 +294,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 				route = kwArgs;
 				route.set({
 					id: routeId,
-					app: this.get('app')
+					app: this._app
 				});
 			}
 			else {
@@ -308,8 +309,11 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 				// TODO: Too magic?
 				if (typeof kwArgs.view === 'string') {
-					if (/\.[^\/]+$/.test(kwArgs.view)) {
-						kwArgs.view = { constructor: this._app.get('templatePath') + '!' + kwArgs.view };
+					if (
+						/* has file extension */ /\.[^\/]+$/.test(kwArgs.view) &&
+						/* no plugin */ kwArgs.view.indexOf('!') === -1
+					) {
+						kwArgs.view = this._app.get('templatePath') + '!' + kwArgs.view;
 					}
 				}
 
@@ -344,14 +348,15 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	startup():IPromise<void> {
-		var promise:Promise<void> = Promise.resolve<void>(undefined);
+		var self = this;
+		var promise:Promise<void> = this._app.get('ui').startup().then(function ():void {
+			self.resume();
+		});
 
 		this._routesSetter = function ():void {};
 		this.startup = function ():IPromise<void> {
 			return promise;
 		};
-
-		this.resume();
 
 		return promise;
 	}
@@ -363,6 +368,7 @@ Router.prototype._notFoundRoute = 'error';
 module Router {
 	export interface Events extends ObservableEvented.Events {}
 	export interface Getters extends ObservableEvented.Getters, routing.IRouter.Getters {
+		(key:'app'):WebApplication;
 		(key:'defaultRoute'):string;
 		(key:'notFoundRoute'):string;
 	}

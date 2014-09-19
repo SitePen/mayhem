@@ -84,7 +84,7 @@ class Route extends BaseRoute implements routing.IRoute {
 		has('debug') && console.debug('new route state for', id, kwArgs);
 
 		// TODO: Constrain model to IModel?
-		var model:any = this._model;
+		var model:{ set?:Function; routeState?:Object; } = this._model;
 		if (model) {
 			if (model.set) {
 				model.set('routeState', kwArgs);
@@ -92,6 +92,8 @@ class Route extends BaseRoute implements routing.IRoute {
 			else {
 				model.routeState = kwArgs;
 			}
+
+			this._view.set('model', model);
 		}
 
 		if (this._parent) {

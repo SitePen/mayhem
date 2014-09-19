@@ -158,7 +158,6 @@ class Binder extends Observable implements binding.IBinder {
 	 * @returns A new Binding object.
 	 */
 	createBinding<SourceT, TargetT>(object:Object, path:string, options:{ scheduled?:boolean; } = {}):binding.IBinding<SourceT, TargetT> {
-		var binder = this;
 		var constructors = this._constructors;
 		var app = this._app;
 
@@ -266,7 +265,7 @@ class Binder extends Observable implements binding.IBinder {
 		return metadata;
 	}
 
-	startup():IPromise<void> {
+	startup():Promise<void> {
 		// This is needed because bindings can be set up in the configuration of the app
 		var constructors = this._constructors;
 
@@ -276,7 +275,7 @@ class Binder extends Observable implements binding.IBinder {
 			});
 		}
 
-		var promises:IPromise<void>[] = [];
+		var promises:Promise<void>[] = [];
 
 		for (var i = 0, Ctor:any; (Ctor = this._constructors[i]); ++i) {
 			if (typeof Ctor === 'string') {
@@ -284,8 +283,11 @@ class Binder extends Observable implements binding.IBinder {
 			}
 		}
 
-		var self = this;
-		return Promise.all(promises).then(function ():void {});
+		var promise:Promise<void> = Promise.all(promises).then(function ():void {});
+		this.startup = function ():Promise<void> {
+			return promise;
+		};
+		return promise;
 	}
 
 	/**

@@ -180,7 +180,7 @@ class Application extends ObservableEvented {
 		function instantiateComponents(ctors:HashMap<ComponentConstructor>):IPromise<any> {
 			var instance:core.IApplicationComponent;
 			var instances:core.IApplicationComponent[] = [];
-			var promises:Promise<any>[] = [];
+			var startups:IPromise<any>[] = [];
 
 			for (var key in ctors) {
 				instance = new ctors[key](lang.mixin({ app: self }, components[key], { constructor: undefined }));
@@ -188,20 +188,11 @@ class Application extends ObservableEvented {
 				instances.push(instance);
 			}
 
-			// Some application components have a two-stage startup that needs to coordinate with other application
-			// components; for example, a UI view must be loaded before the router can send routes
-			for (var i = 0; (instance = instances[i]); ++i) {
-				instance.prepare && promises.push(instance.prepare());
+			while ((instance = instances.shift())) {
+				instance.startup && startups.push(instance.startup());
 			}
 
-			return Promise.all(promises).then(function ():Promise<any> {
-				var promises:Promise<any>[] = [];
-				for (var i = 0; (instance = instances[i]); ++i) {
-					instance.startup && promises.push(instance.startup());
-				}
-
-				return Promise.all(promises);
-			});
+			return Promise.all(startups);
 		}
 
 		// TODO: Nothing does this right now

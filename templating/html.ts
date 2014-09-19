@@ -180,7 +180,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			}
 			else {
 				this.on(eventName, function ():void {
-					var model:Object = this.get('model');
+					var model:{ call?:Function; } = this.get('model');
 
 					if (model.call) {
 						var args = Array.prototype.slice.call(arguments, 0);
