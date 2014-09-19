@@ -35,7 +35,9 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 
 		collection = collection.track();
 		// TODO: Hack(?) to make indexes show up
-		collection.fetch();
+		collection.fetch().then(function (initialData:data.IModel[]):void {
+			wrapperCollection.setData(initialData);
+		});
 		wrapperCollection.fetch();
 
 		function wrapSetter(method:string):(object:any, options?:Object) => any {
