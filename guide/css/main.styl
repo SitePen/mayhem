@@ -546,6 +546,7 @@ a:hover {
 	}
 
 	p {
+		hyphens: auto;
 		text-align: justify;
 		text-align-last: left;
 	}
@@ -563,6 +564,7 @@ a:hover {
 	}
 
 	ul > li {
+		hyphens: auto;
 		text-align: justify;
 		text-align-last: left;
 		text-indent: -1rem;
@@ -662,6 +664,12 @@ a:hover {
 		font-size: 1.1rem;
 		font-variant: small-caps;
 		text-transform: lowercase;
+	}
+
+	dfn,
+	code,
+	.abbr {
+		hyphens: manual;
 	}
 
 	.m1 { margin-bottom: $lh; }
