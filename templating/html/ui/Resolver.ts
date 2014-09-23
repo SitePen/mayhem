@@ -1,4 +1,4 @@
-import Container = require('../../../ui/dom/Container');
+import MultiNodeWidget = require('../../../ui/dom/MultiNodeWidget');
 import Promise = require('../../../Promise');
 import View = require('../../../ui/dom/View');
 
@@ -14,7 +14,7 @@ function createSetter(property:string):(value:View) => void {
 	};
 }
 
-class Resolver<T> extends Container {
+class Resolver<T> extends MultiNodeWidget {
 	private _pending:View;
 	private _promise:Promise<T>;
 	private _rejected:View;
@@ -27,20 +27,22 @@ class Resolver<T> extends Container {
 	_promiseSetter(value:Promise<T>):void {
 		this._promise = value;
 
-		this._pending && this.add(this._pending);
+		if (this._pending) {
+			this._lastNode.parentNode.insertBefore(this._pending.detach(), this._lastNode);
+		}
 
 		var self = this;
 		Promise.resolve(value).then(function (value:T):void {
-			self._pending && self.remove(self._pending);
+			self._pending && self._pending.detach();
 			if (self._resolved) {
 				self._resolved.set('model', value);
-				self.add(self._resolved);
+				self._lastNode.parentNode.insertBefore(self._resolved.detach(), self._lastNode);
 			}
 		}, function (error:Error):void {
-			self._pending && self.remove(self._pending);
+			self._pending && self._pending.detach();
 			if (self._rejected) {
 				self._rejected.set('model', error);
-				self.add(self._rejected);
+				self._lastNode.parentNode.insertBefore(self._rejected.detach(), self._lastNode);
 			}
 		}, function (progress:any):void {
 			self._pending && self._pending.set('model', progress);
@@ -57,12 +59,18 @@ Resolver.prototype._rejectedSetter = createSetter('_rejected');
 Resolver.prototype._resolvedSetter = createSetter('_resolved');
 
 module Resolver {
-	export interface Events extends Container.Events {}
-	export interface Getters<T> extends Container.Getters {
+	export interface Events extends MultiNodeWidget.Events {}
+	export interface Getters<T> extends MultiNodeWidget.Getters {
+		(key:'pending'):View;
 		(key:'promise'):Promise<T>;
+		(key:'rejected'):View;
+		(key:'resolved'):View;
 	}
-	export interface Setters<T> extends Container.Setters {
+	export interface Setters<T> extends MultiNodeWidget.Setters {
+		(key:'pending', value:View):void;
 		(key:'promise', value:Promise<T>):void;
+		(key:'rejected', value:View):void;
+		(key:'resolved', value:View):void;
 	}
 }
 
