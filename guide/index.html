@@ -87,6 +87,7 @@
 							<a href="#data-binding">Data binding</a>
 							<ul class="subsections">
 								<li data-id="what-is-data-binding"><a href="#what-is-data-binding">What is data binding?</a></li>
+								<li data-id="how-to-data-bind"><a href="#how-to-data-bind">How to bind data in Mayhem</a></li>
 								<li data-id="extending-binding"><a href="#extending-binding">Adding and extending bindings</a></li>
 							</ul>
 						</li>
@@ -720,7 +721,81 @@ export = app;</code></pre>
 						<div class="a half" id="what-is-data-binding"></div>
 						<h3 data-id="what-is-data-binding">What is data binding?</h3>
 
-						<p>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br>TODO<br></p>
+						<p>TODO: Figure here?</p>
+
+						<p>When writing software, <dfn>data binding</dfn> is a mechanism by which the value of a property on one object is kept in sync with the value of a property of another object. In other words, data binding makes it possible to have a statement <code>a.foo = 'bar'</code> automatically execute the statement <code>b.foo = 'bar'</code>, ensuring that the properties <code>a.foo</code> and <code>b.foo</code> always contain the same value.</p>
+
+						<p>Data binding is directional: it is possible to have a <dfn><em>one-way</em> binding</dfn> where only a change to the source property causes the target object to update, or a <dfn><em>two-way</em> binding</dfn> where source and target properties are kept in sync regardless of which is changed. Most data bindings are intended to be bidirectional, so the default directionality in Mayhem is two-way.</p>
+
+						<div class="a half" id="how-to-data-bind"></div>
+						<h3 data-id="how-to-data-bind">How to bind data in Mayhem</h3>
+
+						<p>In Mayhem applications, all data binding is performed by the central <dfn>data binder</dfn> application component. By convention, this component is always created at <a href="TODO"><code>Application#binder</code></a>. Using the data binder, it is possible to create simple bindings between two properties just by calling <a href="TODO"><code>Binder#bind</code></a>:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+// TODO: Better example please
+class ApplicationComponent {
+	private _app:Application;
+	constructor(kwArgs?:Object) {
+		super(kwArgs);
+		var binder = this._app.get('binder');
+
+		var a = { foo: 'bar' };
+		var b = { foo: null };
+
+		// `b.foo` becomes 'bar'
+		var handle = binder.bind({
+			source: a,
+			sourcePath: 'foo',
+			target: b,
+			targetPath: 'foo'
+		});
+
+		// `b.foo` becomes 'blah'
+		a.foo = 'blah';
+
+		// Removes the binding
+		handle.remove();
+	}
+}</code></pre>
+
+						<aside class="tip"><p>Much of the time, data binding in a Mayhem application will be done more concisely using the <a href="TODO">templating system</a>, which provides a declarative mechanism for binding data to the UI. Applications that implement their own UI components programmatically, or that want to create data bindings between non-UI objects, will use the data binder directly.</p></aside>
+
+						<p>It is also possible to create more complex chains of bindings by creating <a href="TODO"><code>Binding</code></a> objects with <a href="TODO"><code>Binder#createBinding</code></a> and manipulating those objects directly. <dfn>Binding objects</dfn> are abstractions that allow us to ignore <em>how</em> an object is bound and instead focus solely on what the value of the bound property is.</p>
+
+
+						<div class="a half" id="extending-binding"></div>
+						<h3 data-id="extending-binding">Adding and extending bindings</h3>
+
+						<p>The default data binder included with Mayhem, <a href="TODO"><code>mayhem/binding/Binder</code></a>, can be replaced by a totally different data binder, if desired:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		binder: {
+			constructor: 'app/Binder'
+		}
+	}
+});</code></pre>
+
+						<p>However, this is usually not necessary, since even if you need to bind to something that the default binder doesn’t understand, it is designed to be extended with new Binding object constructors:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		binder: {
+			// Adding a new BurgerBinding type
+			constructors: [ 'app/binding/BurgerBinding' ]
+		}
+	}
+});</code></pre>
+
+						<p>All Binding constructors implement the <a href="TODO"><code>mayhem/binding/interfaces.IBindingConstructor</code></a> interface.</p>
 					</article>
 				</main>
 			</div>
