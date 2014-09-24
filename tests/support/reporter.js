@@ -23,20 +23,25 @@ define([
 			var numTests = suite.get('numTests');
 			var numFailedTests = suite.get('numFailedTests');
 			var numSkippedTests = suite.get('numSkippedTests');
-			var message = suite.get('id') + ': ' + numFailedTests + '/' + numTests + ' tests failed';
+			var message = suite.get('id') + ' - ' + numFailedTests + '/' + numTests + ' tests failed';
 			if (numSkippedTests > 0) {
 				message += ' (' + numSkippedTests + ' skipped)';
 			}
-			console[numFailedTests ? 'warn' : 'info'](message);
+			message += ' (' + suite.timeElapsed + 'ms)';
+			console[numFailedTests ? 'warn' : 'info'](
+				'\x1b[' + (numFailedTests ? '91' : '92') + ';1m' +
+				(numFailedTests ? 'FAIL: ' : 'PASS: ') + message +
+				'\x1b[0m'
+			);
 		},
 
 		'/error': function (error) {
-			console.warn('FATAL ERROR');
+			console.warn('\x1b[91;1mFATAL ERROR\x1b[0m');
 			util.logError(error);
 		},
 
 		'/test/pass': function (test) {
-			console.log('PASS: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)');
+			console.log('\x1b[32mPASS: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)\x1b[0m');
 		},
 
 		'/test/skip': function (test) {
@@ -44,7 +49,7 @@ define([
 		},
 
 		'/test/fail': function (test) {
-			console.error('FAIL: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)');
+			console.error('\x1b[31mFAIL: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)\x1b[0m');
 			util.logError(test.error);
 		},
 
@@ -72,7 +77,7 @@ define([
 					coverage[wholename] = instrumenter.lastFileCoverage();
 				}
 				catch (error) {
-					console.error(error);
+					console.error(filepath + ': ' + error);
 				}
 			});
 
