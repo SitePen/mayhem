@@ -75,6 +75,10 @@ define([
 					var wholename = path.resolve(filepath);
 					instrumenter.instrumentSync(fs.readFileSync(wholename, 'utf8'), wholename);
 					coverage[wholename] = instrumenter.lastFileCoverage();
+					// https://github.com/gotwarlost/istanbul/issues/102
+					for (var i in coverage[wholename].s) {
+						coverage[wholename].s[i] = 0;
+					}
 				}
 				catch (error) {
 					console.error(filepath + ': ' + error);
