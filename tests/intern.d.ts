@@ -2,40 +2,56 @@
 /// <reference path="./chai-assert" />
 /// <reference path="../dojo" />
 
-interface IInternDeferred<T> extends IDeferred<T> {
-	callback<U>(callback:U):U;
-	rejectOnError<U>(callback:U):U;
+declare module 'intern' {
+	export interface Config {
+		capabilities?:{ [key:string]:any; };
+		environments?:{ [key:string]:any; }[];
+		excludeInstrumentation?:RegExp;
+		functionalSuites?:string[];
+		grep?:RegExp;
+		loader?:{
+			[key:string]:any;
+			baseUrl?:string;
+			packages?:any[];
+			map?:{ [key:string]:{ [key:string]:string; }; };
+		};
+		maxConcurrency?:number;
+		proxyPort?:number;
+		proxyUrl?:string;
+		reporters?:string[];
+		suites?:string[];
+		tunnel?:string;
+		tunnelOptions?:{ [key:string]:any; };
+		useLoader?:{
+			'host-browser'?:string;
+			'host-node'?:string;
+		};
+	}
+
+	export interface Deferred<T> extends IDeferred<T> {
+		callback<U>(callback:U):U;
+		rejectOnError<U>(callback:U):U;
+	}
 }
 
 declare module 'intern!object' {
 	var createSuite:{
-		(definition:Object):void;
+		(definition:{ [key:string]:any; }):void;
+		(definition:() => { [key:string]:any; }):void;
 	};
 	export = createSuite;
 }
 
 declare module 'intern!tdd' {
 	var tdd:{
+		after(fn:() => any):void;
+		afterEach(fn:() => any):void;
+		before(fn:() => any):void;
+		beforeEach(fn:() => any):void;
 		suite(name:string, factory:() => void):void;
 		test(name:string, test:() => any):void;
-		before(fn:() => any):void;
-		after(fn:() => any):void;
-		beforeEach(fn:() => any):void;
-		afterEach(fn:() => any):void;
 	};
 	export = tdd;
-}
-
-declare module 'intern!bdd' {
-	var bdd:{
-		describe(name:string, factory:() => void):void;
-		it(name:string, test:() => any):void;
-		before(fn:() => any):void;
-		after(fn:() => any):void;
-		beforeEach(fn:() => any):void;
-		afterEach(fn:() => any):void;
-	};
-	export = bdd;
 }
 
 declare module 'intern/chai!assert' {
@@ -43,12 +59,7 @@ declare module 'intern/chai!assert' {
 	export = assert;
 }
 
-declare module 'intern/chai!expect' {
-	var expect:chai.Expect;
-	export = expect;
-}
-
-declare module 'intern/chai!should' {
-	var should:Function;
-	export = should;
+declare module 'intern/dojo/has' {
+	function has(name:string):any;
+	export = has;
 }

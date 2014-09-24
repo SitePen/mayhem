@@ -3,6 +3,5 @@
 html-report/
 node_modules/
 third-party/
-!tests/intern.js
-!tests/support/lcovhtml.js
+!tests/support/*
 tscommand-*.tmp.txt

@@ -7,6 +7,9 @@
 	"scripts": {
 		"install": "bower install"
 	},
+	"dependencies": {
+		"bower": "1.x"
+	},
 	"devDependencies": {
 		"globule": "0.2.0",
 		"grunt": "0.4.2",
@@ -15,8 +18,8 @@
 		"grunt-peg": "1.2.0",
 		"grunt-ts": "1.11.2",
 		"grunt-wrap": "0.3.0",
-		"intern-geezer": "1.6.2",
+		"intern-geezer": "2.1.0",
 		"lodash": "2.4.1",
-		"typescript": "1.0.0"
+		"typescript": "1.0.1"
 	}
 }
