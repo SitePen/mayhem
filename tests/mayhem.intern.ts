@@ -4,7 +4,7 @@ import has = require('intern/dojo/has');
 import intern = require('intern');
 
 var config:intern.Config = {
-	excludeInstrumentation: /(?:^|\/)(?:node_modules|tests[\w.]*|third-party)\//,
+	excludeInstrumentation: /(?:^|\/)(?:(?:html-report|nls|node_modules|tests[\w.]*|third-party)\/|(?:Gruntfile|package)\.js$)/,
 	loader: {
 		packages: [
 			{ name: 'mayhem', location: '.' },
