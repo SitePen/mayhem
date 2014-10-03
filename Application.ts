@@ -140,6 +140,26 @@ class Application extends ObservableEvented {
 		super(kwArgs);
 	}
 
+	handleError(error:Error):void {
+		var errorHandler = this.get('errorHandler');
+		if (errorHandler) {
+			errorHandler.handleError(error);
+		}
+		else {
+			this.log(error.stack || error.message, LogLevel.ERROR, 'error/' + error.name);
+		}
+	}
+
+	log(message:string, level:LogLevel = LogLevel.LOG, category:string = null):void {
+		var logger = this.get('logger');
+		if (logger) {
+			logger.log(message, level, category);
+		}
+		else {
+			console[level]((category ? category + ': ' : '') + message);
+		}
+	}
+
 	/**
 	 * Starts the application. Once this method has been called, the {@link module:mayhem/Application#components}
 	 * property may no longer be modified.
