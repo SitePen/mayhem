@@ -198,7 +198,7 @@ class ElementWidget extends Container {
 
 							if (element === node) {
 								// TODO: Figure out a better way to find a model method to invoke
-								var model = self.get('model');
+								var model:{ call?:Function; } = self.get('model');
 								if (model.call) {
 									model.call(method, event);
 								}
@@ -224,8 +224,18 @@ class ElementWidget extends Container {
 			else if (node.nextSibling) {
 				nextNode = node.nextSibling;
 			}
-			else if (node.parentNode && node.parentNode !== content && node.parentNode.nextSibling) {
-				nextNode = node.parentNode.nextSibling;
+			else if (node.parentNode) {
+				var maybeNextNode:Node = node;
+				nextNode = null;
+
+				// the next node may be back up through multiple parents
+				while (maybeNextNode.parentNode && maybeNextNode.parentNode !== content) {
+					maybeNextNode = maybeNextNode.parentNode;
+					if (maybeNextNode.nextSibling) {
+						nextNode = maybeNextNode.nextSibling;
+						break;
+					}
+				}
 			}
 			else {
 				nextNode = null;
