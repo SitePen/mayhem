@@ -3,20 +3,15 @@ declare var define:{
 };
 
 declare var require:{
-	(config:Object, dependencies:string[], callback?:Function):void;
+	(config:{}, dependencies:string[], callback?:Function):void;
 	(dependencies:string[], callback?:Function):void;
 	<T>(moduleId:string):T;
 	undef(moduleId:string):void;
-	config(config:Object):void;
+	config(config:{}):void;
 	toUrl(moduleId:string):string;
 	toAbsMid(moduleId:string):string;
 	on(eventName:string, listener:(...args:any[]) => any):IHandle;
 };
-
-// TODO: Not part of dojo, convenience type since the indexer was removed from Object
-interface Object {
-	[key:string]:any;
-}
 
 interface HashMap<T> {
 	[key:string]:T;
@@ -36,7 +31,7 @@ interface IEvented {
 }
 
 interface IExtensionEvent {
-	(target:Object, callback:EventListener):IHandle;
+	(target:{}, callback:EventListener):IHandle;
 }
 
 interface IHandle {
@@ -75,7 +70,7 @@ interface IPromise<T> {
 interface IStore<T> {
 	idProperty:string;
 	get(id:any):T;
-	put(object:T, options?:Object):any; // string | number
+	put(object:T, options?:{}):any; // string | number
 }
 
 declare module 'dojo/_base/array' {
@@ -93,9 +88,9 @@ declare module 'dojo/_base/array' {
 
 declare module 'dojo/_base/declare' {
 	var decl:{
-		<T>(superclass:any, properties?:Object):new (...args:any[]) => T;
-		<T>(superclass:any[], properties?:Object):new (...args:any[]) => T;
-		safeMixin<T>(target:T, source:Object):T;
+		<T>(superclass:any, properties?:{}):new (...args:any[]) => T;
+		<T>(superclass:any[], properties?:{}):new (...args:any[]) => T;
+		safeMixin<T>(target:T, source:{}):T;
 	};
 
 	export = decl;
@@ -103,15 +98,15 @@ declare module 'dojo/_base/declare' {
 
 declare module 'dojo/_base/lang' {
 	var lang:{
-		delegate<T>(object:T, properties?:Object):T;
-		getObject(key:string, create?:boolean, context?:Object):any;
-		hitch(context:Object, property:string, ...prefixedArgs:Object[]):(...args:any[]) => any;
-		hitch(context:Object, fn:Function, ...prefixedArgs:Object[]):(...args:any[]) => any;
-		mixin<T>(target:T, ...source:Object[]):T;
+		delegate<T>(object:T, properties?:{}):T;
+		getObject(key:string, create?:boolean, context?:{}):any;
+		hitch(context:{}, property:string, ...prefixedArgs:{}[]):(...args:any[]) => any;
+		hitch(context:{}, fn:Function, ...prefixedArgs:{}[]):(...args:any[]) => any;
+		mixin<T>(target:T, ...source:{}[]):T;
 		partial<T>(fn:T):T;
 		partial(fn:Function, ...prefixedArgs:any[]):Function;
-		replace(template:string, kwArgs:Object, pattern?:RegExp):string;
-		setObject(key:string, value:any, context?:Object):any;
+		replace(template:string, kwArgs:{}, pattern?:RegExp):string;
+		setObject(key:string, value:any, context?:{}):any;
 		trim(string:string):string;
 		isArray(it:any):boolean;
 		clone(object:any):any;
@@ -144,9 +139,9 @@ declare module 'dojo/AdapterRegistry' {
 
 declare module 'dojo/aspect' {
 	var aspect:{
-		after(target:Object, methodName:string, advice:(...args:any[]) => any, receiveArguments?:boolean):IHandle;
-		around(target:Object, methodName:string, advice:(...args:any[]) => any):IHandle;
-		before(target:Object, methodName:string, advice:(...args:any[]) => any):IHandle;
+		after(target:{}, methodName:string, advice:(...args:any[]) => any, receiveArguments?:boolean):IHandle;
+		around(target:{}, methodName:string, advice:(...args:any[]) => any):IHandle;
+		before(target:{}, methodName:string, advice:(...args:any[]) => any):IHandle;
 	};
 	export = aspect;
 }
@@ -188,9 +183,9 @@ declare module 'dojo/dom-construct' {
 		toDom(html:string):Node;
 		place<T extends Element>(node:T, refNode:Node, position?:string):T;
 		place<T extends Element>(node:T, refNode:Node, position?:number):T;
-		create(tag:'div', attrs:Object, refNode?:Node, position?:string):HTMLDivElement;
-		create(tag:'li', attrs:Object, refNode?:Node, position?:string):HTMLLIElement;
-		create(tag:string, attrs:Object, refNode?:Node, position?:string):Element;
+		create(tag:'div', attrs:{}, refNode?:Node, position?:string):HTMLDivElement;
+		create(tag:'li', attrs:{}, refNode?:Node, position?:string):HTMLLIElement;
+		create(tag:string, attrs:{}, refNode?:Node, position?:string):Element;
 		destroy(node:Node):void;
 	};
 	export = domConstruct;
@@ -230,8 +225,8 @@ declare module 'dojo/hash' {
 
 declare module 'dojo/json' {
 	var json:{
-		parse(value:string):Object;
-		stringify(value:Object):string;
+		parse(value:string):{};
+		stringify(value:{}):string;
 	};
 	export = json;
 }
@@ -308,7 +303,7 @@ declare module 'dojo/promise/all' {
 	var all:{
 		<T>(array:IPromise<T>[]):IPromise<T[]>;
 		<T>(array:T[]):IPromise<T[]>;
-		(object:Object):IPromise<Object>;
+		(object:{}):IPromise<Object>;
 	};
 	export = all;
 }
@@ -323,11 +318,11 @@ declare module 'dojo/query' {
 
 declare module 'dojo/request' {
 	var request:{
-		<T>(url:string, options?:Object):IPromise<T>;
-		del<T>(url:string, options?:Object):IPromise<T>;
-		get<T>(url:string, options?:Object):IPromise<T>;
-		post<T>(url:string, options?:Object):IPromise<T>;
-		put<T>(url:string, options?:Object):IPromise<T>;
+		<T>(url:string, options?:{}):IPromise<T>;
+		del<T>(url:string, options?:{}):IPromise<T>;
+		get<T>(url:string, options?:{}):IPromise<T>;
+		post<T>(url:string, options?:{}):IPromise<T>;
+		put<T>(url:string, options?:{}):IPromise<T>;
 	};
 	export = request;
 }
@@ -336,9 +331,9 @@ declare module 'dojo/request/util' {
 	var util:{
 		addCommonMethods(provider:any, methods:string[]):void;
 		checkStatus(status:number):boolean;
-		deepCopy<T>(target:T, source:Object):T;
-		deepCreate<T>(source:T, properties:Object):T;
-		deferred(response:Object /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function):void;
+		deepCopy<T>(target:T, source:{}):T;
+		deepCreate<T>(source:T, properties:{}):T;
+		deferred(response:{} /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function):void;
 		parseArgs(url:any, options:any, skipData:any):{ url:string; options:string; getHeader:(name:string) => string; };
 	};
 	export = util;
@@ -346,9 +341,9 @@ declare module 'dojo/request/util' {
 
 declare module 'dojo/Stateful' {
 	class Stateful {
-		constructor(kwArgs:Object);
+		constructor(kwArgs:{});
 		get(key:string):any;
-		set(kwArgs:Object):void;
+		set(kwArgs:{}):void;
 		set(key:string, value:any):void;
 		watch(callback:Stateful.ICallback<any>):IHandle;
 		watch(key:string, callback:Stateful.ICallback<any>):IHandle;
@@ -374,9 +369,9 @@ declare module 'dojo/store/Memory' {
 	class MemoryStore<T> implements IStore<T> {
 		data:T[];
 		idProperty:string;
-		constructor(kwArgs:Object);
+		constructor(kwArgs:{});
 		get(id:any):T;
-		put(object:T, options?:Object):any; // string | number
+		put(object:T, options?:{}):any; // string | number
 		setData(data:T[]):void;
 	}
 
@@ -386,9 +381,9 @@ declare module 'dojo/store/Memory' {
 declare module 'dojo/store/Observable' {
 	class ObservableStore<T> implements IStore<T> {
 		idProperty:string;
-		constructor(kwArgs:Object);
+		constructor(kwArgs:{});
 		get(id:any):T;
-		put(object:T, options?:Object):any; // string | number
+		put(object:T, options?:{}):any; // string | number
 		setData(data:T[]):void;
 	}
 
@@ -437,7 +432,7 @@ declare module 'dojo/text' {
 
 declare module 'dojo/topic' {
 	var topic:{
-		publish(topic:string, event:Object):void;
+		publish(topic:string, event:{}):void;
 		subscribe(topic:string, listener:(...args:any[]) => void):IHandle;
 	};
 	export = topic;

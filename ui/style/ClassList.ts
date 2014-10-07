@@ -41,7 +41,8 @@ class ClassList {
 
 	toggle(className:string, forceState?:boolean):void {
 		if (forceState != null) {
-			this[forceState ? 'add' : 'remove'](className);
+			// TS7017
+			(<any> this)[forceState ? 'add' : 'remove'](className);
 		}
 		else {
 			var classes:string[] = className.split(/\s+/);

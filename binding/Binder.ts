@@ -138,8 +138,8 @@ class Binder extends Observable implements binding.IBinder {
 		};
 
 		if (has('debug')) {
-			handle['_source'] = source;
-			handle['_target'] = target;
+			(<any> handle)._source = source;
+			(<any> handle)._target = target;
 		}
 
 		return handle;

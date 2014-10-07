@@ -1,7 +1,6 @@
 /// <reference path="../dojo" />
 
 import Router = require('./Router');
-import lang = require('dojo/_base/lang');
 
 /**
  * A router implementation with no alternative backing mechanism. Change routes by calling `go`.
@@ -36,7 +35,7 @@ class NullRouter extends Router {
 	/**
 	 * Transition to a new route.
 	 */
-	go(routeId:string, kwArgs?:Object):void {
+	go(routeId:string, kwArgs?:HashMap<any>):void {
 		if (this.get('paused')) {
 			throw new Error('Router is paused');
 		}
@@ -50,7 +49,7 @@ class NullRouter extends Router {
 	resetPath(path:string, replace?:boolean):void {
 		this.pause();
 		if (replace) {
-			this._oldPath = path;
+			this._lastPath = path;
 		}
 		this.resume();
 	}
@@ -58,13 +57,11 @@ class NullRouter extends Router {
 	/**
 	 * Stringifies the given arguments
 	 */
-	createPath(routeId:string, kwArgs?:{ [key:string]: any }):string {
+	createPath(routeId:string, kwArgs?:HashMap<any>):string {
 		return JSON.stringify({ id: routeId, kwArgs: kwArgs });
 	}
 }
 
-NullRouter.defaults({
-	paused: false
-});
+NullRouter.prototype._paused = false;
 
 export = NullRouter;

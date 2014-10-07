@@ -7,7 +7,7 @@ import PointerManager = require('./PointerManager');
 import ui = require('../interfaces');
 import Widget = require('./Widget');
 
-var BUBBLES = {
+var BUBBLES:HashMap<boolean> = {
 	pointercancel: true,
 	pointerdown: true,
 	pointermove: true,
@@ -16,7 +16,7 @@ var BUBBLES = {
 	pointerup: true
 };
 
-var CANCELABLE = {
+var CANCELABLE:HashMap<boolean> = {
 	pointerdown: true,
 	pointermove: true,
 	pointerout: true,

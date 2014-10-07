@@ -46,7 +46,8 @@ class Mediator<T extends data.IModel> extends BaseModel implements data.IProxyMo
 					object = object.get('model');
 				}
 
-				return collection[method](object, options);
+				// TS7017
+				return (<any> collection)[method](object, options);
 			};
 		}
 

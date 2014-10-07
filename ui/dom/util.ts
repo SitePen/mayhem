@@ -212,7 +212,8 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
 	while (node !== root) {
 		// TODO: Use the right property name
 		// found a SingleNodeWidget parent
-		if (node['widget']) {
+		// TS7017
+		if ((<any> node)['widget']) {
 			break checkNode;
 		}
 
@@ -224,7 +225,9 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
 			node = node.previousSibling;
 
 			// found a MultiNodeWidget
-			if (node.nodeType === Node.COMMENT_NODE && node['widget']) {
+			// TODO: Use the right property name
+			// TS7017
+			if (node.nodeType === Node.COMMENT_NODE && (<any> node)['widget']) {
 				// The discovered widget is a sibling, not a parent
 				if (node.nodeValue.charAt(0) === '/') {
 					inSiblingWidget = node.nodeValue.slice(1);
@@ -252,7 +255,8 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
 		return <any> master.get('view');
 	}
 
-	return node['widget'];
+	// TS7017
+	return (<any> node)['widget'];
 }
 
 /**

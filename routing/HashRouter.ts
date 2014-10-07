@@ -28,7 +28,7 @@ class HashRouter extends Router {
 	/**
 	 * Creates a URL fragment that can be used to link to the given route.
 	 */
-	createPath(id:string, kwArgs?:Object):string {
+	createPath(id:string, kwArgs?:HashMap<any>):string {
 		id = this.normalizeId(id);
 
 		var route:Route = this._routes[id];
@@ -43,7 +43,7 @@ class HashRouter extends Router {
 	/**
 	 * Transitions to a new route.
 	 */
-	go(routeId:string, kwArgs?:Object):void {
+	go(routeId:string, kwArgs?:HashMap<any>):void {
 		if (!this._changeHandle) {
 			throw new Error('Router is paused');
 		}

@@ -133,10 +133,12 @@ class ElementWidget extends Container {
 			var result:RegExpExecArray;
 			if (node.nodeType === Node.COMMENT_NODE) {
 				if ((result = PLACEHOLDER.exec(node.nodeValue))) {
-					self['_' + result[1] + 'Setter'] = createPlaceholderSetter(result[1], node);
+					// TS7017
+					(<any> self)['_' + result[1] + 'Setter'] = createPlaceholderSetter(result[1], node);
 				}
 				else if ((result = CHILD.exec(node.nodeValue))) {
-					node.parentNode.replaceChild(self._children[result[1]].detach(), node);
+					// TS7017
+					node.parentNode.replaceChild(self._children[<any> result[1]].detach(), node);
 				}
 				else if ((result = BIND.exec(node.nodeValue))) {
 					var newNode:Text = document.createTextNode('');
@@ -198,12 +200,12 @@ class ElementWidget extends Container {
 
 							if (element === node) {
 								// TODO: Figure out a better way to find a model method to invoke
-								var model:{ call?:Function; } = self.get('model');
+								var model:any = self.get('model');
 								if (model.call) {
 									model.call(method, event);
 								}
 								else {
-									self.get('model')[method] && self.get('model')[method](event);
+									model[method] && model[method](event);
 								}
 							}
 						}, node, nodeValue));

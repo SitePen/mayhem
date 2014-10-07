@@ -20,7 +20,7 @@ export function activate(target:Widget, callback:(event?:ui.UiEvent) => void):IH
 
 export var click:(target:Widget, callback:Function) => IHandle = (function () {
 	var CLICK_SPEED = 300;
-	var MAX_DISTANCE = {
+	var MAX_DISTANCE:HashMap<number> = {
 		pen: 15,
 		mouse: 5,
 		touch: 40

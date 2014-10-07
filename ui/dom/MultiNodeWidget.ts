@@ -25,11 +25,14 @@ class MultiNodeWidget extends Widget {
 
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
-		this._firstNode['widget'] = this._lastNode['widget'] = this;
+		// TODO: Use a unique-per-app key name
+		// TS7017
+		(<any> this._firstNode)['widget'] = (<any> this._lastNode)['widget'] = this;
 	}
 
 	destroy():void {
-		this._firstNode['widget'] = this._lastNode['widget'] = null;
+		// TS7017
+		(<any> this._firstNode)['widget'] = (<any> this._lastNode)['widget'] = null;
 		super.destroy();
 	}
 

@@ -7,17 +7,6 @@ import has = require('./has');
 import requestUtil = require('dojo/request/util');
 import whenAll = require('dojo/promise/all');
 
-export function applyMixins(derivedCtor:any, baseCtors:any[]):void {
-	for (var i = 0, baseCtor:Function; (baseCtor = baseCtors[i]); ++i) {
-		var prototype = baseCtor.prototype;
-		for (var k in prototype) {
-			if (prototype[k] !== Object.prototype[k]) {
-				derivedCtor.prototype[k] = prototype[k];
-			}
-		}
-	}
-}
-
 export function createCompositeHandle(...handles:IHandle[]):IHandle {
 	return {
 		remove: function ():void {
@@ -72,35 +61,42 @@ export function debounce<T extends (...args:any[]) => void>(callback:T, delay:nu
 export var deepCopy = requestUtil.deepCopy;
 export var deepCreate = requestUtil.deepCreate;
 
+interface DeferredCall {
+	original:Function;
+	args:IArguments;
+}
+
 // TODO: Not sure if `instead` is a good idea; talk to Bryan
 export function deferMethods(
-	target:Object,
+	target:{},
 	methods:string[],
 	untilMethod:string,
 	instead?:(method:string, args:IArguments) => any
 ):void {
-	var waiting = {};
+	// Avoid TS7017 but still allow the method signature to be typed properly
+	var _target:any = target;
+	var waiting:HashMap<DeferredCall> = {};
 	var untilHandle = aspect.after(target, untilMethod, function ():void {
 		untilHandle.remove();
 		untilHandle = null;
 
 		for (var method in waiting) {
-			var info = waiting[method];
+			var info:DeferredCall = waiting[method];
 
-			target[method] = info.original;
-			info.args && target[method].apply(target, info.args);
+			_target[method] = info.original;
+			info.args && _target[method].apply(_target, info.args);
 		}
 
-		target = waiting = null;
+		_target = waiting = null;
 	}, true);
 
 	array.forEach(methods, function (method:string):void {
-		var info:{ original:Function; args:IArguments; } = waiting[method] = {
-			original: target[method],
+		var info:DeferredCall = waiting[method] = {
+			original: _target[method],
 			args: null
 		};
 
-		target[method] = function ():void {
+		_target[method] = function ():void {
 			info.args = instead && instead.call(target, method, arguments) || arguments;
 		};
 	});
@@ -207,17 +203,22 @@ export function getModule<T>(moduleId:string):IPromise<T> {
 	});
 }
 
+interface RequireError extends Error {
+	url:string;
+	originalError:Error;
+}
+
 export function getModules<T>(moduleIds:string[]):IPromise<T[]> {
 	var dfd = new Deferred<T[]>();
 	var handle:IHandle;
 
 	if (require.on) {
-		var moduleUrls = {};
+		var moduleUrls:HashMap<string> = {};
 		for (var i = 0; i < moduleIds.length; i++) {
 			moduleUrls[require.toUrl(moduleIds[i])] = moduleIds[i];
 		}
 
-		handle = require.on('error', function (error:{ message: string; info:string[]; }):void {
+		handle = require.on('error', function (error:{ message: string; info:any[]; }):void {
 			// TODO: handle plugins correctly
 			if (error.message === 'scriptError') {
 				var moduleUrl = error.info[0].slice(0, -3);
@@ -225,8 +226,9 @@ export function getModules<T>(moduleIds:string[]):IPromise<T[]> {
 					handle && handle.remove();
 					handle = null;
 
-					var reportedError = new Error('Couldn\'t load ' + moduleUrls[moduleUrl] + ' from ' + error.info[0]);
-					reportedError['info'] = error.info;
+					var reportedError:RequireError = <any> new Error('Couldn\'t load ' + moduleUrls[moduleUrl] + ' from ' + error.info[0]);
+					reportedError.url = error.info[0];
+					reportedError.originalError = error.info[1];
 					dfd.reject(reportedError);
 				}
 			}
@@ -325,7 +327,7 @@ export function deepMixin(target:any, source:any):any {
 }
 
 export function unescapeXml(text:string):string {
-	var entityMap = {
+	var entityMap:HashMap<string> = {
 		lt: '<',
 		gt: '>',
 		amp: '&',

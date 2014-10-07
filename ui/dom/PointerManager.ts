@@ -81,19 +81,22 @@ function keyDiff(oldObject:PointerManager.Pointer, newObject:PointerManager.Poin
 }
 
 function mixin(target:PointerManager.Pointer, source:PointerManager.Pointer):PointerManager.Pointer {
-	for (var key in source) {
+	// TS7017
+	var _target:any = target;
+	var _source:any = source;
+	for (var key in _source) {
 		if (key === 'lastState' || key === 'lastChanged') {
 			continue;
 		}
 		else if (key === 'modifiers') {
-			target[key] = lang.mixin({}, source[key]);
+			_target[key] = lang.mixin({}, _source[key]);
 		}
 		else {
-			target[key] = source[key];
+			_target[key] = _source[key];
 		}
 	}
 
-	return target;
+	return _target;
 }
 
 var keyboard:ui.PointerEvent.Modifiers = {
@@ -104,7 +107,7 @@ var keyboard:ui.PointerEvent.Modifiers = {
 	shortcut: false
 };
 
-var nativeEventMap = {
+var nativeEventMap:HashMap<string> = {
 	mousedown: 'change',
 	mouseenter: 'add',
 	mouseleave: 'remove',
@@ -158,7 +161,8 @@ class PointerManager {
 					continue;
 				}
 
-				pointer[key] = null;
+				// TS7017
+				(<any> pointer)[key] = null;
 			}
 
 			pointer.isActive = false;

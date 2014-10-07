@@ -23,7 +23,8 @@ class DateValidator extends Validator {
 			return;
 		}
 
-		model[key] = value;
+		// TS7017
+		(<any> model)[key] = value;
 
 		if (options.min && value < options.min) {
 			model.addError(key, new ValidationError(i18n.dateTooSmall, { min: locale.format(options.min) }));

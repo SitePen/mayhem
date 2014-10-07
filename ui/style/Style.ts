@@ -26,7 +26,7 @@ class Style extends Observable implements style.IStyle {
 
 	private _globalObservers:core.IObserver<any>[];
 
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs?:HashMap<any>) {
 		this._globalObservers = [];
 		super(kwArgs);
 	}

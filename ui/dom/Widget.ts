@@ -21,8 +21,11 @@ class Widget extends CommonWidget {
 
 Widget.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
 	// TODO: Can we do this better?
-	if (typeof type === 'string' && actions[type]) {
-		return actions[type](this, listener);
+	// TS7017
+	// TODO: Should be HashMap of Mayhem extension events
+	var _actions:HashMap<Function> = <any> actions;
+	if (typeof type === 'string' && _actions[type]) {
+		return _actions[type](this, listener);
 	}
 
 	return CommonWidget.prototype.on.apply(this, arguments);

@@ -4,6 +4,7 @@ import binding = require('./binding/interfaces');
 import core = require('./interfaces');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
+import LogLevel = require('./LogLevel');
 import ObservableEvented = require('./ObservableEvented');
 import Promise = require('./Promise');
 import Scheduler = require('./Scheduler');
@@ -136,27 +137,30 @@ class Application extends ObservableEvented {
 
 	constructor(kwArgs?:HashMap<any>) {
 		// TODO: more robust configuration merging
-		kwArgs = util.deepCopy((<typeof Application> this.constructor)._defaultConfig, kwArgs);
+		kwArgs = <any> util.deepCopy((<typeof Application> this.constructor)._defaultConfig, kwArgs);
 		super(kwArgs);
 	}
 
 	handleError(error:Error):void {
-		var errorHandler = this.get('errorHandler');
+		// TODO: Finish implementation
+		var errorHandler:{ handleError:Function; } = <any> this.get('errorHandler');
 		if (errorHandler) {
 			errorHandler.handleError(error);
 		}
 		else {
-			this.log(error.stack || error.message, LogLevel.ERROR, 'error/' + error.name);
+			this.log((<any> error).stack || error.message, LogLevel.ERROR, 'error/' + error.name);
 		}
 	}
 
 	log(message:string, level:LogLevel = LogLevel.LOG, category:string = null):void {
-		var logger = this.get('logger');
+		// TODO: Finish implementation
+		var logger:{ log:Function; } = <any> this.get('logger');
 		if (logger) {
 			logger.log(message, level, category);
 		}
 		else {
-			console[level]((category ? category + ': ' : '') + message);
+			// TS7017
+			(<any> console)[LogLevel[level].toLowerCase()]((category ? category + ': ' : '') + message);
 		}
 	}
 
@@ -203,7 +207,7 @@ class Application extends ObservableEvented {
 			var startups:IPromise<any>[] = [];
 
 			for (var key in ctors) {
-				instance = new ctors[key](lang.mixin({ app: self }, components[key], { constructor: undefined }));
+				instance = new ctors[key](<any> lang.mixin({ app: self }, components[key], { constructor: undefined }));
 				self.set(key, instance);
 				instances.push(instance);
 			}

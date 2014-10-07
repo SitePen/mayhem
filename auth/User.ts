@@ -26,7 +26,7 @@ class User extends Observable {
 	 * @param kwArgs Parameters used to login this User.
 	 *
 	 * @returns a Promise that resolves with an object containing the user information.
-	 */ 
+	 */
 	login(kwArgs:Object):IPromise<Object> {
 		return this.authenticate.apply(this, arguments).then((userData:Object):Object => {
 			this.set({
@@ -77,8 +77,6 @@ class User extends Observable {
 	}
 }
 
-User.defaults({
-	isAuthenticated: false
-});
+User.prototype._isAuthenticated = false;
 
 export = User;

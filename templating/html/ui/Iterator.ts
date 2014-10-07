@@ -52,7 +52,8 @@ class IteratorList<T> extends OnDemandList {
 
 	insertRow():HTMLElement {
 		var row:HTMLElement = super.insertRow.apply(this, arguments);
-		ContainerMixin.prototype.add.call(this._parent, row[oidKey]);
+		// TS7017
+		ContainerMixin.prototype.add.call(this._parent, (<any> row)[oidKey]);
 		return row;
 	}
 
@@ -90,7 +91,8 @@ class IteratorList<T> extends OnDemandList {
 			});
 		}
 		else {
-			rowNode[oidKey] = widget;
+			// TS7017
+			(<any> rowNode)[oidKey] = widget;
 		}
 
 		return rowNode;
@@ -98,7 +100,8 @@ class IteratorList<T> extends OnDemandList {
 
 	removeRow(row:HTMLElement, justCleanup:boolean):void {
 		super.removeRow(row, true);
-		var widget:Iterator.IItem<T> = row[oidKey];
+		// TS7017
+		var widget:Iterator.IItem<T> = (<any> row)[oidKey];
 		widget.destroy();
 
 		// row was a surrogate node
@@ -108,7 +111,8 @@ class IteratorList<T> extends OnDemandList {
 
 		// Avoid DOM-JS circular reference memory retention in IE8
 		if (!has('es5')) {
-			row[oidKey] = null;
+			// TS7017
+			(<any> row)[oidKey] = null;
 		}
 	}
 }

@@ -22,8 +22,8 @@ if (typeof window !== 'undefined') {
 
 if (has('dom')) {
 	has.add('dom-tree-walker', typeof document.createTreeWalker !== 'undefined');
-	has.add('dom-mspointerevents', Boolean(window['MsPointerEvent']));
-	has.add('dom-pointerevents', Boolean(window['PointerEvent']));
+	has.add('dom-mspointerevents', 'MsPointerEvent' in window);
+	has.add('dom-pointerevents', 'PointerEvent' in window);
 	has.add('dom-touch', 'ontouchstart' in document);
 	has.add('dom-mouse', 'onmousedown' in document);
 	// https://code.google.com/p/chromium/issues/detail?id=276941

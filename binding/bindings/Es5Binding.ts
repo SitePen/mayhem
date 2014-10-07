@@ -2,8 +2,6 @@
 
 import binding = require('../interfaces');
 import Binding = require('../Binding');
-import BindingError = require('../BindingError');
-import core = require('../../interfaces');
 import has = require('../../has');
 import util = require('../../util');
 
@@ -50,7 +48,8 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	/**
 	 * The bound object.
 	 */
-	private _object:Object;
+	// Uses `any` type due to dynamic property access
+	private _object:any;
 
 	/**
 	 * The original property descriptor for the bound object.
@@ -76,7 +75,7 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 		super(kwArgs);
 
 		var self = this;
-		var object = kwArgs.object;
+		var object:any = kwArgs.object;
 		var property = kwArgs.path;
 
 		this._object = object;

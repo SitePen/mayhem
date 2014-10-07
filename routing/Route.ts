@@ -74,7 +74,8 @@ class Route extends BaseRoute implements routing.IRoute {
 				continue;
 			}
 
-			kwArgs[k] = this[k];
+			// TS7017
+			kwArgs[k] = (<any> this)[k];
 		}
 
 		// TODO: Is there other data that should always be exposed from the route? Maybe the entire event?
@@ -110,7 +111,8 @@ class Route extends BaseRoute implements routing.IRoute {
 
 	destroy():void {
 		this._view && this._view.destroy && this._view.destroy();
-		this._model && this._model['destroy'] && this._model['destroy']();
+		var model:{ destroy?:() => void; } = this._model;
+		model && model.destroy && model.destroy();
 		this._view = this._model = null;
 		super.destroy();
 	}

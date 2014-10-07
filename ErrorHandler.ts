@@ -1,12 +1,15 @@
 /// <amd-dependency path="./templating/html!./views/Error.html" />
 
+declare var process:any;
+
 import aspect = require('dojo/aspect');
-import core = require('./interfaces');
 import has = require('./has');
 import Observable = require('./Observable');
+import View = require('./ui/View');
+import WebApplication = require('./WebApplication');
 
 class ErrorHandler extends Observable {
-	private _app:core.IApplication;
+	private _app:WebApplication;
 	private _handleGlobalErrors:boolean;
 	private _handle:IHandle;
 
@@ -24,12 +27,12 @@ class ErrorHandler extends Observable {
 	}
 
 	handleError(error:Error):void {
-		var ErrorView = require('./templating/html!./views/Error.html');
+		var ErrorView:typeof View = <any> require('./templating/html!./views/Error.html');
 		var view = new ErrorView({
 			app: this._app,
 			model: error
 		});
-		this.get('app').get('ui').set('view', view);
+		this._app.get('ui').set('view', view);
 	}
 
 	startup():void {
@@ -49,11 +52,11 @@ class ErrorHandler extends Observable {
 }
 
 module ErrorHandler {
-	export interface Getters {
+	export interface Getters extends Observable.Getters {
 		(key:'handleGlobalErrors'):boolean;
 	}
 
-	export interface Setters {
+	export interface Setters extends Observable.Setters {
 		(key:'handleGlobalErrors', value:boolean):void;
 	}
 }

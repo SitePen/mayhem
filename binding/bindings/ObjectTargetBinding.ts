@@ -1,7 +1,5 @@
 import binding = require('../interfaces');
 import Binding = require('../Binding');
-import core = require('../../interfaces');
-import has = require('../../has');
 import util = require('../../util');
 
 /**
@@ -17,7 +15,8 @@ class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T
 	/**
 	 * The object containing the final property to be bound.
 	 */
-	private _object:Object;
+	// Uses `any` type due to dynamic property access
+	private _object:any;
 
 	/**
 	 * The key for the final property to be bound.

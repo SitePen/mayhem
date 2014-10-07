@@ -14,7 +14,7 @@ interface WebKitKeyboardEvent extends Dom3KeyboardEvent {
 }
 
 if (!has('dom-keyboard-key') && !has('dom-keyboard-keyIdentifier')) {
-	var KEYS = (function () {
+	var KEYS = (function ():HashMap<string> {
 		var jp:boolean = (navigator.language || navigator.userLanguage) === 'ja';
 		return {
 			3: 'Break',
@@ -159,7 +159,7 @@ if (!has('dom-keyboard-key') && !has('dom-keyboard-keyIdentifier')) {
 if (!has('dom-keyboard-code')) {
 	var CODES = (function () {
 		var jp:boolean = (navigator.language || navigator.userLanguage) === 'ja';
-		var codes = {
+		var codes:HashMap<string> = {
 			3: 'Pause',
 			8: 'Backspace',
 			9: 'Tab',

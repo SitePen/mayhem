@@ -180,7 +180,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			}
 			else {
 				this.on(eventName, function ():void {
-					var model:{ call?:Function; } = this.get('model');
+					var model:any = this.get('model');
 
 					if (model.call) {
 						var args = Array.prototype.slice.call(arguments, 0);
@@ -264,7 +264,7 @@ function createViewConstructor(root:templating.INode):WidgetConstructor {
 				return node;
 			}
 
-			var value:HashMap<any> = node instanceof Array ? [] : {};
+			var value:any = node instanceof Array ? [] : {};
 
 			// If the object is a special constructor token object, then it should actually be converted into a
 			// constructor function, not an instance

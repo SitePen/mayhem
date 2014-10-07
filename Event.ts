@@ -1,5 +1,4 @@
 import core = require('./interfaces');
-import has = require('./has');
 
 /**
  * The Event class is the base class for all Mayhem events. It provides an interface that is similar to the W3C event
@@ -22,7 +21,8 @@ class Event implements core.IEvent {
 				if (k === 'constructor') {
 					continue;
 				}
-				this[k] = kwArgs[k];
+				// TS7017
+				(<any> this)[k] = kwArgs[k];
 			}
 		}
 	}

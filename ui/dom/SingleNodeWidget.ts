@@ -8,11 +8,15 @@ class SingleNodeWidget extends Widget {
 
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
-		this._node['widget'] = this;
+		// TODO: Use a unique-per-app key name
+		// TS7017
+		(<any> this._node)['widget'] = this;
 	}
 
 	destroy():void {
-		this._node['widget'] = null;
+		// TODO: Use a unique-per-app key name
+		// TS7017
+		(<any> this._node)['widget'] = null;
 		super.destroy();
 	}
 

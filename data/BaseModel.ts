@@ -16,7 +16,7 @@ class Model extends Observable implements data.IModel {
 
 	static property<T>(staticArgs:data.IProperty.KwArgs<T>):any {
 		return function (kwArgs:data.IProperty.KwArgs<T>):Property<T> {
-			return new Property<T>(lang.mixin({}, staticArgs, kwArgs));
+			return new Property<T>(<any> lang.mixin({}, staticArgs, kwArgs));
 		};
 	}
 
