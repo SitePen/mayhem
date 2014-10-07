@@ -1,4 +1,4 @@
-/// <reference path="../intern" />
+/// <reference path="../../intern" />
 import assert = require('intern/chai!assert');
 import Observable = require('mayhem/Observable');
 import registerSuite = require('intern!object');
@@ -14,7 +14,7 @@ class ExtendedObservable extends Observable {
 class ObservableA extends Observable {
 	_lastValue:string;
 	sequence:string[];
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs?:HashMap<any>) {
 		this.sequence = [];
 
 		super(kwArgs);
@@ -29,7 +29,7 @@ class ObservableA extends Observable {
 }
 
 class ObservableB extends ObservableA {
-	constructor(kwArgs?:Object) {
+	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
 		this.sequence.push('ctor b');
 	}
@@ -213,6 +213,9 @@ registerSuite({
 			assert.doesNotThrow(function () {
 				observable.destroy();
 			}, Error, 'Observable destruction should be idempotent');
+			assert.doesNotThrow(function () {
+				handle.remove();
+			}, Error, 'Removing handle from destroyed observable should work but be a no-op');
 
 			// After an observable is destroyed, behaviour becomes undefined
 			try {
