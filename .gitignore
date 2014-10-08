@@ -1,5 +1,6 @@
 *.js.map
 *.js
+!Gruntfile.js
 html-report/
 node_modules/
 third-party/

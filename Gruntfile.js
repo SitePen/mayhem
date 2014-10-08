@@ -1,8 +1,6 @@
 /* jshint node:true */
 
-var path = require('path'),
-	_ = require('lodash'),
-	globule = require('globule');
+var path = require('path');
 
 module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-ts');
@@ -70,16 +68,10 @@ module.exports = function (grunt) {
 			},
 			framework: {
 				src: [ '<%= ignoreDefinitions %>' ]
-			}
-		},
-
-		watch: {
-			all: {
-				files: [ '<%= all %>' ],
-				tasks: [ 'build-ts' ],
-				options: {
-					spawn: false
-				}
+			},
+			watch: {
+				src: [ '<%= ignoreDefinitions %>' ],
+				watch: 'src'
 			}
 		},
 
@@ -174,114 +166,6 @@ module.exports = function (grunt) {
 		}
 	});
 
-	grunt.registerTask('build', function () {
-		grunt.task.run(['force:on', 'parser', 'ts:framework', 'force:restore']);
-	});
-	grunt.registerTask('build-ts', function () {
-		grunt.task.run(['force:on', 'ts:framework', 'force:restore']);
-	});
-	grunt.registerTask('default', function () {
-		var dependsOn = {},
-			commentsRE = /\/\*[\s\S]*?\*\/|\/\/.*$/mg,
-			importRE = /import\s+\w+\s+=\s+require\(\s*(['"])(\..*?[^\\])\1\s*\)/g,
-			referenceRE = /\/\/\/\s+<reference\s+path="(.*?)\.d\.ts"\s*?\/>/g;
-
-		function analyzeDependencies(filepath, action) {
-			if (typeof action === 'string' && action !== 'added') {
-				for (var key in dependsOn) {
-					if (dependsOn[key].length) {
-						var index = dependsOn[key].indexOf(filepath);
-						if (index > -1) {
-							dependsOn[key].splice(index, 1);
-						}
-					}
-				}
-			}
-			if (action === 'removed') {
-				return;
-			}
-			var deps = [];
-			grunt.file.read(filepath)
-				.replace(referenceRE, function (whole, dep) {
-					deps.push(dep);
-
-					return whole;
-				})
-				.replace(commentsRE, '')
-				.replace(importRE, function (whole, quote, dep) {
-					deps.push(dep);
-
-					return whole;
-				});
-
-			if (!deps.length) {
-				return;
-			}
-
-			var dirname = path.dirname(filepath);
-			deps.forEach(function (dep) {
-				dep = path.normalize(path.join(dirname, dep));
-
-				if (!dependsOn[dep]) {
-					dependsOn[dep] = [filepath];
-				}
-				else {
-					dependsOn[dep].push(filepath);
-				}
-			});
-		}
-
-		function getDependents(filepath, seen) {
-			filepath = filepath.replace(/(?:\.d)?\.ts$/, '');
-			seen = seen || [];
-
-			var res = [];
-			if (seen.indexOf(filepath) > -1) {
-				return res;
-			}
-
-			seen.push(filepath);
-			if (filepath in dependsOn) {
-				dependsOn[filepath].forEach(function (filepath) {
-					res.push(filepath);
-					var _res = getDependents(filepath, seen);
-					if (_res.length) {
-						res.push.apply(res, _res);
-					}
-				});
-			}
-
-			return res;
-		}
-
-		var patterns = _.chain(grunt.config.get('watch.all.files')).flatten().map(function (pattern) {
-			return grunt.config.process(pattern);
-		}).value();
-
-		globule.find(patterns).forEach(analyzeDependencies);
-
-		var recompile = {};
-		var onChange = _.debounce(function () {
-			var files = grunt.file.match(grunt.config.get('ignoreDefinitions'), Object.keys(recompile));
-
-			grunt.config.set('ts.framework.src', files);
-
-			recompile = {};
-		}, 200);
-
-		grunt.event.on('watch', function (action, filepath) {
-			if (grunt.file.isFile(filepath)) {
-				recompile[filepath] = action;
-
-				analyzeDependencies(filepath, action);
-
-				getDependents(filepath).forEach(function (filepath) {
-					recompile[filepath] = true;
-				});
-			}
-			onChange();
-		});
-
-		grunt.task.run([ 'build', 'watch' ]);
-	});
+	grunt.registerTask('build', ['force:on', 'parser', 'force:restore', 'ts:framework']);
+	grunt.registerTask('default', ['force:on', 'parser', 'force:restore', 'ts:watch']);
 };

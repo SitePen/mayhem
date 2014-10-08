@@ -11,15 +11,12 @@
 		"bower": "1.x"
 	},
 	"devDependencies": {
-		"globule": "0.2.0",
 		"grunt": "0.4.2",
 		"grunt-contrib-clean": "0.5.0",
-		"grunt-contrib-watch": "0.5.3",
 		"grunt-peg": "1.2.0",
-		"grunt-ts": "1.11.3",
+		"grunt-ts": "1.12.1",
 		"grunt-wrap": "0.3.0",
 		"intern-geezer": "2.1.0",
-		"lodash": "2.4.1",
 		"typescript": "1.1.0-1"
 	}
 }
