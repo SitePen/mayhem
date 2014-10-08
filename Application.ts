@@ -88,6 +88,7 @@ class Application extends ObservableEvented {
 					require.toAbsMid('./binding/bindings/CompositeBinding'),
 					require.toAbsMid('./binding/bindings/MetadataBinding'),
 					require.toAbsMid('./binding/bindings/NestedBinding'),
+					require.toAbsMid('./binding/bindings/ObjectMethodBinding'),
 					require.toAbsMid('./binding/bindings/ObservableBinding'),
 					require.toAbsMid('./binding/bindings/StatefulBinding'),
 					require.toAbsMid('./binding/bindings/Es5Binding'),
