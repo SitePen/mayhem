@@ -68,10 +68,17 @@ module.exports = function (grunt) {
 			},
 			framework: {
 				src: [ '<%= ignoreDefinitions %>' ]
+			}
+		},
+
+		watch: {
+			ts: {
+				files: [ '<%= all %>' ],
+				tasks: [ 'ts:framework' ]
 			},
-			watch: {
-				src: [ '<%= ignoreDefinitions %>' ],
-				watch: 'src'
+			parser: {
+				files: [ '<%= peg.parser.src %>' ],
+				tasks: [ 'parser' ]
 			}
 		},
 
@@ -167,5 +174,5 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask('build', ['force:on', 'parser', 'force:restore', 'ts:framework']);
-	grunt.registerTask('default', ['force:on', 'parser', 'force:restore', 'ts:watch']);
+	grunt.registerTask('default', ['force:on', 'parser', 'ts:framework', 'force:restore', 'watch']);
 };
