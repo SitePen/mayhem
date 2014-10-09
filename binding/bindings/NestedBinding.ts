@@ -3,7 +3,6 @@
 import array = require('dojo/_base/array');
 import binding = require('../interfaces');
 import Binding = require('../Binding');
-import core = require('../../interfaces');
 import lang = require('dojo/_base/lang');
 import util = require('../../util');
 
@@ -37,12 +36,12 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 	/**
 	 * The property at the end of the bound chain of properties.
 	 */
-	private _source:binding.IBinding<SourceT, SourceT>;
+	private _source:binding.IBinding<SourceT, TargetT>;
 
 	/**
 	 * The target property.
 	 */
-	private _target:binding.IBinding<TargetT, TargetT>;
+	private _target:binding.IBinding<TargetT, any>;
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
@@ -52,7 +51,7 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		this._rebind(kwArgs.object, 0);
 	}
 
-	bindTo(target:binding.IBinding<TargetT, TargetT>, options:binding.IBindToOptions = {}):IHandle {
+	bindTo(target:binding.IBinding<TargetT, any>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -83,7 +82,7 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		this._source = this._target = null;
 	}
 
-	get():SourceT {
+	get():TargetT {
 		return this._source ? this._source.get() : undefined;
 	}
 

@@ -41,10 +41,8 @@ class PersistentModel extends Model implements data.IPersistentModel {
 		var self = this;
 
 		function save():IPromise<void> {
-			// TODO: Not a clue what put actually is supposed to resolve to
-			return self._store.put(self).then(function (isSaved:boolean):boolean {
-				isSaved && self.set('scenario', 'update');
-				return isSaved;
+			return self._store.put(self).then(function (model:PersistentModel):void {
+				self.set('scenario', 'update');
 			});
 		}
 

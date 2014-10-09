@@ -1,6 +1,5 @@
 import BindDirection = require('./BindDirection');
 import core = require('../interfaces');
-import Proxty = require('../Proxty');
 
 /**
  * The keyword arguments object for the high-level data binding API.
@@ -58,9 +57,6 @@ export interface IBinder extends core.IApplicationComponent {
 	 * interfaces exposed on subtypes of IProxty.
 	 */
 	createBinding<SourceT, TargetT>(object:Object, path:string, options?:{ scheduled?:boolean; }):IBinding<SourceT, TargetT>;
-
-	getMetadata<T>(object:Object, path:string, field:string):Proxty<T>;
-	getMetadata(object:Object, path:string):Proxty<core.IObservable>;
 }
 
 /**
@@ -113,14 +109,22 @@ export interface IComputedProperty {
  * needing to know the originally bound object, the name of the property, or even that the property exists at the time
  * that it is bound or set.
  */
-export interface IBinding<SourceT, TargetT> extends Proxty<SourceT> {
+export interface IBinding<SourceT, TargetT> {
 	id:string;
 
 	/**
 	 * Binds the property to another target property. The target property is only notified of a change when the actual
 	 * property is updated; calling `set` on this bound property will *not* update the bound target value.
 	 */
-	bindTo(target:Proxty<TargetT>, options?:IBindToOptions):IHandle;
+	bindTo(target:IBinding<TargetT, any>, options?:IBindToOptions):IHandle;
+
+	destroy():void;
+
+	get():TargetT;
+
+	observe(observer:core.IObserver<TargetT>, invokeImmediately?:boolean):IHandle;
+
+	set(value:SourceT):void;
 }
 
 /**

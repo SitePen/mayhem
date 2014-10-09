@@ -1,15 +1,12 @@
 /// <reference path="../dojo" />
 
 import Application = require('../Application');
-import aspect = require('dojo/aspect');
 import BindDirection = require('./BindDirection');
 import binding = require('./interfaces');
 import BindingError = require('./BindingError');
-import core = require('../interfaces');
 import has = require('../has');
 import Observable = require('../Observable');
 import Promise = require('../Promise');
-import Proxty = require('../Proxty');
 import util = require('../util');
 
 /**
@@ -167,7 +164,8 @@ class Binder extends Observable implements binding.IBinder {
 				var self = this;
 				var args = arguments;
 				// TODO: Why always schedule if it is an array?
-				var schedule = value instanceof Array || value !== binding.get();
+				// TS2365
+				var schedule = value instanceof Array || (<any> value) !== binding.get();
 
 				app.get('scheduler').schedule(binding.id, schedule ? function ():void {
 					oldSet.apply(self, args);
@@ -190,79 +188,12 @@ class Binder extends Observable implements binding.IBinder {
 		}
 
 		throw new BindingError(
-			'No registered proxty constructors understand the requested binding "{binding}" on {object}.', {
+			'No registered binding constructors understand the requested binding "{binding}" on {object}.', {
 				object: object,
 				path: path,
 				binder: this
 			}
 		);
-	}
-
-	/**
-	 * Return a Binding that is bound to a particular metadata key on an object.
-	 *
-	 * @param object Object with metadata
-	 * @param binding Metadata key, or hierarchical key specifier, to bind to
-	 * @param field Specific field in metadata object to observe
-	 */
-	getMetadata<T>(object:Object, binding:string, field:string):Proxty<T>;
-	getMetadata(object:Object, binding:string):Proxty<core.IObservable>;
-	getMetadata(object:Object, binding:string, field?:string):Proxty<any> {
-		var metadata:Proxty<any> = new Proxty(null);
-		var metadataHandle:IHandle;
-		var key:string;
-
-		function swapMetadataObject(newObject:core.IHasMetadata):void {
-			var newMetadata:core.IObservable = newObject && newObject.getMetadata ? newObject.getMetadata(key) : null;
-
-			if (field) {
-				metadataHandle && metadataHandle.remove();
-
-				if (newMetadata) {
-					metadataHandle = newMetadata.observe(field, function (newValue:any):void {
-						metadata.set(newValue);
-					});
-
-					metadata.set(newMetadata.get(field));
-				}
-				else {
-					metadata.set(null);
-				}
-			}
-			else {
-				metadata.set(newMetadata);
-			}
-		}
-
-		var splitAt:number = binding.lastIndexOf('.');
-
-		// Getting metadata is like getting a property descriptor; we need to have a reference to the parent object
-		// of the key, and the key, in order to look it up
-		if (splitAt > -1) {
-			key = binding.slice(splitAt + 1);
-			binding = binding.slice(0, splitAt);
-		}
-		else {
-			key = binding;
-			binding = '';
-		}
-
-		if (binding) {
-			var parentProxty = this.createBinding(object, binding);
-			// TODO: should we be keeping track of this observer handle?
-			parentProxty.observe(swapMetadataObject);
-		}
-		else {
-			swapMetadataObject(<core.IHasMetadata> object);
-		}
-
-		aspect.after(metadata, 'destroy', function ():void {
-			metadataHandle && metadataHandle.remove();
-			parentProxty && parentProxty.destroy();
-			metadataHandle = parentProxty = null;
-		}, true);
-
-		return metadata;
 	}
 
 	startup():Promise<void> {

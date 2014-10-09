@@ -1,3 +1,5 @@
+/// <reference path="../dstore" />
+
 import array = require('dojo/_base/array');
 import core = require('../interfaces');
 import data = require('./interfaces');

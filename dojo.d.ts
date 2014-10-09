@@ -68,9 +68,11 @@ interface IPromise<T> {
 }
 
 interface IStore<T> {
-	idProperty:string;
-	get(id:any):T;
-	put(object:T, options?:{}):any; // string | number
+	idProperty?:string;
+	get?(id:any):any;
+	put?(object:T, options?:{}):any;
+	remove?(id:any):any;
+	query?(query:any, options?:{}):any;
 }
 
 declare module 'dojo/_base/array' {

@@ -10,106 +10,39 @@ declare module dstore {
 	}
 
 	export interface ICollection<T> extends IEvented {
-		model:new (...args:any[]) => T;
-
-		total?:any; /* number, IPromise<number> */
-		sorted?:any;
-		filtered?:any;
-		ranged?:Object;
-
-		create(properties:Object):T;
-		getIdentity(object:T):any;
-		_setIdentity(object:T, identity:any):any;
-		get(id:any):any;
-		put(object:T, options?:Object):any;
-		add(object:T, options?:Object):any;
-		remove(id:any):any;
-
-		filter(query:string):ICollection<T>;
-		filter(query:Object):ICollection<T>;
-		filter(query:(item:T, index:number) => boolean):ICollection<T>;
-		sort(property:string, descending?:boolean):ICollection<T>;
-		sort(property:(a:T, b:T) => number, descending?:boolean):ICollection<T>;
-		range(start:number, end?:number):ICollection<T>;
-		forEach(callback:(item:T, index:number) => void, thisObject?:any):any; /* void, IPromise<void> */
-		map<U>(callback:(item:T, index:number) => U, thisObject?:any):ICollection<U>;
-		fetch():any; /* T[], IPromise<T[]> */
-		track?:() => ICollection<T>;
-	}
-	export interface ISyncCollection<T> extends ICollection<T> {
-		total?:number;
-
-		get(id:any):T;
-		put(object:T, options?:Object):T;
-		add(object:T, options?:Object):T;
-		remove(id:any):boolean;
-
-		filter(query:string):ISyncCollection<T>;
-		filter(query:Object):ISyncCollection<T>;
-		filter(query:(item:T, index:number) => boolean):ISyncCollection<T>;
-		sort(property:string, descending?:boolean):ISyncCollection<T>;
-		sort(property:(a:T, b:T) => number, descending?:boolean):ISyncCollection<T>;
-		range(start:number, end?:number):ISyncCollection<T>;
-		forEach(callback:(item:T, index:number) => void, thisObject?:any):void;
-		map<U>(callback:(item:T, index:number) => U, thisObject?:any):ISyncCollection<U>;
-		fetch():T[];
-	}
-	export interface IAsyncCollection<T> extends ICollection<T> {
+		idProperty:string;
+		model:{ new (...args:any[]):T; };
 		total?:IPromise<number>;
 
-		get(id:any):IPromise<T>;
-		put(object:T, options?:Object):IPromise<T>;
-		add(object:T, options?:Object):IPromise<T>;
-		remove(id:any):IPromise<Object>;
-
-		filter(query:string):IAsyncCollection<T>;
-		filter(query:Object):IAsyncCollection<T>;
-		filter(query:(item:T, index:number) => boolean):IAsyncCollection<T>;
-		sort(property:string, descending?:boolean):IAsyncCollection<T>;
-		sort(property:(a:T, b:T) => number, descending?:boolean):IAsyncCollection<T>;
-		range(start:number, end?:number):IAsyncCollection<T>;
-		forEach(callback:(item:T, index:number) => void, thisObject?:any):IPromise<void>;
-		map<U>(callback:(item:T, index:number) => U, thisObject?:any):IAsyncCollection<U>;
+		add(object:T, options?:{}):IPromise<T>;
 		fetch():IPromise<T[]>;
+		fetchRange(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		filter(query:string):ICollection<T>;
+		filter(query:{}):ICollection<T>;
+		filter(query:(item:T, index:number) => boolean):ICollection<T>;
+		forEach(callback:(item:T, index:number) => void, thisObject?:any):IPromise<T[]>;
+		get(id:any):IPromise<T>;
+		getIdentity(object:T):any;
+		put(object:T, options?:{}):IPromise<T>;
+		remove(id:any):IPromise<Object>;
+		sort(property:string, descending?:boolean):ICollection<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):ICollection<T>;
+		track?():ICollection<T>;
 	}
 
-	export interface IObserver<T> {
-		(value:T, oldValue:T):void;
-	}
-
-	export interface IQueryEngine {
-		filter(query:any):(data:any[]) => any[];
-		sort(sorted:any):(data:any[]) => any[];
-		range(range:any):(data:any[]) => any[];
-	}
-
-	export interface IModel {
-		additionalProperties:boolean;
-		scenario:string;
-
-		init(options:any):void;
-		save(options:any):any; /* any, IPromise<any> */
-		remove():any; /* any, IPromise<any> */
-		prepareForSerialization():void;
-		validationError():Error;
-		property(key:string):IProperty<any>;
-		get(key:string):any;
-		set(key:string, value:any):void;
-		set(value:Object):void;
-		observe(key:string, listener:IObserver<any>, options?:Object):IHandle;
-		validate(fields?:string[]):IPromise<boolean>;
-		isValid():boolean;
-	}
-	export interface IProperty<T> {
-		init(options:any):void;
-		observe(listener:Function, options?:Object):IHandle;
-		valueOf():T;
-		setValue(value:T):void;
-		put(value:T):IPromise<any>;
-		coerce(value:any):T;
-		addError(error:Error):void;
-		checkForErrors(value:T):Error[];
-		validate():IPromise<boolean>;
+	export interface ISyncCollection<T> extends ICollection<T> {
+		addSync(object:T, options?:{}):T;
+		fetchSync():T[];
+		fetchRangeSync(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		filter(query:string):ISyncCollection<T>;
+		filter(query:{}):ISyncCollection<T>;
+		filter(query:(item:T, index:number) => boolean):ISyncCollection<T>;
+		getSync(id:any):T;
+		putSync(object:T, options?:{}):T;
+		removeSync(id:any):boolean;
+		sort(property:string, descending?:boolean):ISyncCollection<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):ISyncCollection<T>;
+		track?():ISyncCollection<T>;
 	}
 }
 
@@ -125,11 +58,12 @@ declare module 'dstore/Cache' {
 }
 
 declare module 'dstore/legacy/DstoreAdapter' {
-	import Store = require('dstore/Store');
-
-	class DstoreAdapter<T> extends Store<T> {
-		static adapt<U>(store:dstore.ICollection<U>, config?:Object):DstoreAdapter<U>;
-		query(query:any, options?:Object):any;
+	class DstoreAdapter<T> {
+		constructor(collection:dstore.ICollection<T>);
+		get(id:any):any;
+		put(object:T, options?:{}):any;
+		remove(id:any):any;
+		query(query:any, options?:{}):any;
 	}
 
 	export = DstoreAdapter;
@@ -139,61 +73,29 @@ declare module 'dstore/Memory' {
 	import Store = require('dstore/Store');
 
 	class Memory<T> extends Store<T> implements dstore.ISyncCollection<T> {
-		data:any[];
-		get(id:any):T;
-		put(object:T, options?:Object):T;
-		add(object:any, options?:Object):T;
-		remove(id:any):boolean;
-		setData(data:any[]):void;
+		data:T[];
+
+		addSync(object:T, options?:{}):T;
+		fetchSync():T[];
+		fetchRangeSync(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		filter(query:string):Memory<T>;
+		filter(query:{}):Memory<T>;
+		filter(query:(item:T, index:number) => boolean):Memory<T>;
+		getSync(id:any):T;
+		putSync(object:T, options?:{}):T;
+		removeSync(id:any):boolean;
+		setData(data:T[]):void;
+		sort(property:string, descending?:boolean):Memory<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):Memory<T>;
+		track():Memory<T>;
 	}
 
 	export = Memory;
 }
 
-declare module 'dstore/Model' {
-	class Model implements dstore.IModel {
-		additionalProperties:boolean;
-		scenario:string;
-
-		init(options:any):void;
-		save(options:any):any; /* any, IPromise<any> */
-		remove():any; /* any, IPromise<any> */
-		prepareForSerialization():void;
-		validationError():Error;
-		property(key:string):dstore.IProperty<any>;
-		get(key:string):any;
-		set(key:string, value:any):void;
-		set(value:Object):void;
-		observe(key:string, listener:dstore.IObserver<any>, options?:Object):IHandle;
-		validate(fields?:string[]):IPromise<boolean>;
-		isValid():boolean;
-	}
-	module Model {
-		export class Property<T> implements dstore.IProperty<T> {
-			init(options:any):void;
-			observe(listener:dstore.IObserver<T>, options?:Object):IHandle;
-			valueOf():T;
-			setValue(value:T):void;
-			put(value:T):IPromise<any>;
-			coerce(value:any):T;
-			addError(error:Error):void;
-			checkForErrors(value:T):Error[];
-			validate():IPromise<boolean>;
-		}
-	}
-	export = Model;
-}
-
-declare module 'dstore/objectQueryEngine' {
-	var engine:dstore.IQueryEngine;
-
-	export = engine;
-}
-
 declare module 'dstore/Trackable' {
 	class Trackable<T> {
 		currentRange:any[];
-
 		track():dstore.ICollection<T>;
 	}
 
@@ -202,15 +104,21 @@ declare module 'dstore/Trackable' {
 
 declare module 'dstore/Request' {
 	import Store = require('dstore/Store');
-	import Model = require('dstore/Model');
 
 	class Request<T> extends Store<T> {
-		headers:Object;
-		parse:(string:string) => Object;
+		headers:{};
+		parse:(serializedObject:string) => {};
 		target:string;
 		ascendingPrefix:string;
 		descendingPrefix:string;
 		accepts:string;
+
+		filter(query:string):Request<T>;
+		filter(query:{}):Request<T>;
+		filter(query:(item:T, index:number) => boolean):Request<T>;
+		sort(property:string, descending?:boolean):Request<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):Request<T>;
+		track():Request<T>;
 	}
 
 	export = Request;
@@ -223,6 +131,13 @@ declare module 'dstore/RequestMemory' {
 	class RequestMemory<T> extends Request<T> implements Cache<T> {
 		cachingStore:dstore.ICollection<T>;
 		evict(id:any):void;
+
+		filter(query:string):RequestMemory<T>;
+		filter(query:{}):RequestMemory<T>;
+		filter(query:(item:T, index:number) => boolean):RequestMemory<T>;
+		sort(property:string, descending?:boolean):RequestMemory<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):RequestMemory<T>;
+		track():RequestMemory<T>;
 	}
 
 	export = RequestMemory;
@@ -230,14 +145,14 @@ declare module 'dstore/RequestMemory' {
 
 declare module 'dstore/Rest' {
 	import Request = require('dstore/Request');
-	import Model = require('dstore/Model');
 
-	class Rest<T> extends Request<T> implements dstore.IAsyncCollection<T> {
-		add(object:T, options?:Object):IPromise<T>;
-		get(id:any, options?:Object):IPromise<T>;
-		put(object:T, options?:Object):IPromise<T>;
-		remove(id:any, options?:Object):IPromise<any>;
-		stringify:(object:Object) => string;
+	class Rest<T> extends Request<T> {
+		filter(query:string):Rest<T>;
+		filter(query:{}):Rest<T>;
+		filter(query:(item:T, index:number) => boolean):Rest<T>;
+		sort(property:string, descending?:boolean):Rest<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):Rest<T>;
+		track():Rest<T>;
 	}
 
 	export = Rest;
@@ -246,24 +161,24 @@ declare module 'dstore/Rest' {
 declare module 'dstore/Store' {
 	import Evented = require('dojo/Evented');
 
-	class Store<T> extends Evented {
-		constructor(options?:Object);
+	class Store<T> extends Evented implements dstore.ICollection<T> {
+		idProperty:string;
+		model:{ new (...args:any[]):T; };
+		total:IPromise<number>;
 
-		add(object:T, options?:Object):any /* T | IPromise<T> */;
-		create(properties:Object):T;
-		get(id:any, options?:Object):any /* T | Promise<T> */;
+		add(object:T, options?:{}):IPromise<T>;
+		fetch():IPromise<T[]>;
+		fetchRange(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		filter(query:string):Store<T>;
+		filter(query:{}):Store<T>;
+		filter(query:(item:T, index:number) => boolean):Store<T>;
+		forEach(callback:(item:T, index:number) => void, thisObject?:any):IPromise<T[]>;
+		get(id:any):IPromise<T>;
 		getIdentity(object:T):any;
-		fetch():any;
-		filter(filter:any):dstore.ICollection<T>;
-		forEach(callback:(item:T, index:number, collection:dstore.ICollection<T>) => void, thisObject?:any):any; /* void, IPromise<void> */
-		map<U>(callback:(item:T, index:number, collection:dstore.ICollection<T>) => U, thisObject?:any):dstore.ICollection<U>;
-		model:new (...args:any[]) => T;
-		put(object:T, options?:Object):any /* T | Promise<T> */;
-		range(start:number, end?:number):dstore.ICollection<T>;
-		remove(id:any, options?:Object):any /* any | IPromise<any> */;
-		_restore(object:Object):any;
-		_setIdentity(object:T, identity:any):any;
-		sort(property:any, descending?:boolean):dstore.ICollection<T>;
+		put(object:T, options?:{}):IPromise<T>;
+		remove(id:any):IPromise<{}>;
+		sort(property:string, descending?:boolean):Store<T>;
+		sort(property:(a:T, b:T) => number, descending?:boolean):Store<T>;
 	}
 
 	export = Store;

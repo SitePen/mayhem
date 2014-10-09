@@ -1,6 +1,7 @@
 import binding = require('./interfaces');
+import core = require('../interfaces');
 import has = require('../has');
-import Proxty = require('../Proxty');
+import util = require('../util');
 
 // `oidKey` intentionally uses a unique string so that it is easily discoverable within the source code for anyone
 // that notices the property appearing on their objects. Please don't be clever and try to save memory by reducing it
@@ -13,7 +14,9 @@ var oid:number = 0;
  *
  * @abstract
  */
-class Binding<SourceT, TargetT> extends Proxty<SourceT> {
+class Binding<SourceT, TargetT> {
+	private _observers:core.IObserver<TargetT>[];
+
 	/**
 	 * The identifier for this binding. Binding on the same object property will have the same identifier.
 	 */
@@ -29,8 +32,6 @@ class Binding<SourceT, TargetT> extends Proxty<SourceT> {
 	 */
 
 	constructor(kwArgs:binding.IBindingArguments) {
-		super(undefined);
-
 		var object = <HashMap<any>> kwArgs.object;
 
 		// The objects being bound to needs to be able to be persistently uniquely identified in order to debounce
@@ -50,6 +51,7 @@ class Binding<SourceT, TargetT> extends Proxty<SourceT> {
 		}
 
 		this.id = 'Binding' + object[oidKey] + '/' + kwArgs.path;
+		this._observers = [];
 	}
 
 	/**
@@ -84,6 +86,34 @@ class Binding<SourceT, TargetT> extends Proxty<SourceT> {
 	 * @member set
 	 * @method
 	 */
+
+	private _notifyObservers(newValue:TargetT, oldValue:TargetT):void {
+		for (var i = 0, observer:core.IObserver<TargetT>; (observer = this._observers[i]); ++i) {
+			observer(newValue, oldValue);
+		}
+	}
+
+	get():TargetT {
+		throw new Error('Unimplemented');
+	}
+
+	// TODO: Provide real implementation
+	observe(observer:core.IObserver<TargetT>, invokeImmediately:boolean = true):IHandle {
+		this._observers.push(observer);
+
+		if (invokeImmediately) {
+			observer(this.get(), undefined);
+		}
+
+		var self = this;
+		return {
+			remove: function ():void {
+				this.remove = function ():void {};
+				util.spliceMatch(self._observers, observer);
+				self = observer = null;
+			}
+		};
+	}
 }
 
 export = Binding;

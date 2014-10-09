@@ -157,7 +157,56 @@ class ElementWidget extends Container {
 			else if (node.nodeType === Node.ELEMENT_NODE) {
 				for (var i:number = 0, attribute:Attr; (attribute = node.attributes[i]); ++i) {
 					var nodeValue:string = attribute.value;
-					if ((result = BIND_ATTRIBUTE.exec(nodeValue))) {
+					if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
+						(function ():void {
+							var boundEvent:RegExpExecArray = BIND_ATTRIBUTE.exec(nodeValue);
+							var binding:binding.IBinding<(...args:any[]) => any, (...args:any[]) => any>;
+
+							// TODO: This is a hack to work around that binding in an HTML attribute without quotes
+							// generates invalid HTML in the first version of the templating engine
+							if (boundEvent) {
+								if (result[0].length !== nodeValue.length) {
+									throw new Error('Illegal event binding to ' + attribute.name + ': ' +
+										(<HTMLElement> node).outerHTML);
+								}
+
+								// TODO: LEAK
+								binding = binder.createBinding<(...args:any[]) => any, (...args:any[]) => any>(self._model, boundEvent[1], { schedule: false });
+							}
+
+							self.on(<string> result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
+								return character.toUpperCase();
+							}), <(event:core.IEvent) => void> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
+								var element:Element;
+
+								if ('key' in event) {
+									element = document.activeElement;
+								}
+								else if ('clientX' in event) {
+									element = document.elementFromPoint(
+										(<ui.PointerEvent> event).clientX,
+										(<ui.PointerEvent> event).clientY
+									);
+								}
+								else {
+									return;
+								}
+
+								// TODO: Use `get`?
+								// TS7017
+								if (element === node) {
+									if (binding) {
+										// TODO: Hack hack. Expose the source object through the Binding API.
+										return binding.get().call((<any> binding)._object, event);
+									}
+									else {
+										return (<any> self)[method](event);
+									}
+								}
+							}, node, nodeValue));
+						})();
+					}
+					else if ((result = BIND_ATTRIBUTE.exec(nodeValue))) {
 						var lastIndex:number = 0;
 
 						var compositeBinding:any[] = [];
@@ -178,37 +227,6 @@ class ElementWidget extends Container {
 							targetPath: 'value',
 							direction: BindDirection.ONE_WAY
 						}));
-					}
-					else if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
-						self.on(<string> result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
-							return character.toUpperCase();
-						}), <(event:core.IEvent) => void> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
-							var element:Element;
-
-							if ('key' in event) {
-								element = document.activeElement;
-							}
-							else if ('clientX' in event) {
-								element = document.elementFromPoint(
-									(<ui.PointerEvent> event).clientX,
-									(<ui.PointerEvent> event).clientY
-								);
-							}
-							else {
-								return;
-							}
-
-							if (element === node) {
-								// TODO: Figure out a better way to find a model method to invoke
-								var model:any = self.get('model');
-								if (model.call) {
-									model.call(method, event);
-								}
-								else {
-									model[method] && model[method](event);
-								}
-							}
-						}, node, nodeValue));
 					}
 				}
 			}

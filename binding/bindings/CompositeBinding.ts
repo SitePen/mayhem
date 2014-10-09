@@ -54,7 +54,7 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		var self = this;
 		arrayUtil.forEach(<any> kwArgs.path, function (path:any):void {
 			if (path.path) {
-				var binding:binding.IBinding<any, string> = kwArgs.binder.createBinding(path.object || kwArgs.object, path.path, { scheduled: false });
+				var binding:binding.IBinding<any, string> = kwArgs.binder.createBinding<any, string>(path.object || kwArgs.object, path.path, { scheduled: false });
 				binding.bindTo(<any> {
 					set: function ():void {
 						self._target && self._target.set(self.get());

@@ -5,8 +5,8 @@ import core = require('../../../interfaces');
 import ContainerMixin = require('../../../ui/common/Container');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../../has');
-import Mediator = require('../../../data/Mediator');
 import OnDemandList = require('dgrid/OnDemandList');
+import Proxy = require('../../../data/Proxy');
 import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
 import util = require('../../../util');
 import Widget = require('../../../ui/dom/Widget');
@@ -61,7 +61,7 @@ class IteratorList<T> extends OnDemandList {
 		var Ctor:Iterator.IItemConstructor<T> = this._itemConstructor;
 
 		if (this._as) {
-			model = new Mediator((function ():HashMap<any> {
+			model = new Proxy((function ():HashMap<any> {
 				var kwArgs:HashMap<any> = {
 					app: this._app,
 					model: model

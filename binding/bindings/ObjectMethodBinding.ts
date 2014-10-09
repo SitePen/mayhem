@@ -48,7 +48,7 @@ class ObjectMethodBinding<T> extends Binding<T, T> implements binding.IBinding<T
 		return this._fn.apply(this._object, this._args);
 	}
 
-	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
+	bindTo(target:binding.IBinding<T, any>, options:binding.IBindToOptions = {}):IHandle {
 		this._target = target;
 
 		if (!target) {
@@ -76,6 +76,11 @@ class ObjectMethodBinding<T> extends Binding<T, T> implements binding.IBinding<T
 
 	private _update():void {
 		this._target && this._target.set(this.get());
+	}
+
+	set(value:T):void {
+		// TODO: Don't do this, make the `set` function optional
+		throw new Error('One-way binding only');
 	}
 }
 

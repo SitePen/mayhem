@@ -29,7 +29,7 @@ export /* class */ interface IColor {
 	toString(): string;
 }
 
-export interface IClassList extends core.IProxty<string> {
+export interface IClassList {
 	add(className:string):void;
 	has(className:string):boolean;
 	remove(className:string):void;
