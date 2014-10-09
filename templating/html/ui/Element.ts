@@ -3,9 +3,25 @@ import binding = require('../../../binding/interfaces');
 import Container = require('../../../ui/dom/Container');
 import core = require('../../../interfaces');
 import domConstruct = require('dojo/dom-construct');
+import has = require('../../../has');
 import lang = require('dojo/_base/lang');
 import ui = require('../../../ui/interfaces');
 import Widget = require('../../../ui/dom/Widget');
+
+var Node:Node;
+if (has('dom-addeventlistener')) {
+	Node = (<any> window).Node;
+}
+else {
+	Node = <any> {
+		ELEMENT_NODE: 1,
+		ATTRIBUTE_NODE: 2,
+		TEXT_NODE: 3,
+		COMMENT_NODE: 8,
+		DOCUMENT_NODE: 9,
+		DOCUMENT_FRAGMENT_NODE: 11
+	};
+}
 
 var BIND:RegExp = /^bind (.*)$/;
 var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)-->/g;
@@ -126,7 +142,18 @@ class ElementWidget extends Container {
 				}
 			}
 
-			return domConstruct.toDom(htmlContent);
+			if (has('dom-firstchild-empty-bug')) {
+				htmlContent = '&shy;' + htmlContent;
+				var domContent:Node = domConstruct.toDom(htmlContent);
+				var shyNode:Node = domContent.childNodes[0];
+				if (shyNode.nodeType === 3 && shyNode.nodeValue.charAt(0) === '\u00AD') {
+					shyNode.nodeValue = shyNode.nodeValue.slice(1);
+				}
+				return domContent;
+			}
+			else {
+				return domConstruct.toDom(htmlContent);
+			}
 		}
 
 		function processNode(node:Node):void {

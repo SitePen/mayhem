@@ -3,6 +3,28 @@ import core = require('../interfaces');
 import has = require('../has');
 import util = require('../util');
 
+var Node:Node;
+if (has('dom-addeventlistener')) {
+	Node = (<any> window).Node;
+}
+else {
+	Node = <any> {
+		ELEMENT_NODE: 1,
+		ATTRIBUTE_NODE: 2,
+		TEXT_NODE: 3,
+		COMMENT_NODE: 8,
+		DOCUMENT_NODE: 9,
+		DOCUMENT_FRAGMENT_NODE: 11
+	};
+}
+
+if (!has('dom-textnode-extensible')) {
+	var textNodes:{ object:{}; id:number; }[] = [];
+	var checkIsExpandable = function (object:{ nodeType?:number; }):boolean {
+		return !object.nodeType || (object.nodeType !== Node.ATTRIBUTE_NODE && object.nodeType !== Node.TEXT_NODE);
+	};
+}
+
 // `oidKey` intentionally uses a unique string so that it is easily discoverable within the source code for anyone
 // that notices the property appearing on their objects. Please don't be clever and try to save memory by reducing it
 // TODO: Two applications on one page using the same copy of Mayhem, binding to the same object, will break.
@@ -22,6 +44,8 @@ class Binding<SourceT, TargetT> {
 	 */
 	id:string;
 
+	private _textNode:{};
+
 	/**
 	 * Determines whether or not this binding constructor can be used to create a binding using the provided binding
 	 * arguments.
@@ -33,25 +57,59 @@ class Binding<SourceT, TargetT> {
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		var object = <HashMap<any>> kwArgs.object;
+		var id:number;
 
 		// The objects being bound to needs to be able to be persistently uniquely identified in order to debounce
 		// multiple changes to properties within the scheduler. Since EcmaScript provides no mechanism for getting a
 		// unique serialized object ID, this does the next best thing and generates a unique-per-page identifier that
 		// is attached to the object as quietly as possible
-		if (!object[oidKey]) {
+		if (object[oidKey]) {
+			id = object[oidKey];
+		}
+		else {
 			if (has('es5')) {
+				id = ++oid;
 				Object.defineProperty(object, oidKey, {
-					value: (++oid),
+					value: id,
 					configurable: true
 				});
 			}
+			else if (!has('dom-textnode-extensible') && checkIsExpandable(object)) {
+				id = object[oidKey] = (++oid);
+			}
 			else {
-				object[oidKey] = (++oid);
+				this._textNode = object;
+				id = (function ():number {
+					for (var i = 0, j = textNodes.length; i < j; ++i) {
+						if (textNodes[i].object === object) {
+							return textNodes[i].id;
+						}
+					}
+
+					var id:number = ++oid;
+					textNodes.push({ object: object, id: id });
+					return id;
+				})();
 			}
 		}
 
-		this.id = 'Binding' + object[oidKey] + '/' + kwArgs.path;
+		this.id = 'Binding' + id + '/' + kwArgs.path;
 		this._observers = [];
+	}
+
+	destroy():void {
+		this.destroy = function ():void {};
+
+		if (!has('dom-textnode-extensible') && this._textNode) {
+			for (var i = 0, j = textNodes.length; i < j; ++i) {
+				if (textNodes[i].object === this._textNode) {
+					textNodes.splice(i, 1);
+					break;
+				}
+			}
+
+			this._textNode = null;
+		}
 	}
 
 	/**

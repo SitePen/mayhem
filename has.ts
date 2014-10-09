@@ -1,7 +1,6 @@
 /// <reference path="./dojo" />
 
 import has = require('dojo/has');
-import util = require('./util');
 
 has.add('debug', true);
 
@@ -26,12 +25,28 @@ if (has('dom')) {
 	has.add('dom-pointerevents', 'PointerEvent' in window);
 	has.add('dom-touch', 'ontouchstart' in document);
 	has.add('dom-mouse', 'onmousedown' in document);
-	// https://code.google.com/p/chromium/issues/detail?id=276941
-	has.add('dom-mouse-buttons', 'buttons' in document.createEvent('MouseEvent'));
-	has.add('dom-keyboard-key', 'key' in document.createEvent('KeyboardEvent'));
-	has.add('dom-keyboard-keyIdentifier', 'keyIdentifier' in document.createEvent('KeyboardEvent'));
-	has.add('dom-keyboard-isComposing', 'isComposing' in document.createEvent('KeyboardEvent'));
-	has.add('dom-keyboard-code', 'code' in document.createEvent('KeyboardEvent'));
+	if (has('dom-addeventlistener')) {
+		// https://code.google.com/p/chromium/issues/detail?id=276941
+		has.add('dom-mouse-buttons', 'buttons' in document.createEvent('MouseEvent'));
+		has.add('dom-keyboard-key', 'key' in document.createEvent('KeyboardEvent'));
+		has.add('dom-keyboard-keyIdentifier', 'keyIdentifier' in document.createEvent('KeyboardEvent'));
+		has.add('dom-keyboard-isComposing', 'isComposing' in document.createEvent('KeyboardEvent'));
+		has.add('dom-keyboard-code', 'code' in document.createEvent('KeyboardEvent'));
+	}
+	has.add('dom-node-interface', typeof Node !== 'undefined');
+	has.add('dom-textnode-extensible', function ():boolean {
+		try {
+			return (<any> document.createTextNode('')).foo = true;
+		}
+		catch (error) {
+			return false;
+		}
+	});
+	has.add('dom-firstchild-empty-bug', function ():boolean {
+		var element:HTMLElement = arguments[2];
+		element.innerHTML = '<!--foo-->';
+		return element.childNodes.length === 0;
+	});
 }
 
 export = has;
