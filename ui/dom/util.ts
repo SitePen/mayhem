@@ -4,6 +4,21 @@ import has = require('../../has');
 import Master = require('./Master');
 import Widget = require('./Widget');
 
+var Node:Node;
+if (has('dom-addeventlistener')) {
+	Node = (<any> window).Node;
+}
+else {
+	Node = <any> {
+		ELEMENT_NODE: 1,
+		ATTRIBUTE_NODE: 2,
+		TEXT_NODE: 3,
+		COMMENT_NODE: 8,
+		DOCUMENT_NODE: 9,
+		DOCUMENT_FRAGMENT_NODE: 11
+	};
+}
+
 has.add('dom-range', Boolean(typeof document !== 'undefined' && document.createRange));
 
 interface TouchEvent extends UIEvent {
@@ -63,6 +78,13 @@ function checkPointInWidget(widget:Widget, x:number, y:number):boolean {
 		rect = range.getBoundingClientRect();
 	}
 	else {
+		/**
+		 * Finds the text position of `findNode` inside its parent so that an IE range can be generated around it.
+		 *
+		 * @param findNode The node whose character position should be found.
+		 * @param returnEndPosition If true, returns the position at the end of `findNode`.
+		 * @returns The character position of the node.
+		 */
 		var findPos = function (findNode:Node, returnEndPosition:boolean = false):number {
 			var textPosition:number = 0;
 
@@ -70,18 +92,20 @@ function checkPointInWidget(widget:Widget, x:number, y:number):boolean {
 				if (node.nodeType === Node.TEXT_NODE) {
 					textPosition += node.nodeValue.length;
 				}
-				else if (node.nodeType === Node.ELEMENT_NODE) {
+				else if (node.nodeType === Node.ELEMENT_NODE && node.childNodes.length) {
 					walk(node);
 				}
 			}
 
-			function walk(parentNode:Node):void {
-				var node:Node = parentNode.firstChild;
+			function walk(node:Node):void {
+				node = node.firstChild;
+
 				do {
 					if (node !== findNode || returnEndPosition) {
 						add(node);
 					}
-				} while (node !== findNode && (node = node.nextSibling));
+				}
+				while (node !== findNode && (node = node.nextSibling));
 			}
 
 			walk(findNode.parentNode);
@@ -90,15 +114,7 @@ function checkPointInWidget(widget:Widget, x:number, y:number):boolean {
 		};
 
 		var textRange:TextRange = (<HTMLBodyElement> document.body).createTextRange();
-		textRange.moveToElementText(<Element> widget.get('firstNode').parentNode);
-
-		do {
-			firstNode = firstNode.nextSibling;
-		} while (firstNode.nodeType !== Node.ELEMENT_NODE && firstNode.nodeType !== Node.TEXT_NODE);
-
-		do {
-			lastNode = lastNode.previousSibling;
-		} while (lastNode.nodeType !== Node.ELEMENT_NODE && lastNode.nodeType !== Node.TEXT_NODE);
+		textRange.moveToElementText(<Element> firstNode.parentNode);
 
 		textRange.moveStart('character', findPos(firstNode));
 		textRange.moveEnd('character', findPos(lastNode, true));

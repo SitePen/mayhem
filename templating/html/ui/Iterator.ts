@@ -11,6 +11,21 @@ import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
 import util = require('../../../util');
 import Widget = require('../../../ui/dom/Widget');
 
+var Node:Node;
+if (has('dom-addeventlistener')) {
+	Node = (<any> window).Node;
+}
+else {
+	Node = <any> {
+		ELEMENT_NODE: 1,
+		ATTRIBUTE_NODE: 2,
+		TEXT_NODE: 3,
+		COMMENT_NODE: 8,
+		DOCUMENT_NODE: 9,
+		DOCUMENT_FRAGMENT_NODE: 11
+	};
+}
+
 var oidKey:string = '__IteratorOid' + String(Math.random()).slice(2);
 
 /**
