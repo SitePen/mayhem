@@ -75,6 +75,7 @@ class Proxy<T> extends Observable {
 	 */
 	_target:T;
 
+	private _initializing:boolean;
 	private _targetHandles:HashMap<binding.IBinding<any, any>>;
 
 	get:Proxy.Getters;
@@ -89,7 +90,9 @@ class Proxy<T> extends Observable {
 			this._app = _kwArgs.target.get ? _kwArgs.target.get('app') : _kwArgs.target.app;
 		}
 
+		this._initializing = true;
 		super(_kwArgs);
+		this._initializing = false;
 	}
 
 	_initialize():void {
@@ -178,7 +181,7 @@ Proxy.prototype.set = function (key:any, value?:any):void {
 	var privateKey:string = '_' + key;
 	var setter:string = privateKey + 'Setter';
 
-	if (typeof this[setter] === 'function' || (privateKey in this)) {
+	if (typeof this[setter] === 'function' || (privateKey in this) || this._initializing) {
 		Observable.prototype.set.apply(this, arguments);
 	}
 	else if (this._target) {
@@ -188,9 +191,5 @@ Proxy.prototype.set = function (key:any, value?:any):void {
 		return undefined;
 	}
 };
-
-// The app key must exist on the proxy or else attempts to give Proxy an application object will just fall through to
-// the target object
-Proxy.prototype._app = null;
 
 export = Proxy;
