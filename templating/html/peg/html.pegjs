@@ -360,9 +360,20 @@ BoundText
 	)*
 
 Binding
-	= '{' value:('\\}' { return '\x7d' } / [^}])* '}' {
-		return { $bind: value.join('').replace(/^\s+|\s+$/g, '') };
+	= value:BalancedBraces {
+		return { $bind: value.slice(1, -1) };
 	}
+
+BalancedBraces
+	= value:('{' BindingData '}') { return value.join(''); }
+
+BindingData
+	= value:(
+		'\\{' { return '\x7b'; }
+		/ '\\}' { return '\x7d'; }
+		/ BalancedBraces
+		/ [^{}]
+	)* { return value.join(''); }
 
 // conditionals
 
