@@ -11,7 +11,8 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('intern-geezer');
 
 	grunt.initConfig({
-		all: [ '**/*.ts', '!node_modules/**/*.ts' ],
+		// TODO: Always build, or never build, tests
+		all: [ '**/*.ts', '!node_modules/**/*.ts', '!**/tests/integration/**' ],
 		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts' ],
 
 		clean: {
