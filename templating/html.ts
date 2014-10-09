@@ -146,25 +146,21 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 					this._bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
 				}
 				else {
-					var listener:Function;
 					var binder:binding.IBinder = this._app.get('binder');
 					var binding:binding.IBinding<Function, Function>;
 					var rebind = function (object:Object, path:string = value.$bind):void {
 						binding && binding.destroy();
 						binding = binder.createBinding<Function, Function>(object || {}, path, { schedule: false });
-						binding.bindTo(<binding.IBinding<Function, void>> {
-							set: function (newValue:Function):void {
-								listener = newValue;
-							}
-						});
 					};
 
 					rebind(this.get('model'));
 
 					var handle:IHandle = this.on(eventName, function ():void {
-						// TODO: Update binding API to allow getting a reference to the parent object from the binding
-						// so the correct context can be used when invoking bound methods
-						typeof listener === 'function' && listener.apply(null, arguments);
+						var listener:Function = binding.get();
+						if (typeof listener === 'function') {
+							// TODO: Get rid of the private object access hack
+							return listener.apply((<any> binding)._object, arguments);
+						}
 					});
 
 					this._bindingHandles[key] = {

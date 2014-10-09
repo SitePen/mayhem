@@ -153,17 +153,7 @@ Proxy.prototype.get = function (key:string):any {
 	var value:any = Observable.prototype.get.apply(this, arguments);
 	var target:any = this._target;
 	if (value === undefined && target) {
-		if (target.get) {
-			// TODO: This is a hack to deal with underscored properties in Observable; when that gets removed, remove
-			// this.
-			value = target.get(key);
-			if (value === undefined && target[key] && typeof target[key] === 'function') {
-				value = target[key];
-			}
-		}
-		else {
-			value = this._target[key];
-		}
+		value = target.get ? target.get(key) : target[key];
 
 		if (typeof value === 'function') {
 			var originalFn:(...args:any[]) => any = value;

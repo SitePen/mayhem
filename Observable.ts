@@ -136,7 +136,14 @@ Observable.prototype.get = function (key:string):any {
 		return this[getter]();
 	}
 
-	return this[privateKey];
+	// TODO: This is a hack to deal with underscored properties in Observable; when that gets removed, remove
+	// this.
+	var value = this[privateKey];
+	if (value === undefined && typeof this[key] === 'function') {
+		value = this[key];
+	}
+
+	return value;
 };
 
 Observable.prototype.set = function (key:any, value?:any):void {
