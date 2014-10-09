@@ -1,0 +1,7 @@
+{
+	"name": "mayhem",
+	"version": "0.9.0",
+	"main": "main",
+	"description": "Mayhem. A framework for rich Internet applications.",
+	"devDependencies": {}
+}
