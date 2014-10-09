@@ -6,3 +6,4 @@ node_modules/
 third-party/
 !tests/support/*
 tscommand-*.tmp.txt
+.idea
