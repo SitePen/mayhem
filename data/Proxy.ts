@@ -53,7 +53,7 @@ class Proxy<T> extends Observable {
 		wrapperCollection.removeSync = lang.hitch(collection, 'removeSync');
 
 		collection.on('add', function (event:dstore.ChangeEvent):void {
-			put.call(wrapperCollection, new Ctor({ app: event.target.get('app'), model: event.target }), { index: event.index });
+			put.call(wrapperCollection, new Ctor({ app: event.target.get('app'), target: event.target }), { index: event.index });
 		});
 		collection.on('update', function (event:dstore.ChangeEvent):void {
 			put.call(wrapperCollection, wrapperCollection.getSync(collection.getIdentity(event.target)), { index: event.index });
@@ -65,7 +65,10 @@ class Proxy<T> extends Observable {
 		return wrapperCollection;
 	}
 
-	private _app:core.IApplication;
+	/**
+	 * @protected
+	 */
+	_app:core.IApplication;
 
 	/**
 	 * @protected
@@ -125,7 +128,7 @@ class Proxy<T> extends Observable {
 		return super.observe(key, observer);
 	}
 
-	setTarget(target:T):void {
+	_targetSetter(target:T):void {
 		this._target = target;
 
 		var handles:HashMap<binding.IBinding<any, any>> = this._targetHandles;
@@ -148,28 +151,28 @@ module Proxy {
 
 Proxy.prototype.get = function (key:string):any {
 	var value:any = Observable.prototype.get.apply(this, arguments);
-	if (value === undefined && this._target) {
-		if (this._target.get) {
+	var target:any = this._target;
+	if (value === undefined && target) {
+		if (target.get) {
 			// TODO: This is a hack to deal with underscored properties in Observable; when that gets removed, remove
 			// this.
-			value = this._target.get(key);
-			if (value === undefined && this._target[key] && typeof this._target[key] === 'function') {
-				value = this._target[key];
+			value = target.get(key);
+			if (value === undefined && target[key] && typeof target[key] === 'function') {
+				value = target[key];
 			}
 		}
 		else {
 			value = this._target[key];
 		}
-	}
 
-	if (typeof value === 'function') {
-		var originalFn:(...args:any[]) => any = value;
-		var self = this;
-		var target = this._target;
-		value = function ():any {
-			var thisArg:{} = this === self ? target : this;
-			return originalFn.apply(thisArg, arguments);
-		};
+		if (typeof value === 'function') {
+			var originalFn:(...args:any[]) => any = value;
+			var self = this;
+			value = function ():any {
+				var thisArg:{} = this === self ? target : this;
+				return originalFn.apply(thisArg, arguments);
+			};
+		}
 	}
 
 	return value;
@@ -195,5 +198,9 @@ Proxy.prototype.set = function (key:any, value?:any):void {
 		return undefined;
 	}
 };
+
+// The app key must exist on the proxy or else attempts to give Proxy an application object will just fall through to
+// the target object
+Proxy.prototype._app = null;
 
 export = Proxy;

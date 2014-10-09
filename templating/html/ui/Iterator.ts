@@ -64,7 +64,7 @@ class IteratorList<T> extends OnDemandList {
 			model = new Proxy((function ():HashMap<any> {
 				var kwArgs:HashMap<any> = {
 					app: this._app,
-					model: model
+					target: model
 				};
 				kwArgs[this._as] = model;
 				return kwArgs;
