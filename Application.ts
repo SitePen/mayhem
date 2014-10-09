@@ -94,6 +94,9 @@ class Application extends ObservableEvented {
 					require.toAbsMid('./binding/bindings/ObjectTargetBinding')
 				]
 			},
+			errorHandler: {
+				constructor: require.toAbsMid('./ErrorHandler')
+			},
 			scheduler: {
 				constructor: require.toAbsMid('./Scheduler')
 			}
