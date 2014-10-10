@@ -26,13 +26,14 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 		touch: 40
 	};
 
-	var numClicks:number = 0;
+	var lastTarget:Widget;
 	var lastTimestamp:number;
 	var lastX:number;
 	var lastY:number;
+	var numClicks:number = 0;
 
 	var resetNumClicks:() => void = util.debounce(function ():void {
-		lastX = lastY = null;
+		lastTarget = lastX = lastY = null;
 		numClicks = 0;
 	}, CLICK_SPEED);
 
@@ -43,6 +44,13 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 					return;
 				}
 
+				// If a click occurred and then the DOM mutated to cause a different target to be rendered at the same
+				// coordinates in the window, we should treat it as a start from zero clicks
+				if (lastTarget !== target) {
+					numClicks = 0;
+				}
+
+				lastTarget = target;
 				lastTimestamp = event.timestamp;
 				// only store the coordinates of the first tap down to avoid clicks crawing across the page
 				if (numClicks === 0) {
