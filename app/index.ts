@@ -1,22 +1,26 @@
-/*global module,process*/
-var exec = require('child_process').exec;
-var path = require('path');
-var yeoman = require('yeoman-generator');
-var appChoices = ['webapp'];
+declare var module:any;
+declare var process:any;
+declare var require:any;
+
+var appChoices:string[] = ['webapp'];
+var exec:any = require('child_process').exec;
+var path:any = require('path');
+var yeoman:any = require('yeoman-generator');
+
 var MayhemGenerator = yeoman.generators.Base.extend({
 
-    constructor: function () {
+	constructor():void {
         yeoman.generators.Base.apply(this, arguments);
         this.argument('type', { required: false });
         this.argument('source', { required: false });
     },
 
-    initializing: function () {
+    initializing():void {
         this.log('Welcome to the Mayhem Generator!');
     },
 
     prompting: {
-        method1: function () {
+        method1():void {
             if (appChoices.indexOf(this.type) === -1) {
                 var self = this;
                 var done = this.async();
@@ -28,7 +32,7 @@ var MayhemGenerator = yeoman.generators.Base.extend({
                     choices: ['Web']
                 }];
 
-                this.prompt(choices, function (args) {
+                this.prompt(choices, (args:{ apps: string }):void => {
                     var type = args.apps.toLowerCase();
                     self.type = type + 'app';
                     done();
@@ -37,7 +41,7 @@ var MayhemGenerator = yeoman.generators.Base.extend({
         }
     },
 
-    configuring: function () {
+    configuring():void {
         if (this.source) {
             this.destinationRoot(this.source);
         }
@@ -45,20 +49,20 @@ var MayhemGenerator = yeoman.generators.Base.extend({
         var source = this.source ? this.source : 'root directory';
 
         this.log('Creating a ' + this.type + ' in ' + source);
-        this.src.copy('_package.json', 'package.json'); 
+        this.src.copy('_package.json', 'package.json');
         this.src.copy('_tslint.json', 'tslint.json');
         this.src.copy('jshintrc', '.jshintrc');
     },
 
     install: {
-        installMayhem: function () {
+        installMayhem():void {
             var self = this;
             var done = this.async();
-            this.npmInstall(['SitePen/mayhem'], { 'saveDev': true }, function () {
+            this.npmInstall(['SitePen/mayhem'], { 'saveDev': true }, ():void => {
                 var nodeModules = path.join(process.cwd(), '/node_modules/mayhem');
                 process.chdir(nodeModules);
                 self.log('Installing node modules for Mayhem');
-                exec('npm install', function (error, stdout) {
+                exec('npm install', (error:any, stdout:any):void => {
                     self.log(stdout);
                     done();
                 });
@@ -66,7 +70,7 @@ var MayhemGenerator = yeoman.generators.Base.extend({
         }
     },
 
-    end: function () {
+    end():void {
         this.log('All done.  Thank you for using the Mayhem generator!');
     }
 });
