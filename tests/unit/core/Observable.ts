@@ -1,6 +1,6 @@
 /// <reference path="../../intern" />
 import assert = require('intern/chai!assert');
-import Observable = require('mayhem/Observable');
+import Observable = require('../../../Observable');
 import registerSuite = require('intern!object');
 
 class ExtendedObservable extends Observable {
