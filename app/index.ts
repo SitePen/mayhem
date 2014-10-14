@@ -38,6 +38,21 @@ var MayhemGenerator = yeoman.generators.Base.extend({
                     done();
                 });
             }
+        },
+        method2():void {
+            var self = this;
+            var done = this.async();
+            var choices = [{
+                type: 'confirm',
+                name: 'todo',
+                message: 'Would you like an example Todo app created as a starting point?',
+                'default': false
+            }];
+
+            this.prompt(choices, (args:{ todo: boolean }):void => {
+                self.todo = args.todo;
+                done();
+            });
         }
     },
 
@@ -52,6 +67,10 @@ var MayhemGenerator = yeoman.generators.Base.extend({
         this.src.copy('_package.json', 'package.json');
         this.src.copy('_tslint.json', 'tslint.json');
         this.src.copy('jshintrc', '.jshintrc');
+
+        if (this.todo) {
+            // TODO: Add ToDoMVC files
+        }
     },
 
     install: {
