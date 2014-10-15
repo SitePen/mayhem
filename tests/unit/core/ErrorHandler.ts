@@ -1,14 +1,20 @@
 /// <reference path="../../intern" />
-import assert = require('intern/chai!assert');
+import aspect = require('dojo/aspect');
 import Application = require('../../../Application');
+import assert = require('intern/chai!assert');
 import ErrorHandler = require('../../../ErrorHandler');
+import has = require('../../../has');
 import Observable = require('../../../Observable');
+import on = require('dojo/on');
 import registerSuite = require('intern!object');
+
+declare var window:any;
 
 var application;
 var errorHandler;
 var defaultView:string = 'currentView';
 var errorMessage:string = 'Mayhem Error Message';
+var handle:any;
 var ui:any;
 
 interface IMockUi {
@@ -26,6 +32,8 @@ registerSuite({
 	name: 'mayhem/ErrorHandler',
 	afterEach() {
 		errorHandler.destroy();
+		handle && handle.remove();
+		handle = null;
 	},
 
 	before() {
@@ -55,29 +63,34 @@ registerSuite({
 	},
 
 	'assert startup handles errors'() {
-		var dfd = this.async(1000);
+		if (has('host-browser')) {
+			var dfd = this.async();
+			handle = on(window, 'error', dfd.callback(function (event) {
+				event.preventDefault();
+				assert.include(ui.get('view').get('model').message, errorMessage, 'includes error message');
+			}));
 
-		window.addEventListener('error', function (event) {
-			event.preventDefault();
-		}, false);
-
-		setTimeout(function () {
-			throw new Error(errorMessage);
-		}, 0);
-
-		ui.observe('view', dfd.callback(function (newValue) {
-			assert.isObject(newValue);
-			assert.include(ui.get('view').get('model').message, errorMessage, 'includes error message');
-		}));
+			setTimeout(function () {
+				throw new Error(errorMessage);
+			}, 0);
+		}
 	},
 
 	'assert handling of errors in DOM'() {
-		errorHandler.handleDomError(new Error(errorMessage));
-		assert.isDefined(ui.get('view').get('model'), 'model is defined');
-		assert.strictEqual(ui.get('view').get('model').message, errorMessage, 'error message is equal to default');
+		if (has('host-browser')) {
+			errorHandler.handleDomError(new Error(errorMessage));
+			assert.isDefined(ui.get('view').get('model'), 'model is defined');
+			assert.strictEqual(ui.get('view').get('model').message, errorMessage, 'error message is equal to default');
+		}
 	},
 
 	'assert handling of errors in Node'() {
-		// ...
+		if (has('host-node')) {
+			handle = aspect.before(errorHandler._app, 'log', function () {
+				var message = String(arguments[0]);
+				assert.include(message, errorMessage, 'includes error message');
+			});
+			errorHandler.handleNodeError(new Error(errorMessage));
+		}
 	}
 });
