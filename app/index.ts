@@ -3,6 +3,7 @@ declare var process:any;
 declare var require:any;
 
 var appChoices:string[] = ['webapp'];
+var exec = require('child_process').exec;
 var path:any = require('path');
 var yeoman:any = require('yeoman-generator');
 
@@ -66,15 +67,9 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 		this.copy('_jshintrc', '.jshintrc');
 
 		if (this.todo) {
-			this.mkdir('models');
-			this.mkdir('viewModels');
-			this.mkdir('views');
 			this.copy('_package.json', 'package.json');
 			this.copy('_Gruntfile.js', 'Gruntfile.js');
-			this.copy('models/Todo.ts', 'models/Todo.ts');
-			this.copy('viewModels/index.ts', 'viewModels/index.ts');
-			this.copy('views/Application.html', 'views/Application.html');
-			this.copy('views/index.html', 'views/index.html');
+			this.directory('src', 'src');
 		}
 	},
 
@@ -82,12 +77,14 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 		var self = this;
 		var done = this.async();
 		this.npmInstall('', ():void => {
+			exec('grunt build');
 			var nodeModules = path.join(process.cwd(), '/node_modules/mayhem');
 			process.chdir(nodeModules);
 			self.npmInstall('', ():void => {
-	        	done();
-        	});
-    	});
+				exec('grunt build');
+				done();
+			});
+		});
 	},
 
 	end():void {

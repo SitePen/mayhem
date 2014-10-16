@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Mayhem TodoMVC</title>
+		<link rel="stylesheet" href="../node_modules/mayhem/third-party/dijit/themes/claro/claro.css">
+		<style>.completed { text-decoration: line-through; }</style>
+	</head>
+	<body class="claro">
+		<script>
+var dojoConfig = {
+	async: true,
+	baseUrl: './',
+	deps: [ 'app/main' ],
+	packages: [
+		{ name: 'app', location: 'app' },
+		{ name: 'dojo', location: '../node_modules/mayhem/third-party/dojo' },
+		{ name: 'dijit', location: '../node_modules/mayhem/third-party/dijit' },
+		{ name: 'mayhem', location: '../node_modules/mayhem' },
+		{ name: 'dstore', location: '../node_modules/mayhem/third-party/dstore' },
+		{ name: 'dgrid', location: '../node_modules/mayhem/third-party/dgrid' },
+		{ name: 'put-selector', location: '../node_modules/mayhem/third-party/put-selector' },
+		{ name: 'xstyle', location: '../node_modules/mayhem/third-party/xstyle' }
+	],
+	tlmSiblingOfDojo: false
+};
+		</script>
+		<script src="../node_modules/mayhem/third-party/dojo/dojo.js" async></script>
+	</body>
+</html>
