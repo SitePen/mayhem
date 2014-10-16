@@ -1,11 +1,11 @@
-/// <amd-dependency path="./templating/html!./views/Error.html" />
-
 declare var process:any;
 
 import aspect = require('dojo/aspect');
+import Deferred = require('dojo/Deferred');
 import has = require('./has');
 import Observable = require('./Observable');
 import View = require('./ui/View');
+import util = require('./util');
 import WebApplication = require('./WebApplication');
 
 class ErrorHandler extends Observable {
@@ -26,17 +26,24 @@ class ErrorHandler extends Observable {
 		super.destroy();
 	}
 
-	handleDomError(error:any):void {
+	handleDomError<T>(error:any):IPromise<T> {
+		var self = this;
+		var dfd = new Deferred();
+
 		if (typeof error === 'string') {
 			error = new Error(error);
 		}
 
-		var ErrorView:typeof View = <any> require('./templating/html!./views/Error.html');
-		var view = new ErrorView({
-			app: this._app,
-			model: error
+		util.getModule(require.toAbsMid('./templating/html') + '!' + require.toAbsMid('./views/Error.html')).then((ErrorView:typeof View):void => {
+			var view = new ErrorView({
+				app: self._app,
+				model: error
+			});
+			self._app.get('ui').set('view', view);
+			dfd.resolve(view);
 		});
-		this._app.get('ui').set('view', view);
+
+		return dfd.promise;
 	}
 
 	handleNodeError(error:string):void {
