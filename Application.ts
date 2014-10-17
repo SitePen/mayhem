@@ -2,6 +2,7 @@
 
 import binding = require('./binding/interfaces');
 import core = require('./interfaces');
+import ErrorHandler = require('./ErrorHandler');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
 import LogLevel = require('./LogLevel');
@@ -126,6 +127,15 @@ class Application extends ObservableEvented {
 	private _components:HashMap<any>;
 
 	/**
+	 * The error handler component.
+	 *
+	 * @get
+	 * @set
+	 * @default module:mayhem/ErrorHandler
+	 */
+	private _errorHandler:ErrorHandler;
+
+	/**
 	 * The event scheduler component.
 	 *
 	 * @get
@@ -248,11 +258,13 @@ module Application {
 	export interface Getters extends ObservableEvented.Getters {
 		(key:'binder'):binding.IBinder;
 		(key:'components'):HashMap<HashMap<any>>;
+		(key:'errorHandler'):ErrorHandler;
 		(key:'scheduler'):Scheduler;
 	}
 	export interface Setters extends ObservableEvented.Setters {
 		(key:'binder', value:binding.IBinder):void;
 		(key:'components', value:HashMap<HashMap<any>>):void;
+		(key:'errorHandler', value:ErrorHandler):void;
 		(key:'scheduler', value:Scheduler):void;
 	}
 }

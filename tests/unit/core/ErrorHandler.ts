@@ -6,7 +6,6 @@ import assert = require('intern/chai!assert');
 import ErrorHandler = require('../../../ErrorHandler');
 import has = require('../../../has');
 import Observable = require('../../../Observable');
-import on = require('dojo/on');
 import registerSuite = require('intern!object');
 
 declare var window:any;
@@ -52,8 +51,10 @@ registerSuite({
 		errorHandler = new ErrorHandler({
 			app: application
 		});
+
 		ui = errorHandler._app.get('ui');
 		ui.set('view', defaultView);
+
 		return errorHandler.startup();
 	},
 
@@ -66,9 +67,8 @@ registerSuite({
 	'assert startup handles errors'() {
 		if (has('host-browser')) {
 			var dfd = this.async();
-			handle = on(window, 'error', dfd.callback(function (event) {
-				event.preventDefault();
-				// assert.include(ui.get('view').get('model').message, errorMessage, 'includes error message');
+			handle = aspect.after(window, 'onerror', dfd.callback(function () {
+				assert.include(ui.get('view').get('model').message, errorMessage, 'includes error message');
 			}));
 
 			setTimeout(function () {
@@ -79,10 +79,9 @@ registerSuite({
 
 	'assert handling of errors in DOM'() {
 		if (has('host-browser')) {
-			return errorHandler.handleDomError(new Error(errorMessage)).then(function () {
-				assert.isDefined(ui.get('view').get('model'), 'model is defined');
-				assert.strictEqual(ui.get('view').get('model').message, errorMessage, 'error message is equal to default');
-			});
+			errorHandler.handleError(new Error(errorMessage));
+			assert.isDefined(ui.get('view').get('model'), 'model is defined');
+			assert.strictEqual(ui.get('view').get('model').message, errorMessage, 'error message is equal to default');
 		}
 	},
 
@@ -92,7 +91,7 @@ registerSuite({
 				var message = String(arguments[0]);
 				assert.include(message, errorMessage, 'includes error message');
 			});
-			errorHandler.handleNodeError(new Error(errorMessage));
+			errorHandler.handleError(new Error(errorMessage));
 		}
 	}
 });

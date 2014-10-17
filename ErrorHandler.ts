@@ -1,11 +1,11 @@
+/// <amd-dependency path="./templating/html!./views/Error.html" />
+
 declare var process:any;
 
 import aspect = require('dojo/aspect');
-import Deferred = require('dojo/Deferred');
 import has = require('./has');
 import Observable = require('./Observable');
 import View = require('./ui/View');
-import util = require('./util');
 import WebApplication = require('./WebApplication');
 
 class ErrorHandler extends Observable {
@@ -26,28 +26,23 @@ class ErrorHandler extends Observable {
 		super.destroy();
 	}
 
-	handleDomError<T>(error:any):IPromise<T> {
-		var self = this;
-		var dfd = new Deferred();
+	handleError(error:any):void {
+		if (has('host-browser')) {
+			if (typeof error === 'string') {
+				error = new Error(error);
+			}
 
-		if (typeof error === 'string') {
-			error = new Error(error);
-		}
-
-		util.getModule(require.toAbsMid('./templating/html') + '!' + require.toAbsMid('./views/Error.html')).then((ErrorView:typeof View):void => {
+			var ErrorView:typeof View = <any> require('./templating/html!./views/Error.html');
 			var view = new ErrorView({
-				app: self._app,
+				app: this._app,
 				model: error
 			});
-			self._app.get('ui').set('view', view);
-			dfd.resolve(view);
-		});
 
-		return dfd.promise;
-	}
-
-	handleNodeError(error:string):void {
-		this._app.log(error);
+			this._app.get('ui').set('view', view);
+		}
+		else if (has('host-node')) {
+			this._app.log(error);
+		}
 	}
 
 	startup():void {
@@ -55,12 +50,12 @@ class ErrorHandler extends Observable {
 		if (this._handleGlobalErrors) {
 			if (has('host-browser')) {
 				this._handle = aspect.before(window, 'onerror', function (error:Error):void {
-					self.handleDomError(error);
+					self.handleError(error);
 				});
 			}
 			else if (has('host-node')) {
 				process.on('uncaughtException', function (error:Error):void {
-					self.handleNodeError(error.name);
+					self.handleError(error.name);
 				});
 			}
 		}
