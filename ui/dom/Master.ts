@@ -53,16 +53,18 @@ class Master extends MultiNodeWidget implements IMaster {
 		var self = this;
 		var promise:Promise<void>;
 
-		if (typeof this._view === 'string') {
-			promise = util.getModule(<any> this._view).then(function (view:any):void {
-				// TODO: Should it really be valid to provide an existing view object and not a constructor?
-				if (typeof view === 'function') {
-					view = new view({ app: self._app });
-				}
+ 		if (typeof this._view === 'string') {
+            promise = util.getModule(<any> this._view).then(function (view:any):Promise<void> {
+                return self._app.get('binder').startup().then(function ():void {
+                    // TODO: Should it really be valid to provide an existing view object and not a constructor?
+                    if (typeof view === 'function') {
+                        view = new view({ app: self._app });
+                    }
 
-				self.set('view', view);
-			});
-		}
+                    self.set('view', view);
+                });
+            });
+        }
 		else {
 			promise = Promise.resolve<void>(undefined);
 		}
