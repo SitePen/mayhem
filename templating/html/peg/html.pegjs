@@ -462,25 +462,18 @@ ForTagClose '</for>'
 
 When '<when></when>'
 	= kwArgs:WhenTagOpen
-	body:Any?
-	// TODO: Allow <pending> and <rejected> to appear in either order
-	pending:(kwArgs:PendingTag body:Any? {
-		kwArgs.instance = body;
-		return kwArgs;
-	})?
-	rejected:(kwArgs:RejectedTag body:Any? {
-		kwArgs.instance = body;
-		return kwArgs;
-	})?
+	fulfilled:Any
+	optional:(RejectedPendingTags / PendingRejectedTags)?
 	WhenTagClose {
-		kwArgs.constructor = toAbsMid('../ui/Resolver');
-		kwArgs.resolved = body;
-		// TODO: This is not correct; there should be a way to indicate a separate mechanism for creating a new view
-		// scope for each of the instance widgets, instead of adding these keys, which do nothing right now
-		kwArgs.pendingAs = pending && pending.as;
-		kwArgs.rejectedAs = rejected && rejected.as;
-		kwArgs.pending = pending.instance;
-		kwArgs.rejected = rejected.instance;
+		kwArgs.constructor = toAbsMid('../ui/Promise');
+		kwArgs.fulfilled = fulfilled;
+		if (optional.rejected) {
+			kwArgs.rejected = optional.rejected;
+		}
+		if (optional.pending) {
+			kwArgs.pending = optional.pending;
+		}
+		kwArgs.value = kwArgs.value;
 		return kwArgs;
 	}
 
@@ -488,8 +481,7 @@ WhenTagOpen '<when>'
 	= '<when'i kwArgs:AttributeMap '>' S* {
 		validate(kwArgs, {
 			type: '<when>',
-			required: [ 'promise' ],
-			optional: [ 'as' ]
+			required: [ 'value' ]
 		});
 		return kwArgs;
 	}
@@ -498,20 +490,36 @@ WhenTagClose '</when>'
 	= '</when>'i
 
 PendingTag '<pending>'
-	= '<pending'i kwArgs:AttributeMap '>' {
-		validate(kwArgs, {
-			type: '<pending>',
-			optional: [ 'as' ]
-		});
-		return kwArgs;
+	= '<pending'i kwArgs:AttributeMap '>' body:Any? {
+		return body;
 	}
 
 RejectedTag '<rejected>'
-	= '<rejected'i kwArgs:AttributeMap '>' {
-		validate(kwArgs, {
-			type: '<rejected>',
-			optional: [ 'as' ]
-		});
+	= '<rejected'i kwArgs:AttributeMap '>' body:Any? {
+		return body;
+	}
+
+RejectedPendingTags
+	= rejected:RejectedTag
+	  pending:PendingTag? {
+		var kwArgs = {
+			rejected: rejected
+		};
+		if (pending) {
+			kwArgs.pending = pending;
+		}
+		return kwArgs;
+	}
+
+PendingRejectedTags
+	= pending:PendingTag
+	  rejected:RejectedTag? {
+		var kwArgs = {
+			pending: pending
+		};
+		if (rejected) {
+			kwArgs.rejected = rejected;
+		}
 		return kwArgs;
 	}
 
