@@ -13,15 +13,10 @@ var SEPARATOR:string = '.';
  * that may not exist at the time the object is initially bound, or whose parents change during the course of the
  * lifetime of the root object.
  */
-class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implements binding.IBinding<SourceT, TargetT> {
+class NestedBinding<T> extends Binding<T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		return kwArgs.object != null && kwArgs.path && util.escapedIndexOf(kwArgs.path, SEPARATOR) > -1;
 	}
-
-	/**
-	 * The binder to bind sub-properties with.
-	 */
-	private _binder:binding.IBinder;
 
 	/**
 	 * The string that identifies the sub-property to be bound.
@@ -31,17 +26,12 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 	/**
 	 * The watch handles for each binding.
 	 */
-	private _bindings:binding.IBinding<any, any>[] = [];
+	private _bindings:binding.IBinding<any>[] = [];
 
 	/**
 	 * The property at the end of the bound chain of properties.
 	 */
-	private _source:binding.IBinding<SourceT, TargetT>;
-
-	/**
-	 * The target property.
-	 */
-	private _target:binding.IBinding<TargetT, any>;
+	private _source:binding.IBinding<T>;
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
@@ -51,38 +41,18 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		this._rebind(kwArgs.object, 0);
 	}
 
-	bindTo(target:binding.IBinding<TargetT, any>, options:binding.IBindToOptions = {}):IHandle {
-		this._target = target;
-
-		if (!target) {
-			return;
-		}
-
-		if (options.setValue !== false) {
-			target.set(<TargetT> <any> this.get());
-		}
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self = self._target = null;
-			}
-		};
-	}
-
 	destroy():void {
-		this.destroy = function ():void {};
+		super.destroy();
 
 		var bindings = this._bindings;
-		for (var i = 0, binding:binding.IBinding<any, any>; (binding = bindings[i]); ++i) {
+		for (var i = 0, binding:binding.IBinding<any>; (binding = bindings[i]); ++i) {
 			binding.destroy();
 		}
 
-		this._source = this._target = null;
+		this._source = this._bindings = this._path = null;
 	}
 
-	get():TargetT {
+	get():T {
 		return this._source ? this._source.get() : undefined;
 	}
 
@@ -94,30 +64,25 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 
 		// Stop watching objects that are no longer part of this binding's object chain because a parent object
 		// was replaced
-		array.forEach(bindings.splice(fromIndex), function (binding:binding.IBinding<any, any>):void {
+		array.forEach(bindings.splice(fromIndex), function (binding:binding.IBinding<any>):void {
 			binding.destroy();
 		});
 
+		var self = this;
 		var path:string;
 		var index:number = fromIndex;
 		var object:any = fromObject;
-		var binding:binding.IBinding<any, any>;
-		var initialBind:boolean = true;
+		var binding:binding.IBinding<any>;
+		var length:number = this._path.length;
 
 		// If any of the intermediate objects between `object` and the property we are actually binding
 		// change, we need to rebind the entire object chain starting from the changed object
-		for (; index < this._path.length - 1 && object; ++index) {
+		for (; index < length - 1 && object; ++index) {
 			path = this._path[index];
-			binding = this._binder.createBinding(object, path, { scheduled: false });
-			binding.bindTo(<binding.IBinding<any, any>> {
-				set: lang.hitch(this, function (index:number, value:any):void {
-					// The `set` method of this fake target will be immediately called by the source `property` if
-					// a value exists for that property; in order to avoid this causing a premature rebinding in the
-					// middle of an existing rebinding event, the `initialBind` variable is used as a guard to only
-					// allow rebinding once the initial binding of the entire chain has completed
-					initialBind || this._rebind(value, index + 1);
-				}, index)
-			});
+			binding = this._binder.createBinding(object, path, { useScheduler: false });
+			binding.observe(<binding.IObserver<any>> lang.partial(function (index:number, change:binding.IChangeRecord<T>):void {
+				self._rebind(change.value, index + 1);
+			}, index));
 			bindings.push(binding);
 
 			// If there is no object here, we cannot rebind any further; presumably, at some point in the future, an
@@ -128,14 +93,12 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 			// If object is a promise resolve it and rebind
 			// TODO: Should probably use an explicit syntax for resolving promises instead of doing it implicitly
 			if (typeof object.then === 'function') {
-				object.then((value:any):void => {
-					this._rebind(value, index + 1);
+				object.then(function (value:any):void {
+					self._rebind(value, index + 1);
 				});
 				return;
 			}
 		}
-
-		initialBind = false;
 
 		// If `object` exists, it will be the final object in the chain, the one on which we are actually looking
 		// for values
@@ -143,11 +106,9 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		if (object) {
 			// If the values on this final object change we only need to update the value, not rebind
 			// any intermediate objects
-			binding = this._binder.createBinding(object, this._path[index], { scheduled: false });
-			binding.bindTo(<binding.IBinding<TargetT, TargetT>> {
-				set: (value:TargetT):void => {
-					this._update(value);
-				}
+			binding = this._binder.createBinding(object, this._path[index], { useScheduler: false });
+			binding.observe(function (change:binding.IChangeRecord<T>):void {
+				self.notify(change);
 			});
 			bindings.push(binding);
 			value = binding.get();
@@ -157,18 +118,11 @@ class NestedBinding<SourceT, TargetT> extends Binding<SourceT, TargetT> implemen
 		}
 
 		this._source = binding;
-		this._update(value);
+		this.notify({ value: value });
 	}
 
-	set(value:SourceT):void {
+	set(value:T):void {
 		this._source && this._source.set(value);
-	}
-
-	/**
-	 * Updates the bound target property with the given value.
-	 */
-	private _update(value:TargetT):void {
-		this._target && this._target.set(value);
 	}
 }
 

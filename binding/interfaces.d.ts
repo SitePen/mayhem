@@ -56,7 +56,7 @@ export interface IBinder extends core.IApplicationComponent {
 	 * in order to allow property binders to peel away sections of binding strings, and to allow access to additional
 	 * interfaces exposed on subtypes of IProxty.
 	 */
-	createBinding<SourceT, TargetT>(object:Object, path:string, options?:{ scheduled?:boolean; }):IBinding<SourceT, TargetT>;
+	createBinding<T>(object:Object, path:string, options?:{ useScheduler?:boolean; }):IBinding<T>;
 }
 
 /**
@@ -70,38 +70,6 @@ export interface IBindingHandle extends IHandle {
 	setDirection(direction:BindDirection):void;
 }
 
-// TODO: This is needed in order to prevent race conditions when binding a source and a target together at the same
-// time when a scheduler is in use, but is an ugly hack. Can we do something better?
-export interface IBindToOptions {
-	setValue?:boolean;
-}
-
-// TODO: Do something with this or delete it.
-export interface IComputedProperty {
-	/**
-	 * Inferrence for whether or not an object on a data model is actually a computed property.
-	 * Will always be `true`.
-	 */
-	isComputed: boolean;
-
-	/**
-	 * The getter method for the computed property.
-	 */
-	get(): any;
-
-	/**
-	 * An optional setter method for the computed property. If not defined, the computed property will be considered
-	 * read-only.
-	 */
-	set?(value:any): void;
-
-	/**
-	 * A list of other properties that the computed property uses when generating itself. Used to ensure that the
-	 * computed property is updated whenever any of its dependencies are updated. The dependencies themselves are
-	 */
-	dependencies: string[];
-}
-
 /**
  * TODO: Documentation updates
  * An IBindingProxty object represents an arbitrary property on an arbitrary JavaScript object. By using an opaque
@@ -109,22 +77,12 @@ export interface IComputedProperty {
  * needing to know the originally bound object, the name of the property, or even that the property exists at the time
  * that it is bound or set.
  */
-export interface IBinding<SourceT, TargetT> {
-	id:string;
-
-	/**
-	 * Binds the property to another target property. The target property is only notified of a change when the actual
-	 * property is updated; calling `set` on this bound property will *not* update the bound target value.
-	 */
-	bindTo(target:IBinding<TargetT, any>, options?:IBindToOptions):IHandle;
-
+export interface IBinding<T> {
 	destroy():void;
-
-	get():TargetT;
-
-	observe(observer:core.IObserver<TargetT>, invokeImmediately?:boolean):IHandle;
-
-	set(value:SourceT):void;
+	get():T;
+	notify(change:IChangeRecord<T>):void;
+	observe(observer:IObserver<T>, invokeImmediately?:boolean):IHandle;
+	set?(value:T):void;
 }
 
 /**
@@ -155,11 +113,49 @@ export interface IBindingArguments {
  * additional static `test` function.
  */
 export interface IBindingConstructor {
-	new <SourceT, TargetT>(kwArgs:IBindingArguments):IBinding<SourceT, TargetT>;
+	new <T>(kwArgs:IBindingArguments):IBinding<T>;
 
 	/**
 	 * Tests whether or not the property binder can successfully create a bound property from the given object and
 	 * binding string.
 	 */
 	test(kwArgs:IBindingArguments):boolean;
+}
+
+export interface IChangeRecord<T> {
+	added?:T[];
+	index?:number;
+	oldValue?:T;
+	removed?:T[];
+	value?:T;
+}
+
+// TODO: Do something with this or delete it.
+export interface IComputedProperty {
+	/**
+	 * Inferrence for whether or not an object on a data model is actually a computed property.
+	 * Will always be `true`.
+	 */
+	isComputed: boolean;
+
+	/**
+	 * The getter method for the computed property.
+	 */
+	get(): any;
+
+	/**
+	 * An optional setter method for the computed property. If not defined, the computed property will be considered
+	 * read-only.
+	 */
+	set?(value:any): void;
+
+	/**
+	 * A list of other properties that the computed property uses when generating itself. Used to ensure that the
+	 * computed property is updated whenever any of its dependencies are updated. The dependencies themselves are
+	 */
+	dependencies: string[];
+}
+
+export interface IObserver<T> {
+	(change:IChangeRecord<T>):void;
 }

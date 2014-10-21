@@ -143,7 +143,7 @@ class ElementWidget extends Container {
 			}
 
 			if (has('dom-firstchild-empty-bug')) {
-				htmlContent = '&shy;' + htmlContent;
+				htmlContent = '&#xad;' + htmlContent;
 				var domContent:Node = domConstruct.toDom(htmlContent);
 				var shyNode:Node = domContent.childNodes[0];
 				if (shyNode.nodeType === 3 && shyNode.nodeValue.charAt(0) === '\u00AD') {
@@ -187,7 +187,7 @@ class ElementWidget extends Container {
 					if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
 						(function ():void {
 							var boundEvent:RegExpExecArray = BIND_ATTRIBUTE.exec(nodeValue);
-							var binding:binding.IBinding<(...args:any[]) => any, (...args:any[]) => any>;
+							var binding:binding.IBinding<Function>;
 
 							// TODO: This is a hack to work around that binding in an HTML attribute without quotes
 							// generates invalid HTML in the first version of the templating engine
@@ -198,7 +198,7 @@ class ElementWidget extends Container {
 								}
 
 								// TODO: LEAK
-								binding = binder.createBinding<(...args:any[]) => any, (...args:any[]) => any>(self._model, boundEvent[1], { schedule: false });
+								binding = binder.createBinding<Function>(self._model, boundEvent[1], { useScheduler: false });
 							}
 
 							self.on(<string> result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
@@ -236,24 +236,55 @@ class ElementWidget extends Container {
 					else if ((result = BIND_ATTRIBUTE.exec(nodeValue))) {
 						var lastIndex:number = 0;
 
-						var compositeBinding:any[] = [];
+						// If a binding is the sole value in an attribute, we can skip the overhead of making a
+						// composite binding and also enable two-way data binding to DOM properties that are two-way,
+						// like input values
+						if (result.index === 0 && result[0].length === nodeValue.length) {
+							var bindingArguments = {
+								source: self._model,
+								sourcePath: result[1],
+								target: <any> attribute,
+								targetPath: 'value'
+							};
 
-						do {
-							compositeBinding.push(nodeValue.slice(lastIndex, result.index));
-							compositeBinding.push({ path: result[1] });
-							lastIndex = result.index + result[0].length;
-						} while ((result = BIND_ATTRIBUTE.exec(nodeValue)));
+							// Chrome is buggy and will not let us bind to attribute properties; this is OK for one-way
+							// bindings, but `value` attributes on HTML inputs need to be two-way bound to function
+							// properly
+							if (
+								has('webidl-bad-descriptors') &&
+								attribute.name === 'value' &&
+								node.nodeName.toUpperCase() === 'INPUT'
+							) {
+								bindingArguments.target = node;
+								bindingArguments.targetPath = 'value';
+							}
 
-						compositeBinding.push(nodeValue.slice(lastIndex));
+							self._bindingHandles.push(binder.bind(bindingArguments));
 
-						self._bindingHandles.push(binder.bind({
-							source: self._model,
-							// TODO: Loosen restriction on sourcePath in binding interfaces?
-							sourcePath: <any> compositeBinding,
-							target: attribute,
-							targetPath: 'value',
-							direction: BindDirection.ONE_WAY
-						}));
+							// Since we do not call `exec` until it returns nothing, we are responsible for resetting
+							// `lastIndex`, otherwise the next match will start from this match’s `lastIndex` and fail
+							BIND_ATTRIBUTE.lastIndex = 0;
+						}
+						else {
+							var compositeBinding:any[] = [];
+
+							do {
+								compositeBinding.push(nodeValue.slice(lastIndex, result.index));
+								compositeBinding.push({ path: result[1] });
+								lastIndex = result.index + result[0].length;
+							} while ((result = BIND_ATTRIBUTE.exec(nodeValue)));
+
+							compositeBinding.push(nodeValue.slice(lastIndex));
+
+							self._bindingHandles.push(binder.bind({
+								source: self._model,
+								// TODO: Loosen restriction on sourcePath in binding interfaces?
+								sourcePath: <any> compositeBinding,
+								target: attribute,
+								targetPath: 'value',
+								direction: BindDirection.ONE_WAY
+							}));
+						}
 					}
 				}
 			}

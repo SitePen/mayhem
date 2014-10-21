@@ -9,6 +9,7 @@ has.add('debug', true);
 // to branch for. `Date.now` just happens to be the shortest new ES5 API, so it is the one that is checked. Shims are
 // intentionally excluded since their code paths will effectively be the same as our non-ES5 code paths anyway.
 has.add('es5', Date.now && Date.now.toString().indexOf('[native code]') > -1);
+has.add('es6-weak-map', typeof WeakMap !== 'undefined');
 
 has.add('raf', typeof requestAnimationFrame === 'function');
 
@@ -33,6 +34,8 @@ if (has('dom')) {
 		has.add('dom-keyboard-isComposing', 'isComposing' in document.createEvent('KeyboardEvent'));
 		has.add('dom-keyboard-code', 'code' in document.createEvent('KeyboardEvent'));
 	}
+
+	// IE8: incomplete DOM implementation
 	has.add('dom-node-interface', typeof Node !== 'undefined');
 	has.add('dom-textnode-extensible', function ():boolean {
 		try {
@@ -42,10 +45,18 @@ if (has('dom')) {
 			return false;
 		}
 	});
+
+	// IE8: https://social.msdn.microsoft.com/Forums/ie/en-US/33fd33f7-e857-4f6f-978e-fd486eba7174/how-to-inject-style-into-a-page
 	has.add('dom-firstchild-empty-bug', function ():boolean {
 		var element:HTMLElement = arguments[2];
 		element.innerHTML = '<!--foo-->';
 		return element.childNodes.length === 0;
+	});
+
+	// Chrome: https://code.google.com/p/chromium/issues/detail?id=43394
+	has.add('webidl-bad-descriptors', function ():boolean {
+		var element:HTMLDivElement = arguments[2];
+		return Boolean(element && Object.getOwnPropertyDescriptor(element, 'nodeValue') != null);
 	});
 }
 

@@ -76,7 +76,7 @@ class Proxy<T> extends Observable {
 	_target:T;
 
 	private _initializing:boolean;
-	private _targetHandles:HashMap<binding.IBinding<any, any>>;
+	private _targetHandles:HashMap<binding.IBinding<any>>;
 
 	get:Proxy.Getters;
 	set:Proxy.Setters;
@@ -101,9 +101,9 @@ class Proxy<T> extends Observable {
 
 	private _createTargetBinding(key:string):void {
 		var self = this;
-		var binding = this._targetHandles[key] = this._app.get('binder').createBinding(this._target, key, { schedule: false });
-		binding.observe(function (newValue:any, oldValue:any):void {
-			self._notify(key, newValue, oldValue);
+		var binding = this._targetHandles[key] = this._app.get('binder').createBinding(this._target, key, { useScheduler: false });
+		binding.observe(function (change:binding.IChangeRecord<any>):void {
+			self._notify(key, change.value, change.oldValue);
 		});
 	}
 
@@ -134,7 +134,7 @@ class Proxy<T> extends Observable {
 	_targetSetter(target:T):void {
 		this._target = target;
 
-		var handles:HashMap<binding.IBinding<any, any>> = this._targetHandles;
+		var handles:HashMap<binding.IBinding<any>> = this._targetHandles;
 		for (var key in handles) {
 			handles[key] && handles[key].destroy();
 

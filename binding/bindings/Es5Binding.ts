@@ -5,11 +5,6 @@ import Binding = require('../Binding');
 import has = require('../../has');
 import util = require('../../util');
 
-has.add('webidl-bad-descriptors', function ():boolean {
-	var element:HTMLDivElement = arguments[2];
-	return Boolean(element && Object.getOwnPropertyDescriptor(element, 'nodeValue') != null);
-});
-
 /**
  * Retrieves a property descriptor from the given object or any of its inherited prototypes.
  *
@@ -31,10 +26,9 @@ function getAnyPropertyDescriptor(object:Object, property:string):PropertyDescri
  * The Es5Binding class enables two-way binding directly to properties of plain JavaScript objects in EcmaScript 5+
  * environments.
  */
-class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
+class Es5Binding<T> extends Binding<T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		if (!has('es5') || !util.isObject(kwArgs.object) || typeof kwArgs.path !== 'string' ||
-			// https://code.google.com/p/chromium/issues/detail?id=43394
 			(has('webidl-bad-descriptors') && typeof Node !== 'undefined' && kwArgs.object instanceof Node)
 		) {
 			return false;
@@ -48,7 +42,7 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	/**
 	 * The bound object.
 	 */
-	// Uses `any` type due to dynamic property access
+	// Uses `any` type since this code uses arbitrary properties
 	private _object:any;
 
 	/**
@@ -66,11 +60,6 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	 */
 	private _property:string;
 
-	/**
-	 * The target binding.
-	 */
-	private _target:binding.IBinding<T, T>;
-
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
@@ -81,6 +70,8 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 		this._object = object;
 		this._property = property;
 
+		// TODO: Improve efficiency by adding a notification overlay to the object so these functions only ever get
+		// attached once and additional binding observers can just reuse the same generated data
 		var value = object[property];
 		var descriptor = this._originalDescriptor = getAnyPropertyDescriptor(object, property);
 		var newDescriptor:PropertyDescriptor = {
@@ -90,52 +81,59 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 
 		if (descriptor && (descriptor.get || descriptor.set)) {
 			newDescriptor.get = descriptor.get;
-			newDescriptor.set = descriptor.get ? function (newValue:T):void {
-				descriptor.set && descriptor.set.apply(this, arguments);
-				self._update && self._update(descriptor.get.call(this));
-			} : descriptor.set;
+			newDescriptor.set = function (newValue:T):void {
+				// If the binding was destroyed but the descriptor could not be fully removed because someone else
+				// replaced it after us, we do not want to perform notifications, just continue to perform the original
+				// operation
+				if (self.notify) {
+					var oldValue:T = descriptor.get ? descriptor.get.call(this) : value;
+
+					if (descriptor.set) {
+						descriptor.set.apply(this, arguments);
+					}
+					else {
+						value = newValue;
+					}
+
+					if (descriptor.get) {
+						newValue = descriptor.get.call(this);
+					}
+
+					if (!util.isEqual(oldValue, newValue)) {
+						self.notify({ oldValue: oldValue, value: newValue });
+					}
+				}
+				else if (descriptor.set) {
+					descriptor.set.apply(this, arguments);
+				}
+			};
 		}
 		else {
 			newDescriptor.get = function ():T {
 				return value;
 			};
 			newDescriptor.set = function (newValue:T):void {
+				var oldValue:T = value;
 				value = newValue;
-				self._update && self._update(newValue);
+				// If the binding was destroyed but the descriptor could not be fully removed because someone else
+				// replaced it after us, we do not want to perform notifications, just continue to perform the original
+				// operation
+				if (self.notify && !util.isEqual(oldValue, value)) {
+					self.notify({ oldValue: oldValue, value: value });
+				}
 			};
 		}
 
 		Object.defineProperty(object, property, newDescriptor);
 		this._ownDescriptor = newDescriptor;
-		this._update(value);
-	}
-
-	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
-		this._target = target;
-
-		if (!target) {
-			return;
-		}
-
-		if (options.setValue !== false) {
-			target.set(this._object[this._property]);
-		}
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self = self._target = null;
-			}
-		};
 	}
 
 	destroy():void {
-		this.destroy = function ():void {};
+		super.destroy();
 
 		// We can only replace the property's descriptor with the old one as long as we are in control of the
 		// descriptor; if another binding was made to the same property after us, then the descriptor functions will not
-		// be ours and we would incorrectly destroy the other bindings. If we are not in control, once `this._update` is
+		// be ours and we would incorrectly destroy the other bindings. If we are not in control, once `this.notify` is
 		// null, our descriptor ends up functioning as a simple pass-through
 		var currentDescriptor:PropertyDescriptor = Object.getOwnPropertyDescriptor(this._object, this._property);
 		if (currentDescriptor.get === this._ownDescriptor.get && currentDescriptor.set === this._ownDescriptor.set) {
@@ -149,7 +147,7 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 			Object.defineProperty(this._object, this._property, descriptor);
 		}
 
-		this._update = this._ownDescriptor = this._originalDescriptor = this._object = this._property = this._target = null;
+		this._ownDescriptor = this._originalDescriptor = this._object = this._property = this.notify = null;
 	}
 
 	get():T {
@@ -157,14 +155,9 @@ class Es5Binding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
 	}
 
 	set(value:T):void {
-		this._object && (this._object[this._property] = value);
-	}
-
-	/**
-	 * Updates the bound target property with the given value.
-	 */
-	private _update(value:T):void {
-		this._target && this._target.set(value);
+		if (this._object) {
+			this._object[this._property] = value;
+		}
 	}
 }
 

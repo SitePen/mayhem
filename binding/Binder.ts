@@ -1,13 +1,14 @@
 /// <reference path="../dojo" />
 
-import Application = require('../Application');
 import BindDirection = require('./BindDirection');
 import binding = require('./interfaces');
 import BindingError = require('./BindingError');
 import has = require('../has');
+import lang = require('dojo/_base/lang');
 import Observable = require('../Observable');
 import Promise = require('../Promise');
 import util = require('../util');
+import WeakMap = require('../WeakMap');
 
 /**
  * The Binder class provides a default data binder that uses Binding objects to enable binding between arbitrary
@@ -19,7 +20,7 @@ import util = require('../util');
  * any module IDs in the list will be loaded and replaced with the value of those modules.
  */
 class Binder extends Observable implements binding.IBinder {
-	private _app:Application;
+	private _bindingRegistry:WeakMap<{}, HashMap<binding.IBinding<any>>>;
 
 	/**
 	 * The list of Binding constructors available for use by this data binder.
@@ -40,6 +41,7 @@ class Binder extends Observable implements binding.IBinder {
 	_initialize():void {
 		super._initialize();
 		this._useScheduler = false;
+		this._bindingRegistry = new WeakMap<{}, HashMap<binding.IBinding<any>>>();
 	}
 
 	/**
@@ -77,60 +79,73 @@ class Binder extends Observable implements binding.IBinder {
 	 * @param kwArgs The binding arguments for how a data binding should be created.
 	 * @returns A handle that can be used to remove the binding or change its source, target, or direction.
 	 */
-	bind<SourceT, TargetT>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
+	bind<T>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
 		var self = this;
 
 		if (!kwArgs.direction) {
 			kwArgs.direction = BindDirection.TWO_WAY;
 		}
 
-		var source:binding.IBinding<SourceT, TargetT>;
-		var target:binding.IBinding<TargetT, SourceT>;
+		var source:binding.IBinding<T>;
+		var target:binding.IBinding<T>;
+		var targetObserverHandle:IHandle;
 
-		source = this.createBinding<SourceT, TargetT>(kwArgs.source, kwArgs.sourcePath, { scheduled: this._useScheduler });
-		target = this.createBinding<TargetT, SourceT>(kwArgs.target, kwArgs.targetPath, { scheduled: this._useScheduler });
+		source = this.createBinding<T>(kwArgs.source, kwArgs.sourcePath);
+		target = this.createBinding<T>(kwArgs.target, kwArgs.targetPath);
 
-		source.bindTo(target);
+		function setTargetValue(change:binding.IChangeRecord<T>):void {
+			target.set(change.value);
+		}
+
+		function setSourceValue(change:binding.IChangeRecord<T>):void {
+			source.set(change.value);
+		}
+
+		source.observe(setTargetValue);
+		setTargetValue({ value: source.get() });
 
 		if (kwArgs.direction === BindDirection.TWO_WAY) {
-			target.bindTo(source, { setValue: false });
+			targetObserverHandle = target.observe(setSourceValue);
 		}
 
 		var handle:binding.IBindingHandle = {
 			setSource: function (newSource:Object, newSourcePath:string = kwArgs.sourcePath):void {
 				source.destroy();
-				source = self.createBinding<SourceT, TargetT>(newSource, newSourcePath, { scheduled: self._useScheduler });
+				source = self.createBinding<T>(newSource, newSourcePath);
 
 				if (has('debug')) {
 					this['_source'] = source;
 				}
 
-				source.bindTo(target);
-				if (kwArgs.direction === BindDirection.TWO_WAY) {
-					target.bindTo(source, { setValue: false });
-				}
+				source.observe(setTargetValue);
+				setTargetValue({ value: source.get() });
 			},
 			setTarget: function (newTarget:Object, newTargetPath:string = kwArgs.targetPath):void {
 				target.destroy();
-				target = self.createBinding<TargetT, SourceT>(newTarget, newTargetPath, { scheduled: self._useScheduler });
+				targetObserverHandle = null;
+				target = self.createBinding<T>(newTarget, newTargetPath);
 
 				if (has('debug')) {
 					this['_target'] = target;
 				}
 
-				source.bindTo(target);
 				if (kwArgs.direction === BindDirection.TWO_WAY) {
-					target.bindTo(source, { setValue: false });
+					targetObserverHandle = target.observe(setSourceValue);
 				}
+
+				setTargetValue({ value: source.get() });
 			},
 			setDirection: function (newDirection:BindDirection):void {
-				target.bindTo(newDirection === BindDirection.TWO_WAY ? source : null);
+				targetObserverHandle && targetObserverHandle.remove();
+				if (newDirection === BindDirection.TWO_WAY) {
+					targetObserverHandle = target.observe(setSourceValue);
+				}
 			},
 			remove: function ():void {
 				this.remove = function ():void {};
 				source.destroy();
 				target.destroy();
-				source = target = null;
+				self = source = target = targetObserverHandle = null;
 			}
 		};
 
@@ -154,46 +169,88 @@ class Binder extends Observable implements binding.IBinder {
 	 * the Binder instance.
 	 * @returns A new Binding object.
 	 */
-	createBinding<SourceT, TargetT>(object:Object, path:string, options:{ scheduled?:boolean; } = {}):binding.IBinding<SourceT, TargetT> {
-		var constructors = this._constructors;
-		var app = this._app;
-
-		function scheduled(binding:binding.IBinding<SourceT, TargetT>):binding.IBinding<SourceT, TargetT> {
-			var oldSet = binding.set;
-			binding.set = function (value:SourceT):void {
-				var self = this;
-				var args = arguments;
-				// TODO: Why always schedule if it is an array?
-				// TS2365
-				var schedule = value instanceof Array || (<any> value) !== binding.get();
-
-				app.get('scheduler').schedule(binding.id, schedule ? function ():void {
-					oldSet.apply(self, args);
-				} : null);
-			};
-			return binding;
+	createBinding<T>(object:Object, path:string, options:{ useScheduler?:boolean; } = {}):binding.IBinding<T> {
+		if (options.useScheduler === undefined) {
+			options.useScheduler = this._useScheduler;
 		}
 
-		var binding:binding.IBinding<SourceT, TargetT>;
-		for (var i = 0, Binding:binding.IBindingConstructor; (Binding = constructors[i]); ++i) {
-			if (Binding.test({ object: object, path: path, binder: this })) {
-				binding = new Binding<SourceT, TargetT>({
-					object: object,
-					path: path,
-					binder: this
-				});
-
-				return options.scheduled === false ? binding : scheduled(binding);
-			}
+		var map:HashMap<binding.IBinding<any>> = this._bindingRegistry.get(object);
+		if (!map) {
+			map = {};
+			this._bindingRegistry.set(object, map);
 		}
 
-		throw new BindingError(
-			'No registered binding constructors understand the requested binding "{binding}" on {object}.', {
-				object: object,
-				path: path,
-				binder: this
+		var binding:binding.IBinding<T>;
+		if (typeof path !== 'string' || !(binding = map[path])) {
+			var constructors = this._constructors;
+
+			for (var i = 0, Binding:binding.IBindingConstructor; (Binding = constructors[i]); ++i) {
+				if (Binding.test({ object: object, path: path, binder: this })) {
+					binding = new Binding<T>({
+						object: object,
+						path: path,
+						binder: this
+					});
+					break;
+				}
 			}
-		);
+
+			if (!binding) {
+				throw new BindingError(
+					'No registered binding constructors understand the requested binding "{binding}" on {object}.', {
+						object: object,
+						path: path,
+						binder: this
+					}
+				);
+			}
+
+			// We can only store bindings whose paths are strings, other types of paths will always get a totally new
+			// binding
+			if (typeof path !== 'string') {
+				return binding;
+			}
+
+			map[path] = binding;
+		}
+
+		return lang.delegate(binding, {
+			_localObservers: [],
+			destroy: function (destroyAll:boolean = false):void {
+				this.destroy = function ():void {};
+				var observers = this._observers;
+				var localObservers = this._localObservers;
+				for (var i = 0, observer:binding.IObserver<T>; (observer = localObservers[i]); ++i) {
+					util.spliceMatch(observers, observer);
+				}
+				this._localObservers = null;
+				if (destroyAll) {
+					binding.destroy();
+					map[path] = null;
+				}
+				binding = map = null;
+			},
+			observe: function (observer:binding.IObserver<T>):IHandle {
+				var handle:IHandle = binding.observe.apply(binding, arguments);
+				var localObservers = this._localObservers;
+				localObservers.push(observer);
+				return {
+					remove: function ():void {
+						this.remove = function ():void {};
+						util.spliceMatch(localObservers, observer);
+						handle.remove();
+						handle = localObservers = observer = null;
+					}
+				};
+			}
+		});
+	}
+
+	notify(object:Object, property:string, change:binding.IChangeRecord<any>):void {
+		var bindings:HashMap<binding.IBinding<any>> = this._bindingRegistry.get(object);
+		if (bindings && bindings[property]) {
+			bindings[property].notify(change);
+		}
 	}
 
 	startup():Promise<void> {
@@ -233,7 +290,7 @@ class Binder extends Observable implements binding.IBinder {
 		var targetBindingValid:boolean = false;
 
 		for (var i = 0, Binding:binding.IBindingConstructor; (Binding = this._constructors[i]); ++i) {
-			if (!sourceBindingValid && Binding.test({
+			if (!sourceBindingValid && Binding.prototype.get && Binding.test({
 				object: kwArgs.source,
 				path: kwArgs.sourcePath,
 				binder: this
@@ -241,7 +298,7 @@ class Binder extends Observable implements binding.IBinder {
 				sourceBindingValid = true;
 			}
 
-			if (!targetBindingValid && Binding.test({
+			if (!targetBindingValid && Binding.prototype.set && Binding.test({
 				object: kwArgs.target,
 				path: kwArgs.targetPath,
 				binder: this

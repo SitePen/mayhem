@@ -29,7 +29,7 @@ interface Part {
  * });
  * ```
  */
-class CompositeBinding extends Binding<any, string> implements binding.IBinding<any, string> {
+class CompositeBinding extends Binding<string> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		// TODO: Make path generic instead of string?
 		// TODO: Add hinting for source/target?
@@ -41,11 +41,6 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 	 */
 	private _parts:Part[];
 
-	/**
-	 * The target binding.
-	 */
-	private _target:binding.IBinding<string, any>;
-
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
@@ -54,11 +49,9 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		var self = this;
 		arrayUtil.forEach(<any> kwArgs.path, function (path:any):void {
 			if (path.path) {
-				var binding:binding.IBinding<any, string> = kwArgs.binder.createBinding<any, string>(path.object || kwArgs.object, path.path, { scheduled: false });
-				binding.bindTo(<any> {
-					set: function ():void {
-						self._target && self._target.set(self.get());
-					}
+				var binding:binding.IBinding<string> = kwArgs.binder.createBinding<string>(path.object || kwArgs.object, path.path, { useScheduler: false });
+				binding.observe(function ():void {
+					self.notify({ value: self.get() });
 				});
 				parts.push(binding);
 			}
@@ -72,35 +65,15 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		});
 	}
 
-	bindTo(target:binding.IBinding<string, any>, options:binding.IBindToOptions = {}):IHandle {
-		this._target = target;
-
-		if (!target) {
-			return;
-		}
-
-		if (options.setValue !== false) {
-			target.set(this.get());
-		}
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self = self._target = null;
-			}
-		};
-	}
-
 	destroy():void {
-		this.destroy = function ():void {};
+		super.destroy();
 
 		var part:Part;
 		while ((part = this._parts.pop())) {
 			part.destroy && part.destroy();
 		}
 
-		this._target = this._parts = null;
+		this._parts = null;
 	}
 
 	get():string {
@@ -110,10 +83,6 @@ class CompositeBinding extends Binding<any, string> implements binding.IBinding<
 		}
 
 		return result.join('');
-	}
-
-	set(value:string):void {
-		throw new Error('CompositeBinding is a source-only binding');
 	}
 }
 
