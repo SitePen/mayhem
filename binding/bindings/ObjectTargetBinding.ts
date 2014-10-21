@@ -7,7 +7,7 @@ import util = require('../../util');
  * This binding is only necessary when attempting to run in pre-EcmaScript 5 environments, or when attempting to bind
  * to a host object in WebKit browsers impacted by https://code.google.com/p/chromium/issues/detail?id=43394.
  */
-class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
+class ObjectTargetBinding<T> extends Binding<T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		return util.isObject(kwArgs.object) && typeof kwArgs.path === 'string';
 	}
@@ -15,18 +15,13 @@ class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T
 	/**
 	 * The object containing the final property to be bound.
 	 */
-	// Uses `any` type due to dynamic property access
+	// Uses `any` type since this code uses arbitrary properties
 	private _object:any;
 
 	/**
 	 * The key for the final property to be bound.
 	 */
 	private _property:string;
-
-	/**
-	 * The target property.
-	 */
-	private _target:binding.IBinding<T, T>;
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
@@ -35,29 +30,9 @@ class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T
 		this._property = kwArgs.path;
 	}
 
-	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
-		this._target = target;
-
-		if (!target) {
-			return;
-		}
-
-		if (options.setValue !== false) {
-			target.set(this.get());
-		}
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self = self._target = null;
-			}
-		};
-	}
-
 	destroy():void {
-		this.destroy = function ():void {};
-		this._object = this._target = null;
+		super.destroy();
+		this._object = this._property = null;
 	}
 
 	get():T {
@@ -65,11 +40,7 @@ class ObjectTargetBinding<T> extends Binding<T, T> implements binding.IBinding<T
 	}
 
 	set(value:T):void {
-		if (util.isEqual(this.get(), value)) {
-			return;
-		}
-
-		if (this._object) {
+		if (this._object && !util.isEqual(this.get(), value)) {
 			this._object[this._property] = value;
 		}
 	}

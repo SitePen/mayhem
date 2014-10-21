@@ -1,17 +1,14 @@
 /// <reference path="../../dojo" />
 
-import array = require('dojo/_base/array');
 import binding = require('../interfaces');
 import Binding = require('../Binding');
-import core = require('../../interfaces');
-import lang = require('dojo/_base/lang');
 import Stateful = require('dojo/Stateful');
 import util = require('../../util');
 
 /**
  * The StatefulBinding class enables binding to Dojo 1 {@link external:dojo/Stateful} objects.
  */
-class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T> {
+class StatefulBinding<T> extends Binding<T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
 		var object = <Stateful> kwArgs.object;
 		return object != null && typeof object.get === 'function' &&
@@ -35,47 +32,25 @@ class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T>
 	 */
 	private _property:string;
 
-	/**
-	 * The target property.
-	 */
-	private _target:binding.IBinding<T, T>;
-
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
 		var object = this._object = <Stateful> kwArgs.object;
 		this._property = kwArgs.path;
 
-		this._handle = object.watch(kwArgs.path, (key:string, oldValue:any, newValue:any):void => {
-			this._update(newValue);
+		var self = this;
+		this._handle = object.watch(kwArgs.path, function (key:string, oldValue:any, newValue:any):void {
+			// Stateful does not check equality of set values and will redispatch when old and new values are the same
+			if (!util.isEqual(newValue, oldValue)) {
+				self.notify({ value: newValue, oldValue: oldValue });
+			}
 		});
 	}
 
-	bindTo(target:binding.IBinding<T, T>, options:binding.IBindToOptions = {}):IHandle {
-		this._target = target;
-
-		if (!target) {
-			return;
-		}
-
-		if (options.setValue !== false) {
-			target.set(this.get());
-		}
-
-		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self = self._target = null;
-			}
-		};
-	}
-
 	destroy():void {
-		this.destroy = function ():void {};
-
+		super.destroy();
 		this._handle.remove();
-		this._handle = this._object = this._target = null;
+		this._handle = this._object = this._property = null;
 	}
 
 	get():T {
@@ -90,10 +65,6 @@ class StatefulBinding<T> extends Binding<T, T> implements binding.IBinding<T, T>
 
 			this._object.set(this._property, value);
 		}
-	}
-
-	private _update(value:T):void {
-		this._target && this._target.set(value);
 	}
 }
 

@@ -147,10 +147,10 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 				}
 				else {
 					var binder:binding.IBinder = this._app.get('binder');
-					var binding:binding.IBinding<Function, Function>;
+					var binding:binding.IBinding<Function>;
 					var rebind = function (object:Object, path:string = value.$bind):void {
 						binding && binding.destroy();
-						binding = binder.createBinding<Function, Function>(object || {}, path, { schedule: false });
+						binding = binder.createBinding<Function>(object || {}, path, { useScheduler: false });
 					};
 
 					rebind(this.get('model'));
