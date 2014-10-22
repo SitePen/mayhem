@@ -92,8 +92,8 @@ class Application extends ObservableEvented {
 					require.toAbsMid('./binding/bindings/ObservableBinding'),
 					require.toAbsMid('./binding/bindings/StatefulBinding'),
 					require.toAbsMid('./binding/bindings/ArrayBinding'),
-					require.toAbsMid('./binding/bindings/Es5Binding'),
 					require.toAbsMid('./binding/bindings/DomInputBinding'),
+					require.toAbsMid('./binding/bindings/Es5Binding'),
 					require.toAbsMid('./binding/bindings/ObjectTargetBinding')
 				]
 			},

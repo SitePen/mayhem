@@ -8,7 +8,7 @@ has.add('debug', true);
 // Function#bind in Safari 5.1.3-, all the supported ES5-compliant browsers implement all the ES5 features we need
 // to branch for. `Date.now` just happens to be the shortest new ES5 API, so it is the one that is checked. Shims are
 // intentionally excluded since their code paths will effectively be the same as our non-ES5 code paths anyway.
-has.add('es5', Date.now && Date.now.toString().indexOf('[native code]') > -1);
+has.add('es5', Boolean(Object.create && Object.create.toString().indexOf('[native code]') > -1));
 has.add('es6-weak-map', typeof WeakMap !== 'undefined');
 
 has.add('raf', typeof requestAnimationFrame === 'function');
@@ -37,12 +37,12 @@ if (has('dom')) {
 
 	// IE8: incomplete DOM implementation
 	has.add('dom-node-interface', typeof Node !== 'undefined');
-	has.add('dom-textnode-extensible', function ():boolean {
+	has.add('dom-bad-expandos', function ():boolean {
 		try {
-			return (<any> document.createTextNode('')).foo = true;
+			return ((<any> document.createTextNode('')).foo = true) !== true;
 		}
 		catch (error) {
-			return false;
+			return true;
 		}
 	});
 
