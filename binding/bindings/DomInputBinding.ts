@@ -1,17 +1,30 @@
 /// <reference path="../../dojo" />
 
 import binding = require('../interfaces');
-import Binding = require('../Binding');
-import has = require('../../has');
+import ObjectTargetBinding = require('./ObjectTargetBinding');
 import on = require('dojo/on');
 
 /**
- * This class is only needed by Chrome until webidl-bad-descriptors is fixed.
+ * Enables reactive binding to DOM input elements.
  */
-class DomInputBinding extends Binding<string> {
+class DomInputBinding<T> extends ObjectTargetBinding<T> {
 	static test(kwArgs:binding.IBindingArguments):boolean {
-		var object = <HTMLInputElement> kwArgs.object;
-		return has('webidl-bad-descriptors') && object != null && kwArgs.path === 'value' && 'oninput' in object;
+		var object = <any> kwArgs.object;
+
+		if (object == null) {
+			return false;
+		}
+
+		// TODO: <select>? <textarea>?
+		if (
+			object.nodeType === /* Node.ELEMENT_NODE */ 1 &&
+			(kwArgs.path === 'value' || kwArgs.path === 'checked') &&
+			object.nodeName.toUpperCase() === 'INPUT'
+		) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -21,32 +34,36 @@ class DomInputBinding extends Binding<string> {
 
 	/**
 	 * The object containing the final property to be bound.
+	 * @protected
 	 */
-	private _object:HTMLInputElement;
+	_object:HTMLInputElement;
+
+	/**
+	 * @protected
+	 */
+	_property:string;
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
-		var object = this._object = <HTMLInputElement> kwArgs.object;
+		var object:HTMLInputElement = <any> kwArgs.object;
+		var property:string = kwArgs.path;
+
+		this._object = object;
+		this._property = property;
 
 		var self = this;
-		this._handle = on(object, 'input', function (event:Event):void {
-			self.notify({ value: (<HTMLInputElement> event.target).value });
+		this._handle = on(object, 'input, change, propertychange', function (event:Event):void {
+			if (event.type !== 'propertychange' || (<any> event).propertyName === property) {
+				self.notify({ value: (<any> event.target)[property] });
+			}
 		});
 	}
 
 	destroy():void {
 		super.destroy();
 		this._handle.remove();
-		this._handle = this._object = null;
-	}
-
-	get():string {
-		return this._object ? this._object.value : undefined;
-	}
-
-	set(value:string):void {
-		this._object && (this._object.value = value);
+		this._handle = null;
 	}
 }
 

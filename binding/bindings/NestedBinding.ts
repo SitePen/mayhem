@@ -53,7 +53,7 @@ class NestedBinding<T> extends Binding<T> {
 	}
 
 	get():T {
-		return this._source ? this._source.get() : undefined;
+		return this._source && this._source.get ? this._source.get() : undefined;
 	}
 
 	/**
@@ -122,7 +122,7 @@ class NestedBinding<T> extends Binding<T> {
 	}
 
 	set(value:T):void {
-		this._source && this._source.set(value);
+		this._source && this._source.set && this._source.set(value);
 	}
 }
 

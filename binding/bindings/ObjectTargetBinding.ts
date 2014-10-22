@@ -14,14 +14,16 @@ class ObjectTargetBinding<T> extends Binding<T> {
 
 	/**
 	 * The object containing the final property to be bound.
+	 * @protected
 	 */
 	// Uses `any` type since this code uses arbitrary properties
-	private _object:any;
+	_object:any;
 
 	/**
 	 * The key for the final property to be bound.
+	 * @protected
 	 */
-	private _property:string;
+	_property:string;
 
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);

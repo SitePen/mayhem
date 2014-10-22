@@ -143,7 +143,7 @@ class ElementWidget extends Container {
 			}
 
 			if (has('dom-firstchild-empty-bug')) {
-				htmlContent = '&#xad;' + htmlContent;
+				htmlContent = '&shy;' + htmlContent;
 				var domContent:Node = domConstruct.toDom(htmlContent);
 				var shyNode:Node = domContent.childNodes[0];
 				if (shyNode.nodeType === 3 && shyNode.nodeValue.charAt(0) === '\u00AD') {
@@ -240,26 +240,27 @@ class ElementWidget extends Container {
 						// composite binding and also enable two-way data binding to DOM properties that are two-way,
 						// like input values
 						if (result.index === 0 && result[0].length === nodeValue.length) {
-							var bindingArguments = {
+							var kwArgs = {
 								source: self._model,
 								sourcePath: result[1],
 								target: <any> attribute,
 								targetPath: 'value'
 							};
 
-							// Chrome is buggy and will not let us bind to attribute properties; this is OK for one-way
-							// bindings, but `value` attributes on HTML inputs need to be two-way bound to function
-							// properly
-							if (
-								has('webidl-bad-descriptors') &&
-								attribute.name === 'value' &&
-								node.nodeName.toUpperCase() === 'INPUT'
-							) {
-								bindingArguments.target = node;
-								bindingArguments.targetPath = 'value';
+							// Assume attempts to bind to two-way DOM attributes are actually attempts to bind to their
+							// active values, not their default values (which is what the DOM attribute nodes represent)
+							for (var defaultDomKey in { value: true, checked: true }) {
+								if (attribute.name === defaultDomKey && defaultDomKey in node) {
+									kwArgs.target = node;
+									kwArgs.targetPath = defaultDomKey;
+
+									// For anyone looking at the DOM in dev tools
+									attribute.value = '{' + result[1] + '}';
+									break;
+								}
 							}
 
-							self._bindingHandles.push(binder.bind(bindingArguments));
+							self._bindingHandles.push(binder.bind(kwArgs));
 
 							// Since we do not call `exec` until it returns nothing, we are responsible for resetting
 							// `lastIndex`, otherwise the next match will start from this match’s `lastIndex` and fail
