@@ -56,6 +56,10 @@ class NestedBinding<T> extends Binding<T> {
 		return this._source && this._source.get ? this._source.get() : undefined;
 	}
 
+	getObject():{} {
+		return this._source ? this._source.getObject() : undefined;
+	}
+
 	/**
 	 * Removes and rebinds to all objects in the object chain.
 	 */

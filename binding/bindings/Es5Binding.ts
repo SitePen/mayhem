@@ -154,6 +154,10 @@ class Es5Binding<T> extends Binding<T> {
 		return this._object ? this._object[this._property] : undefined;
 	}
 
+	getObject():{} {
+		return this._object;
+	}
+
 	set(value:T):void {
 		if (this._object) {
 			this._object[this._property] = value;

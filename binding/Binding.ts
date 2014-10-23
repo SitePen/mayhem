@@ -26,6 +26,10 @@ class Binding<T> implements binding.IBinding<T> {
 		return undefined;
 	}
 
+	getObject():{} {
+		return undefined;
+	}
+
 	notify(change:binding.IChangeRecord<any>):void {
 		var observers = this._observers.slice(0);
 		for (var i = 0, observer:binding.IObserver<T>; (observer = observers[i]); ++i) {

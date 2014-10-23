@@ -57,6 +57,10 @@ class StatefulBinding<T> extends Binding<T> {
 		return this._object ? this._object.get(this._property) : undefined;
 	}
 
+	getObject():{} {
+		return this._object;
+	}
+
 	set(value:T):void {
 		if (this._object) {
 			if (util.isEqual(this.get(), value)) {
