@@ -32,17 +32,16 @@ class Conditional extends MultiNodeWidget {
 		this._evaluateConditions();
 	}
 
-	_createConditionBindings(model:Object):void {
-		model = model || {};
+	private _createConditionBindings(model:{} = {}):void {
 		var binder = this.get('app').get('binder');
 
-		for (var i = 0, binding:binding.IBinding<boolean>; (binding = this._conditionBindings[i]); i++) {
+		for (var i = 0, binding:binding.IBinding<boolean>; (binding = this._conditionBindings[i]); ++i) {
 			binding.destroy();
 		}
 		this._conditionBindings = [];
 
 		var condition:Conditional.ICondition;
-		for (i = 0; (condition = this._conditions[i]); i++) {
+		for (i = 0; (condition = this._conditions[i]); ++i) {
 			if (condition.condition.$bind !== undefined) {
 				this._conditionBindings[i] = binder.createBinding<boolean>(model, condition.condition.$bind);
 			}
@@ -52,7 +51,7 @@ class Conditional extends MultiNodeWidget {
 		}
 	}
 
-	_evaluateConditions():void {
+	private _evaluateConditions():void {
 		this._conditionObserveHandle && this._conditionObserveHandle.remove();
 
 		var self = this;
@@ -63,7 +62,7 @@ class Conditional extends MultiNodeWidget {
 		}
 
 		var handles:IHandle[] = [];
-		for (var i = 0, binding:binding.IBinding<boolean>; (binding = this._conditionBindings[i]); i++) {
+		for (var i = 0, binding:binding.IBinding<boolean>; (binding = this._conditionBindings[i]); ++i) {
 			handles.push(binding.observe(observeCondition));
 			if (binding.get()) {
 				this._currentView && this._currentView.detach();
@@ -91,11 +90,11 @@ module Conditional {
 
 	export interface Events extends View.Events {}
 	export interface Getters extends View.Getters {
-		(key:'model'):Object;
+		(key:'model'):{};
 		(key:'conditions'):Conditional.ICondition[];
 	}
 	export interface Setters extends View.Setters {
-		(key:'model', value:Object):void;
+		(key:'model', value:{}):void;
 		(key:'conditions', value:Conditional.ICondition[]):void;
 	}
 }
