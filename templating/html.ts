@@ -158,8 +158,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 					var handle:IHandle = this.on(eventName, function ():void {
 						var listener:Function = binding.get();
 						if (typeof listener === 'function') {
-							// TODO: Get rid of the private object access hack
-							return listener.apply((<any> binding)._object, arguments);
+							return listener.apply(binding.getObject(), arguments);
 						}
 					});
 

@@ -6,10 +6,12 @@ class ArrayBinding<T extends Array<any>> extends Binding<T> {
 		return kwArgs.object instanceof Array && kwArgs.path === '*';
 	}
 
+	private _object:T;
+
 	constructor(kwArgs:binding.IBindingArguments) {
 		super(kwArgs);
 
-		var array:T = <any> kwArgs.object;
+		var array:T = this._object = <any> kwArgs.object;
 		var self = this;
 
 		// TODO: Improve efficiency by adding a notification overlay to the array so these functions only ever get
@@ -65,12 +67,16 @@ class ArrayBinding<T extends Array<any>> extends Binding<T> {
 		};
 	}
 
+	getObject():{} {
+		return this._object;
+	}
+
 	destroy():void {
 		super.destroy();
 
 		// Stop attempts to notify on the array after the binding has been destroyed
 		// TODO: This should be made better
-		this.notify = null;
+		this._object = this.notify = null;
 	}
 }
 

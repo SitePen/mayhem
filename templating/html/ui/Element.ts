@@ -192,7 +192,7 @@ class ElementWidget extends Container {
 							// TODO: This is a hack to work around that binding in an HTML attribute without quotes
 							// generates invalid HTML in the first version of the templating engine
 							if (boundEvent) {
-								if (result[0].length !== nodeValue.length) {
+								if (boundEvent[0].length !== nodeValue.length) {
 									throw new Error('Illegal event binding to ' + attribute.name + ': ' +
 										(<HTMLElement> node).outerHTML);
 								}
@@ -223,8 +223,7 @@ class ElementWidget extends Container {
 								// TS7017
 								if (element === node) {
 									if (binding) {
-										// TODO: Hack hack. Expose the source object through the Binding API.
-										return binding.get().call((<any> binding)._object, event);
+										return binding.get().call(binding.getObject(), event);
 									}
 									else {
 										return (<any> self)[method](event);

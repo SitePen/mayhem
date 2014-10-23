@@ -42,6 +42,10 @@ class ObjectMethodBinding<T> extends Binding<T> {
 	get():T {
 		return this._fn ? this._fn.apply(this._object, this._args) : undefined;
 	}
+
+	getObject():{} {
+		return this._object;
+	}
 }
 
 export = ObjectMethodBinding;

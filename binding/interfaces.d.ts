@@ -80,6 +80,7 @@ export interface IBindingHandle extends IHandle {
 export interface IBinding<T> {
 	destroy():void;
 	get():T;
+	getObject():{};
 	notify(change:IChangeRecord<T>):void;
 	observe(observer:IObserver<T>, invokeImmediately?:boolean):IHandle;
 	set?(value:T):void;
