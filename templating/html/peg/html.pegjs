@@ -467,18 +467,20 @@ When '<when></when>'
 	WhenTagClose {
 		kwArgs.constructor = toAbsMid('../ui/Promise');
 		kwArgs.fulfilled = fulfilled;
-		if (optional.rejected) {
-			kwArgs.rejected = optional.rejected;
-		}
-		if (optional.pending) {
-			kwArgs.pending = optional.pending;
+		if (optional) {
+			if (optional.rejected) {
+				kwArgs.rejected = optional.rejected;
+			}
+			if (optional.pending) {
+				kwArgs.pending = optional.pending;
+			}
 		}
 		kwArgs.value = kwArgs.value;
 		return kwArgs;
 	}
 
 WhenTagOpen '<when>'
-	= '<when'i kwArgs:AttributeMap '>' S* {
+	= '<when'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
 			type: '<when>',
 			required: [ 'value' ]
