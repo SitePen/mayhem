@@ -43,7 +43,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	 *
 	 * @protected
 	 */
-	_defaultRoute:string;
+	_defaultRoute:any[] /* { 0:string; 1?:HashMap<any>; } */;
 
 	/**
 	 * The previous path after a route transition.
@@ -233,14 +233,6 @@ class Router extends ObservableEvented implements routing.IRouter {
 
 		id = id.replace(/^\.\//, idPrefix);
 
-		if (id === '') {
-			id = this._defaultRoute;
-		}
-
-		if (id.charAt(id.length - 1) === '/') {
-			id += this._defaultRoute;
-		}
-
 		return id;
 	}
 
@@ -362,18 +354,18 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 }
 
-Router.prototype._defaultRoute = 'index';
+Router.prototype._defaultRoute = [ 'index' ];
 Router.prototype._notFoundRoute = 'error';
 
 module Router {
 	export interface Events extends ObservableEvented.Events {}
 	export interface Getters extends ObservableEvented.Getters, routing.IRouter.Getters {
 		(key:'app'):WebApplication;
-		(key:'defaultRoute'):string;
+		(key:'defaultRoute'):any[];
 		(key:'notFoundRoute'):string;
 	}
 	export interface Setters extends ObservableEvented.Setters, routing.IRouter.Setters {
-		(key:'defaultRoute', value:string):void;
+		(key:'defaultRoute', value:any[]):void;
 		(key:'notFoundRoute', value:string):void;
 	}
 }

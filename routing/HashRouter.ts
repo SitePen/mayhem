@@ -103,12 +103,12 @@ class HashRouter extends Router {
 			}
 			else {
 				try {
-					hash(self.createPath(self._defaultRoute), true);
+					hash(self.createPath.apply(self, self._defaultRoute), true);
 				}
 				catch (error) {
 					self._handleNotFoundRoute(new RouteEvent({
 						oldPath: '',
-						newPath: self._defaultRoute,
+						newPath: '',
 						type: 'error'
 					}));
 				}
