@@ -402,6 +402,23 @@ class PointerManager {
 					domUtil.on(root, 'mouseup', mouseChanged)
 				);
 
+				if (has('dom-dblclick-bug')) {
+					handles.push(domUtil.on(root, 'dblclick', function (event:MouseEvent):void {
+						// since the `type` field is being changed, we must copy to a fake event
+						var fakeEvent:MouseEvent = <any> {
+							button: 0,
+							clientX: event.clientX,
+							clientY: event.clientY,
+							target: event.target,
+							type: 'mousedown'
+						};
+
+						mouseChanged(fakeEvent);
+						fakeEvent.type = 'mouseup';
+						mouseChanged(fakeEvent);
+					}));
+				}
+
 				// it is impossible to know whether or not the mouse button was released outside the window without
 				// `buttons` but at least we can know if it was released anywhere in the window
 				if (!has('dom-mouse-buttons')) {
