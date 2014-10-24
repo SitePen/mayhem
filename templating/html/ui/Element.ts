@@ -27,7 +27,7 @@ else {
 var BIND:RegExp = /^bind (.*)$/;
 var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)-->/g;
 var CHILD:RegExp = /^child ([0-9]+)$/;
-var EVENT_ATTRIBUTE:RegExp = /^on-(.*)$/g;
+var EVENT_ATTRIBUTE:RegExp = /^on-(.*)$/;
 var PLACEHOLDER:RegExp = /^placeholder (.*)$/;
 
 function createPlaceholderSetter(property:string, placeholderNode:Node):(value:Widget) => void {
@@ -191,6 +191,9 @@ class ElementWidget extends Container {
 					if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
 						(function ():void {
 							var boundEvent:RegExpExecArray = BIND_ATTRIBUTE.exec(nodeValue);
+							// Since we do not call `exec` until it returns nothing, we are responsible for resetting
+							// the RegExp, otherwise the next match will start from this match’s `lastIndex` and fail
+							BIND_ATTRIBUTE.lastIndex = 0;
 							var binding:ProxyBinding<Function>;
 
 							// TODO: This is a hack to work around that binding in an HTML attribute without quotes
@@ -271,7 +274,7 @@ class ElementWidget extends Container {
 							self._bindingHandles.push(binder.bind(kwArgs));
 
 							// Since we do not call `exec` until it returns nothing, we are responsible for resetting
-							// `lastIndex`, otherwise the next match will start from this match’s `lastIndex` and fail
+							// the RegExp, otherwise the next match will start from this match’s `lastIndex` and fail
 							BIND_ATTRIBUTE.lastIndex = 0;
 						}
 						else {
