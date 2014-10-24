@@ -213,9 +213,11 @@ class ElementWidget extends Container {
 								self._bindingHandles.push(binding);
 							}
 
-							self.on(<string> result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
+							var eventName:string = result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
 								return character.toUpperCase();
-							}), <(event:core.IEvent) => void> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
+							});
+
+							self.on(eventName, <any> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
 								var element:Element;
 
 								if ('key' in event) {
@@ -231,13 +233,13 @@ class ElementWidget extends Container {
 									return;
 								}
 
-								// TS7017
 								if (element === node) {
 									if (binding) {
 										return binding.get().call(binding.getObject(), event);
 									}
 									else {
 										// TODO: Use `get`?
+										// TS7017
 										return (<any> self)[method](event);
 									}
 								}
