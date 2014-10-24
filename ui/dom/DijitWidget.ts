@@ -1,6 +1,7 @@
 /// <reference path="../../dijit" />
 
 import BindDirection = require('../../binding/BindDirection');
+import lang = require('dojo/_base/lang');
 import SingleNodeWidget = require('./SingleNodeWidget');
 import _WidgetBase = require('dijit/_WidgetBase');
 
@@ -11,15 +12,15 @@ class DijitWidget extends SingleNodeWidget {
 		properties?:HashMap<string>;
 	} = {
 		properties: {
-			disabled: 'disabled',
+			isDisabled: 'disabled',
 			id: 'id'
 		},
 		events: {
 			blur: function ():void {
-				this.set('focused', false);
+				this.set('isFocused', false);
 			},
 			focus: function ():void {
-				this.set('focused', true);
+				this.set('isFocused', true);
 			}
 		}
 	};
@@ -29,7 +30,14 @@ class DijitWidget extends SingleNodeWidget {
 	 * @set
 	 * @protected
 	 */
-	_disabled:boolean;
+	_isDisabled:boolean;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_isFocused:boolean;
 
 	/**
 	 * @protected
@@ -39,6 +47,11 @@ class DijitWidget extends SingleNodeWidget {
 	_isAttachedSetter(value:boolean):void {
 		value && this._widget.startup();
 		this._isAttached = value;
+	}
+
+	_isFocusedSetter(value:boolean):void {
+		value && this._widget.domNode.focus();
+		this._isFocused = value;
 	}
 
 	/**
@@ -63,9 +76,11 @@ class DijitWidget extends SingleNodeWidget {
 			});
 		}
 
-		var event:string;
-		for (event in setupMap.events) {
-			widget.on(event, setupMap.events[event]);
+		var eventName:string;
+		for (eventName in setupMap.events) {
+			widget.on(eventName, lang.hitch(this, function (eventName:string, ...args:any[]):void {
+				setupMap.events[eventName].apply(this, args);
+			}, eventName));
 		}
 
 		this._widget = widget;
@@ -89,15 +104,17 @@ class DijitWidget extends SingleNodeWidget {
 	}
 }
 
-DijitWidget.prototype._disabled = false;
+DijitWidget.prototype._isDisabled = false;
 
 module DijitWidget {
 	export interface Events extends SingleNodeWidget.Events {}
 	export interface Getters extends SingleNodeWidget.Getters {
-		(key:'disabled'):boolean;
+		(key:'isDisabled'):boolean;
+		(key:'isFocused'):boolean;
 	}
 	export interface Setters extends SingleNodeWidget.Setters {
-		(key:'disabled', value:boolean):void;
+		(key:'isDisabled', value:boolean):void;
+		(key:'isFocused', value:boolean):void;
 	}
 }
 

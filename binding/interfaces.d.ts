@@ -56,7 +56,7 @@ export interface IBinder extends core.IApplicationComponent {
 	 * in order to allow property binders to peel away sections of binding strings, and to allow access to additional
 	 * interfaces exposed on subtypes of IProxty.
 	 */
-	createBinding<T>(object:Object, path:string, options?:{ useScheduler?:boolean; }):IBinding<T>;
+	createBinding<T>(object:{}, path:string, options?:{ useScheduler?:boolean; }):IBinding<T>;
 }
 
 /**
@@ -65,8 +65,8 @@ export interface IBinder extends core.IApplicationComponent {
  */
 export interface IBindingHandle extends IHandle {
 	// TODO: Is it a bad limitation to not be able to set only the bindings?
-	setSource(source:Object, sourcePath?:string):void;
-	setTarget(target:Object, targetPath?:string):void;
+	setSource(source:{}, sourcePath?:string):void;
+	setTarget(target:{}, targetPath?:string):void;
 	setDirection(direction:BindDirection):void;
 }
 

@@ -75,6 +75,7 @@ class Proxy<T> extends Observable {
 	 */
 	_target:T;
 
+	// Properties from kwArgs should always go to the Proxy
 	private _initializing:boolean;
 	private _targetHandles:HashMap<binding.IBinding<any>>;
 

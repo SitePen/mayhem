@@ -35,10 +35,14 @@ class IteratorList<T> extends OnDemandList {
 	private _app:core.IApplication;
 	private _as:string;
 	private _itemConstructor:Iterator.IItemConstructor<T>;
+	private _isAttached:boolean;
 	private _parent:Iterator<T>;
+	private _rowIdToObject:{ [id:string]:{}; };
 
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
+
+		this._isAttached = false;
 
 		// dgrid kwArgs don't call setters
 		this._setApp(kwArgs['app']);
@@ -63,6 +67,14 @@ class IteratorList<T> extends OnDemandList {
 
 	_setParent(value:Iterator<T>):void {
 		this._parent = value;
+	}
+
+	_setIsAttached(value:boolean):void {
+		for (var id in this._rowIdToObject) {
+			var rowElement:any = document.getElementById(id);
+			rowElement && rowElement[oidKey].set('isAttached', value);
+		}
+		this._isAttached = value;
 	}
 
 	insertRow():HTMLElement {
@@ -168,6 +180,9 @@ class Iterator<T> extends SingleNodeWidget {
 	}
 
 	_isAttachedSetter(value:boolean):void {
+		this._widget.set('isAttached', value);
+		this._isAttached = value;
+
 		if (value) {
 			this._widget._started ? this._widget.resize() : this._widget.startup();
 		}
