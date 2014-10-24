@@ -63,9 +63,11 @@ function checkPointInWidget(widget:Widget, x:number, y:number):boolean {
 	var firstNode:Node = widget.get('firstNode');
 	var lastNode:Node = widget.get('lastNode');
 
-	// if the widget is a SingleNodeWidget then we know it did not raise the event since the event would have had the
-	// widget’s Element as the target node
-	if (firstNode === lastNode) {
+	// if the widget is a SingleNodeWidget (both nodes are the same) then we know it did not raise the event since the
+	// event would have had the widget’s Element as the target node. otherwise if there is no content between the first
+	// and last nodes, we know it did not raise the event since the event could not have been created from a widget
+	// with no content (and thus no dimension)
+	if (firstNode === lastNode || firstNode.nextSibling === lastNode) {
 		return false;
 	}
 
@@ -78,47 +80,80 @@ function checkPointInWidget(widget:Widget, x:number, y:number):boolean {
 		rect = range.getBoundingClientRect();
 	}
 	else {
-		/**
-		 * Finds the text position of `findNode` inside its parent so that an IE range can be generated around it.
-		 *
-		 * @param findNode The node whose character position should be found.
-		 * @param returnEndPosition If true, returns the position at the end of `findNode`.
-		 * @returns The character position of the node.
-		 */
-		var findPos = function (findNode:Node, returnEndPosition:boolean = false):number {
-			var textPosition:number = 0;
+		// given:
+		//
+		// <parent><element> text <!--firstNode--> ...</parent>
+		// we start at `firstNode`, walk backwards until we get to `element`, set the range to the content of `element`,
+		// move the end position of the range forward the number of characters in `text`, then set the start position
+		// of the final range to this range’s end position.
+		//
+		// <parent>... <!--lastNode--> text <element></parent>
+		// we start at `lastNode`, walk forwards until we get to `element`, set the range to the content of `element`,
+		// move the start position of the range backward the number of characters in `text`, then set the end position
+		// of the final range to this range’s start position.
+		//
+		// <parent><!--firstNode--> ...</parent>
+		// the start position of the range is the start position of a range selecting the parent
+		//
+		// <parent>... <!--lastNode--></parent>
+		// the end position of the range is the end position of a range selecting the parent
+		var findPosition = function (targetRange:TextRange, findNode:Node, nodeType:string):void {
+			var range:TextRange = (<HTMLBodyElement> document.body).createTextRange();
+			var numCharacters:number = 0;
+			var node:Node = findNode;
 
-			function add(node:Node):void {
-				if (node.nodeType === Node.TEXT_NODE) {
-					textPosition += node.nodeValue.length;
+			while (node && node.nodeType !== 1) {
+				if (node.nodeType === 3) {
+					numCharacters += (<Text> node).length;
 				}
-				else if (node.nodeType === Node.ELEMENT_NODE && node.childNodes.length) {
-					walk(node);
-				}
+
+				node = nodeType === 'firstNode' ? node.previousSibling : node.nextSibling;
 			}
 
-			function walk(node:Node):void {
-				node = node.firstChild;
+			range.moveToElementText(<Element> (node || findNode.parentNode));
 
-				do {
-					if (node !== findNode || returnEndPosition) {
-						add(node);
-					}
+			if (nodeType === 'firstNode') {
+				numCharacters && range.moveEnd('character', numCharacters);
+				targetRange.setEndPoint('EndToStart', range);
+			}
+			else {
+				numCharacters && range.moveStart('character', -numCharacters);
+				targetRange.setEndPoint('StartToEnd', range);
+			}
+		};
+
+		var expandRect = function (rect:ClientRect):ClientRect {
+			var finalRect:ClientRect = <any> {
+				left: rect.left,
+				right: rect.right,
+				top: rect.top,
+				bottom: rect.bottom
+			};
+			var elementRect:ClientRect;
+			var node:Node = firstNode;
+			while (node !== lastNode) {
+				if (node.nodeType === 1) {
+					elementRect = (<HTMLElement> node).getBoundingClientRect();
+					finalRect.top = Math.min(finalRect.top, elementRect.top);
+					finalRect.left = Math.min(finalRect.left, elementRect.left);
+					finalRect.right = Math.max(finalRect.right, elementRect.right);
+					finalRect.bottom = Math.max(finalRect.bottom, elementRect.bottom);
 				}
-				while (node !== findNode && (node = node.nextSibling));
+
+				node = node.nextSibling;
 			}
 
-			walk(findNode.parentNode);
-
-			return textPosition;
+			return finalRect;
 		};
 
 		var textRange:TextRange = (<HTMLBodyElement> document.body).createTextRange();
 		textRange.moveToElementText(<Element> firstNode.parentNode);
+		findPosition(textRange, firstNode, 'firstNode');
+		findPosition(textRange, lastNode, 'lastNode');
 
-		textRange.moveStart('character', findPos(firstNode));
-		textRange.moveEnd('character', findPos(lastNode, true));
-		rect = textRange.getBoundingClientRect();
+		// The text bounding box in IE8 excludes the size of selected elements (and part of the selected text as well),
+		// so we have to manually expand the box size by also looking at all the elements
+		rect = expandRect(textRange.getBoundingClientRect());
 	}
 
 	return (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom);
@@ -193,7 +228,25 @@ if (has('dom-addeventlistener')) {
 else {
 	on = <any> function (target:MSEventAttachmentTarget, type:string, listener:EventListener):IHandle {
 		target.attachEvent('on' + type, function ():void {
-			listener.call(this, window.event);
+			var event:any = window.event;
+			event.target = event.srcElement;
+			event.currentTarget = target;
+
+			if (event.type === 'mouseover') {
+				event.relatedTarget = event.fromElement;
+			}
+			else if (event.type === 'mouseout') {
+				event.relatedTarget = event.toElement;
+			}
+
+			event.stopPropagation = function ():void {
+				event.cancelBubble = true;
+			};
+			event.preventDefault = function ():void {
+				event.returnValue = false;
+			};
+
+			listener.call(this, event);
 		});
 
 		return {

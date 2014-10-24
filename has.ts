@@ -34,6 +34,11 @@ if (has('dom')) {
 		has.add('dom-keyboard-isComposing', 'isComposing' in document.createEvent('KeyboardEvent'));
 		has.add('dom-keyboard-code', 'code' in document.createEvent('KeyboardEvent'));
 	}
+	else {
+		// TODO: Not sure how to test this
+		// IE8 will not fire mousedown/mouseup/click if the user is double-clicking
+		has.add('dom-dblclick-bug', true);
+	}
 
 	// IE8: incomplete DOM implementation
 	has.add('dom-node-interface', typeof Node !== 'undefined');
