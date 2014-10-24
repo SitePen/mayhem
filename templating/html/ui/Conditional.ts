@@ -9,39 +9,41 @@ class Conditional extends MultiNodeWidget {
 	private _conditions:Conditional.ICondition[];
 	private _currentView:View;
 
+	// TODO: _model actually comes from the templating engine
+	private _model:Object;
+	private _modelObserver:IHandle;
+
 	get:Conditional.Getters;
 	on:Conditional.Events;
 	set:Conditional.Setters;
 
-	constructor(kwArgs?:HashMap<any>) {
+	_initialize():void {
+		super._initialize();
 		this._conditionBindings = [];
-
-		util.deferSetters(this, [ 'conditions' ], '_render');
-		super(kwArgs);
-
-		var self = this;
-		this.observe('model', function (newValue:Object, oldValue:Object):void {
-			self._createConditionBindings(newValue);
-			self._evaluateConditions();
-		});
 	}
 
-	_conditionsSetter(value:Conditional.ICondition[]):void {
-		this._conditions = value;
-		this._createConditionBindings(this.get('model'));
-		this._evaluateConditions();
-	}
-
-	private _createConditionBindings(model:{} = {}):void {
-		var binder = this.get('app').get('binder');
-
-		for (var i = 0, binding:binding.IBinding<boolean>; (binding = this._conditionBindings[i]); ++i) {
+	private _bindConditions():void {
+		var binding:binding.IBinding<boolean>;
+		while ((binding = this._conditionBindings.pop())) {
 			binding.destroy();
 		}
-		this._conditionBindings = [];
 
-		var condition:Conditional.ICondition;
-		for (i = 0; (condition = this._conditions[i]); ++i) {
+		// We only need to know if the model changed if this widget is active
+		if (!this._modelObserver) {
+			var self = this;
+			this._modelObserver = this.observe('model', function ():void {
+				self._bindConditions();
+			});
+		}
+
+		var model = this.get('model');
+		if (!model) {
+			// TODO: Show `else`
+			return;
+		}
+
+		var binder = this.get('app').get('binder');
+		for (var i:number = 0, condition:Conditional.ICondition; (condition = this._conditions[i]); ++i) {
 			if (condition.condition.$bind !== undefined) {
 				this._conditionBindings[i] = binder.createBinding<boolean>(model, condition.condition.$bind);
 			}
@@ -49,6 +51,14 @@ class Conditional extends MultiNodeWidget {
 				this._conditionBindings[i] = binder.createBinding<boolean>(condition, 'condition');
 			}
 		}
+
+		this._evaluateConditions();
+	}
+
+	destroy():void {
+		this._conditionObserveHandle && this._conditionObserveHandle.remove();
+		this._conditionObserveHandle = null;
+		super.destroy();
 	}
 
 	private _evaluateConditions():void {
@@ -56,29 +66,47 @@ class Conditional extends MultiNodeWidget {
 
 		var self = this;
 		function observeCondition(changes:binding.IChangeRecord<boolean>):void {
-			if (Boolean(changes.value) !== Boolean(changes.oldValue)) {
+			if (!('oldValue' in changes) || Boolean(changes.value) !== Boolean(changes.oldValue)) {
 				self._evaluateConditions();
 			}
 		}
+
+		this._currentView && this._currentView.detach();
+		this._currentView = null;
 
 		var handles:IHandle[] = [];
 		for (var i = 0, binding:binding.IBinding<boolean>; (binding = this._conditionBindings[i]); ++i) {
 			handles.push(binding.observe(observeCondition));
 			if (binding.get()) {
-				this._currentView && this._currentView.detach();
-
-				var view = this._conditions[i].consequent;
+				var view = this._currentView = this._conditions[i].consequent;
 				this._lastNode.parentNode.insertBefore(view.detach(), this._lastNode);
 				view.set({
-					isAttached: this.get('attached'),
+					isAttached: this.get('isAttached'),
 					parent: this,
+					// TODO: Why would model be set to something wrong?
 					model: null
 				});
 				break;
 			}
 		}
+
 		this._conditionObserveHandle = util.createCompositeHandle.apply(undefined, handles);
-		handles = null;
+	}
+
+	/**
+	 * @protected
+	 */
+	_isAttachedSetter(value:boolean):void {
+		if (value) {
+			this._bindConditions();
+		}
+		else {
+			this._conditionObserveHandle && this._conditionObserveHandle.remove();
+			this._modelObserver && this._modelObserver.remove();
+			this._conditionObserveHandle = this._modelObserver = null;
+		}
+
+		this._isAttached = value;
 	}
 }
 

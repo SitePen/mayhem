@@ -65,6 +65,11 @@ class Widget extends ObservableEvented implements IWidget {
 		this._render();
 	}
 
+	_initialize():void {
+		super._initialize();
+		this._isAttached = false;
+	}
+
 	private _classGetter():string {
 		return this._classList.valueOf();
 	}

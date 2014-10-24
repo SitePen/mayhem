@@ -214,19 +214,26 @@ Template
 		(widget:AnyNonElement !. { return widget; })
 		/ Element
 	)? {
-		if (root) {
-			// If just one child and no content, collapse it
-			if (!root.content && root.children && root.children.length === 1) {
-				root = root.children[0];
-			}
-			// array of children, give them a container
-			// TODO: This seems like it should not need to be
-			else {
-				root.constructor = toAbsMid('../ui/Element');
-			}
+		if (!root) {
+			root = {
+				constructor: toAbsMid('../ui/Element'),
+				content: [],
+				children: []
+			};
 		}
 		else {
-			root = { constructor: toAbsMid('../ui/Element') };
+			var hasContent = false;
+			for (var i = 0, part; (part = root.content[i]); ++i) {
+				if (typeof part === 'string' && /\S/.test(part)) {
+					hasContent = true;
+					break;
+				}
+			}
+
+			// If just one child and no other content, collapse it
+			if (!hasContent && root.children.length === 1) {
+				root = root.children[0];
+			}
 		}
 
 		return tree.get(root);
@@ -239,11 +246,10 @@ Element 'HTML'
 		AnyNonElement
 		/ HtmlFragment
 	)+ {
+		var element = { constructor: toAbsMid('../ui/Element') };
 		var content = [];
-		var element = {};
-		var children = [];
+		var children = element.children = [];
 		var nonWhitespace = /\S/;
-		var hasContent;
 
 		for (var i = 0, j = nodes.length; i < j; ++i) {
 			var node = nodes[i];
@@ -255,25 +261,14 @@ Element 'HTML'
 
 			if (typeof node === 'string') {
 				content.push(node);
-				hasContent = hasContent || nonWhitespace.test(node);
 			}
 			else if (node.$placeholder) {
 				content.push(node);
-				hasContent = true;
 			}
 			else {
 				content.push({ $child: children.length });
 				children.push(node);
 			}
-		}
-
-		if (children.length) {
-			element.children = children;
-		}
-
-		if (!hasContent) {
-			// Return with content undefined it's just whitespace and/or children
-			return element;
 		}
 
 		// Parse the string portions of our html template for text bindings
@@ -298,7 +293,6 @@ Element 'HTML'
 		}
 
 		element.content = results;
-		element.constructor = toAbsMid('../ui/Element');
 		return element;
 	}
 

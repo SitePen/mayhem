@@ -5,6 +5,7 @@ import core = require('../../../interfaces');
 import domConstruct = require('dojo/dom-construct');
 import has = require('../../../has');
 import lang = require('dojo/_base/lang');
+import ProxyBinding = require('../../../binding/ProxyBinding');
 import ui = require('../../../ui/interfaces');
 import Widget = require('../../../ui/dom/Widget');
 
@@ -38,7 +39,7 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
 		if (value) {
 			placeholderNode.parentNode.insertBefore(value.detach(), placeholderNode);
 			value.set({
-				isAttached: this._isAttached,
+				isAttached: this.get('isAttached'),
 				parent: this
 			});
 		}
@@ -93,7 +94,10 @@ class ElementWidget extends Container {
 	_childrenSetter(value:Widget[]):void {
 		// Children can only be set at construction time on this widget
 		for (var i = 0, child:Widget; (child = value[i]); ++i) {
-			child.set('parent', this);
+			child.set({
+				isAttached: this.get('isAttached'),
+				parent: this
+			});
 		}
 
 		this._children = value;
@@ -187,7 +191,7 @@ class ElementWidget extends Container {
 					if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
 						(function ():void {
 							var boundEvent:RegExpExecArray = BIND_ATTRIBUTE.exec(nodeValue);
-							var binding:binding.IBinding<Function>;
+							var binding:ProxyBinding<Function>;
 
 							// TODO: This is a hack to work around that binding in an HTML attribute without quotes
 							// generates invalid HTML in the first version of the templating engine
@@ -197,8 +201,13 @@ class ElementWidget extends Container {
 										(<HTMLElement> node).outerHTML);
 								}
 
-								// TODO: LEAK
-								binding = binder.createBinding<Function>(self._model, boundEvent[1], { useScheduler: false });
+								binding = new ProxyBinding<any>({
+									binder: binder,
+									object: self._model,
+									path: boundEvent[1]
+								});
+
+								self._bindingHandles.push(binding);
 							}
 
 							self.on(<string> result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
@@ -219,13 +228,13 @@ class ElementWidget extends Container {
 									return;
 								}
 
-								// TODO: Use `get`?
 								// TS7017
 								if (element === node) {
 									if (binding) {
 										return binding.get().call(binding.getObject(), event);
 									}
 									else {
+										// TODO: Use `get`?
 										return (<any> self)[method](event);
 									}
 								}
