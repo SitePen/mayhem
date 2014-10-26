@@ -1,97 +1,113 @@
 /// <reference path="../../intern" />
 
-import aspect = require('dojo/aspect');
 import Application = require('../../../Application');
+import aspect = require('dojo/aspect');
 import assert = require('intern/chai!assert');
 import ErrorHandler = require('../../../ErrorHandler');
 import has = require('../../../has');
-import Observable = require('../../../Observable');
+import MockWebApplication = require('../../support/MockWebApplication');
 import registerSuite = require('intern!object');
 
-declare var window:any;
+var app:MockWebApplication;
+var errorHandler:ErrorHandler;
+var handle:IHandle;
+var globalListener:any;
 
-var application;
-var errorHandler;
-var defaultView:string = 'currentView';
-var errorMessage:string = 'Mayhem Error Message';
-var handle:any;
-var ui:any;
-
-interface IMockUi {
-	_view:any;
-}
-
-class MockUi extends Observable implements IMockUi {
-	_view:any;
-	constructor() {
-		super();
-	}
-}
+declare var process:any;
 
 registerSuite({
 	name: 'mayhem/ErrorHandler',
+
+	before() {
+		// Intern introduces its own global error handler that we need to disable to test that the global error handling
+		// in Mayhem is working
+		if (has('host-browser')) {
+			globalListener = window.onerror;
+			window.onerror = null;
+
+			app = new MockWebApplication({
+				components: {
+					errorHandler: null,
+					logger: null
+				}
+			});
+		}
+		else if (has('host-node')) {
+			globalListener = process._events.uncaughtException;
+			delete process._events.uncaughtException;
+
+			app = <MockWebApplication> new Application({
+				components: {
+					errorHandler: null,
+					logger: null
+				}
+			});
+		}
+
+		return app.startup();
+	},
+
+	beforeEach() {
+		errorHandler = new ErrorHandler({
+			app: app
+		});
+		return errorHandler.startup();
+	},
+
 	afterEach() {
 		errorHandler.destroy();
 		handle && handle.remove();
 		handle = null;
 	},
 
-	before() {
-		application = new Application({
-			components: {
-				ui: {
-					constructor: MockUi
-				}
-			}
-		});
-		return application.startup();
-	},
-
-	beforeEach() {
-		errorHandler = new ErrorHandler({
-			app: application
-		});
-
-		ui = errorHandler._app.get('ui');
-		ui.set('view', defaultView);
-
-		return errorHandler.startup();
-	},
-
-	'assert default properties'() {
-		assert.isTrue(errorHandler._handleGlobalErrors);
-		assert.strictEqual(ui._view, defaultView, 'ui view is equal to default view');
-		assert.isUndefined(ui.get('view').model, 'model is undefined');
-	},
-
-	'assert startup handles errors'() {
+	after() {
 		if (has('host-browser')) {
-			var dfd = this.async();
-			handle = aspect.after(window, 'onerror', dfd.callback(function () {
-				assert.include(ui.get('view').get('model').message, errorMessage, 'includes error message');
-			}));
-
-			setTimeout(function () {
-				throw new Error(errorMessage);
-			}, 0);
+			window.onerror = globalListener;
+		}
+		else if (has('host-node')) {
+			process._events.uncaughtException = globalListener;
 		}
 	},
 
-	'assert handling of errors in DOM'() {
+	'defaults'() {
+		assert.isTrue(errorHandler.get('handleGlobalErrors'));
+
 		if (has('host-browser')) {
-			errorHandler.handleError(new Error(errorMessage));
-			assert.isDefined(ui.get('view').get('model'), 'model is defined');
-			assert.strictEqual(ui.get('view').get('model').message, errorMessage, 'error message is equal to default');
+			assert.notOk(app.get('ui').get('view'));
 		}
 	},
 
-	'assert handling of errors in Node'() {
+	'#handleGlobalErrors'() {
+		var dfd = this.async(500);
+		var expected = new Error('Oops');
+
+		errorHandler.handleError = dfd.callback(function (actual:Error):void {
+			assert.strictEqual(actual.message, expected.message);
+		});
+
+		setTimeout(function ():void {
+			throw expected;
+		}, 0);
+	},
+
+	'#handleError'() {
 		if (has('host-node')) {
-			handle = aspect.before(errorHandler._app, 'log', function () {
-				var message = String(arguments[0]);
-				assert.include(message, errorMessage, 'includes error message');
+			var loggedMessage:string;
+			handle = aspect.before(app, 'log', function ():void {
+				loggedMessage = arguments[0];
 			});
-			errorHandler.handleError(new Error(errorMessage));
+		}
+
+		errorHandler.handleError(new Error('Oops'));
+
+		if (has('host-browser')) {
+			assert.ok(app.get('ui').get('view'), 'Uncaught error should cause the UI view to change to the error view');
+			assert.instanceOf(app.get('ui').get('view').get('model'), Error,
+				'The uncaught error should be set as the model for the view');
+			assert.strictEqual((<Error> app.get('ui').get('view').get('model')).message, 'Oops');
+		}
+		else if (has('host-node')) {
+			assert.include(loggedMessage, 'Oops');
 		}
 	}
 });

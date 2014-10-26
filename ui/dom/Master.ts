@@ -86,7 +86,9 @@ class Master extends MultiNodeWidget implements IMaster {
 		this._view = view;
 
 		if (view && typeof view === 'object') {
-			view.set('model', this._app);
+			if (!view.get('model')) {
+				view.set('model', this);
+			}
 
 			this._root && this._initializeView();
 		}

@@ -404,7 +404,8 @@ class PointerManager {
 
 				if (has('dom-dblclick-bug')) {
 					handles.push(domUtil.on(root, 'dblclick', function (event:MouseEvent):void {
-						// since the `type` field is being changed, we must copy to a fake event
+						// since the `type` property is being changed, we must copy to a fake event, since trying to
+						// modify this property is immutable on the native object
 						var fakeEvent:MouseEvent = <any> {
 							button: 0,
 							clientX: event.clientX,

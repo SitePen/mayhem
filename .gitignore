@@ -4,6 +4,6 @@
 html-report/
 node_modules/
 third-party/
-!tests/support/*
+!tests/support/reporter.js
 tscommand-*.tmp.txt
 .idea
