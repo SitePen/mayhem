@@ -1,7 +1,6 @@
 import BindDirection = require('../../../binding/BindDirection');
 import binding = require('../../../binding/interfaces');
 import Container = require('../../../ui/dom/Container');
-import core = require('../../../interfaces');
 import domConstruct = require('dojo/dom-construct');
 import has = require('../../../has');
 import lang = require('dojo/_base/lang');
@@ -73,9 +72,6 @@ class ElementWidget extends Container {
 	 */
 	private _content:any[];
 
-	// TODO: _model actually comes from the templating engine
-	private _model:Object;
-
 	/**
 	 * A map of widgets currently assigned to the different placeholder properties within the ElementWidget.
 	 */
@@ -84,7 +80,6 @@ class ElementWidget extends Container {
 	_initialize():void {
 		super._initialize();
 		this._bindingHandles = [];
-		this._model = {};
 		this._placeholders = {};
 	}
 
@@ -126,6 +121,7 @@ class ElementWidget extends Container {
 	_render():void {
 		var self = this;
 		var binder:binding.IBinder = this._app.get('binder');
+		var model = this.get('model') || {};
 
 		function generateContent(source:any[]):Node {
 			var htmlContent:string = '';
@@ -176,7 +172,7 @@ class ElementWidget extends Container {
 					node.parentNode.replaceChild(newNode, node);
 
 					self._bindingHandles.push(binder.bind({
-						source: self._model,
+						source: model,
 						sourcePath: result[1],
 						target: newNode,
 						targetPath: 'nodeValue',
@@ -206,7 +202,7 @@ class ElementWidget extends Container {
 
 								binding = new ProxyBinding<any>({
 									binder: binder,
-									object: self._model,
+									object: model,
 									path: boundEvent[1]
 								});
 
@@ -254,7 +250,7 @@ class ElementWidget extends Container {
 						// like input values
 						if (result.index === 0 && result[0].length === nodeValue.length) {
 							var kwArgs = {
-								source: self._model,
+								source: model,
 								sourcePath: result[1],
 								target: <any> attribute,
 								targetPath: 'value'
@@ -291,7 +287,7 @@ class ElementWidget extends Container {
 							compositeBinding.push(nodeValue.slice(lastIndex));
 
 							self._bindingHandles.push(binder.bind({
-								source: self._model,
+								source: model,
 								// TODO: Loosen restriction on sourcePath in binding interfaces?
 								sourcePath: <any> compositeBinding,
 								target: attribute,

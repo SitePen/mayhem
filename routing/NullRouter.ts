@@ -14,7 +14,7 @@ class NullRouter extends Router {
 	 */
 	startup():IPromise<void> {
 		var promise = super.startup();
-		this._handlePathChange(this.createPath(this.get('defaultRoute')));
+		this._handlePathChange(this.createPath.apply(this, this.get('defaultRoute')));
 		return promise;
 	}
 
