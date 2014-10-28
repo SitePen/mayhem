@@ -297,6 +297,12 @@ export function create(template:string):IPromise<WidgetConstructor> {
 	});
 }
 
+export function createFromFile(filename:string):IPromise<WidgetConstructor> {
+	return util.getModule('dojo/text!' + filename).then(function (template:string):IPromise<WidgetConstructor> {
+		return create(template);
+	});
+}
+
 /**
  * Implementation of the AMD Loader Plugin API.
  *
@@ -305,9 +311,7 @@ export function create(template:string):IPromise<WidgetConstructor> {
  * @param load Callback function passed a templated widget constructor.
  */
 export function load(resourceId:string, require:typeof require, load:(value:WidgetConstructor) => void):void {
-	util.getModule('dojo/text!' + resourceId).then(function (template:string):void {
-		create(template).then(load);
-	});
+	createFromFile(resourceId).then(load);
 }
 
 export function normalize(resourceId:string, normalize:(id:string) => string):string {
