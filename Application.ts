@@ -11,6 +11,26 @@ import Promise = require('./Promise');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
 
+var defaultBindings:string[] = [
+	require.toAbsMid('./binding/bindings/CompositeBinding'),
+	require.toAbsMid('./binding/bindings/NestedBinding'),
+	require.toAbsMid('./binding/bindings/ObjectMethodBinding'),
+	require.toAbsMid('./binding/bindings/ObservableBinding'),
+	require.toAbsMid('./binding/bindings/StatefulBinding'),
+	require.toAbsMid('./binding/bindings/ArrayBinding'),
+	require.toAbsMid('./binding/bindings/DomInputBinding')
+];
+
+if (has('es7-object-observe')) {
+	defaultBindings.push(require.toAbsMid('./binding/bindings/Es7Binding'));
+}
+else {
+	defaultBindings.push(
+		require.toAbsMid('./binding/bindings/Es5Binding'),
+		require.toAbsMid('./binding/bindings/ObjectTargetBinding')
+	);
+}
+
 interface ComponentConstructor {
 	new (kwArgs?:HashMap<any>):core.IApplicationComponent;
 	prototype:core.IApplicationComponent;
@@ -85,17 +105,7 @@ class Application extends ObservableEvented {
 		components: {
 			binder: {
 				constructor: require.toAbsMid('./binding/Binder'),
-				constructors: [
-					require.toAbsMid('./binding/bindings/CompositeBinding'),
-					require.toAbsMid('./binding/bindings/NestedBinding'),
-					require.toAbsMid('./binding/bindings/ObjectMethodBinding'),
-					require.toAbsMid('./binding/bindings/ObservableBinding'),
-					require.toAbsMid('./binding/bindings/StatefulBinding'),
-					require.toAbsMid('./binding/bindings/ArrayBinding'),
-					require.toAbsMid('./binding/bindings/DomInputBinding'),
-					require.toAbsMid('./binding/bindings/Es5Binding'),
-					require.toAbsMid('./binding/bindings/ObjectTargetBinding')
-				]
+				constructors: defaultBindings
 			},
 			errorHandler: {
 				constructor: require.toAbsMid('./ErrorHandler')
