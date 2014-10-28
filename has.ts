@@ -10,6 +10,7 @@ has.add('debug', true);
 // intentionally excluded since their code paths will effectively be the same as our non-ES5 code paths anyway.
 has.add('es5', Boolean(Object.create && Object.create.toString().indexOf('[native code]') > -1));
 has.add('es6-weak-map', typeof WeakMap !== 'undefined');
+has.add('es7-object-observe', 'observe' in Object);
 
 has.add('raf', typeof requestAnimationFrame === 'function');
 
