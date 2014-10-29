@@ -88,41 +88,69 @@
 							<ul class="subsections">
 								<li data-id="what-is-data-binding"><a href="#what-is-data-binding">What is data binding?</a></li>
 								<li data-id="how-to-data-bind"><a href="#how-to-data-bind">How to bind data in Mayhem</a></li>
+								<li data-id="binding-arrays"><a href="#binding-arrays">Binding to arrays and collections</a></li>
 								<li data-id="extending-binding"><a href="#extending-binding">Adding and extending bindings</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="#routing">Routing</a>
+							<ul class="subsections">
+								<li data-id="what-is-routing"><a href="#what-is-routing">What is routing?</a></li>
+								<li data-id="defining-routes"><a href="#defining-routes">Defining routes</a></li>
+								<li data-id="custom-paths"><a href="#custom-paths">Creating custom paths</a></li>
+								<li data-id="pausing-routes"><a href="#pausing-routes">Pausing &amp; cancelling route changes</a></li>
 							</ul>
 						</li>
 						<li>
 							<a href="#views">Views</a>
 							<ul class="subsections">
+								<li data-id="what-is-view"><a href="#what-is-view">What is a view?</a></li>
+								<li data-id="templating"><a href="#templating">View templating</a></li>
+								<li data-id="cross-platform-views"><a href="#cross-platform-views">Using cross-platform views</a></li>
+								<li data-id="extending-views"><a href="#extending-views">Writing custom views</a></li>
+								<li data-id="event-system"><a href="#event-system">The event system</a></li>
+								<li data-id="efficient-views"><a href="#efficient-views">Best practices</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Data models</a>
+							<a href="#data-models">Data models</a>
 							<ul class="subsections">
+								<li data-id="what-is-data-model"><a href="#what-is-data-model">What is a data model?</a></li>
+								<li data-id="scenarios"><a href="#scenarios">Scenarios</a></li>
+								<li data-id="validation"><a href="#validation">Validation</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Routing</a>
+							<a href="#collections">Collections</a>
 							<ul class="subsections">
+								<li data-id="what-is-collection"><a href="#what-is-collection">What is a collection?</a></li>
+								<li data-id="creating-collections"><a href="#creating-collections">Creating collections</a></li>
+								<li data-id="wrapping-collections"><a href="#wrapping-collections">Creating view model collections</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Security</a>
+							<a href="#security">Security</a>
 							<ul class="subsections">
+								<li data-id="user-object"><a href="#user-object">The User object</a></li>
+								<li data-id="rbac"><a href="#rbac">Role-based access control</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Testing</a>
+							<a href="#testing">Testing</a>
 							<ul class="subsections">
+								<li data-id="testing"><a href="#testing">Testing Mayhem apps</a></li>
+								<li data-id="testing-best-practices"><a href="#testing-best-practices">Best practices</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Optimising</a>
+							<a href="#optimising">Optimising</a>
 							<ul class="subsections">
+								<li data-id="optimising"><a href="#optimising">Creating builds</a></li>
+								<li data-id="optimising-best-practices"><a href="#optimising-best-practices">Best practices</a></li>
 							</ul>
 						</li>
 						<li>
-							<a href="">Community</a>
+							<a href="#community">Community</a>
 							<ul class="subsections">
 								<li data-id="getting-help"><a href="#getting-help">Getting help</a></li>
 								<li data-id="contributing"><a href="#contributing">Contributing</a></li>
@@ -145,7 +173,7 @@
 
 						<ul>
 							<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
-							<li><strong>Extensibility</strong>: It should be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written, using the same standard set of tools.</li>
+							<li><strong>Extensibility</strong>: It must be possible for all parts of the framework to be easily extended or replaced with newer, better components. This allows many different classes of applications to be written, including those not envisioned when the framework was originally written, using the same standard set of tools.</li>
 							<li><strong>Correctness</strong>: When writing software, it’s frustrating when your tools get you stuck. Mayhem was architected from the ground up to be modular, testable, and easy to understand in order to minimise the maintenance cost surrounding its use.</li>
 						</ul>
 
@@ -220,7 +248,7 @@
 
 						<ul>
 							<li><strong>For writing Node.js apps</strong>: Mayhem can be installed for use with Node.js by running <code>npm install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for Node.js using the CommonJS module format, plus ambient declarations that can be used when writing Mayhem applications for Node.js with TypeScript.</li>
-							<li><strong>For writing browser &amp; mobile apps</strong>: Mayhem can be installed for browsers &amp; mobile devices by running <code>bower install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for asynchronously loaded environments using the <abbr title="Asynchronous Module Definition">AMD</abbr> module format, plus ambient declarations that can be used when writing Mayhem applications for browsers or mobile devices with TypeScript.</li>
+							<li><strong>For writing browser &amp; mobile apps</strong>: Mayhem can be installed for browsers &amp; mobile devices by running <code>bower install mayhem</code>. This will install a copy of Mayhem that has been pre-compiled for asynchronously loaded environments using the <abbr title="Asynchronous Module Definition">AMD</abbr> module format, plus ambient declarations that can be used when writing Mayhem applications for browsers or mobile devices with TypeScript. Bower can be installed from npm by running <code>npm install -g bower</code>.</li>
 							<li><strong>For working on Mayhem, or compiling your own modules</strong>: The original TypeScript source for Mayhem can be installed from our <a href="https://github.com/SitePen/mayhem" title="Mayhem on GitHub">GitHub repository</a> by running <code>git clone --recursive git@github.com:SitePen/mayhem.git</code>. The README file in the repository contains additional instructions on installation and usage of the development version of Mayhem.</li>
 						</ul>
 
@@ -275,7 +303,7 @@
 						<h3 data-id="fundamentals-overview">Overview</h3>
 
 						<figure>
-							<img src="http://placepuppy.it/1000/608">
+							<img src="http://placekitten.com/1000/608">
 							<figcaption>The subsystems of Mayhem</figcaption>
 						</figure>
 
@@ -331,11 +359,11 @@ export = User;</code></pre>
 						<h3 data-id="mvvm">The MVVM pattern</h3>
 
 						<figure>
-							<img src="http://placepuppy.it/600/320">
+							<img src="http://placekitten.com/600/320">
 							<figcaption>An overview of the MVVM pattern</figcaption>
 						</figure>
 
-						<p>Mayhem implements the model–view–view-model (<dfn><abbr title="model–view–view-model">MVVM</abbr></dfn>) architectural pattern, which separates business logic, user interface logic, and the user interface itself into three distinct layers. This pattern is similar to the Smalltalk <abbr title="model-view-controller">MVC</abbr> pattern (not to be confused with <a href="https://en.wikipedia.org/wiki/Model_2">Model 2 MVC</a>, a pattern used by server-side MVC frameworks), but it uses an improved mode of interaction between the different layers in order to avoid the “fat controller” anti-pattern common to many MVC apps.</p>
+						<p>Mayhem implements the model–view–view-model (<dfn>MVVM</dfn>) architectural pattern, which separates business logic, user interface logic, and the user interface itself into three distinct layers. This pattern is similar to the Smalltalk <abbr title="model-view-controller">MVC</abbr> pattern (not to be confused with <a href="https://en.wikipedia.org/wiki/Model_2">Model 2 MVC</a>, a pattern used by server-side MVC frameworks), but it uses an improved mode of interaction between the different layers in order to avoid the “fat controller” anti-pattern common to many MVC apps.</p>
 
 						<h4>Model</h4>
 
@@ -377,7 +405,7 @@ export = User;</code></pre>
 
 						<h4>Object destruction</h4>
 
-						<p>When you are done working with a class instance in Mayhem, it should always be destroyed by calling <a href="TODO"><code>object.destroy</code></a>. Doing this ensures that any all internally held references to other objects that may still be retained elsewhere are broken, and that any necessary clean-up work is completed.</p>
+						<p>When you are done working with a class instance in Mayhem, it should always be destroyed by calling <a href="TODO"><code>object.destroy</code></a>. Doing this ensures that any internally held references to other objects that may still be retained elsewhere are broken, and that any necessary clean-up work is completed.</p>
 
 						<h4>Event registration</h4>
 
@@ -481,6 +509,7 @@ log(app.startup().then(function () {
 
 						<ul>
 							<li><code><strong>binder</strong></code>: An implementation of the <a href="TODO"><code>mayhem/binding/interfaces.IBinder</code></a> interface. Provides data binding.</li>
+							<li><code><strong>errorHandler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IErrorHandler</code></a> interface. Provides error handling for an application.</li>
 							<li><code><strong>router</strong></code>: An implementation of the <a href="TODO"><code>mayhem/routing/interfaces.IRouter</code></a> interface. Provides navigation &amp; application state management.</li>
 							<li><code><strong>scheduler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IScheduler</code></a> interface. Provides event scheduling.</li>
 							<li><code><strong>ui</strong></code>: An implementation of the <a href="TODO"><code>mayhem/ui/Master</code></a> interface. Provides user interface support.</li>
@@ -615,6 +644,8 @@ log(app.get('components'));</code></pre>
 							<li>Resolve the returned <code>startup</code> promise</li>
 						</ol>
 
+						<aside class="whatAreYouCrazy"><p>Replacing any of the components attached to the Application object once the application has been started is not supported.</p></aside>
+
 						<p>Application components are instantiated using the value of the <a href="TODO"><code>constructor</code></a> property from the configuration object as the constructor function. The rest of the properties on the configuration object, plus an extra <code>app</code> property pointing to the Application instance, are passed as keyword arguments to the constructor:</p>
 
 						<div class="codeMirror">
@@ -723,52 +754,136 @@ export = app;</code></pre>
 
 						<p>TODO: Figure here?</p>
 
-						<p>When writing software, <dfn>data binding</dfn> is a mechanism by which the value of a property on one object is kept in sync with the value of a property of another object. In other words, data binding makes it possible to have a statement <code>a.foo = 'bar'</code> automatically execute the statement <code>b.foo = 'bar'</code>, ensuring that the properties <code>a.foo</code> and <code>b.foo</code> always contain the same value.</p>
+						<p><dfn>Data binding</dfn> is a mechanism by which the value of a property on one object is kept in sync with the value of a property of another object. In other words, data binding makes it possible to have a statement <code>a.foo = 'bar'</code> also automatically execute the statement <code>b.foo = 'bar'</code>, ensuring that the properties <code>a.foo</code> and <code>b.foo</code> will always eventually contain the same value.</p>
 
-						<p>Data binding is directional: it is possible to have a <dfn><em>one-way</em> binding</dfn> where only a change to the source property causes the target object to update, or a <dfn><em>two-way</em> binding</dfn> where source and target properties are kept in sync regardless of which is changed. Most data bindings are intended to be bidirectional, so the default directionality in Mayhem is two-way.</p>
+						<p>One of the most common ways that data binding is used is to keep a user interface in sync with data from a business object. For example, given an application that displays a menu of burgers, when the name or price of one of the items on the menu changes, data binding ensures that the change is automatically reflected by the UI without requiring the programmer to notify the UI to update or re-render.</p>
+
+						<p>Data binding is directional: it is possible to have a <dfn><em>one-way</em> binding</dfn> where only a change to the source property causes the target object to update, or a <dfn><em>two-way</em> binding</dfn> where source and target properties are kept in sync regardless of which is changed. Most data bindings are intended to keep objects in sync with each other, so the default directionality in Mayhem is two-way.</p>
 
 						<div class="a half" id="how-to-data-bind"></div>
 						<h3 data-id="how-to-data-bind">How to bind data in Mayhem</h3>
 
 						<p>In Mayhem applications, all data binding is performed by the central <dfn>data binder</dfn> application component. By convention, this component is always created at <a href="TODO"><code>Application#binder</code></a>. Using the data binder, it is possible to create simple bindings between two properties just by calling <a href="TODO"><code>Binder#bind</code></a>:</p>
 
-						<pre><code class="typescript">import Application = require('mayhem/Application');
+						<pre><code class="typescript">import BindDirection = require('mayhem/binding/BindDirection');
 
-// TODO: Better example please
-class ApplicationComponent {
-	private _app:Application;
-	constructor(kwArgs?:Object) {
-		super(kwArgs);
-		var binder = this._app.get('binder');
+var binder = this.get('app').get('binder');
 
-		var a = { foo: 'bar' };
-		var b = { foo: null };
+var a = { foo: 'bar' };
+var b = { foo: null };
 
-		// `b.foo` becomes 'bar'
-		var handle = binder.bind({
-			source: a,
-			sourcePath: 'foo',
-			target: b,
-			targetPath: 'foo'
-		});
+// `b.foo` becomes 'bar'
+var handle = binder.bind({
+	source: a,
+	sourcePath: 'foo',
+	target: b,
+	targetPath: 'foo',
+	direction: BindDirection.ONE_WAY
+});
 
-		// `b.foo` becomes 'blah'
-		a.foo = 'blah';
+// `b.foo` becomes 'blah'
+a.foo = 'blah';
 
-		// Removes the binding
-		handle.remove();
-	}
-}</code></pre>
+// Removes the binding
+handle.remove();</code></pre>
 
 						<aside class="tip"><p>Much of the time, data binding in a Mayhem application will be done more concisely using the <a href="TODO">templating system</a>, which provides a declarative mechanism for binding data to the UI. Applications that implement their own UI components programmatically, or that want to create data bindings between non-UI objects, will use the data binder directly.</p></aside>
 
-						<p>It is also possible to create more complex chains of bindings by creating <a href="TODO"><code>Binding</code></a> objects with <a href="TODO"><code>Binder#createBinding</code></a> and manipulating those objects directly. <dfn>Binding objects</dfn> are abstractions that allow us to ignore <em>how</em> an object is bound and instead focus solely on what the value of the bound property is.</p>
+						<p>With the <a href="TODO">default set of Binding constructors</a>, the data binding system allows you to bind to arbitrarily nested properties, including those that do not exist yet, using normal dotted object syntax:</p>
 
+						<pre><code class="typescript">var binder = this.get('app').get('binder');
+
+var a = { foo: null };
+var b = { foo: null };
+
+binder.bind({
+	source: a,
+	sourcePath: 'foo.bar.baz',
+	target: b,
+	targetPath: 'foo'
+});
+
+// `b.foo` becomes 'blah'
+a.foo = { bar: { baz: 'blah' } };
+
+// `b.foo` becomes undefined
+a.foo = { bar: null };</code></pre>
+
+						<p>If you need to access a property whose name <em>contains</em> a dot, simply escape the dot with a backslash:</p>
+
+						<pre><code class="typescript">var binder = this.get('app').get('binder');
+
+var a = { 'foo.bar': 'blah' };
+var b = {};
+
+// `b.foo` becomes 'blah'
+binder.bind({
+	source: a,
+	sourcePath: 'foo\\.bar',
+	target: b,
+	targetPath: 'foo'
+});</code></pre>
+
+						<p>It is also possible to more directly observe and modify a property by creating a low-level <a href="TODO"><code>Binding</code></a> object with <a href="TODO"><code>Binder#createBinding</code></a>. <dfn>Binding objects</dfn> are abstractions that allow us to ignore <em>how</em> and <em>where</em> a property is bound and instead focus solely on the value of the bound property:</p>
+
+						<pre><code class="typescript">var binder = this.get('app').get('binder');
+
+var a = { foo: 'bar' };
+
+var binding = binder.createBinding&lt;string>(a, 'foo');
+
+binding.observe(function (change:interfaces.binding.IChangeRecord&lt;string>) {
+	// When the observed property changes, this function is called
+	change.oldValue; // 'bar'
+	change.value; // 'blah'
+});
+
+binding.get(); // 'bar'
+
+// Causes observe callback to be called
+a.foo = 'blah';</code></pre>
+
+						<aside class="tip"><p>You can instantiate specific types of Binding objects directly by calling <code>new Binding(…)</code>, but creating bindings through the data binder allows the system to automatically choose the best type of Binding object for a given object and current environment, and offers improved efficiency by batching change notifications and delegating to existing Binding objects on properties that are bound to more than once.</p></aside>
+
+						<div class="a half" id="binding-arrays"></div>
+						<h3 data-id="binding-arrays">Binding to arrays and collections</h3>
+
+						<p>Mayhem’s data binding system comes with additional bindings specifically for monitoring when an array or collection is changed:</p>
+
+						<pre><code class="typescript">var binder = this.get('app').get('binder');
+
+var array:string[] = [];
+var binding = binder.createBinding&lt;string[]>(array, '*');
+binding.observe(function (change:interfaces.binding.IChangeRecord&lt;string>) {
+	change.index; // 0
+	change.added; // [ 'foo', 'bar' ]
+	change.removed; // []
+});
+binding.get(); // []
+array.push('foo', 'bar');
+binding.get(); // [ 'foo', 'bar' ]</code></pre>
+
+						<p>This binding is used whenever the object being bound is an array and the path matches the string <code>'*'</code>. This binding can be used as part of a longer path as well, just like all the bindings constructors in Mayhem:</p>
+
+						<pre><code class="typescript">var binder = this.get('app').get('binder');
+
+var a = { foo: [] };
+var binding = binder.createBinding&lt;string[]>(a, 'foo.*');
+binding.observe(function (change:interfaces.binding.IChangeRecord&lt;string>) {
+	change.index; // 0
+	change.added; // [ 'foo', 'bar' ]
+	change.removed; // []
+});
+binding.get(); // []
+a.foo.push('foo', 'bar');
+binding.get(); // [ 'foo', 'bar' ]</code></pre>
+
+						<aside class="whatAreYouCrazy"><p>Due to the limitations of EcmaScript 3/5, when working with arrays that are data bound, modifications must be performed using the array methods (<code>push</code>, <code>pop</code>, <code>splice</code>, etc.). Directly modifying array indices (<code>array[0] = 'foo'</code>) will not cause notifications. This limitation does not exist in environments that support the upcoming <code>Array.observe</code> standard.</p></aside>
 
 						<div class="a half" id="extending-binding"></div>
 						<h3 data-id="extending-binding">Adding and extending bindings</h3>
 
-						<p>The default data binder included with Mayhem, <a href="TODO"><code>mayhem/binding/Binder</code></a>, can be replaced by a totally different data binder, if desired:</p>
+						<p>As with all application components, the default data binder included with Mayhem, <a href="TODO"><code>mayhem/binding/Binder</code></a>, can be replaced by a totally different data binder, if desired:</p>
 
 						<pre><code class="typescript">import Application = require('mayhem/Application');
 
@@ -781,7 +896,7 @@ var app = new Application({
 	}
 });</code></pre>
 
-						<p>However, this is usually not necessary, since even if you need to bind to something that the default binder doesn’t understand, it is designed to be extended with new Binding object constructors:</p>
+						<p>However, this is usually not necessary, since even if you need to bind to something that the default binder doesn’t understand, it is designed to be extensible through the addition of custom Binding object constructors:</p>
 
 						<pre><code class="typescript">import Application = require('mayhem/Application');
 
@@ -795,7 +910,74 @@ var app = new Application({
 	}
 });</code></pre>
 
-						<p>All Binding constructors implement the <a href="TODO"><code>mayhem/binding/interfaces.IBindingConstructor</code></a> interface.</p>
+						<p>Binding constructors can also be added and removed dynamically while the application is running by calling <a href="TODO"><code>mayhem/binding/Binder#add</code></a>:</p>
+
+						<pre><code class="typescript">var binder = this.get('app').get('binder');
+
+// Adds a new CustomBinding constructor as the top priority constructor
+var handle = binder.add(CustomBinding, 0);
+
+// Stops the CustomBinding constructor from being used by the binder
+handle.remove();</code></pre>
+					</article>
+
+					<article>
+						<div class="a" id="routing"></div>
+						<h2 data-id="routing">Routing</h2>
+
+						<div class="a half" id="what-is-routing"></div>
+						<h3 data-id="what-is-routing">What is routing?</h3>
+
+						<p>In Mayhem, <dfn>routing</dfn> is the primary mechanism by which an application can manage its state based on an addressable state mechanism, like a URL.</p>
+
+						<aside><p class="tip">Future versions of Mayhem will include additional ways to manage application state that work well with other types of applications that don’t have directly addressable endpoints.</p></aside>
+
+						<p>TODO</p>
+					</article>
+
+					<article>
+						<div class="a" id="views"></div>
+						<h2 data-id="views">Views</h2>
+
+						<div class="a half" id="what-is-view"></div>
+						<h3 data-id="what-is-view">Creating views</h3>
+
+						<p>Creating views in Mayhem can be done in one of two ways.</p>
+
+						<div class="a half" id="cross-platform-views"></div>
+						<h3 data-id="cross-platform-views">Using cross-platform views</h3>
+
+						<p>Mayhem’s view system is designed so that the underlying rendering platform (DOM, iOS, Android, Node.js streams, etc.) is never exposed to an application under normal use. This means that Mayhem applications can be written to run seamlessly across multiple platforms, using native UI controls, without having to rewrite the application in a different language, and without having to emulate the UI features of the target platform.</p>
+
+						<p>In order to create a cross-platform application, it’s necessary to use the standard set of widgets.</p>
+
+						<div class="a half" id="view-templating"></div>
+						<h3 data-id="view-templating">View templating</h3>
+
+						<p>Creating views programmatically can be slow and error-prone. Fortunately, Mayhem comes with a templating engine based on HTML that you can use to create Mayhem views as easily as you can write HTML:</p>
+
+						<pre><code class="html">&lt;h1>{app.name}&lt;/h1>
+
+&lt;p>What kind of burger do you want?&lt;/p>
+
+TODO: This does not work with dstore collections
+&lt;if condition="{burgers.length}">
+	<ul>
+		&lt;for each="{burgers}" as="burger">
+			&lt;li>
+				{burger.name} - {burger.formattedPrice}
+			&lt;/li>
+		&lt;/for>
+	</ul>
+&lt;else>
+	Sorry, we have no burgers
+&lt;/if></code></pre>
+
+						<p>The <a href="TODO">HTML templating engine</a> reads the HTML text and converts it to a view constructor.</p>
+
+						<pre><code class="typescript"></code></pre>
+
+						<p>Custom templating engines can be added to Mayhem easily.
 					</article>
 				</main>
 			</div>
