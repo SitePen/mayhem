@@ -34,24 +34,34 @@
 	 */
 	 function validate(attributes, rules) {
 		var required = rules.required || [];
+		var oneOf = rules.oneOf || [];
 		var optional = rules.optional || [];
 		var type = rules.type ? ' on ' + rules.type : '';
 
 		var i = 0;
 		var j = 0;
+		var foundOneOf = false;
 		var permitted = {};
-
-		for (i = 0, j = required.length; i < j; ++i) {
-			permitted[required[i]] = true;
-		}
-		for (i = 0, j = optional.length; i < j; ++i) {
-			permitted[optional[i]] = true;
-		}
 
 		for (i = 0, j = required.length; i < j; ++i) {
 			if (!hasOwnProperty.call(attributes, required[i])) {
 				error('Missing required attribute "' + required[i] + '"' + type);
 			}
+			permitted[required[i]] = true;
+		}
+		for (i = 0, j = oneOf.length; i < j; ++i) {
+			if (hasOwnProperty.call(attributes, oneOf[i])) {
+				if (foundOneOf) {
+					error('Cannot use "' + oneOf[i] + '" with "' + foundOneOf);
+				}
+				else {
+					foundOneOf = oneOf[i];
+				}
+			}
+			permitted[oneOf[i]] = true;
+		}
+		for (i = 0, j = optional.length; i < j; ++i) {
+			permitted[optional[i]] = true;
 		}
 
 		if (!rules.extensible) {
@@ -86,6 +96,7 @@
 		_aliasMap: null,
 		_aliases: [],
 		_constructors: {},
+		_tagMap: {},
 
 		/**
 		 * Adds a new alias to the alias list for this template.
@@ -118,6 +129,36 @@
 			}
 
 			aliases.splice(i, 0, newAlias);
+		},
+
+		/**
+		 * Adds a new tag to the tags understood by this template.
+		 *
+		 * @param newAlias {Object}
+		 * An object with the following keys:
+		 *   * `tag` (string): The tag name to alias.
+		 *   * `to` (string): The replacement constructor to use.
+		 *   * `line` (number): The one-indexed line number where the alias was defined in the template.
+		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
+		 */
+		addTag: function (newAlias) {
+			var map = this._tagMap;
+			// convert to lower-case for case-insensitive comparison
+			var tag = newAlias.tag.toLowerCase();
+			var oldAlias = map[tag];
+
+			if (oldAlias) {
+				// The same alias has already been parsed once before, probably by some look-ahead; do not add it
+				// again
+				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
+					return;
+				}
+				error('Line ' + newAlias.line + ', column ' + newAlias.column + ': Alias "' + newAlias.tag +
+					'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
+			}
+			else {
+				map[tag] = newAlias;
+			}
 		},
 
 		/**
@@ -332,6 +373,8 @@ HtmlFragment 'HTML'
 			/ Alias
 			/ WidgetTagOpen
 			/ WidgetTagClose
+			/ AliasedWidgetTagOpen
+			/ AliasedWidgetTagClose
 		)
 		character:. { return character; }
 	)+ {
@@ -559,6 +602,41 @@ WidgetTagOpen '<widget>'
 WidgetTagClose '</widget>'
 	= '</widget>'i
 
+AliasedWidget '<tag></tag>'
+	= kwArgs:AliasedWidgetTagOpen children:Any* end:AliasedWidgetTagClose & { return kwArgs.tagName === end; } {
+		var widget = {
+			constructor: tree._tagMap[kwArgs.tagName].to
+		};
+
+		for (var key in kwArgs) {
+			if (key === 'tagName' || key === 'constructor') {
+				continue;
+			}
+			widget[key] = kwArgs[key];
+		}
+		if (children.length) {
+			widget.children = children;
+		}
+		return widget;
+	}
+
+AliasedTagName
+	= firstChar:[a-zA-Z] restChars:[a-zA-Z0-9-]* {
+		// convert to lower-case for case-insensitive comparison
+		return (firstChar + restChars.join('')).toLowerCase();
+	}
+
+AliasedWidgetTagOpen '<tag>'
+	= '<' tagName:AliasedTagName &{ return tree._tagMap[tagName] } kwArgs:AttributeMap '>' {
+		kwArgs.tagName = tagName;
+		return kwArgs;
+	}
+
+AliasedWidgetTagClose '</tag>'
+	= '</' tagName:AliasedTagName &{ return tree._tagMap[tagName] } '>' {
+		return tagName;
+	}
+
 // all others
 
 Placeholder '<placeholder>'
@@ -570,11 +648,18 @@ Alias '<alias>'
 	= '<alias'i alias:AttributeMap '/'? '>' {
 		validate(alias, {
 			type: '<alias>',
-			required: [ 'from', 'to' ]
+			required: [ 'to' ],
+			oneOf: [ 'tag', 'from' ]
 		});
 		alias.line = line();
 		alias.column = column();
-		tree.addAlias(alias);
+
+		if (alias.from) {
+			tree.addAlias(alias);
+		}
+		else if (alias.tag) {
+			tree.addTag(alias);
+		}
 		return undefined;
 	}
 
@@ -736,6 +821,7 @@ AnyNonElement
 	/ Placeholder
 	/ Alias
 	/ Widget
+	/ AliasedWidget
 
 S 'whitespace'
 	= [ \t\r\n]
