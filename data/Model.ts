@@ -30,6 +30,11 @@ class Model extends Observable implements data.IModel {
 	/**
 	 * @protected
 	 */
+	_autoSave:boolean;
+
+	/**
+	 * @protected
+	 */
 	_errors:HashMap<ValidationError[]>;
 
 	/**
@@ -78,6 +83,7 @@ class Model extends Observable implements data.IModel {
 
 	_initialize():void {
 		super._initialize();
+		this._autoSave = false;
 		this._dirtyProperties = {};
 		this._errors = {};
 	}
@@ -262,6 +268,11 @@ Model.prototype.set = function (key:any, value?:any):void {
 		var wasDirty = this.get('isDirty');
 		this._dirtyProperties[key] = oldValue;
 		wasDirty || this._notify('isDirty', true, wasDirty);
+
+		if (this._autoSave) {
+			// TODO: Probably want to debounce this
+			this.save();
+		}
 	}
 };
 
