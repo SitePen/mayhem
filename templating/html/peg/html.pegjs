@@ -40,7 +40,6 @@
 
 		var i = 0;
 		var j = 0;
-		var foundOneOf = false;
 		var permitted = {};
 
 		for (i = 0, j = required.length; i < j; ++i) {
@@ -49,6 +48,8 @@
 			}
 			permitted[required[i]] = true;
 		}
+
+		var foundOneOf = false;
 		for (i = 0, j = oneOf.length; i < j; ++i) {
 			if (hasOwnProperty.call(attributes, oneOf[i])) {
 				if (foundOneOf) {
@@ -142,6 +143,8 @@
 		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
 		 */
 		addTag: function (newAlias) {
+			// TODO: generate an error if this is called after parsing other elements have begun parsing
+
 			var map = this._tagMap;
 			// convert to lower-case for case-insensitive comparison
 			var tag = newAlias.tag.toLowerCase();
