@@ -39,7 +39,7 @@ class Label extends MultiNodeWidget implements ILabel {
 		this._lastNode.parentNode.insertBefore(content, this._lastNode);
 		this._formattedText = value;
 
-		this._notify('text', oldTextValue, this._text);
+		this._notify('text', this._text, oldTextValue);
 	}
 
 	_textSetter(value:string):void {

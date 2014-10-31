@@ -33,7 +33,6 @@ class Checkbox extends DijitWidget implements ICheckbox {
 	_value:CheckboxValue;
 
 	_checkedSetter(value:boolean):void {
-		this._checked = value;
 		this.set('value', value ? CheckboxValue.TRUE : CheckboxValue.FALSE);
 	}
 

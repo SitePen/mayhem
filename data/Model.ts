@@ -49,6 +49,7 @@ class Model extends Observable implements data.IModel {
 
 	private _currentScenarioKeys:HashMap<boolean>;
 	private _dirtyProperties:HashMap<boolean>;
+	private _initializing:boolean;
 	private _validatorInProgress:IPromise<boolean>;
 
 	get:Model.Getters;
@@ -74,7 +75,9 @@ class Model extends Observable implements data.IModel {
 			}
 		}
 
+		this._initializing = true;
 		super(kwArgs);
+		this._initializing = false;
 
 		// Mass-assigned properties from the constructor are initial state and should not cause the model to become
 		// dirty
@@ -252,7 +255,7 @@ Model.prototype.set = function (key:any, value?:any):void {
 		return;
 	}
 
-	if (this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
+	if (key !== 'scenario' && this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
 		// TODO: use the logger service, not console
 		has('debug') && console.warn('Not setting key "' + key + '" because it is not defined in the current scenario and the model is not extensible');
 		return;
@@ -264,7 +267,7 @@ Model.prototype.set = function (key:any, value?:any):void {
 
 	// TODO: Can we chain this conditionally onto a notification being sent from Observable, so if old/new values
 	// end up being the same, no notification occurs and we are not checking values twice?
-	if (!util.isEqual(oldValue, newValue)) {
+	if (!this._initializing && !util.isEqual(oldValue, newValue)) {
 		var wasDirty = this.get('isDirty');
 		this._dirtyProperties[key] = oldValue;
 		wasDirty || this._notify('isDirty', true, wasDirty);

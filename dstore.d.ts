@@ -1,6 +1,10 @@
 /// <reference path="./dojo" />
 
 declare module dstore {
+	export interface FetchPromise<T> extends IPromise<T> {
+		totalLength:IPromise<number>;
+	}
+
 	export interface ChangeEvent extends Event {
 		id:string;
 		index?:number;
@@ -15,8 +19,8 @@ declare module dstore {
 		total?:IPromise<number>;
 
 		add(object:T, options?:{}):IPromise<T>;
-		fetch():IPromise<T[]>;
-		fetchRange(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		fetch():dstore.FetchPromise<T[]>;
+		fetchRange(kwArgs:{ start?:number; end?:number; }):dstore.FetchPromise<T[]>;
 		filter(query:string):ICollection<T>;
 		filter(query:{}):ICollection<T>;
 		filter(query:(item:T, index:number) => boolean):ICollection<T>;
@@ -167,8 +171,8 @@ declare module 'dstore/Store' {
 		total:IPromise<number>;
 
 		add(object:T, options?:{}):IPromise<T>;
-		fetch():IPromise<T[]>;
-		fetchRange(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		fetch():dstore.FetchPromise<T[]>;
+		fetchRange(kwArgs:{ start?:number; end?:number; }):dstore.FetchPromise<T[]>;
 		filter(query:string):Store<T>;
 		filter(query:{}):Store<T>;
 		filter(query:(item:T, index:number) => boolean):Store<T>;
