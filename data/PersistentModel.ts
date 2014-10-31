@@ -42,6 +42,7 @@ class PersistentModel extends Model implements data.IPersistentModel {
 
 		function save():IPromise<void> {
 			return self._store.put(self).then(function (model:PersistentModel):void {
+				self.commit();
 				self.set('scenario', 'update');
 			});
 		}
