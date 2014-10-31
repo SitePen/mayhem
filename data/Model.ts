@@ -267,7 +267,7 @@ Model.prototype.set = function (key:any, value?:any):void {
 
 	// TODO: Can we chain this conditionally onto a notification being sent from Observable, so if old/new values
 	// end up being the same, no notification occurs and we are not checking values twice?
-	if (!this._initializing && !util.isEqual(oldValue, newValue)) {
+	if (key !== 'scenario' && !this._initializing && !util.isEqual(oldValue, newValue)) {
 		var wasDirty = this.get('isDirty');
 		this._dirtyProperties[key] = oldValue;
 		wasDirty || this._notify('isDirty', true, wasDirty);
