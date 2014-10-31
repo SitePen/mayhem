@@ -10,6 +10,14 @@ import util = require('../util');
 import ValidationError = require('../validation/ValidationError');
 import Validator = require('../validation/Validator');
 
+var NON_DATA_KEYS:HashMap<boolean> = {
+	app: true,
+	autoSave: true,
+	errors: true,
+	isExtensible: true,
+	scenario: true
+};
+
 class Model extends Observable implements data.IModel {
 	/**
 	 * @protected
@@ -255,7 +263,7 @@ Model.prototype.set = function (key:any, value?:any):void {
 		return;
 	}
 
-	if (key !== 'scenario' && this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
+	if (!NON_DATA_KEYS[key] && this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
 		// TODO: use the logger service, not console
 		has('debug') && console.warn('Not setting key "' + key + '" because it is not defined in the current scenario and the model is not extensible');
 		return;
@@ -267,7 +275,7 @@ Model.prototype.set = function (key:any, value?:any):void {
 
 	// TODO: Can we chain this conditionally onto a notification being sent from Observable, so if old/new values
 	// end up being the same, no notification occurs and we are not checking values twice?
-	if (key !== 'scenario' && !this._initializing && !util.isEqual(oldValue, newValue)) {
+	if (!NON_DATA_KEYS[key] && !this._initializing && !util.isEqual(oldValue, newValue)) {
 		var wasDirty = this.get('isDirty');
 		this._dirtyProperties[key] = oldValue;
 		wasDirty || this._notify('isDirty', true, wasDirty);
