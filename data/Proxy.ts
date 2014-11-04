@@ -14,7 +14,7 @@ import util = require('../util');
 class Proxy<T> extends Observable {
 	static forCollection(collection:dstore.ICollection<data.IModel>):dstore.ICollection<Proxy<data.IModel>> {
 		var Store:typeof MemoryStore = <any> declare([ MemoryStore, TrackableStore ], {
-			model: null
+			Model: null
 		});
 		var wrapperCollection:MemoryStore<Proxy<data.IModel>> = new Store<Proxy<data.IModel>>().track();
 		var Ctor = this;
