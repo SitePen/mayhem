@@ -146,7 +146,7 @@ module.exports = function (grunt) {
 			},
 			client: {
 				options: {
-					config: 'tests/intern'
+					config: 'tests/mayhem.intern'
 				}
 			}
 		}
