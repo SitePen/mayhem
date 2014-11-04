@@ -36,6 +36,21 @@ class Checkbox extends DijitWidget implements ICheckbox {
 		this.set('value', value ? CheckboxValue.TRUE : CheckboxValue.FALSE);
 	}
 
+	_render():void {
+		super._render();
+		// Mayhem’s `activate` event occurs either on the DOM `keyup` or the DOM `mouseup` event, which is before the
+		// DOM `click` event. As a result, a data binding change caused by the Mayhem `activate` event will cause the
+		// value of the to change, and then the DOM `click` event will fire and Dijit will incorrectly change the
+		// internal value of the checkbox back.
+		// Prevent this by turning the DOM `click` into a noop and listen for the Mayhem `activate` event to toggle
+		// the checkbox.
+		(<any> this._widget)._onClick = function ():void {};
+
+		this.on('activate', function ():void {
+			this.set('checked', !this.get('checked'));
+		});
+	}
+
 	_valueSetter(value:CheckboxValue):void {
 		this._value = value;
 
