@@ -7,6 +7,27 @@ import has = require('./has');
 import requestUtil = require('dojo/request/util');
 import whenAll = require('dojo/promise/all');
 
+declare var process:any;
+
+export function addUnloadCallback(callback:() => void):IHandle {
+	if (has('host-node')) {
+		process.on('exit', callback);
+		return {
+			remove: function ():void {
+				this.remove = function ():void {};
+				process.removeListener('exit', callback);
+			}
+		};
+	}
+	else if (has('host-browser')) {
+		return aspect.before(window, 'onbeforeunload', callback);
+	}
+	/* istanbul ignore next */
+	else {
+		throw new Error('Not supported on this platform');
+	}
+}
+
 export function createCompositeHandle(...handles:IHandle[]):IHandle {
 	return {
 		remove: function ():void {

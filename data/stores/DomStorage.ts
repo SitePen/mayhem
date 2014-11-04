@@ -26,6 +26,16 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 		}
 
 		this.setTarget(this.key, this.target || localStorage);
+		var self = this;
+		this._unloadHandle = util.addUnloadCallback(function ():void {
+			self._persist();
+		});
+	},
+
+	destroy: function ():void {
+		this.destroy = function ():void {};
+		this._persist();
+		this._unloadHandle.remove();
 	},
 
 	fetchSync: function <T>():dstore.FetchArray<T> {
@@ -39,9 +49,13 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 		Memory.prototype.setData.call(this, JSON.parse(this.target.getItem(this.key)) || []);
 	},
 
-	_persist: util.debounce(function ():void {
-		this.target.setItem(this.key, JSON.stringify(this.storage.fullData));
+	_bouncePersist: util.debounce(function ():void {
+		this._persist();
 	}, 1000),
+
+	_persist: function ():void {
+		this.target.setItem(this.key, JSON.stringify(this.storage.fullData));
+	},
 
 	getSync: function <T>(id:any):T {
 		this._loaded || this._load();
@@ -51,20 +65,20 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 	putSync: function <T>(object:T):T {
 		this._loaded || this._load();
 		var putObject:T = this.inherited(arguments);
-		this._persist();
+		this._bouncePersist();
 		return putObject;
 	},
 
 	removeSync: function ():boolean {
 		this._loaded || this._load();
 		var isRemoved:boolean = this.inherited(arguments);
-		this._persist();
+		this._bouncePersist();
 		return isRemoved;
 	},
 
 	setData: function ():void {
 		this.inherited(arguments);
-		this._persist();
+		this._bouncePersist();
 	},
 
 	setTarget: function (key:string, target:Storage = this.target):void {
