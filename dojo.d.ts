@@ -402,6 +402,7 @@ declare module 'dojo/store/util/QueryResults' {
 		forEach(callback:(value:T, index:number, array:T[]) => void, thisArg?:any):any;
 		filter(callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):QueryResults<T>;
 		map<U>(callback:(value:T, index:number, array:T[]) => U, thisArg?:any):QueryResults<T>;
+		observe?(callback:(object:{}, removedFrom:number, insertedInto:number) => void, includeObjectUpdates?:boolean):IHandle;
 		always?<U>(callback:(valueOrError:any) => U):IPromise<U>;
 		cancel?<U>(reason?:U, strict?:boolean):U;
 		isCanceled?():boolean;

@@ -7,6 +7,7 @@ import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../../has');
 import OnDemandList = require('dgrid/OnDemandList');
 import Proxy = require('../../../data/Proxy');
+import QueryResults = require('dojo/store/util/QueryResults');
 import SingleNodeWidget = require('../../../ui/dom/SingleNodeWidget');
 import util = require('../../../util');
 import Widget = require('../../../ui/dom/Widget');
@@ -175,7 +176,21 @@ class Iterator<T> extends SingleNodeWidget {
 	}
 
 	_collectionSetter(value:dstore.ICollection<T>):void {
-		this._widget.set('store', value ? new DstoreAdapter(value) : <any> value);
+		if (value) {
+			var store:IStore<T> = new DstoreAdapter(value);
+			var oldQuery:Function = store.query;
+			store.query = function ():any {
+				var queryResults:QueryResults<T> = oldQuery.apply(this, arguments);
+				var oldObserve:Function = queryResults.observe;
+				queryResults.observe = function (callback:Function):IHandle {
+					// Force includeObjectUpdates to false since data binding ensures the contents are up-to-date
+					return oldObserve.call(this, callback, false);
+				};
+				return queryResults;
+			};
+		}
+
+		this._widget.set('store', store);
 		this._collection = value;
 	}
 
