@@ -19,7 +19,8 @@ var config:intern.Config = {
 	},
 	reporters: has('host-node') ? [ 'tests/support/reporter' ] : [ 'console', 'html' ],
 	suites: [
-		'tests/unit/core/all'
+		'tests/unit/core/all',
+		'tests/unit/binding/all'
 	]
 };
 
