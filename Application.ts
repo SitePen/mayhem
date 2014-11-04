@@ -17,6 +17,7 @@ var defaultBindings:string[] = [
 	require.toAbsMid('./binding/bindings/ObjectMethodBinding'),
 	require.toAbsMid('./binding/bindings/ObservableBinding'),
 	require.toAbsMid('./binding/bindings/StatefulBinding'),
+	require.toAbsMid('./binding/bindings/CollectionLengthBinding'),
 	require.toAbsMid('./binding/bindings/ArrayBinding'),
 	require.toAbsMid('./binding/bindings/DomInputBinding')
 ];

@@ -10,13 +10,14 @@ declare module dstore {
 		index?:number;
 		previousIndex?:number;
 		target:any;
+		totalLength:number;
 		type:string;
 	}
 
 	export interface ICollection<T> extends IEvented {
 		idProperty:string;
 		model:{ new (...args:any[]):T; };
-		total?:IPromise<number>;
+		tracking?:{ remove():void; };
 
 		add(object:T, options?:{}):IPromise<T>;
 		fetch():dstore.FetchPromise<T[]>;
