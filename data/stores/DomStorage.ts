@@ -39,13 +39,12 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 	},
 
 	fetchSync: function <T>():dstore.FetchArray<T> {
-		this._loaded || this._load();
+		this.storage._loaded || this._load();
 		return this.inherited(arguments);
 	},
 
-	_loaded: false,
 	_load: function ():void {
-		this._loaded = true;
+		this.storage._loaded = true;
 		Memory.prototype.setData.call(this, JSON.parse(this.target.getItem(this.key)) || []);
 	},
 
@@ -58,19 +57,19 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 	},
 
 	getSync: function <T>(id:any):T {
-		this._loaded || this._load();
+		this.storage._loaded || this._load();
 		return this.inherited(arguments);
 	},
 
 	putSync: function <T>(object:T):T {
-		this._loaded || this._load();
+		this.storage._loaded || this._load();
 		var putObject:T = this.inherited(arguments);
 		this._bouncePersist();
 		return putObject;
 	},
 
 	removeSync: function ():boolean {
-		this._loaded || this._load();
+		this.storage._loaded || this._load();
 		var isRemoved:boolean = this.inherited(arguments);
 		this._bouncePersist();
 		return isRemoved;
@@ -87,7 +86,7 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 
 		// Reload the data immediately if the target changes after it has already been loaded once since any
 		// observers need to be notified of the new data set
-		this._loaded && this._load();
+		this.storage._loaded && this._load();
 	}
 });
 
