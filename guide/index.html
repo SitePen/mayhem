@@ -74,6 +74,7 @@
 								<li data-id="typescript"><a href="#typescript">The TypeScript language</a></li>
 								<li data-id="mvvm"><a href="#mvvm">The MVVM pattern</a></li>
 								<li data-id="conventions"><a href="#conventions">Conventions</a></li>
+								<li data-id="base-object"><a href="#base-object">The Base object</a></li>
 							</ul>
 						</li>
 						<li data-id="application">
@@ -104,7 +105,8 @@
 						<li>
 							<a href="#views">Views</a>
 							<ul class="subsections">
-								<li data-id="what-is-view"><a href="#what-is-view">What is a view?</a></li>
+								<li data-id="what-is-view"><a href="#what-is-view">Views &amp; widgets</a></li>
+								<li data-id="creating-views"><a href="#creating-views">Creating views</a></li>
 								<li data-id="templating"><a href="#templating">View templating</a></li>
 								<li data-id="cross-platform-views"><a href="#cross-platform-views">Using cross-platform views</a></li>
 								<li data-id="extending-views"><a href="#extending-views">Writing custom views</a></li>
@@ -445,6 +447,20 @@ export = User;</code></pre>
 						<h4>Code conventions</h4>
 
 						<p>Mayhem follows most normal TypeScript code conventions, with the exception that spaces are not normally placed before type definitions in order to provide better disambiguation at a glance between a type value (no space) and an object literal value (space). A <a href="https://github.com/palantir/tslint">tslint</a> profile for Mayhem, along with an up-to-date description of all code conventions, is available in the TODO <a href="https://github.com/SitePen/mayhem/blob/master/README.md">README</a> within the Mayhem repository.</p>
+
+						<div class="a half" id="base-object"></div>
+						<h3 data-id="base-object">The Base object</h3>
+
+						<p>Within Mayhem, most objects are extended from the Observable (TODO: rename) object. The Observable object provides a consistent API for getting and setting properties that allows computed properties to be created in EcmaScript 3 environments and that allows proxy-like interactions to be created in EcmaScript 5 environments.</p>
+
+						<h4>Setters vs observers</h4>
+
+						<p>When creating components that extend from Observable, it’s important to distinguish between the functionality of a setter function and the functionality of an observer function:</p>
+
+						<ul>
+							<li>A <em>setter function</em> should be used when the way in which a property is set needs to be changed. For example, if you had a computed <code>formattedPrice</code> property that computed a human-readable price, you could also have a setter function to convert a formatted price value back into a number and then set it on <code>price</code>.</li>
+							<li>An <em>observer function</em> should be used when an object needs to respond to the fact that a particular property has changed. For example, if you had a computed <code>totalPrice</code> property that was based on the subtotals of items in a shopping cart, the property would never be set directly but it would update frequently as items were added and removed from the cart.</li>
+						</ul>
 					</article>
 
 					<article>
@@ -481,7 +497,7 @@ log(app.get('name'));</code></pre>
 
 						<p>It is also possible to create custom applications by subclassing an existing Application class. For example, the <a href="TODO"><code>mayhem/WebApplication</code> class</a> is a subclass of <code>mayhem/Application</code> with a different default configuration suitable for writing Web applications.</p>
 
-						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside></p>
+						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside>
 
 						<p>Once the application object is ready for use, call <code>app.startup()</code> to start it:</p>
 
@@ -740,9 +756,6 @@ export = app;</code></pre>
 						</div>
 
 						<aside class="whatAreYouCrazy"><p>It is strongly recommended to pass the application object directly to constructors instead of having constructor modules explicitly reference the application module. For convenience, the <a href="TODO">data modelling subsystem</a> can be configured with a default application object based on module identifier. This is the only place where this functionality should normally be used.</p></aside>
-
-<!--					<article>
-						<p>Views can be created pro [TODO: Currently Widget in the code] the <a href="TODO"><code>mayhem/ui/View</code></a> class and constructed programmatically, or they can be generated declaratively by using a templating engine.</p> -->
 					</article>
 
 					<article>
@@ -940,9 +953,135 @@ handle.remove();</code></pre>
 						<h2 data-id="views">Views</h2>
 
 						<div class="a half" id="what-is-view"></div>
-						<h3 data-id="what-is-view">Creating views</h3>
+						<h3 data-id="what-is-view">Mayhem views</h3>
 
-						<p>Creating views in Mayhem can be done in one of two ways.</p>
+						<p>The view subsystem in Mayhem is different from that of most other Web application frameworks (Ember, Polymer, Angular, React, etc.) because it completely abstracts the platform UI (i.e. the DOM) instead of trying to integrate with it. This means that unless you are creating a <a href="TODO">custom platform widget</a>, you’ll never be touching the DOM directly. This approach requires thinking slightly differently about how you create user interfaces, but it allows you to do several exceptional things:</p>
+
+						<ul>
+							<li>Your applications can use native UI controls (i.e. real iOS and Android widgets) with few or no changes to your code</li>
+							<li>Your applications can run from a Web Worker process, ensuring the UI thread is never blocked by slow loops</li>
+							<li>You don’t need to understand complex tree diffing mechanisms like Virtual DOM, since monolithic <code>render</code> methods that rebuild the entire view output every time something changes aren’t used</li>
+							<li>You don’t have to worry about platform bugs or missing features (like Pointer Events), since they can be fully addressed by Mayhem’s UI abstraction layer</li>
+						</ul>
+
+						<aside class="tip"><p>Although your code won’t interact with the DOM directly, Mayhem comes with a familiar, HTML-like templating language that makes it easy for Web developers to start creating UIs for Web-only applications using a familiar syntax and more direct control over the DOM.</p></aside>
+
+						<p>Views in Mayhem are composed of multiple widgets and other views. <dfn>Widgets</dfn> are views that represent reusable UI components—text labels, input controls, lists, grids, and so on.</p>
+
+						<p>Views in Mayhem can be created using one of three approaches:</p>
+
+						<ul>
+							<li><strong>Declarative</strong> approach: using <a href="TODO">view templating</a> to generate a view from markup</li>
+							<li><strong>Programmatic</strong> approach: using inheritance to extend the base <a href="TODO"><code>Widget</code></a> class</li>
+							<li><strong>Hybrid</strong> approach: extending a View generated declaratively and adding extra features programmatically</li>
+						</ul>
+
+						<p>The most common approach for simple applications is to create views declaratively. These are called <dfn>templated views</dfn>:</p>
+
+						<pre><code class="html">&lt;h1>{app.name}&lt;/h1>
+
+&lt;p>What kind of burger do you want?&lt;/p>
+
+TODO: This does not work with dstore collections
+&lt;if condition="{app.burgers.length}">
+	&lt;ul>
+		&lt;for each="{app.burgers}" as="burger">
+			&lt;li>
+				{burger.name} - {burger.formattedPrice}
+			&lt;/li>
+		&lt;/for>
+	&lt;/ul>
+&lt;else>
+	Sorry, we have no burgers
+&lt;/if></code></pre>
+
+						<p>The <a href="TODO">HTML templating engine</a> is implemented as an <a href="TODO">AMD loader plugin</a>, so loading a templated view is straightforward in most cases:</p>
+
+						<pre><code class="typescript">import WebApplication = require('mayhem/WebApplication');
+
+var app = new WebApplication({
+	name: 'Bob’s Burgers',
+	burgers: [
+		{ name: 'New Bacon-ings', formattedPrice: '$12.50' },
+		{ name: 'Pepper Don’t Preach Burger', formattedPrice: '$10.50' },
+		{ name: 'Totally Radish Burger', formattedPrice: '$9.25' },
+		{ name: 'Chard To A Crisp Burger', formattedPrice: '$9.00' },
+		{ name: 'Beets Me Burger', formattedPrice: '$10.00' }
+	],
+	components: {
+		ui: {
+			view: 'mayhem/templating/html!app/views/Master.html'
+		}
+	}
+});
+
+app.startup();</code></pre>
+
+						<div class="a half" id="view-templating"></div>
+						<h3 data-id="view-templating">View templating</h3>
+
+						<p>The default templating system in Mayhem is an extension of HTML that overlays data binding, conditionals, loops, custom elements, and other basic features onto the language. <a href="TODO">Data binding paths</a> are placed inside curly brackets (<code>{}</code>) and bind to the <code>model</code> object (TODO: Should it be the code-behind view object instead? otherwise we’re restricted.) associated with the view:</p>
+
+						<pre><code class="html">{name}</code></pre>
+						<pre><code class="typescript">view.set('model', { name: 'foo' });</code></pre>
+
+						<p>Outputs:</p>
+
+						<pre><code class="html">foo</code></pre>
+
+						<p>Using a widget in a view is as simple as using the <code>&lt;widget></code> tag:</p>
+
+						<pre><code class="html">&lt;widget is="mayhem/ui/Label" text="{foo}">&lt;/widget></code></pre>
+
+						<p>The value of the <code>is</code> attribute must be a module ID that resolves to a view constructor.</p>
+
+						<p>Mayhem’s HTML templating engine also allows widgets to be registered as custom elements within individual templates, which is useful when the same widget is used multiple times within a template:</p>
+
+						<pre><code class="html">&lt;alias tag="label" to="mayhem/ui/Label">
+&lt;label text="{foo}">&lt;/label></code></pre>
+
+						<p>This example is equivalent to the previous example, except the <code>&lt;label></code> tag has been aliased to the <code>mayhem/ui/Label</code> widget.</p>
+
+						<p>Because aliases are defined only for the specific template in which they appear, there is no chance of aliases conflicting with aliases from other templates. This is different from Web components, which require custom elements to be registered on the parent document and can cause conflicts when multiple applications run on the same page.</p>
+
+						<p>Mayhem’s HTML templating includes some extra, special tags for conditionals, loops, and Promise handling:</p>
+
+						<ul>
+							<li><strong><code>&lt;if></code>, <code>&lt;elseif</code>, and <code>&lt;else></code></strong>: Allows content to be conditionally displayed. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Conditional</code></a> widget.</li>
+							<li><strong><code>&lt;when></code>, <code>&lt;pending></code>, and <code>&lt;rejected></code></strong>: Allows different content to be displayed while a Promise is being resolved. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Promise</code></a> widget.</li>
+							<li><strong><code>&lt;for></code></strong>: Allows simple iteration over an array or <a href="TODO">Collection</a>. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Iterator</code></a> widget.</li>
+						</ul>
+
+						<h4>Conditional display</h4>
+
+						<p>TODO: It would be nice to eliminate the “condition=” part</p>
+						<pre><code class="html">&lt;if condition={foo}>
+	Has a foo
+&lt;elseif condition={bar}>
+	Has a bar
+&lt;else>
+	No foo, no bar
+&lt;/if></code></pre>
+
+						<aside class="tip"><p>This mechanism is designed only to show and hide blocks of widgets. Conditional attributes should be handled by creating a specific <a href="TODO">view–model</a> and binding the attribute to a <a href="TODO">computed property</a> on the model.</p></aside>
+
+						<h4>Promise handling</h4>
+
+						<pre><code class="html">&lt;when value={foo} as="fooValue">
+	foo is resolved to {fooValue}
+&lt;pending>
+	Please wait for foo
+&lt;rejected as="fooError">
+	foo was rejected because {fooError.message}
+&lt;/when></code></pre>
+
+						<h4>Iterator</h4>
+
+						<pre><code class="html">&lt;for each={foo} as="item">
+	{item.name}
+&lt;/for></code></pre>
+
+						<aside class="tip"><p>The iterator widget is a dumb widget that will always attempt to fetch and render all items from an array or collection. Use a <a href="TODO"><code>mayhem/ui/ListView</code></a> or <a href="TODO"><code>mayhem/ui/GridView</code></a> when you need to render large collections with full lazy-loading and resource management. TODO: This is not true now, but should be, since dgrid can’t do MultiNodeWidget.</p></aside>
 
 						<div class="a half" id="cross-platform-views"></div>
 						<h3 data-id="cross-platform-views">Using cross-platform views</h3>
@@ -951,33 +1090,18 @@ handle.remove();</code></pre>
 
 						<p>In order to create a cross-platform application, it’s necessary to use the standard set of widgets.</p>
 
-						<div class="a half" id="view-templating"></div>
-						<h3 data-id="view-templating">View templating</h3>
+						<div class="a half" id="event-system"></div>
+						<h3 data-id="event-system">The event system</h3>
 
-						<p>Creating views programmatically can be slow and error-prone. Fortunately, Mayhem comes with a templating engine based on HTML that you can use to create Mayhem views as easily as you can write HTML:</p>
+						<p>In addition to displaying information to a user interface, the view system is also responsible for receiving input from a user interface that can be used to execute functions within an application in response to interaction. To do this, Mayhem provides an event abstraction system that normalises input from different view implementations into a standard event model.</p>
 
-						<pre><code class="html">&lt;h1>{app.name}&lt;/h1>
+						<p>The standard event model in Mayhem translates all pointer inputs (mouse, pen, touch, etc.) into standard <a href="TODO"><code>PointerEvent</code></a> objects that closely match the W3C Pointer Events API, and keyboard events into standard <a href="TODO"><code>KeyboardEvent</code></a> objects that closely match the latest DOM 3 Events API:</p>
 
-&lt;p>What kind of burger do you want?&lt;/p>
+						<pre><code class="typescript">TODO: example</code></pre>
 
-TODO: This does not work with dstore collections
-&lt;if condition="{burgers.length}">
-	<ul>
-		&lt;for each="{burgers}" as="burger">
-			&lt;li>
-				{burger.name} - {burger.formattedPrice}
-			&lt;/li>
-		&lt;/for>
-	</ul>
-&lt;else>
-	Sorry, we have no burgers
-&lt;/if></code></pre>
+						<p>It is possible to easily create custom events, such as gestures, using <a href="TODO">extension events</a> that listen for lower-level events and then dispatch the custom events when the custom event’s criteria are satisfied:</p>
 
-						<p>The <a href="TODO">HTML templating engine</a> reads the HTML text and converts it to a view constructor.</p>
-
-						<pre><code class="typescript"></code></pre>
-
-						<p>Custom templating engines can be added to Mayhem easily.
+						<pre><code class="typescript">TODO: example</code></pre>
 					</article>
 				</main>
 			</div>
