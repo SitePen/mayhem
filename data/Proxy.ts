@@ -58,7 +58,7 @@ class Proxy<T> extends Observable {
 		collection.on('update', function (event:dstore.ChangeEvent):void {
 			put.call(wrapperCollection, wrapperCollection.getSync(collection.getIdentity(event.target)), { index: event.index });
 		});
-		collection.on('remove', function (event:dstore.ChangeEvent):void {
+		collection.on('delete', function (event:dstore.ChangeEvent):void {
 			remove.call(wrapperCollection, event.id);
 		});
 

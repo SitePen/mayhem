@@ -31,7 +31,7 @@ class PersistentModel extends Model implements data.IPersistentModel {
 
 	static store:dstore.ICollection<data.IPersistentModel>;
 	static setDefaultStore(store:dstore.ICollection<data.IPersistentModel>):void {
-		store.model = this;
+		store.Model = this;
 		this.prototype._store = this.store = store;
 	}
 
@@ -50,6 +50,11 @@ class PersistentModel extends Model implements data.IPersistentModel {
 			self.set('scenario', 'insert');
 			return returnValue;
 		});
+	}
+
+	// TODO: dstore interface?
+	_restore(Ctor:new (...args:any[]) => Model):Model {
+		return new Ctor(this);
 	}
 
 	save(skipValidation?:boolean):IPromise<void> {

@@ -163,11 +163,6 @@ class Model extends Observable implements data.IModel {
 		return true;
 	}
 
-	// TODO: dstore interface?
-	_restore(Ctor:new (...args:any[]) => Model):Model {
-		return new Ctor(this);
-	}
-
 	revert():void {
 		var wasDirty = this.get('isDirty');
 		var properties = this._dirtyProperties;

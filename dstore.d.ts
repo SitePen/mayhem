@@ -1,6 +1,10 @@
 /// <reference path="./dojo" />
 
 declare module dstore {
+	export interface FetchArray<T> extends Array<T> {
+		totalLength:number;
+	}
+
 	export interface FetchPromise<T> extends IPromise<T> {
 		totalLength:IPromise<number>;
 	}
@@ -16,7 +20,7 @@ declare module dstore {
 
 	export interface ICollection<T> extends IEvented {
 		idProperty:string;
-		model:{ new (...args:any[]):T; };
+		Model:{ new (...args:any[]):T; };
 		tracking?:{ remove():void; };
 
 		add(object:T, options?:{}):IPromise<T>;
@@ -37,8 +41,8 @@ declare module dstore {
 
 	export interface ISyncCollection<T> extends ICollection<T> {
 		addSync(object:T, options?:{}):T;
-		fetchSync():T[];
-		fetchRangeSync(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		fetchSync():dstore.FetchArray<T>;
+		fetchRangeSync(kwArgs:{ start?:number; end?:number; }):dstore.FetchArray<T>;
 		filter(query:string):ISyncCollection<T>;
 		filter(query:{}):ISyncCollection<T>;
 		filter(query:(item:T, index:number) => boolean):ISyncCollection<T>;
@@ -81,8 +85,8 @@ declare module 'dstore/Memory' {
 		data:T[];
 
 		addSync(object:T, options?:{}):T;
-		fetchSync():T[];
-		fetchRangeSync(kwArgs:{ start?:number; end?:number; }):IPromise<T[]>;
+		fetchSync():dstore.FetchArray<T>;
+		fetchRangeSync(kwArgs:{ start?:number; end?:number; }):dstore.FetchArray<T>;
 		filter(query:string):Memory<T>;
 		filter(query:{}):Memory<T>;
 		filter(query:(item:T, index:number) => boolean):Memory<T>;
@@ -168,7 +172,7 @@ declare module 'dstore/Store' {
 
 	class Store<T> extends Evented implements dstore.ICollection<T> {
 		idProperty:string;
-		model:{ new (...args:any[]):T; };
+		Model:{ new (...args:any[]):T; };
 		total:IPromise<number>;
 
 		add(object:T, options?:{}):IPromise<T>;
