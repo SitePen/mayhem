@@ -22,6 +22,6 @@
     "dojo": "1.10.2",
     "put-selector": "0.3.5",
     "xstyle": "0.2.1",
-    "dstore": "git@github.com:SitePen/dstore.git#d99dd6aaa79b72bad5b9b93f27329eb7fe71e42e"
+    "dstore": "git@github.com:SitePen/dstore.git#61968db59107c196793f7b3d261175f7ec97af62"
   }
 }
