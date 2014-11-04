@@ -955,20 +955,18 @@ handle.remove();</code></pre>
 						<div class="a half" id="what-is-view"></div>
 						<h3 data-id="what-is-view">Mayhem views</h3>
 
-						<p>The view subsystem in Mayhem is different from that of most other Web application frameworks (Ember, Polymer, Angular, React, etc.) because it completely abstracts the platform UI (i.e. the DOM) instead of trying to integrate with it. This means that unless you are creating a <a href="TODO">custom platform widget</a>, you’ll never be touching the DOM directly. This approach requires thinking slightly differently about how you create user interfaces, but it allows you to do several exceptional things:</p>
+						<p>The view subsystem in Mayhem is different from most other Web application frameworks (Ember, Polymer, Angular, React, etc.) because it abstracts the platform UI (i.e. the DOM). This means that unless you are creating a <a href="TODO">custom platform widget</a>, you’ll never be touching the DOM directly. This approach requires thinking slightly differently about how you create user interfaces, but it allows you to do several exceptional things:</p>
 
 						<ul>
-							<li>Your applications can use native UI controls (i.e. real iOS and Android widgets) with few or no changes to your code</li>
-							<li>Your applications can run from a Web Worker process, ensuring the UI thread is never blocked by slow loops</li>
-							<li>You don’t need to understand complex tree diffing mechanisms like Virtual DOM, since monolithic <code>render</code> methods that rebuild the entire view output every time something changes aren’t used</li>
+							<li>Your application can use native UI controls (i.e. real iOS and Android widgets) with few or no changes</li>
+							<li>Your application can run from a Web Worker process, ensuring the UI thread is never blocked by slow loops</li>
+							<li>You don’t need to understand complex tree diffing mechanisms like Virtual DOM, since monolithic <code>render</code> methods that rebuild the entire view when something changes aren’t used</li>
 							<li>You don’t have to worry about platform bugs or missing features (like Pointer Events), since they can be fully addressed by Mayhem’s UI abstraction layer</li>
 						</ul>
 
 						<aside class="tip"><p>Although your code won’t interact with the DOM directly, Mayhem comes with a familiar, HTML-like templating language that makes it easy for Web developers to start creating UIs for Web-only applications using a familiar syntax and more direct control over the DOM.</p></aside>
 
-						<p>Views in Mayhem are composed of multiple widgets and other views. <dfn>Widgets</dfn> are views that represent reusable UI components—text labels, input controls, lists, grids, and so on.</p>
-
-						<p>Views in Mayhem can be created using one of three approaches:</p>
+						<p>Views in Mayhem are composed of multiple widgets and other views. <dfn>Widgets</dfn> are views that represent reusable UI components—text labels, input controls, lists, grids, and so on. Widgets and views can be created using one of three approaches:</p>
 
 						<ul>
 							<li><strong>Declarative</strong> approach: using <a href="TODO">view templating</a> to generate a view from markup</li>
@@ -1047,7 +1045,7 @@ app.startup();</code></pre>
 						<p>Mayhem’s HTML templating includes some extra, special tags for conditionals, loops, and Promise handling:</p>
 
 						<ul>
-							<li><strong><code>&lt;if></code>, <code>&lt;elseif</code>, and <code>&lt;else></code></strong>: Allows content to be conditionally displayed. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Conditional</code></a> widget.</li>
+							<li><strong><code>&lt;if></code>, <code>&lt;elseif></code>, and <code>&lt;else></code></strong>: Allows content to be conditionally displayed. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Conditional</code></a> widget.</li>
 							<li><strong><code>&lt;when></code>, <code>&lt;pending></code>, and <code>&lt;rejected></code></strong>: Allows different content to be displayed while a Promise is being resolved. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Promise</code></a> widget.</li>
 							<li><strong><code>&lt;for></code></strong>: Allows simple iteration over an array or <a href="TODO">Collection</a>. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Iterator</code></a> widget.</li>
 						</ul>
