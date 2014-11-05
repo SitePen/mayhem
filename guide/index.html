@@ -5,17 +5,19 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<title>Mayhem ◇ User guide</title>
 		<link rel="stylesheet" href="css/main.css">
-		<script>(function () {
-			var test = document.createElement('b');
-			for (var prefix in { '': 1, '-webkit-': 1 }) {
-				var position = prefix + 'sticky';
-				test.style.position = position;
-				if (test.style.position === position) {
-					return;
-				}
-			}
-			document.documentElement.classList.add('no-sticky');
-		})();</script>
+		<script>
+(function () {
+	var test = document.createElement('b');
+	for (var prefix in { '': 1, '-webkit-': 1 }) {
+		var position = prefix + 'sticky';
+		test.style.position = position;
+		if (test.style.position === position) {
+			return;
+		}
+	}
+	document.documentElement.classList.add('no-sticky');
+})();
+		</script>
 	</head>
 	<body>
 		<span role="button" id="showMenu" class="icon-menu"
@@ -43,13 +45,15 @@
 					</label>
 					<h1 class="title"><span class="bold">Mayhem</span> user guide</h1>
 				</div>
-				<script>(function () {
-					if (window.scrollY === 0 && !location.hash && !document.documentElement.classList.contains('no-sticky')) {
-						document.documentElement.style.minHeight = (window.innerHeight + /* $lh */ 32) + 'px';
-						var scrollTo = document.getElementById('initialScrollPoint');
-						window.scrollTo(window.scrollX, scrollTo.getBoundingClientRect().top);
-					}
-				})();</script>
+				<script>
+(function () {
+	if (window.scrollY === 0 && !location.hash && !document.documentElement.classList.contains('no-sticky')) {
+		document.documentElement.style.minHeight = (window.innerHeight + /* $lh */ 32) + 'px';
+		var scrollTo = document.getElementById('initialScrollPoint');
+		window.scrollTo(window.scrollX, scrollTo.getBoundingClientRect().top);
+	}
+})();
+				</script>
 			</div>
 		</header>
 
