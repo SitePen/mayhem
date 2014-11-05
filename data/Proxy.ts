@@ -53,10 +53,26 @@ class Proxy<T> extends Observable {
 		wrapperCollection.removeSync = lang.hitch(collection, 'removeSync');
 
 		collection.on('add', function (event:dstore.ChangeEvent):void {
-			put.call(wrapperCollection, new Ctor({ app: event.target.get('app'), target: event.target }), { index: event.index });
+			put.call(wrapperCollection, new Ctor({
+				app: event.target.get('app'),
+				target: event.target
+			}), { index: event.index });
 		});
 		collection.on('update', function (event:dstore.ChangeEvent):void {
-			put.call(wrapperCollection, wrapperCollection.getSync(collection.getIdentity(event.target)), { index: event.index });
+			var id = collection.getIdentity(event.target);
+
+			if (event.index === undefined) {
+				remove.call(wrapperCollection, id);
+			}
+			else if (event.previousIndex === undefined) {
+				put.call(wrapperCollection, new Ctor({
+					app: event.target.get('app'),
+					target: event.target
+				}), { index: event.index });
+			}
+			else {
+				put.call(wrapperCollection, wrapperCollection.getSync(id), { index: event.index });
+			}
 		});
 		collection.on('delete', function (event:dstore.ChangeEvent):void {
 			remove.call(wrapperCollection, event.id);
