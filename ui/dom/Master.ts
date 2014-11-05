@@ -1,5 +1,5 @@
 /// <reference path="../../dojo" />
-import EventManager = require('./EventManager');
+import EventManager = require('./events/EventManager');
 import IMaster = require('../Master');
 import MultiNodeWidget = require('./MultiNodeWidget');
 import Promise = require('../../Promise');

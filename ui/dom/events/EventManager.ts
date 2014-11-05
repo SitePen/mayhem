@@ -1,11 +1,11 @@
-import domUtil = require('./util');
-import Event = require('../../Event');
+import domUtil = require('../util');
+import Event = require('../../../Event');
 import lang = require('dojo/_base/lang');
-import Master = require('./Master');
+import Master = require('../Master');
 import KeyboardManager = require('./KeyboardManager');
 import PointerManager = require('./PointerManager');
-import ui = require('../interfaces');
-import Widget = require('./Widget');
+import ui = require('../../interfaces');
+import Widget = require('../Widget');
 
 var BUBBLES:HashMap<boolean> = {
 	pointercancel: true,
