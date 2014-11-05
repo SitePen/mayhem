@@ -4,21 +4,6 @@ import Model = require('./Model');
 import data = require('./interfaces');
 import Promise = require('../Promise');
 
-// TODO: Identical map exists in Model
-var NON_DATA_KEYS:HashMap<boolean> = {
-	app: true,
-	autoSave: true,
-	currentScenarioKeys: true,
-	dirtyProperties: true,
-	errors: true,
-	initializing: true,
-	isExtensible: true,
-	observers: true,
-	scenario: true,
-	store: true,
-	validatorInProgress: true
-};
-
 class PersistentModel extends Model implements data.IPersistentModel {
 	/**
 	 * @get
@@ -80,25 +65,6 @@ class PersistentModel extends Model implements data.IPersistentModel {
 				}
 			});
 		}
-	}
-
-	toJSON():{} {
-		var object:HashMap<any> = {};
-		// TODO: Fix this when Observable stops using underscored properties
-		for (var selfKey in this) {
-			if (!Object.prototype.hasOwnProperty.call(this, selfKey) || selfKey.charAt(0) !== '_') {
-				continue;
-			}
-
-			var key:string = selfKey.slice(1);
-			if (key in NON_DATA_KEYS) {
-				continue;
-			}
-
-			object[key] = (<any> this)[selfKey];
-		}
-
-		return object;
 	}
 }
 

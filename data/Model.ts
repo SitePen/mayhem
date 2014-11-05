@@ -10,12 +10,19 @@ import util = require('../util');
 import ValidationError = require('../validation/ValidationError');
 import Validator = require('../validation/Validator');
 
+// TODO: The `store` key is only for PersistentModel; is this OK?
 var NON_DATA_KEYS:HashMap<boolean> = {
 	app: true,
 	autoSave: true,
+	currentScenarioKeys: true,
+	dirtyProperties: true,
 	errors: true,
+	initializing: true,
 	isExtensible: true,
-	scenario: true
+	observers: true,
+	scenario: true,
+	store: true,
+	validatorInProgress: true
 };
 
 class Model extends Observable implements data.IModel {
@@ -193,6 +200,25 @@ class Model extends Observable implements data.IModel {
 		else {
 			this._currentScenarioKeys = null;
 		}
+	}
+
+	toJSON():{} {
+		var object:HashMap<any> = {};
+		// TODO: Fix this when Observable stops using underscored properties
+		for (var selfKey in this) {
+			if (!Object.prototype.hasOwnProperty.call(this, selfKey) || selfKey.charAt(0) !== '_') {
+				continue;
+			}
+
+			var key:string = selfKey.slice(1);
+			if (key in NON_DATA_KEYS) {
+				continue;
+			}
+
+			object[key] = (<any> this)[selfKey];
+		}
+
+		return object;
 	}
 
 	validate(keysToValidate?:string[]):IPromise<boolean> {
