@@ -1,7 +1,7 @@
-import domUtil = require('./util');
-import has = require('../../has');
+import domUtil = require('../util');
+import has = require('../../../has');
 import lang = require('dojo/_base/lang');
-import util = require('../../util');
+import util = require('../../../util');
 
 interface Dom3KeyboardEvent extends KeyboardEvent {
 	// TODO: This is in DOM3 drafts but not implemented in most browsers

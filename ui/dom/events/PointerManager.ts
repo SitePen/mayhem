@@ -1,8 +1,8 @@
-import domUtil = require('./util');
-import has = require('../../has');
+import domUtil = require('../util');
+import has = require('../../../has');
 import lang = require('dojo/_base/lang');
-import ui = require('../interfaces');
-import util = require('../../util');
+import ui = require('../../interfaces');
+import util = require('../../../util');
 
 enum Keys {
 	ALT = 18,
