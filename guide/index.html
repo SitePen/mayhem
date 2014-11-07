@@ -943,11 +943,75 @@ handle.remove();</code></pre>
 						<div class="a half" id="what-is-routing"></div>
 						<h3 data-id="what-is-routing">What is routing?</h3>
 
-						<p>In Mayhem, <dfn>routing</dfn> is the primary mechanism by which an application can manage its state based on an addressable state mechanism, like a URL.</p>
+						<p>In many application frameworks, including Mayhem, <dfn>routing</dfn> is the primary mechanism by which an application manages its state. Usually, this state management is based on an addressable state mechanism (like a URL).</p>
 
-						<aside><p class="tip">Future versions of Mayhem will include additional ways to manage application state that work well with other types of applications that don’t have directly addressable endpoints.</p></aside>
+						<p>Routing is performed by the <dfn>router</dfn> application component. This component is responsible for a few things:</p>
 
-						<p>TODO</p>
+						<ul>
+							<li>Reacting to changes to the address of the application (for example, from a browser’s address bar);</li>
+							<li>Loading and unloading the appropriate views for the new state (for applications with a user interface); and</li>
+							<li>Loading and setting the correct view model for a given view state.</li>
+						</ul>
+
+						<p>The default <a href="TODO"><code>HashRouter</code></a> router for a Mayhem Web application breaks the task of routing down into individual <dfn>routes</dfn>, each of which allows a different part of an application to manage its own routing. For example, the a menu of burgers might be displayed in a list or a grid view; the route for the menu would instantiate and place the menu view, and also handle telling the view to change how it should be displayed in response to a route state change.</p>
+
+						<p>Other parts of an application can interact directly with the router to change the current route, or to ask the router for the address of a particular route. For example, one Web page may want to </p>
+
+						<p><a href="TODO"><code>HashRouter</code></a> is the default router that is used by <a href="TODO"><code>WebApplication</code></a>. It enables an application to respond to changes to the hash-part of a URL.</p>
+
+						<aside><p class="tip">Future versions of Mayhem will include additional ways to manage application state, including those that work well with applications that don’t have addressable states (undo/redo-based applications).</p></aside>
+
+						<div class="a half" id="defining-routes"></div>
+						<h3 data-id="defining-routes">Defining routes</h3>
+
+						<p>TODO: This is weird, these are <a href="http://www.yiiframework.com/doc/guide/1.1/en/basics.controller">MVC controllers</a>.</p>
+
+						<p>TODO: This information does not match reality right now; reality needs to change</p>
+
+						<p>Application routes are defined in a similar manner to <a href="TODO">binding constructors</a>, except each route is given its own unique identifier:</p>
+
+						<pre><code class="typescript">import WebApplication = require('mayhem/WebApplication');
+
+// TODO: Not final syntax
+var app = new WebApplication({
+	name: 'Bob’s Burgers',
+	components: {
+		router: {
+			defaultRoute: [ 'index' ],
+			routes: {
+				index: {
+					constructor: 'app/pages/Index'
+				}
+			}
+		}
+	}
+});</code></pre>
+
+						<p>Each Route object is an instance of <a href="TODO"><code>mayhem/routing/interfaces.IRoute</code></a>. Once a <a href="TODO"><code>Route</code></a> is defined, its <code>startup</code> (TODO: “run”) method will be called when the router is first started. Like all other startup methods, a Promise can be returned from this method to perform asynchronous actions, like preloading other modules, or making requests to a server.</p>
+
+						<aside class="tip"><p>Currently, all routes must be registered before the router is started.</p></aside>
+
+						<p>TODO: Routing lifecycle diagram</p>
+
+						<p>The default router in Mayhem is responsible for determining which routes should be activated according to their registered <a href="TODO"><code>path</code></a>. Once the router determines that a route should be activated, its <a href="TODO"><code>enter</code></a> method is called with information about the current state:</p>
+
+						<pre><code class="typescript">TODO</code></pre>
+
+						<p>Because routes are hierarchical, multiple routes may be active at the same time:</p>
+
+						<pre><code class="typescript">TODO</code></pre>
+
+						<p>When multiple routes will be activated, <code>enter</code> is called starting at the highest route and working down until it reaches the bottom of the route tree. Each route can temporarily pause the route change by returning a <code>Promise</code>:</p>
+
+						<pre><code class="typescript">TODO</code></pre>
+
+						<p>All promises must eventually resolve. TODO: What to do about in-progress routing changes that are aborted due to user navigation? Stopping navigation on enter because a user does not have proper access credentials?</p>
+
+						<p>If a route is already active and the router detects a state change that will not deactivate an active route, the <a href="TODO"><code>stateChange</code></a> method will be called on the active route to notify it of a change. TODO: This is still a possibly weird event model. What if the route isn’t being exited but still wants to prevent the change?</p>
+
+						<p>For routes that are currently active that are going to become inactive as the result of a state change, the router will first call the <a href="TODO"><code>beforeExit</code></a> method on all routes that are going to become inactive, starting at the lowest route and working up until it reaches the top of the route tree. If any of these methods throw a <a href="TODO"><code>CancelError</code></a>, or return a <code>Promise</code> that rejects with a <code>CancelError</code>, the routing action will be aborted. This is useful for routes that need to perform an action (for example, to verify that a user wants to navigate away with unsaved changes, or to automatically persist their incomplete changes to storage) prior to exit. TODO: How about unpreventable navigations, like leaving the app? Once all <code>beforeExit</code> handlers have indicated that they are OK with a state change, <a href="TODO"><code>exit</code></a> methods will be called on each of the routes that is being exited, starting again from the lowest route and working up.</p>
+
+						<aside class="tip"><p>Errors are used instead of passing an event with a <code>preventDefault</code> method, or using a boolean return value, in order to provide a standard way for routes to give additional details to the router or other parts of the application about why a routing change was prevented.</p></aside>
 					</article>
 
 					<article>
@@ -971,9 +1035,9 @@ handle.remove();</code></pre>
 						<p>Views in Mayhem are composed of multiple widgets and other views. <dfn>Widgets</dfn> are views that represent reusable UI components—text labels, input controls, lists, grids, and so on. Widgets and views can be created using one of three approaches:</p>
 
 						<ul>
-							<li><strong>Declarative</strong> approach: using <a href="TODO">view templating</a> to generate a view from markup</li>
-							<li><strong>Programmatic</strong> approach: using inheritance to extend the base <a href="TODO"><code>Widget</code></a> class</li>
-							<li><strong>Hybrid</strong> approach: extending a View generated declaratively and adding extra features programmatically</li>
+							<li><strong>Declarative approach</strong>: using <a href="TODO">view templating</a> to generate a view from markup</li>
+							<li><strong>Programmatic approach</strong>: using inheritance to extend the base <a href="TODO"><code>Widget</code></a> class</li>
+							<li><strong>Hybrid approach</strong>: extending a View generated declaratively and adding extra features programmatically</li>
 						</ul>
 
 						<p>The most common approach for simple applications is to create views declaratively. These are called <dfn>templated views</dfn>:</p>
@@ -1016,6 +1080,10 @@ var app = new WebApplication({
 });
 
 app.startup();</code></pre>
+
+						<p>The <a href="#view-templating">view templating</a> section describes the templating language in greater detail.</p>
+
+						<p>
 
 						<div class="a half" id="view-templating"></div>
 						<h3 data-id="view-templating">View templating</h3>
