@@ -32,9 +32,8 @@
 	/**
 	 * Validates that the attributes provided in the given attribute map are correct according to the provided rules.
 	 */
-	 function validate(attributes, rules) {
+	function validate(attributes, rules) {
 		var required = rules.required || [];
-		var oneOf = rules.oneOf || [];
 		var optional = rules.optional || [];
 		var type = rules.type ? ' on ' + rules.type : '';
 
@@ -49,18 +48,6 @@
 			permitted[required[i]] = true;
 		}
 
-		var foundOneOf = false;
-		for (i = 0, j = oneOf.length; i < j; ++i) {
-			if (hasOwnProperty.call(attributes, oneOf[i])) {
-				if (foundOneOf) {
-					error('Cannot use "' + oneOf[i] + '" with "' + foundOneOf);
-				}
-				else {
-					foundOneOf = oneOf[i];
-				}
-			}
-			permitted[oneOf[i]] = true;
-		}
 		for (i = 0, j = optional.length; i < j; ++i) {
 			permitted[optional[i]] = true;
 		}
@@ -94,43 +81,8 @@
 	}
 
 	var tree = {
-		_aliasMap: null,
-		_aliases: [],
 		_constructors: {},
 		_tagMap: {},
-
-		/**
-		 * Adds a new alias to the alias list for this template.
-		 *
-		 * @param newAlias {Object}
-		 * An object with the following keys:
-		 *   * `from` (string): The module ID fragment to replace.
-		 *   * `to` (string): The replacement module ID fragment.
-		 *   * `line` (number): The one-indexed line number where the alias was defined in the template.
-		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
-		 */
-		addAlias: function (newAlias) {
-			var aliases = this._aliases;
-
-			// Ensure that aliases are limited to complete module ID fragments
-			newAlias.from = newAlias.from.replace(/\/*$/, '/');
-			newAlias.to = newAlias.to.replace(/\/*$/, '/');
-
-			for (var i = 0, oldAlias; (oldAlias = aliases[i]); ++i) {
-				// The same alias has already been parsed once before, probably by some look-ahead; do not add it
-				// again
-				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
-					return;
-				}
-
-				// Aliases are ordered and applied by length, then by entry order if the lengths are identical
-				if (oldAlias.from.length < newAlias.from.length) {
-					break;
-				}
-			}
-
-			aliases.splice(i, 0, newAlias);
-		},
 
 		/**
 		 * Adds a new tag to the tags understood by this template.
@@ -171,8 +123,7 @@
 		 */
 		get: function (root) {
 			this._constructors = {};
-			this._validate();
-			this._resolve(root);
+			this._collectConstructors(root);
 
 			return {
 				constructors: this._getConstructors(),
@@ -195,18 +146,10 @@
 		},
 
 		/**
-		 * Walks the widget tree, resolving constructor aliases for the given node and its children.
+		 * Walks the widget tree, collecting constructor module ids for the given node and its children.
 		 */
-		_resolve: function (node) {
-			var aliasMap = this._aliasMap;
-
+		_collectConstructors: function (node) {
 			if (hasOwnProperty.call(node, 'constructor')) {
-				for (var k in aliasMap) {
-					if (node.constructor.indexOf(k) === 0) {
-						node.constructor = node.constructor.replace(k, aliasMap[k].to);
-					}
-				}
-
 				this._constructors[node.constructor] = true;
 			}
 
@@ -214,33 +157,13 @@
 				var value = node[key];
 				if (value instanceof Array) {
 					for (var i = 0, child; (child = value[i]); ++i) {
-						this._resolve(child);
+						this._collectConstructors(child);
 					}
 				}
 				else if (typeof value === 'object' || typeof value === 'function') {
-					this._resolve(value);
+					this._collectConstructors(value);
 				}
 			}
-		},
-
-		/**
-		 * Validates that the collected aliases from the template are valid and do not contain duplicate definitions.
-		 */
-		_validate: function () {
-			var aliases = this._aliases;
-			var aliasMap = {};
-
-			for (var i = 0, alias; (alias = aliases[i]); ++i) {
-				if (hasOwnProperty.call(aliasMap, alias.from)) {
-					var oldAlias = aliasMap[alias.from];
-					throw new Error('Line ' + alias.line + ', column ' + alias.column + ': Alias "' + alias.from +
-						'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
-				}
-
-				aliasMap[alias.from] = alias;
-			}
-
-			this._aliasMap = aliasMap;
 		}
 	};
 }
@@ -248,39 +171,24 @@
 
 // template root
 
-Template
-	= root:(
-		// A non-element followed by anything other than EOF should be considered a child of a root Element widget,
+Template =
+	(HtmlComment / Alias / S)* body:(
+		// A non-element followed by anything other than whitespace should be considered a child of a root Element widget,
 		// otherwise the parser fails on whatever follows. Changing this to capture zero or more Any tokens would
 		// require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky tree
 		// where the first widget is the first widget and then the second widget is an Element widget containing all
 		// the rest of the widgets
-		(widget:AnyNonElement !. { return widget; })
+		(widget:AnyNonElement S* !. { return widget; })
 		/ Element
 	)? {
-		if (!root) {
-			root = {
+		if (!body) {
+			body = {
 				constructor: toAbsMid('../ui/Element'),
 				content: [],
 				children: []
 			};
 		}
-		else {
-			var hasContent = false;
-			for (var i = 0, part; (part = root.content[i]); ++i) {
-				if (typeof part === 'string' && /\S/.test(part)) {
-					hasContent = true;
-					break;
-				}
-			}
-
-			// If just one child and no other content, collapse it
-			if (!hasContent && root.children.length === 1) {
-				root = root.children[0];
-			}
-		}
-
-		return tree.get(root);
+		return tree.get(body);
 	}
 
 // HTML
@@ -297,11 +205,6 @@ Element 'HTML'
 
 		for (var i = 0, j = nodes.length; i < j; ++i) {
 			var node = nodes[i];
-
-			// Alias nodes are transformed into `null` since they cannot be removed entirely from the output
-			if (!node) {
-				continue;
-			}
 
 			if (typeof node === 'string') {
 				content.push(node);
@@ -373,7 +276,7 @@ HtmlFragment 'HTML'
 			/ PendingTag
 			/ WhenTagClose
 			/ Placeholder
-			/ Alias
+			/ InvalidAlias
 			/ WidgetTagOpen
 			/ WidgetTagClose
 			/ AliasedWidgetTagOpen
@@ -502,7 +405,7 @@ ForTagClose '</for>'
 
 When '<when></when>'
 	= kwArgs:WhenTagOpen
-	fulfilled:Any
+	fulfilled:Any?
 	optional:(RejectedPendingTags / PendingRejectedTags)?
 	WhenTagClose {
 		kwArgs.constructor = toAbsMid('../ui/Promise');
@@ -606,7 +509,7 @@ WidgetTagClose '</widget>'
 	= '</widget>'i
 
 AliasedWidget '<tag></tag>'
-	= kwArgs:AliasedWidgetTagOpen children:Any* end:AliasedWidgetTagClose & { return kwArgs.tagName === end; } {
+	= kwArgs:AliasedWidgetTagOpen children:Any* end:AliasedWidgetTagClose & { return end === kwArgs.tagName; } {
 		var widget = {
 			constructor: tree._tagMap[kwArgs.tagName].to
 		};
@@ -651,19 +554,21 @@ Alias '<alias>'
 	= '<alias'i alias:AttributeMap '/'? '>' {
 		validate(alias, {
 			type: '<alias>',
-			required: [ 'to' ],
-			oneOf: [ 'tag', 'from' ]
+			required: [ 'tag', 'to' ]
 		});
 		alias.line = line();
 		alias.column = column();
 
-		if (alias.from) {
-			tree.addAlias(alias);
-		}
-		else if (alias.tag) {
-			tree.addTag(alias);
-		}
+		tree.addTag(alias);
 		return undefined;
+	}
+
+InvalidAlias '<alias>'
+	= '<alias'i AttributeMap '/'? '>' {
+		// InvalidAlias is strictly to generate an error after aliases at the top
+		// of the template have been processed and the body of a template has begun
+		// processing. Therefore, nothing is captured and nothing is returned.
+		throwError('Aliases can only be defined at the beginning of the template');
 	}
 
 // attributes
@@ -822,7 +727,7 @@ AnyNonElement
 	/ For
 	/ When
 	/ Placeholder
-	/ Alias
+	/ InvalidAlias
 	/ Widget
 	/ AliasedWidget
 
