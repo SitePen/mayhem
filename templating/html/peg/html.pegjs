@@ -43,7 +43,7 @@
 
 		for (i = 0, j = required.length; i < j; ++i) {
 			if (!hasOwnProperty.call(attributes, required[i])) {
-				error('Missing required attribute "' + required[i] + '"' + type);
+				throwError('Missing required attribute "' + required[i] + '"' + type);
 			}
 			permitted[required[i]] = true;
 		}
@@ -55,7 +55,7 @@
 		if (!rules.extensible) {
 			for (var name in attributes) {
 				if (!hasOwnProperty.call(permitted, name)) {
-					error('Invalid attribute "' + name + '"' + type);
+					throwError('Invalid attribute "' + name + '"' + type);
 				}
 			}
 		}
@@ -78,6 +78,23 @@
 		}
 
 		return results.join('');
+	}
+
+	/**
+	 * Generate an error with line and column numbers in the message.
+	 *
+	 * @param {string} message The text to display after the line and column number.
+	 * @param {number} [lineNumber] The line number to display. If not provided, the current PEG parser position will be used.
+	 * @param {number} [columnNumber] The column number to display. If not provided, the current PEG parser position will be used.
+	 */
+	function throwError(message, lineNumber, columnNumber) {
+		if (lineNumber == null) {
+			lineNumber = line();
+		}
+		if (columnNumber == null) {
+			columnNumber = column();
+		}
+		error('Line ' + lineNumber + ', column ' + columnNumber + ': ' + message);
 	}
 
 	var tree = {
@@ -108,8 +125,9 @@
 				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
 					return;
 				}
-				error('Line ' + newAlias.line + ', column ' + newAlias.column + ': Alias "' + newAlias.tag +
-					'" was already defined at line ' + oldAlias.line + ', column ' + oldAlias.column);
+				throwError('Alias "' + newAlias.tag + '" was already defined at line ' + oldAlias.line +
+					', column ' + oldAlias.column,
+					newAlias.line, newAlias.column);
 			}
 			else {
 				map[tag] = newAlias;
@@ -408,6 +426,9 @@ When '<when></when>'
 	fulfilled:Any?
 	optional:(RejectedPendingTags / PendingRejectedTags)?
 	WhenTagClose {
+		if (!fulfilled) {
+			throwError('<when> requires content as its first child');
+		}
 		kwArgs.constructor = toAbsMid('../ui/Promise');
 		kwArgs.fulfilled = fulfilled;
 		if (optional) {
@@ -484,7 +505,7 @@ Widget '<widget></widget>'
 		}
 
 		if (typeof widget.constructor !== 'string') {
-			error('Widget constructor must be a string');
+			throwError('Widget constructor must be a string');
 		}
 
 		if (children.length) {
@@ -578,7 +599,7 @@ AttributeMap
 		var attributeMap = {};
 		for (var i = 0, attribute; (attribute = attributes[i]); ++i) {
 			if (hasOwnProperty.call(attributeMap, attribute.name)) {
-				error('Duplicate attribute "' + attribute.name + '"');
+				throwError('Duplicate attribute "' + attribute.name + '"');
 			}
 
 			attributeMap[attribute.name] = attribute.value;
