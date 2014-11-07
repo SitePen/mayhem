@@ -1,5 +1,12 @@
 {
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var getKeys = function (object) {
+		var keys = [];
+		for (var key in object) {
+			keys.push(key);
+		}
+		return keys;
+	};
 	var toAbsMid = require.toAbsMid || function (mid) {
 		// From Dojo 2 core
 		function compactPath(path) {
@@ -84,14 +91,16 @@
 	 * Generate an error with line and column numbers in the message.
 	 *
 	 * @param {string} message The text to display after the line and column number.
-	 * @param {number} [lineNumber] The line number to display. If not provided, the current PEG parser position will be used.
-	 * @param {number} [columnNumber] The column number to display. If not provided, the current PEG parser position will be used.
+	 * @param {number} lineNumber The line number to display. If not provided, the current PEG parser position will be
+	 * used.
+	 * @param {number} columnNumber The column number to display. If not provided, the current PEG parser position will
+	 * be used.
 	 */
 	function throwError(message, lineNumber, columnNumber) {
-		if (lineNumber == null) {
+		if (lineNumber === undefined) {
 			lineNumber = line();
 		}
-		if (columnNumber == null) {
+		if (columnNumber === undefined) {
 			columnNumber = column();
 		}
 		error('Line ' + lineNumber + ', column ' + columnNumber + ': ' + message);
@@ -115,7 +124,8 @@
 			// TODO: generate an error if this is called after parsing other elements have begun parsing
 
 			var map = this._tagMap;
-			// convert to lower-case for case-insensitive comparison
+
+			// Tags are case-insensitive
 			var tag = newAlias.tag.toLowerCase();
 			var oldAlias = map[tag];
 
@@ -125,6 +135,7 @@
 				if (oldAlias.line === newAlias.line && oldAlias.column === newAlias.column) {
 					return;
 				}
+
 				throwError('Alias "' + newAlias.tag + '" was already defined at line ' + oldAlias.line +
 					', column ' + oldAlias.column,
 					newAlias.line, newAlias.column);
@@ -140,31 +151,16 @@
 		 * @returns {Object} The validated syntax tree for the given root node.
 		 */
 		get: function (root) {
-			this._constructors = {};
 			this._collectConstructors(root);
 
 			return {
-				constructors: this._getConstructors(),
+				constructors: getKeys(this._constructors),
 				root: root
 			};
 		},
 
 		/**
-		 * Retrieves the list of resolved constructors that were discovered in the AST.
-		 *
-		 * @returns {string[]} An array of constructor module IDs.
-		 */
-		_getConstructors: function () {
-			var constructors = [];
-			for (var key in this._constructors) {
-				constructors.push(key);
-			}
-
-			return constructors;
-		},
-
-		/**
-		 * Walks the widget tree, collecting constructor module ids for the given node and its children.
+		 * Walks the widget tree, collecting constructor module IDs for the given node and its children.
 		 */
 		_collectConstructors: function (node) {
 			if (hasOwnProperty.call(node, 'constructor')) {
@@ -191,11 +187,11 @@
 
 Template =
 	(HtmlComment / Alias / S)* body:(
-		// A non-element followed by anything other than whitespace should be considered a child of a root Element widget,
-		// otherwise the parser fails on whatever follows. Changing this to capture zero or more Any tokens would
-		// require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky tree
-		// where the first widget is the first widget and then the second widget is an Element widget containing all
-		// the rest of the widgets
+		// A non-element followed by anything other than whitespace should be considered a child of a root Element
+		// widget, otherwise the parser fails on whatever follows. Changing this to capture zero or more Any tokens
+		// would require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky
+		// tree where the first widget is the first widget and then the second widget is an Element widget containing
+		// all the rest of the widgets
 		(widget:AnyNonElement S* !. { return widget; })
 		/ Element
 	)? {
