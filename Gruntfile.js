@@ -74,61 +74,7 @@ module.exports = function (grunt) {
 			runner: {
 				options: {
 					runType: 'runner',
-					config: 'tests/intern-local'
-				}
-			},
-			templating: {
-				options: {
-					runType: 'runner',
-					config: 'tests/intern-local',
-					suites: [ 'mayhem/tests/templating' ],
-					reporters: [ 'console' ]
-				}
-			},
-			templatingCoverage: {
-				options: {
-					runType: 'runner',
-					config: 'tests/intern-local',
-					suites: [ 'mayhem/tests/templating' ],
-					reporters: [ 'lcovhtml' ]
-				}
-			},
-			binding: {
-				options: {
-					runType: 'runner',
-					config: 'tests/intern-local',
-					suites: [ 'mayhem/tests/binding' ],
-					reporters: [ 'console' ]
-				}
-			},
-			bindingCover: {
-				options: {
-					runType: 'runner',
-					config: 'tests/intern-local',
-					suites: [ 'mayhem/tests/binding' ],
-					reporters: [ 'lcovhtml' ]
-				}
-			},
-			ui: {
-				options: {
-					runType: 'runner',
-					config: 'tests/intern-local',
-					suites: [ 'mayhem/tests/ui' ],
-					reporters: [ 'console' ]
-				}
-			},
-			uiCoverage: {
-				options: {
-					runType: 'runner',
-					config: 'tests/intern-local',
-					suites: [ 'mayhem/tests/ui' ],
-					reporters: [ 'lcovhtml' ]
-				}
-			},
-			data: {
-				options: {
-					config: 'tests/intern',
-					suites: [ 'mayhem/tests/data' ]
+					config: 'tests/mayhem.intern'
 				}
 			},
 			client: {
@@ -140,20 +86,6 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask('test', [ 'intern:client' ]);
-
-	var previousForceState = grunt.option('force');
-	grunt.registerTask('force', function (set) {
-		if (set === 'on') {
-			grunt.option('force', true);
-		}
-		else if (set === 'off') {
-			grunt.option('force', false);
-		}
-		else if (set === 'restore') {
-			grunt.option('force', previousForceState);
-		}
-	});
-
-	grunt.registerTask('build', ['force:on', 'peg:parser', 'force:restore', 'ts:framework']);
-	grunt.registerTask('default', ['force:on', 'peg:parser', 'ts:framework', 'force:restore', 'watch']);
+	grunt.registerTask('build', [ 'peg:parser', 'ts:framework' ]);
+	grunt.registerTask('default', [ 'peg:parser', 'ts:framework', 'watch' ]);
 };
