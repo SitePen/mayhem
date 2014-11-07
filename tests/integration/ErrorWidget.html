@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="../../third-party/dojo/resources/dojo.css">
+		<link rel="stylesheet" href="../../third-party/dijit/themes/claro/claro.css">
+	</head>
+	<body class="claro">
+		<label>Add an error - message: <input type="text" id="errorInput"></label>
+		<button type="button" id="pushButton">Push</button>
+		<button type="button" id="unshiftButton">Unshift</button>
+		<br>
+		<label>Remove an error:</label>
+		<button type="button" id="popButton">Pop</button>
+		<button type="button" id="shiftButton">Shift</button>
+		<br>
+		<p><button type="button" id="spliceButton">Splice</button> <input type="number" min="0" id="spliceCountInput" value="1"> errors from index
+			<input type="number" min="0" id="spliceIndexInput" value="0">
+		</p>
+		<p><button type="button" id="prefixButton">Set prefix</button> <input type="text" id="prefixInput"></p>
+
+		<script>
+var dojoConfig = {
+	async: true,
+	baseUrl: '../..',
+	packages: [
+		{ name: 'dojo', location: 'third-party/dojo' },
+		{ name: 'dijit', location: 'third-party/dijit' },
+		{ name: 'dgrid', location: 'third-party/dgrid' },
+		{ name: 'xstyle', location: 'third-party/xstyle' },
+		{ name: 'put-selector', location: 'third-party/put-selector' },
+		{ name: 'dstore', location: 'third-party/dstore' },
+		{ name: 'mayhem', location: '.' }
+	]
+};
+		</script>
+		<script src="../../third-party/dojo/dojo.js"></script>
+		<script>
+require([
+	'dojo/on',
+	'mayhem/WebApplication',
+	'mayhem/ui/form/Error'
+], function (on, WebApplication, ErrorWidget) {
+	var app = window.app = new WebApplication({
+		components: {
+			router: null,
+			ui: {
+				view: null
+			}
+		}
+	});
+
+	var model = window.model = {
+		hello: 'hello'
+	};
+
+	app.startup().then(function () {
+		var view = window.view = new ErrorWidget({
+			app: app
+		});
+
+		app.get('ui').set('view', view);
+		app.get('binder').bind({
+			source: model,
+			sourcePath: 'hello',
+			target: view,
+			targetPath: 'value',
+			direction: 2
+		});
+
+		model.errors = [new Error('error 0')];
+		view.set('errors', model.errors);
+		model.errors.push(new Error('error1'));
+		model.errors.push(new Error('error2'));
+	});
+
+	var errorInput = document.getElementById('errorInput');
+	var spliceCountInput = document.getElementById('spliceCountInput');
+	var spliceIndexInput = document.getElementById('spliceIndexInput');
+	var prefixInput = document.getElementById('prefixInput');
+
+	on(document.getElementById('pushButton'), 'click', function () {
+		model.errors.push(new Error(errorInput.value));
+		errorInput.value = '';
+	});
+
+	on(document.getElementById('unshiftButton'), 'click', function () {
+		model.errors.unshift(new Error(errorInput.value));
+		errorInput.value = '';
+	});
+
+	on(document.getElementById('popButton'), 'click', function () {
+		model.errors.pop();
+	});
+
+	on(document.getElementById('shiftButton'), 'click', function () {
+		model.errors.shift();
+	});
+
+	on(document.getElementById('spliceButton'), 'click', function () {
+		model.errors.splice(parseInt(spliceIndexInput.value, 10), parseInt(spliceCountInput.value, 10));
+	});
+
+	on(document.getElementById('prefixButton'), 'click', function () {
+		window.view.set('prefix', prefixInput.value);
+		prefixInput.value = '';
+	});
+});
+		</script>
+	</body>
+</html>
