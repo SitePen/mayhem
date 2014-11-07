@@ -1,27 +1,37 @@
-/// <amd-dependency path="./dom/Error" />
+/// <amd-dependency path="../dom/form/Error" />
 
 import has = require('../../has');
-import View = require('../View');
+import Widget = require('../Widget');
+import DELETE_ME = require('../dom/form/Error');
 
-interface Error extends View {
-	get:Error.Getters;
-	on:Error.Events;
-	set:Error.Setters;
+interface ErrorWidget extends Widget {
+	get:ErrorWidget.Getters;
+	on:ErrorWidget.Events;
+	set:ErrorWidget.Setters;
 }
 
-module Error {
-	export interface Events extends View.Events {}
-	export interface Getters extends View.Getters {}
-	export interface Setters extends View.Setters {}
+module ErrorWidget {
+	export interface Events extends Widget.Events {}
+
+	export interface Getters extends Widget.Getters {
+		(key:'errors'):Error[];
+		(key:'prefix'):string;
+	}
+
+	export interface Setters extends Widget.Setters {
+		(key:'errors', value:Error[]):void;
+		// Optional text that is displayed before the list of errors, like "Please correct the following errors:"
+		(key:'prefix', value:string):void;
+	}
 }
 
-var Error:{
-	new (kwArgs:HashMap<any>):Error;
-	prototype:Error;
+var ErrorWidget:{
+	new (kwArgs:HashMap<any>):ErrorWidget;
+	prototype:ErrorWidget;
 };
 
 if (has('host-browser')) {
-	Error = <typeof Error> require('./dom/Error');
+	ErrorWidget = <typeof ErrorWidget> require('../dom/form/Error');
 }
 
-export = Error;
+export = ErrorWidget;
