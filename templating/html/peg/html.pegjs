@@ -121,8 +121,6 @@
 		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
 		 */
 		addTag: function (newAlias) {
-			// TODO: generate an error if this is called after parsing other elements have begun parsing
-
 			var map = this._tagMap;
 
 			// Tags are case-insensitive
