@@ -124,7 +124,7 @@ class Model extends Observable implements data.IModel {
 		else {
 			var errors:HashMap<ValidationError[]> = this._errors;
 			for (key in errors) {
-				errors[key].splice(0, Infinity);
+				errors[key] && errors[key].splice(0, Infinity);
 			}
 		}
 
