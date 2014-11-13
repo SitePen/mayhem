@@ -12,8 +12,7 @@ class DijitWidget extends SingleNodeWidget {
 		properties?:HashMap<string>;
 	} = {
 		properties: {
-			isDisabled: 'disabled',
-			id: 'id'
+			isDisabled: 'disabled'
 		},
 		events: {
 			blur: function ():void {
