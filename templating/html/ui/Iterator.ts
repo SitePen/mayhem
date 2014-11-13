@@ -88,20 +88,20 @@ class IteratorList<T> extends OnDemandList {
 	renderRow(model:Object, options?:Object):HTMLElement {
 		var Ctor:Iterator.IItemConstructor<T> = this._itemConstructor;
 
-		if (this._as) {
-			model = new Proxy((function ():HashMap<any> {
-				var kwArgs:HashMap<any> = {
-					app: this._app,
-					target: model
-				};
-				kwArgs[this._as] = model;
-				return kwArgs;
-			}).call(this));
+		if (!this._as) {
+			this._as = 'item';
 		}
 
 		var widget:SingleNodeWidget = new Ctor({
 			app: this._app,
-			model: model
+			model: new Proxy((function ():HashMap<any> {
+				var kwArgs:HashMap<any> = {
+					app: this._app,
+					target: this._parent.get('model')
+				};
+				kwArgs[this._as] = model;
+				return kwArgs;
+			}).call(this))
 		});
 
 		var rowNode:HTMLElement = <HTMLElement> widget.detach();

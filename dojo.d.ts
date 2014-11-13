@@ -169,6 +169,21 @@ declare module 'dojo/date/locale' {
 	export = locale;
 }
 
+declare module 'dojo/date/stamp' {
+	module stamp {
+		export interface IStampOptions {
+			milliseconds?:boolean;
+			selector?:string;
+			zulu?:boolean;
+		}
+
+		export function fromISOString(date:string, defaultTime?:number):Date;
+		export function toISOString(date:Date, options?:IStampOptions):string;
+	}
+
+	export = stamp;
+}
+
 declare module 'dojo/Deferred' {
 	var Deferred:{
 		new <T>(canceler?:(reason:any) => any):IDeferred<T>;
