@@ -80,6 +80,7 @@ class ContainerMixin {
 	}
 
 	remove(child:Widget):void {
+		child.detach();
 		child.set({
 			isAttached: false,
 			parent: null
