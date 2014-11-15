@@ -92,6 +92,21 @@ declare module 'dijit/Destroyable' {
 	export = Destroyable;
 }
 
+declare module 'dijit/Dialog' {
+	import ContentPane = require('dijit/layout/ContentPane');
+
+	interface Dialog extends ContentPane {
+		show():IPromise<void>;
+		hide():IPromise<void>;
+	}
+
+	var Dialog:{
+		new (kwArgs?:Object, srcNodeRef?:HTMLElement):Dialog;
+	};
+
+	export = Dialog;
+}
+
 declare module 'dijit/DropDownMenu' {
 	import _MenuBase = require('dijit/_MenuBase');
 
