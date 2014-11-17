@@ -29,13 +29,13 @@ class Dialog extends DijitWidget implements IDialog {
 		ContainerMixin.prototype._isAttachedSetter.apply(this, arguments);
 	}
 
-	protected _isShowing:boolean;
-	protected _isShowingGetter():boolean {
-		return this._isShowing;
+	protected _isOpen:boolean;
+	protected _isOpenGetter():boolean {
+		return this._isOpen;
 	}
-	protected _isShowingSetter(value:boolean):void {
+	protected _isOpenSetter(value:boolean):void {
 		var type = value ? 'show' : 'hide';
-		this._isShowing = value;
+		this._isOpen = value;
 		(<any>this._widget)[type]();
 	}
 
@@ -53,7 +53,7 @@ class Dialog extends DijitWidget implements IDialog {
 	set:Dialog.Setters;
 
 	constructor(kwArgs?:HashMap<any>) {
-		util.deferSetters(this, [ 'title', 'children', 'isShowing' ], '_render');
+		util.deferSetters(this, [ 'title', 'children', 'isOpen' ], '_render');
 		super(kwArgs);
 		ContainerMixin.apply(this, arguments);
 	}
@@ -71,7 +71,7 @@ class Dialog extends DijitWidget implements IDialog {
 		var self = this;
 		this._widget.watch('open', function (name:string, oldValue:boolean, newValue:boolean):void {
 			if (!newValue) {
-				self.set('isShowing', false);
+				self.set('isOpen', false);
 			}
 		});
 	}

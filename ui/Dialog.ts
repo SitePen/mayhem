@@ -12,11 +12,11 @@ interface Dialog extends Container {
 module Dialog {
 	export interface Events extends Container.Events {}
 	export interface Getters extends Container.Getters {
-		(key:'isShowing'):boolean;
+		(key:'isOpen'):boolean;
 		(key:'title'):string;
 	}
 	export interface Setters extends Container.Setters {
-		(key:'isShowing', value:boolean):void;
+		(key:'isOpen', value:boolean):void;
 		(key:'title', value:string):void;
 	}
 }
