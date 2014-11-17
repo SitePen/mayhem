@@ -12,8 +12,8 @@ class NullRouter extends Router {
 	 * Starts the router, using the current hash as the initial route to load. If no hash is set, the `defaultRoute`
 	 * will be set as the hash and loaded.
 	 */
-	startup():IPromise<void> {
-		var promise = super.startup();
+	run():IPromise<void> {
+		var promise = super.run();
 		this._handlePathChange(this.createPath.apply(this, this.get('defaultRoute')));
 		return promise;
 	}

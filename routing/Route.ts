@@ -117,7 +117,7 @@ class Route extends BaseRoute implements routing.IRoute {
 		super.destroy();
 	}
 
-	startup():IPromise<void> {
+	run():IPromise<void> {
 		has('debug') && console.debug('preparing', this._id);
 
 		var self = this;
@@ -142,7 +142,7 @@ class Route extends BaseRoute implements routing.IRoute {
 
 		var promise:Promise<void> = Promise.all(promises).then(function ():void {});
 
-		this.startup = function ():IPromise<void> {
+		this.run = function ():IPromise<void> {
 			return promise;
 		};
 

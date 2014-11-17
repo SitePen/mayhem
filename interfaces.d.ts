@@ -7,7 +7,7 @@ export interface IApplication extends ObservableEvented {
 	get:IApplication.Getters;
 	on:IApplication.Events;
 	set:IApplication.Setters;
-	startup():IPromise<IApplication>;
+	run():IPromise<IApplication>;
 }
 
 export declare module IApplication {
@@ -23,8 +23,7 @@ export declare module IApplication {
 export interface IApplicationComponent extends IObservable {
 	get:IApplicationComponent.Getters;
 	set:IApplicationComponent.Setters;
-	prepare?():IPromise<void>;
-	startup?():IPromise<void>;
+	run?():IPromise<void>;
 }
 
 export declare module IApplicationComponent {
@@ -67,13 +66,6 @@ export interface IErrorEvent extends IEvent {
 
 export interface IEventListener<T extends IEvent> {
 	(event:T):void;
-}
-
-////
-
-// TODO: Should be getDescriptor or similar
-export interface IHasMetadata {
-	getMetadata(key:string):IObservable;
 }
 
 ////

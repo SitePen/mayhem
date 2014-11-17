@@ -143,7 +143,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		for (var id in routes) {
 			route = routes[id];
 			if (route.test(event.newPath)) {
-				promises.push(route.startup());
+				promises.push(route.run());
 				newRoutes.push(route);
 
 				if (array.indexOf(this._activeRoutes, route) === -1) {
@@ -188,7 +188,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 		var self = this;
 		var notFoundRoute = this._routes[this._notFoundRoute];
 		this._activeRoutes.push(notFoundRoute);
-		return Promise.resolve(notFoundRoute.startup()).then(function ():void {
+		return Promise.resolve(notFoundRoute.run()).then(function ():void {
 			notFoundRoute.enter(event);
 		}).otherwise(function (error:Error):void {
 			self._emitError(error);
@@ -339,14 +339,14 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 	}
 
-	startup():IPromise<void> {
+	run():IPromise<void> {
 		var self = this;
-		var promise:Promise<void> = this._app.get('ui').startup().then(function ():void {
+		var promise:Promise<void> = this._app.get('ui').run().then(function ():void {
 			self.resume();
 		});
 
 		this._routesSetter = function ():void {};
-		this.startup = function ():IPromise<void> {
+		this.run = function ():IPromise<void> {
 			return promise;
 		};
 
