@@ -1,6 +1,5 @@
 import core = require('./interfaces');
 import has = require('./has');
-import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 /**
@@ -60,7 +59,7 @@ class Observable implements core.IObservable {
 	 * whenever you are finished working with any Observable object.
 	 */
 	destroy():void {
-		this.destroy = function ():void {};
+		this.destroy = function () {};
 		this._observers = null;
 	}
 
@@ -128,9 +127,15 @@ module Observable {
 Observable.prototype.get = function (key:string):any {
 	var privateKey:string = '_' + key;
 	var getter:string = privateKey + 'Getter';
+	var setter:string = privateKey + 'Setter';
 
-	if (typeof this[getter] === 'function') {
+	if (this[getter]) {
 		return this[getter]();
+	}
+
+	// To match ES5 get/set
+	if (this[setter]) {
+		return undefined;
 	}
 
 	// TODO: This is a hack to deal with underscored properties in Observable; when that gets removed, remove
@@ -160,10 +165,18 @@ Observable.prototype.set = function (key:any, value?:any):void {
 
 	var oldValue:any = this.get(key);
 	var privateKey:string = '_' + key;
+	var getter:string = privateKey + 'Getter';
 	var setter:string = privateKey + 'Setter';
 
-	if (typeof this[setter] === 'function') {
+	if (this[setter]) {
 		this[setter](value);
+	}
+	else if (this[getter]) {
+		// TODO: Should throw error to match ES5 strict mode, but this will break two-way bindings bound to a read-only
+		// property
+		// throw new TypeError('Cannot set read-only property "' + key + '"');
+		console.warn('Cannot set read-only property "' + key + '"');
+		return;
 	}
 	else {
 		this[privateKey] = value;

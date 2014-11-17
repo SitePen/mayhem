@@ -175,6 +175,9 @@ class Iterator<T> extends SingleNodeWidget {
 		super(kwArgs);
 	}
 
+	_collectionGetter():dstore.ICollection<T> {
+		return this._collection;
+	}
 	_collectionSetter(value:dstore.ICollection<T>):void {
 		if (value) {
 			var store:IStore<T> = new DstoreAdapter(value);
@@ -194,6 +197,9 @@ class Iterator<T> extends SingleNodeWidget {
 		this._collection = value;
 	}
 
+	_isAttachedGetter():boolean {
+		return this._isAttached;
+	}
 	_isAttachedSetter(value:boolean):void {
 		this._widget.set('isAttached', value);
 		this._isAttached = value;

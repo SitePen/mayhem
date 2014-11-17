@@ -1,5 +1,5 @@
 import MultiNodeWidget = require('../../../ui/dom/MultiNodeWidget');
-import CorePromise = require('../../../Promise');
+import Promise = require('../../../Promise');
 import View = require('../../../ui/View');
 import util = require('../../../util');
 
@@ -15,25 +15,28 @@ function createSetter(property:string):(value:View) => void {
 	};
 }
 
-class Promise<T> extends MultiNodeWidget {
+class PromiseWidget<T> extends MultiNodeWidget {
 	private _fulfilled:View;
 	private _pending:View;
-	private _value:CorePromise<T>;
+	private _value:Promise<T>;
 	private _rejected:View;
 
-	get:Promise.Getters<T>;
-	on:Promise.Events;
-	set:Promise.Setters<T>;
+	get:PromiseWidget.Getters<T>;
+	on:PromiseWidget.Events;
+	set:PromiseWidget.Setters<T>;
 
 	constructor(kwArgs?:HashMap<any>) {
 		util.deferSetters(this, [ 'value' ], '_render');
 		super(kwArgs);
 	}
 
+	_valueGetter():Promise<T> {
+		return this._value;
+	}
 	_valueSetter(value:T):void;
-	_valueSetter(value:CorePromise<T>):void;
+	_valueSetter(value:Promise<T>):void;
 	_valueSetter(value:any):void {
-		this._value = CorePromise.resolve<T>(value);
+		this._value = Promise.resolve<T>(value);
 		var self = this;
 
 		if (!this._value.isResolved()) {
@@ -78,30 +81,41 @@ class Promise<T> extends MultiNodeWidget {
 		);
 	}
 
+	_pendingGetter():View {
+		return this._pending;
+	}
 	_pendingSetter:(value:View) => void;
+
+	_rejectedGetter():View {
+		return this._rejected;
+	}
 	_rejectedSetter:(value:View) => void;
+
+	_fulfilledGetter():View {
+		return this._fulfilled;
+	}
 	_fulfilledSetter:(value:View) => void;
 }
 
-Promise.prototype._pendingSetter = createSetter('_pending');
-Promise.prototype._rejectedSetter = createSetter('_rejected');
-Promise.prototype._fulfilledSetter = createSetter('_fulfilled');
+PromiseWidget.prototype._pendingSetter = createSetter('_pending');
+PromiseWidget.prototype._rejectedSetter = createSetter('_rejected');
+PromiseWidget.prototype._fulfilledSetter = createSetter('_fulfilled');
 
-module Promise {
+module PromiseWidget {
 	export interface Events extends MultiNodeWidget.Events {}
 	export interface Getters<T> extends MultiNodeWidget.Getters {
 		(key:'pending'):View;
-		(key:'value'):CorePromise<T>;
+		(key:'value'):Promise<T>;
 		(key:'rejected'):View;
 		(key:'resolved'):View;
 	}
 	export interface Setters<T> extends MultiNodeWidget.Setters {
 		(key:'pending', value:View):void;
 		(key:'value', value:T):void;
-		(key:'value', value:CorePromise<T>):void;
+		(key:'value', value:Promise<T>):void;
 		(key:'rejected', value:View):void;
 		(key:'resolved', value:View):void;
 	}
 }
 
-export = Promise;
+export = PromiseWidget;

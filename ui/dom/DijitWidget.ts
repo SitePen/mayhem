@@ -43,11 +43,17 @@ class DijitWidget extends SingleNodeWidget {
 	 */
 	_widget:_WidgetBase;
 
+	_isAttachedGetter():boolean {
+		return this._isAttached;
+	}
 	_isAttachedSetter(value:boolean):void {
 		value && this._widget.startup();
 		this._isAttached = value;
 	}
 
+	_isFocusedGetter():boolean {
+		return this._isFocused;
+	}
 	_isFocusedSetter(value:boolean):void {
 		value && this._widget.domNode.focus();
 		this._isFocused = value;

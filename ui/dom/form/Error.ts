@@ -1,7 +1,6 @@
 import binding = require('../../../binding/interfaces');
 import MultiNodeWidget = require('../MultiNodeWidget');
 import IError = require('../../form/Error');
-import util = require('../../../util');
 import lang = require('dojo/_base/lang');
 import domConstruct = require('dojo/dom-construct');
 
@@ -33,6 +32,9 @@ class ErrorWidget extends MultiNodeWidget implements IError {
 		super.destroy();
 	}
 
+	_errorsGetter():Error[] {
+		return this._errors;
+	}
 	_errorsSetter(errors:Error[]):void {
 		this._errors = errors;
 
@@ -41,6 +43,9 @@ class ErrorWidget extends MultiNodeWidget implements IError {
 		}
 	}
 
+	_prefixGetter():string {
+		return this._prefix;
+	}
 	_prefixSetter(prefix:string):void {
 		this._prefix = prefix;
 
@@ -49,6 +54,9 @@ class ErrorWidget extends MultiNodeWidget implements IError {
 		}
 	}
 
+	_isAttachedGetter():boolean {
+		return this._isAttached;
+	}
 	_isAttachedSetter(value:boolean):void {
 		this._isAttached = value;
 

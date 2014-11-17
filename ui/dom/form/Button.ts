@@ -32,6 +32,9 @@ class Button extends DijitWidget implements IButton {
 	 */
 	_icon:string;
 
+	_formattedLabelGetter():string {
+		return this._formattedLabel;
+	}
 	_formattedLabelSetter(value:string):void {
 		var oldFormattedLabel = this._formattedLabel;
 		this._formattedLabel = value;

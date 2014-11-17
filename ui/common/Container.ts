@@ -66,6 +66,9 @@ class ContainerMixin {
 	/**
 	 * @protected
 	 */
+	_isAttachedGetter():boolean {
+		return this._isAttached;
+	}
 	_isAttachedSetter(value:boolean):void {
 		var children:Widget[] = this._children;
 		// When a container is destroyed, its children are all first destroyed and its `children` property is nulled.
