@@ -474,13 +474,10 @@ class PointerManager {
 		}
 
 		listeners.push(listener);
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				util.spliceMatch(listeners, listener);
-				listeners = listener = null;
-			}
-		};
+		return util.createHandle(function () {
+			util.spliceMatch(listeners, listener);
+			listeners = listener = null;
+		});
 	}
 }
 

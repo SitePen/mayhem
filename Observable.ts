@@ -113,13 +113,10 @@ class Observable implements core.IObservable {
 		var observers:core.IObserver<any>[] = this._observers[key];
 		observers.push(observer);
 
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				util.spliceMatch(observers, observer);
-				observers = observer = null;
-			}
-		};
+		return util.createHandle(function () {
+			util.spliceMatch(observers, observer);
+			observers = observer = null;
+		});
 	}
 }
 

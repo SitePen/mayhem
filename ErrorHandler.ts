@@ -6,6 +6,7 @@ import aspect = require('dojo/aspect');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
 import Observable = require('./Observable');
+import util = require('./util');
 import View = require('./ui/View');
 import WebApplication = require('./WebApplication');
 
@@ -68,12 +69,9 @@ class ErrorHandler extends Observable {
 			else if (has('host-node')) {
 				var listener = lang.hitch(this, 'handleError');
 				process.on('uncaughtException', listener);
-				this._handle = {
-					remove: function ():void {
-						this.remove = function ():void {};
-						process.removeListener('uncaughtException', listener);
-					}
-				};
+				this._handle = util.createHandle(function () {
+					process.removeListener('uncaughtException', listener);
+				});
 			}
 		}
 	}

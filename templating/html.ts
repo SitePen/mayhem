@@ -165,7 +165,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 					this._bindingHandles[key] = {
 						setSource: rebind,
 						remove: function ():void {
-							this.remove = function ():void {};
+							this.remove = function () {};
 							binding.destroy();
 							handle.remove();
 							binder = value = binding = handle = null;

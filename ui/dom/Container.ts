@@ -2,6 +2,7 @@ import AddPosition = require('../AddPosition');
 import ContainerMixin = require('../common/Container');
 import IContainer = require('../Container');
 import MultiNodeWidget = require('./MultiNodeWidget');
+import util = require('../../util');
 import Widget = require('./Widget');
 
 class Container extends MultiNodeWidget implements IContainer {
@@ -39,13 +40,10 @@ class Container extends MultiNodeWidget implements IContainer {
 		ContainerMixin.prototype.add.call(this, child);
 
 		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self.remove(child);
-				self = child = null;
-			}
-		};
+		return util.createHandle(function () {
+			self.remove(child);
+			self = child = null;
+		});
 	}
 
 	/**
