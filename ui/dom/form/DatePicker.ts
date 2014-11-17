@@ -43,6 +43,9 @@ class DatePicker extends DijitWidget implements IDatePicker {
 		super(kwArgs);
 	}
 
+	protected _maxGetter():Date {
+		return this._max;
+	}
 	protected _maxSetter(date:Date):void {
 		this._max = date;
 		var constraints:{
@@ -57,6 +60,9 @@ class DatePicker extends DijitWidget implements IDatePicker {
 		this._widget.set('constraints', constraints);
 	}
 
+	protected _minGetter():Date {
+		return this._min;
+	}
 	protected _minSetter(date:Date):void {
 		this._min = date;
 		var constraints:{

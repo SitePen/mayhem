@@ -86,6 +86,9 @@ class ElementWidget extends Container {
 	/**
 	 * @override
 	 */
+	_childrenGetter():Widget[] {
+		return this._children;
+	}
 	_childrenSetter(value:Widget[]):void {
 		// Children can only be set at construction time on this widget
 		for (var i = 0, child:Widget; (child = value[i]); ++i) {

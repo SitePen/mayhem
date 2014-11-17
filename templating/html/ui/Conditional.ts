@@ -96,6 +96,9 @@ class Conditional extends MultiNodeWidget {
 	/**
 	 * @protected
 	 */
+	_isAttachedGetter():boolean {
+		return this._isAttached;
+	}
 	_isAttachedSetter(value:boolean):void {
 		if (value) {
 			this._bindConditions();

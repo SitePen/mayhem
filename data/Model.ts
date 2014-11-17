@@ -180,6 +180,9 @@ class Model extends Observable implements data.IModel {
 		this._notify('isDirty', false, wasDirty);
 	}
 
+	_scenarioGetter():string {
+		return this._scenario;
+	}
 	_scenarioSetter(value:string):void {
 		var scenarios:HashMap<string[]> = this.get('scenarios');
 		if (scenarios && !scenarios[value]) {

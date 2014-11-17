@@ -44,6 +44,9 @@ class Master extends MultiNodeWidget implements IMaster {
 		this._eventManager = new EventManager(this);
 	}
 
+	_rootGetter():Element {
+		return this._root;
+	}
 	_rootSetter(root:Element):void {
 		this._root = root;
 		root && this._view && this._initializeView();
@@ -76,6 +79,9 @@ class Master extends MultiNodeWidget implements IMaster {
 		return promise;
 	}
 
+	_viewGetter():any {
+		return this._view;
+	}
 	_viewSetter(view:View):void;
 	_viewSetter(view:string):void;
 	_viewSetter(view:any):void {

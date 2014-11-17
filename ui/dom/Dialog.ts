@@ -22,6 +22,9 @@ class Dialog extends DijitWidget implements IDialog {
 		ContainerMixin.prototype._childrenSetter.apply(this, arguments);
 	}
 
+	_isAttachedGetter():boolean {
+		return ContainerMixin.prototype._isAttachedGetter.apply(this, arguments);
+	}
 	_isAttachedSetter(value:boolean):void {
 		ContainerMixin.prototype._isAttachedSetter.apply(this, arguments);
 	}

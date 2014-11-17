@@ -148,6 +148,9 @@ class Proxy<T> extends Observable {
 		return super.observe(key, observer);
 	}
 
+	_targetGetter():T {
+		return this._target;
+	}
 	_targetSetter(target:T):void {
 		this._target = target;
 

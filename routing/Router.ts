@@ -266,6 +266,9 @@ class Router extends ObservableEvented implements routing.IRouter {
 		}
 	}
 
+	_routesGetter():HashMap<any> {
+		return this._routes;
+	}
 	_routesSetter(routeMap:HashMap<any>):void {
 		var routes = this._routes = {};
 

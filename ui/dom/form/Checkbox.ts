@@ -32,6 +32,9 @@ class Checkbox extends DijitWidget implements ICheckbox {
 	 */
 	_value:CheckboxValue;
 
+	_checkedGetter():boolean {
+		return this.get('value') === CheckboxValue.TRUE;
+	}
 	_checkedSetter(value:boolean):void {
 		this.set('value', value ? CheckboxValue.TRUE : CheckboxValue.FALSE);
 	}
@@ -51,6 +54,9 @@ class Checkbox extends DijitWidget implements ICheckbox {
 		});
 	}
 
+	_valueGetter():CheckboxValue {
+		return this._value;
+	}
 	_valueSetter(value:CheckboxValue):void {
 		this._value = value;
 

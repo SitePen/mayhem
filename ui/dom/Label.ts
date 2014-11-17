@@ -28,6 +28,9 @@ class Label extends MultiNodeWidget implements ILabel {
 		super(kwArgs);
 	}
 
+	_formattedTextGetter():string {
+		return this._formattedText;
+	}
 	_formattedTextSetter(value:string):void {
 		domUtil.extractContents(this._firstNode, this._lastNode, true);
 
@@ -42,6 +45,9 @@ class Label extends MultiNodeWidget implements ILabel {
 		this._notify('text', this._text, oldTextValue);
 	}
 
+	_textGetter():string {
+		return this._text;
+	}
 	_textSetter(value:string):void {
 		this.set('formattedText', util.escapeXml(value));
 	}

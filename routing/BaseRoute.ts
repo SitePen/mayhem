@@ -80,6 +80,9 @@ class BaseRoute extends Observable {
 	get:BaseRoute.Getters;
 	set:BaseRoute.Setters;
 
+	_isCaseSensitiveGetter():boolean {
+		return this._isCaseSensitive;
+	}
 	_isCaseSensitiveSetter(isCaseSensitive:boolean):void {
 		var regExpFlags:string = isCaseSensitive ? '' : 'i';
 
@@ -99,6 +102,9 @@ class BaseRoute extends Observable {
 		this._isCaseSensitive = isCaseSensitive;
 	}
 
+	_pathGetter():string {
+		return this._path;
+	}
 	_pathSetter(path:string):void {
 		/**
 		 * Gets a part of the path string corresponding to the given start and end indexes and escapes it for use within
