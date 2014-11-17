@@ -108,7 +108,7 @@
 
 	var tree = {
 		_constructors: {},
-		_tagMap: {},
+		tagMap: {},
 
 		/**
 		 * Adds a new tag to the tags understood by this template.
@@ -121,7 +121,7 @@
 		 *   * `column` (number): The one-indexed column number where the alias was defined in the template.
 		 */
 		addTag: function (newAlias) {
-			var map = this._tagMap;
+			var map = this.tagMap;
 
 			// Tags are case-insensitive
 			var tag = newAlias.tag.toLowerCase();
@@ -486,7 +486,9 @@ PendingRejectedTags
 // widgets
 
 Widget '<widget></widget>'
-	= kwArgs:WidgetTagOpen children:Any* WidgetTagClose {
+	= kwArgs:WidgetTagOpen children:(
+		'/>' { return []; } / '>' children:Any* WidgetTagClose { return children; }
+	) {
 		var widget = {};
 
 		for (var key in kwArgs) {
@@ -510,7 +512,7 @@ Widget '<widget></widget>'
 	}
 
 WidgetTagOpen '<widget>'
-	= '<widget'i kwArgs:AttributeMap '>' {
+	= '<widget'i kwArgs:AttributeMap & ('/'? '>') {
 		validate(kwArgs, {
 			type: '<widget>',
 			required: [ 'is' ],
@@ -524,9 +526,12 @@ WidgetTagClose '</widget>'
 	= '</widget>'i
 
 AliasedWidget '<tag></tag>'
-	= kwArgs:AliasedWidgetTagOpen children:Any* end:AliasedWidgetTagClose & { return end === kwArgs.tagName; } {
+	= kwArgs:AliasedWidgetTagOpen children:(
+		'/>' { return []; }
+		/ '>' children:Any* end:AliasedWidgetTagClose & { return end === kwArgs.tagName; } { return children; }
+	) {
 		var widget = {
-			constructor: tree._tagMap[kwArgs.tagName].to
+			constructor: tree.tagMap[kwArgs.tagName].to
 		};
 
 		for (var key in kwArgs) {
@@ -548,13 +553,13 @@ AliasedTagName
 	}
 
 AliasedWidgetTagOpen '<tag>'
-	= '<' tagName:AliasedTagName &{ return tree._tagMap[tagName] } kwArgs:AttributeMap '>' {
+	= '<' tagName:AliasedTagName &{ return tree.tagMap[tagName]; } kwArgs:AttributeMap & ('/'? '>') {
 		kwArgs.tagName = tagName;
 		return kwArgs;
 	}
 
 AliasedWidgetTagClose '</tag>'
-	= '</' tagName:AliasedTagName &{ return tree._tagMap[tagName] } '>' {
+	= '</' tagName:AliasedTagName &{ return tree.tagMap[tagName]; } '>' {
 		return tagName;
 	}
 
