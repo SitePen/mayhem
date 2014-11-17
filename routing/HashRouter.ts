@@ -94,9 +94,9 @@ class HashRouter extends Router {
 	 * Starts the router, using the current hash as the initial route to load. If no hash is set, the `defaultRoute`
 	 * will be set as the hash and loaded.
 	 */
-	startup():IPromise<void> {
+	run():IPromise<void> {
 		var self = this;
-		return Promise.resolve(super.startup()).then(function ():void {
+		return Promise.resolve(super.run()).then(function ():void {
 			var initialRoute = hash();
 			if (initialRoute) {
 				self._handlePathChange(self.normalizeId(initialRoute));

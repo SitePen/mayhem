@@ -253,7 +253,7 @@ class Binder extends Observable implements binding.IBinder {
 		}
 	}
 
-	startup():Promise<void> {
+	run():Promise<void> {
 		// This is needed because bindings can be set up in the configuration of the app
 		var constructors = this._constructors;
 
@@ -272,7 +272,7 @@ class Binder extends Observable implements binding.IBinder {
 		}
 
 		var promise:Promise<void> = Promise.all(promises).then(function ():void {});
-		this.startup = function ():Promise<void> {
+		this.run = function ():Promise<void> {
 			return promise;
 		};
 		return promise;

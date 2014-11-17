@@ -43,7 +43,9 @@ class ErrorHandler extends Observable {
 		}
 	}
 
-	startup():void {
+	run():void {
+		this.run = function ():void {};
+
 		var self = this;
 		if (this._handleGlobalErrors) {
 			if (has('host-browser')) {

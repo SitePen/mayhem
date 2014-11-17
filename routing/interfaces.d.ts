@@ -6,7 +6,7 @@ export interface IRoute extends core.IObservable {
 	enter(event:RouteEvent):void;
 	exit(event:RouteEvent):void;
 	set:IRoute.Setters;
-	startup():IPromise<void>;
+	run():IPromise<void>;
 }
 
 export declare module IRoute {
@@ -32,7 +32,7 @@ export interface IRouter extends core.IObservable {
 	resetPath(path:string, replace?:boolean):void;
 	resume():void;
 	set:IRouter.Setters;
-	startup():IPromise<void>;
+	run():IPromise<void>;
 }
 
 export declare module IRouter {

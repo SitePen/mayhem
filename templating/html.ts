@@ -310,7 +310,7 @@ export function createFromFile(filename:string):IPromise<WidgetConstructor> {
  * @param require Context-specific require.
  * @param load Callback function passed a templated widget constructor.
  */
-export function load(resourceId:string, require:typeof require, load:(value:WidgetConstructor) => void):void {
+export function load(resourceId:string, _:typeof require, load:(value:WidgetConstructor) => void):void {
 	createFromFile(resourceId).then(load);
 }
 

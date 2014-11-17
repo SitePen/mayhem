@@ -44,14 +44,14 @@ registerSuite({
 			});
 		}
 
-		return app.startup();
+		return app.run();
 	},
 
 	beforeEach() {
 		errorHandler = new ErrorHandler({
 			app: app
 		});
-		return errorHandler.startup();
+		return errorHandler.run();
 	},
 
 	afterEach() {

@@ -16,7 +16,7 @@ class Master extends MultiNodeWidget implements IMaster {
 	set:Master.Setters;
 
 	constructor(kwArgs?:HashMap<any>) {
-		util.deferSetters(this, [ 'root', 'view' ], 'startup', function (setter:string, value:any):void {
+		util.deferSetters(this, [ 'root', 'view' ], 'run', function (setter:string, value:any):void {
 			if (setter === 'view') {
 				this._view = value;
 			}
@@ -49,13 +49,13 @@ class Master extends MultiNodeWidget implements IMaster {
 		root && this._view && this._initializeView();
 	}
 
-	startup():Promise<void> {
+	run():Promise<void> {
 		var self = this;
 		var promise:Promise<void>;
 
 		if (typeof this._view === 'string') {
 			promise = util.getModule(<any> this._view).then(function (view:any):Promise<void> {
-				return self._app.get('binder').startup().then(function ():void {
+				return self._app.get('binder').run().then(function ():void {
 					// TODO: Should it really be valid to provide an existing view object and not a constructor?
 					if (typeof view === 'function') {
 						view = new view({ app: self._app });
@@ -69,7 +69,7 @@ class Master extends MultiNodeWidget implements IMaster {
 			promise = Promise.resolve<void>(undefined);
 		}
 
-		this.startup = function ():Promise<void> {
+		this.run = function ():Promise<void> {
 			return promise;
 		};
 

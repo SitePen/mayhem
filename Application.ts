@@ -60,17 +60,17 @@ interface ComponentConstructor {
  * 1. The Application object is constructed
  * 2. The configuration object passed to the constructor is merged into the default configuration object for the
  *    Application subclass
- * 3. {@link module:mayhem/Application#startup} is called by the user when they are ready for the application to start
+ * 3. {@link module:mayhem/Application#run} is called by the user when they are ready for the application to start
  * 4. Unloaded application component constructors from the
  *    {@link module:mayhem/Application#components components configuration} are {@link external:require required}
  * 5. Application components from the {@link module:mayhem/Application#components components configuration} are
  *    instantiated and attached to the Application object
- * 6. The {@link module:mayhem/ApplicationComponent#startup} method is called on application components that have a
- *    startup method
+ * 6. The {@link module:mayhem/ApplicationComponent#run} method is called on application components that have a
+ *    `run` method
  * 7. Once all application components have finished starting, the promise returned by the
- *    {@link module:mayhem/Application#startup} method is resolved
+ *    {@link module:mayhem/Application#run} method is resolved
  *
- * If an error occurs during the startup lifecycle, the promise returned by the startup method will be rejected.
+ * If an error occurs during the startup lifecycle, the promise returned by the `run` method will be rejected.
  *
  * @example
  * An Application created with a custom application component:
@@ -87,12 +87,12 @@ interface ComponentConstructor {
  * });
  * ```
  *
- * Internally, this will do something similar to the following when {@link module:mayhem/Application#startup} is called:
+ * Internally, this will do something similar to the following when {@link module:mayhem/Application#run} is called:
  *
  * ```ts
  * require([ 'app/services/CustomService' ], function (CustomService) {
  *   app.myService = new CustomService({ configFoo: 'foo' });
- *   app.myService.startup && app.myService.startup();
+ *   app.myService.run && app.myService.run();
  * });
  * ```
  */
@@ -128,7 +128,7 @@ class Application extends ObservableEvented {
 
 	/**
 	 * A hash map of application components that will be dynamically loaded and set on the Application object when it is
-	 * {@link module:mayhem/Application#startup started}. The values of the map are {@link TODO keyword arguments}
+	 * {@link module:mayhem/Application#run started}. The values of the map are {@link TODO keyword arguments}
 	 * objects that should be passed to a constructor function, plus a `constructor` key indicating the constructor
 	 * function to use. The `constructor` value can either be a module ID, in which case the module will be dynamically
 	 * loaded at runtime and its value used as the constructor, or a constructor function, in which case it will be used
@@ -196,7 +196,7 @@ class Application extends ObservableEvented {
 	 *
 	 * @returns A promise that is resolved once all application components have loaded and started.
 	 */
-	startup():IPromise<Application> {
+	run():IPromise<Application> {
 		var self = this;
 		var components:HashMap<any> = this._components;
 
@@ -239,7 +239,7 @@ class Application extends ObservableEvented {
 			}
 
 			while ((instance = instances.shift())) {
-				instance.startup && startups.push(instance.startup());
+				instance.run && startups.push(instance.run());
 			}
 
 			return Promise.all(startups);
@@ -258,7 +258,7 @@ class Application extends ObservableEvented {
 				return self;
 			});
 
-		this.startup = function ():IPromise<Application> {
+		this.run = function ():IPromise<Application> {
 			return promise;
 		};
 
