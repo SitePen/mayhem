@@ -2,6 +2,7 @@
 
 import has = require('../../has');
 import Master = require('./Master');
+import util = require('../../util');
 import Widget = require('./Widget');
 
 var Node:Node;
@@ -216,13 +217,10 @@ export var on:(target:EventTarget, type:string, listener:EventListener) => IHand
 if (has('dom-addeventlistener')) {
 	on = function (target:EventTarget, type:string, listener:EventListener):IHandle {
 		target.addEventListener(type, listener, true);
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				target.removeEventListener(type, listener, true);
-				target = type = listener = null;
-			}
-		};
+		return util.createHandle(function () {
+			target.removeEventListener(type, listener, true);
+			target = type = listener = null;
+		});
 	};
 }
 else {
@@ -249,13 +247,10 @@ else {
 			listener.call(this, event);
 		});
 
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				target.detachEvent('on' + type, listener);
-				target = type = listener = null;
-			}
-		};
+		return util.createHandle(function () {
+			target.detachEvent('on' + type, listener);
+			target = type = listener = null;
+		});
 	};
 }
 

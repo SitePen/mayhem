@@ -18,7 +18,7 @@ class Binding<T> implements binding.IBinding<T> {
 	}
 
 	destroy():void {
-		this.destroy = function ():void {};
+		this.destroy = function () {};
 		this._observers = this._binder = null;
 	}
 
@@ -42,13 +42,10 @@ class Binding<T> implements binding.IBinding<T> {
 		observers.push(observer);
 		invokeImmediately && observer({ value: this.get() });
 
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				util.spliceMatch(observers, observer);
-				observers = observer = null;
-			}
-		};
+		return util.createHandle(function () {
+			util.spliceMatch(observers, observer);
+			observers = observer = null;
+		});
 	}
 }
 

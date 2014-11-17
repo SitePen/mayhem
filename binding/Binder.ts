@@ -57,20 +57,16 @@ class Binder extends Observable implements binding.IBinder {
 
 		constructors.splice(index, 0, Ctor);
 
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-
-				for (var i = 0, MaybeCtor:binding.IBindingConstructor; (MaybeCtor = constructors[i]); ++i) {
-					if (Ctor === MaybeCtor) {
-						constructors.splice(i, 1);
-						break;
-					}
+		return util.createHandle(function () {
+			for (var i = 0, MaybeCtor:binding.IBindingConstructor; (MaybeCtor = constructors[i]); ++i) {
+				if (Ctor === MaybeCtor) {
+					constructors.splice(i, 1);
+					break;
 				}
-
-				Ctor = constructors = null;
 			}
-		};
+
+			Ctor = constructors = null;
+		});
 	}
 
 	/**
@@ -142,7 +138,7 @@ class Binder extends Observable implements binding.IBinder {
 				}
 			},
 			remove: function ():void {
-				this.remove = function ():void {};
+				this.remove = function () {};
 				source.destroy();
 				target.destroy();
 				self = source = target = targetObserverHandle = null;
@@ -234,14 +230,11 @@ class Binder extends Observable implements binding.IBinder {
 				var handle:IHandle = binding.observe.apply(binding, arguments);
 				var localObservers = this._localObservers;
 				localObservers.push(observer);
-				return {
-					remove: function ():void {
-						this.remove = function ():void {};
-						util.spliceMatch(localObservers, observer);
-						handle.remove();
-						handle = localObservers = observer = null;
-					}
-				};
+				return util.createHandle(function () {
+					util.spliceMatch(localObservers, observer);
+					handle.remove();
+					handle = localObservers = observer = null;
+				});
 			}
 		});
 	}

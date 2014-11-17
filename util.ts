@@ -12,12 +12,9 @@ declare var process:any;
 export function addUnloadCallback(callback:() => void):IHandle {
 	if (has('host-node')) {
 		process.on('exit', callback);
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				process.removeListener('exit', callback);
-			}
-		};
+		return createHandle(function () {
+			process.removeListener('exit', callback);
+		});
 	}
 	else if (has('host-browser')) {
 		return aspect.before(window, 'onbeforeunload', callback);
@@ -29,12 +26,18 @@ export function addUnloadCallback(callback:() => void):IHandle {
 }
 
 export function createCompositeHandle(...handles:IHandle[]):IHandle {
+	return createHandle(function () {
+		for (var i = 0, handle:IHandle; (handle = handles[i]); ++i) {
+			handle.remove();
+		}
+	});
+}
+
+export function createHandle(destructor:() => void):IHandle {
 	return {
-		remove: function ():void {
-			this.remove = function ():void {};
-			for (var i:number = 0, handle:IHandle; (handle = handles[i]); ++i) {
-				handle.remove();
-			}
+		remove: function () {
+			this.remove = function () {};
+			destructor.call(this);
 		}
 	};
 }
@@ -43,23 +46,17 @@ export function createTimer(callback:(...args:any[]) => void, delay:number = 0):
 	var timerId:number;
 	if (has('raf') && delay === 0) {
 		timerId = requestAnimationFrame(callback);
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				cancelAnimationFrame(timerId);
-				timerId = null;
-			}
-		};
+		return createHandle(function () {
+			cancelAnimationFrame(timerId);
+			timerId = null;
+		});
 	}
 	else {
 		timerId = setTimeout(callback, delay);
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				clearTimeout(timerId);
-				timerId = null;
-			}
-		};
+		return createHandle(function () {
+			clearTimeout(timerId);
+			timerId = null;
+		});
 	}
 }
 

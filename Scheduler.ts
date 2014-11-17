@@ -1,6 +1,5 @@
 /// <reference path="./dojo" />
 
-import core = require('./interfaces');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
@@ -16,18 +15,14 @@ class Scheduler {
 	}
 
 	afterNext(callback:(...args:any[]) => void):IHandle {
-		var callbacks = this._postCallbacks,
-			spliceMatch = util.spliceMatch;
+		var callbacks = this._postCallbacks;
 
 		callbacks.push(callback);
 
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				spliceMatch(callbacks, callback);
-				spliceMatch = callbacks = callback = null;
-			}
-		};
+		return util.createHandle(function () {
+			util.spliceMatch(callbacks, callback);
+			callbacks = callback = null;
+		});
 	}
 
 	dispatch():void {
@@ -69,12 +64,9 @@ class Scheduler {
 			this._timer = util.createTimer(this._dispatch);
 		}
 
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				callbacks = id = callbacks[id] = null;
-			}
-		};
+		return util.createHandle(function () {
+			callbacks = id = callbacks[id] = null;
+		});
 	}
 }
 

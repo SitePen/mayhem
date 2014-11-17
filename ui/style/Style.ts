@@ -58,13 +58,10 @@ class Style extends Observable implements style.IStyle {
 			var observers = this._globalObservers;
 			observers.push(observer);
 
-			return {
-				remove: function ():void {
-					this.remove = function ():void {};
-					util.spliceMatch(observers, observer);
-					observers = observer = null;
-				}
-			};
+			return util.createHandle(function () {
+				util.spliceMatch(observers, observer);
+				observers = observer = null;
+			});
 		}
 	}
 }

@@ -87,13 +87,10 @@ class Dialog extends DijitWidget implements IDialog {
 		ContainerMixin.prototype.add.call(this, child);
 
 		var self = this;
-		return {
-			remove: function ():void {
-				this.remove = function ():void {};
-				self.remove(child);
-				self = child = null;
-			}
-		};
+		return util.createHandle(function () {
+			self.remove(child);
+			self = child = null;
+		});
 	}
 
 	destroy():void {
