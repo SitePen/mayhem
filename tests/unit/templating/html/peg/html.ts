@@ -28,7 +28,9 @@ registerSuite({
 	},
 
 	'Widget'() {
-		var ast = parser.parse('<widget is="Widget"></widget>');
+		var ast:templating.IParseTree;
+
+		ast = parser.parse('<widget is="Widget"></widget>');
 		assert.deepEqual(ast, {
 			constructors: [ 'Widget' ],
 			root: { constructor: 'Widget' }
@@ -41,6 +43,16 @@ registerSuite({
 		assert.throws(function () {
 			parser.parse('<widget is></widget>');
 		}, /must be a string/);
+
+		ast = parser.parse('<widget is="Widget" foo={foo} bar={{bar}}></widget>');
+		assert.deepEqual(ast, {
+			constructors: [ 'Widget' ],
+			root: {
+				constructor: 'Widget',
+				foo: { $bind: 'foo', direction: 1 },
+				bar: { $bind: 'bar', direction: 2 }
+			}
+		});
 	},
 
 	'Widget self-close'() {
@@ -107,10 +119,22 @@ registerSuite({
 	},
 
 	'AliasedWidget'() {
-		var ast = parser.parse('<alias tag="foo" to="Foo"><foo></foo>');
+		var ast:templating.IParseTree;
+
+		ast = parser.parse('<alias tag="foo" to="Foo"><foo></foo>');
 		assert.deepEqual(ast, {
 			constructors: [ 'Foo' ],
 			root: { constructor: 'Foo' }
+		});
+
+		ast = parser.parse('<alias tag="foo" to="Widget"><foo foo={foo} bar={{bar}}></foo>');
+		assert.deepEqual(ast, {
+			constructors: [ 'Widget' ],
+			root: {
+				constructor: 'Widget',
+				foo: { $bind: 'foo', direction: 1 },
+				bar: { $bind: 'bar', direction: 2 }
+			}
 		});
 	},
 
@@ -425,6 +449,22 @@ registerSuite({
 					'<div>',
 					{ $child: 0 },
 					{ $child: 1 },
+					'</div>'
+				]
+			}
+		});
+
+		ast = parser.parse('<div class="{{foo}}">{bar}</div>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Element') ],
+			root: {
+				constructor: prefix('templating/html/ui/Element'),
+				children: [],
+				content: [
+					'<div class="',
+					{ $bind: 'foo', direction: 2 },
+					'">',
+					{ $bind: 'bar', direction: 1 },
 					'</div>'
 				]
 			}

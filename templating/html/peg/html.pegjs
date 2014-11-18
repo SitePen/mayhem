@@ -81,6 +81,10 @@
 
 		for (var i = 0, j = results.length; i < j; ++i) {
 			if (results[i].$bind) {
+				if (results.length === 1) {
+					return results[i];
+				}
+
 				return { $bind: results, direction: 1 };
 			}
 		}
