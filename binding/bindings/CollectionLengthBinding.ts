@@ -17,7 +17,7 @@ class CollectionLengthBinding extends Binding<number> {
 
 		var self = this;
 		this._object = <any> kwArgs.object;
-		this._handle = this._object.on('add, update, remove', function (event:dstore.ChangeEvent):void {
+		this._handle = this._object.on('add, update, delete', function (event:dstore.ChangeEvent):void {
 			if (event.totalLength != null) {
 				var oldValue:number = self._value;
 				self._value = event.totalLength;
