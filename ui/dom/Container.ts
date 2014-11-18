@@ -34,9 +34,8 @@ class Container extends MultiNodeWidget implements IContainer {
 
 		var nextWidget:Widget = this._children[position];
 		var nextNode:Node = nextWidget ? nextWidget.get('firstNode') : this._lastNode;
-		var parentNode:Node = nextNode || this._firstNode.parentNode;
 
-		parentNode.insertBefore(child.detach(), nextNode);
+		nextNode.parentNode.insertBefore(child.detach(), nextNode);
 		ContainerMixin.prototype.add.call(this, child);
 
 		var self = this;
