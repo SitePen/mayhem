@@ -512,7 +512,7 @@ Widget '<widget></widget>'
 	}
 
 WidgetTagOpen '<widget>'
-	= '<widget'i kwArgs:AttributeMap & ('/'? '>') {
+	= '<widget'i kwArgs:AttributeMap &('/'? '>') {
 		validate(kwArgs, {
 			type: '<widget>',
 			required: [ 'is' ],
@@ -526,10 +526,17 @@ WidgetTagClose '</widget>'
 	= '</widget>'i
 
 AliasedWidget '<tag></tag>'
-	= kwArgs:AliasedWidgetTagOpen children:(
-		'/>' { return []; }
-		/ '>' children:Any* end:AliasedWidgetTagClose & { return end === kwArgs.tagName; } { return children; }
+	= value:(
+		kwArgs:AliasedWidgetTagOpen '/>' {
+			return { kwArgs: kwArgs, children: [] };
+		}
+		/ kwArgs:AliasedWidgetTagOpen '>' children:Any* end:AliasedWidgetTagClose &{ return end === kwArgs.tagName; } {
+			return { kwArgs: kwArgs, children: children };
+		}
 	) {
+		var children = value.children;
+		var kwArgs = value.kwArgs;
+
 		var widget = {
 			constructor: tree.tagMap[kwArgs.tagName].to
 		};
@@ -540,9 +547,11 @@ AliasedWidget '<tag></tag>'
 			}
 			widget[key] = kwArgs[key];
 		}
+
 		if (children.length) {
 			widget.children = children;
 		}
+
 		return widget;
 	}
 
@@ -553,13 +562,13 @@ AliasedTagName
 	}
 
 AliasedWidgetTagOpen '<tag>'
-	= '<' tagName:AliasedTagName &{ return tree.tagMap[tagName]; } kwArgs:AttributeMap & ('/'? '>') {
+	= '<' tagName:AliasedTagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } kwArgs:AttributeMap & ('/'? '>') {
 		kwArgs.tagName = tagName;
 		return kwArgs;
 	}
 
 AliasedWidgetTagClose '</tag>'
-	= '</' tagName:AliasedTagName &{ return tree.tagMap[tagName]; } '>' {
+	= '</' tagName:AliasedTagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } '>' {
 		return tagName;
 	}
 
