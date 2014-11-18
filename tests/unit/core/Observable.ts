@@ -42,14 +42,29 @@ class ObservableB extends ObservableA {
 }
 
 class GetSetObservable extends Observable {
-	private _bar:string;
-
 	_fooGetter():string {
 		return 'foo';
 	}
 
+	private _bar:string;
+	_barGetter():string {
+		return this._bar;
+	}
 	_barSetter(value:string):void {
 		this._bar = value + 'bar';
+	}
+
+	private _baz:string;
+	_bazSetter(value:string):void {
+		this._baz = value;
+	}
+
+	private _blah:string;
+	_blahGetter():string {
+		return 'blah';
+	}
+	_blahSetter(value:string):void {
+		this._blah = value;
 	}
 }
 
@@ -112,15 +127,22 @@ registerSuite({
 
 		'getters'() {
 			var observable = new GetSetObservable();
-			assert.strictEqual(observable.get('foo'), 'foo');
-			observable.set('foo', 'lol');
-			assert.strictEqual(observable.get('foo'), 'foo', 'Getters should be preferred over set properties');
+			assert.strictEqual(observable.get('blah'), 'blah');
+			observable.set('blah', 'lol');
+			assert.strictEqual(observable.get('blah'), 'blah', 'Getters should be preferred over set properties');
 		},
 
 		'setters'() {
 			var observable = new GetSetObservable();
 			observable.set('bar', 'lol');
+			observable.set('baz', 'wut');
 			assert.strictEqual(observable.get('bar'), 'lolbar');
+			assert.strictEqual(observable.get('baz'), undefined, 'Setters without getters should act like ES5');
+
+			// TODO: Re-enable after default one-way binding is enabled
+			// assert.throws(function () {
+			// 	observable.set('foo', 'oops');
+			// }, /read-only/);
 		},
 
 		'setters ignore constructor'() {
