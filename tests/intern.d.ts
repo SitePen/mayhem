@@ -3,6 +3,11 @@
 /// <reference path="../dojo" />
 
 declare module 'intern' {
+	import main = require('intern/main');
+	export = main;
+}
+
+declare module 'intern/main' {
 	export interface Config {
 		capabilities?:{ [key:string]:any; };
 		environments?:{ [key:string]:any; }[];
@@ -32,6 +37,15 @@ declare module 'intern' {
 		callback<U>(callback:U):U;
 		rejectOnError<U>(callback:U):U;
 	}
+
+	export var args:any;
+	export var mode:string;
+	export var config:Config;
+	export var maxConcurrency:number;
+	export var suites:any[];
+	export var tunnel:any;
+	export var grep:RegExp;
+	export function run():IPromise<void>;
 }
 
 declare module 'intern!object' {

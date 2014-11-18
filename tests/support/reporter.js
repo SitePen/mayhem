@@ -8,8 +8,33 @@ define([
 	'intern/dojo/node!path',
 	'intern',
 	'intern/lib/util',
+	'intern/dojo/node!diff',
+	'intern/dojo/node!util',
 	'intern/dojo/node!istanbul/index'
-], function (Instrumenter, Collector, Reporter, TextReporter, globule, fs, path, main, util) {
+], function (Instrumenter, Collector, Reporter, TextReporter, globule, fs, path, main, util, diffUtil, nodeUtil) {
+	var getCanonical = (function () {
+		var stack = [];
+
+		return function makeCanonical(value) {
+			if (value && typeof value === 'object' && !Array.isArray(value)) {
+				if (stack.indexOf(value) > -1) {
+					return '[Circular]';
+				}
+
+				var canonical = {};
+				var keys = Object.keys(value).sort();
+				stack.push(value);
+				keys.forEach(function (key) {
+					canonical[key] = makeCanonical(value[key]);
+				});
+				stack.pop();
+				return canonical;
+			}
+
+			return value;
+		};
+	})();
+
 	var instrumenter = new Instrumenter({
 		noCompact: true,
 		noAutoWrap: true
@@ -45,11 +70,25 @@ define([
 		},
 
 		'/test/skip': function (test) {
-			console.log('SKIP: ' + test.id + (test.skipped ? ' (' + test.skipped + ')' : ''));
+			console.log(
+				'\x1b[33mSKIP: ' + test.get('id') + (test.skipped ? ' (' + test.skipped + ')' : '') + '\x1b[0m'
+			);
 		},
 
 		'/test/fail': function (test) {
 			console.error('\x1b[31mFAIL: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)\x1b[0m');
+
+			if (test.error.name === 'AssertionError') {
+				console.log('\n' +
+					diffUtil.createPatch(
+						'',
+						nodeUtil.inspect(getCanonical(test.error.actual), { depth: null }) + '\n',
+						nodeUtil.inspect(getCanonical(test.error.expected), { depth: null }) + '\n'
+					).split('\n').slice(5).join('\n').replace(/^([+-])(.*)$/gm, function (_, indicator, line) {
+						return '\x1b[3' + (indicator === '+' ? '2mE' : '1mA') + line + '\x1b[0m';
+					})
+				);
+			}
 			util.logError(test.error);
 		},
 
@@ -62,32 +101,36 @@ define([
 		},
 
 		stop: function () {
-			console.log('Instrumenting remaining files…');
+			if (!main.args.fast && !main.args.skipExtraFiles) {
+				console.log('Instrumenting remaining files…');
 
-			var coverage = {};
-			globule.find({
-				src: [ '**/*.js' ],
-				filter: function (filepath) {
-					return !main.config.excludeInstrumentation.test(filepath) && !collected[path.resolve(filepath)];
-				}
-			}).forEach(function (filepath) {
-				try {
-					var wholename = path.resolve(filepath);
-					instrumenter.instrumentSync(fs.readFileSync(wholename, 'utf8'), wholename);
-					coverage[wholename] = instrumenter.lastFileCoverage();
-					// https://github.com/gotwarlost/istanbul/issues/102
-					for (var i in coverage[wholename].s) {
-						coverage[wholename].s[i] = 0;
+				var coverage = {};
+				globule.find({
+					src: [ '**/*.js' ],
+					filter: function (filepath) {
+						return !main.config.excludeInstrumentation.test(filepath) && !collected[path.resolve(filepath)];
 					}
-				}
-				catch (error) {
-					console.error(filepath + ': ' + error);
-				}
-			});
+				}).forEach(function (filepath) {
+					try {
+						var wholename = path.resolve(filepath);
+						instrumenter.instrumentSync(fs.readFileSync(wholename, 'utf8'), wholename);
+						coverage[wholename] = instrumenter.lastFileCoverage();
+						// https://github.com/gotwarlost/istanbul/issues/102
+						for (var i in coverage[wholename].s) {
+							coverage[wholename].s[i] = 0;
+						}
+					}
+					catch (error) {
+						console.error(filepath + ': ' + error);
+					}
+				});
+				collector.add(coverage);
+			}
 
-			collector.add(coverage);
-			(new TextReporter()).writeReport(collector, true);
-			reporter.writeReport(collector, true);
+			if (!main.args.fast) {
+				(new TextReporter()).writeReport(collector, true);
+				reporter.writeReport(collector, true);
+			}
 		}
 	};
 });
