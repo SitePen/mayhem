@@ -1047,9 +1047,9 @@ var app = new WebApplication({
 &lt;p>What kind of burger do you want?&lt;/p>
 
 TODO: This does not work with dstore collections
-&lt;if condition="{app.burgers.length}">
+&lt;if condition={app.burgers.length}>
 	&lt;ul>
-		&lt;for each="{app.burgers}" as="burger">
+		&lt;for each={app.burgers} as="burger">
 			&lt;li>
 				{burger.name} - {burger.formattedPrice}
 			&lt;/li>
@@ -1099,14 +1099,14 @@ app.startup();</code></pre>
 
 						<p>Using a widget in a view is as simple as using the <code>&lt;widget></code> tag:</p>
 
-						<pre><code class="html">&lt;widget is="mayhem/ui/Label" text="{foo}">&lt;/widget></code></pre>
+						<pre><code class="html">&lt;widget is="mayhem/ui/Label" text={foo}>&lt;/widget></code></pre>
 
 						<p>The value of the <code>is</code> attribute must be a module ID that resolves to a view constructor.</p>
 
 						<p>Mayhem’s HTML templating engine also allows widgets to be registered as custom elements within individual templates, which is useful when the same widget is used multiple times within a template:</p>
 
 						<pre><code class="html">&lt;alias tag="label" to="mayhem/ui/Label">
-&lt;label text="{foo}">&lt;/label></code></pre>
+&lt;label text={foo}>&lt;/label></code></pre>
 
 						<p>This example is equivalent to the previous example, except the <code>&lt;label></code> tag has been aliased to the <code>mayhem/ui/Label</code> widget.</p>
 
