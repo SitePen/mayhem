@@ -57,6 +57,8 @@ export interface IBinder extends core.IApplicationComponent {
 	 * interfaces exposed on subtypes of IProxty.
 	 */
 	createBinding<T>(object:{}, path:string, options?:{ useScheduler?:boolean; }):IBinding<T>;
+
+	observe(object:{}, path:string, observer:IObserver<any>):IHandle;
 }
 
 /**

@@ -14,11 +14,13 @@ interface Master extends ObservableEvented, core.IApplicationComponent {
 module Master {
 	export interface Events extends ObservableEvented.Events {}
 
-	export interface Getters extends ObservableEvented.Getters, core.IApplicationComponent.Getters {
+	export interface Getters extends ObservableEvented.Getters {
+		(key:'app'):core.IApplication;
 		(key:'view'):View;
 	}
 
-	export interface Setters extends ObservableEvented.Getters, core.IApplicationComponent.Setters {
+	export interface Setters extends ObservableEvented.Setters {
+		(key:'app', value:core.IApplication):void;
 		(key:'view', value:View):void;
 	}
 }

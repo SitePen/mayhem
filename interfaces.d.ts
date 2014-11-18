@@ -20,20 +20,8 @@ export declare module IApplication {
 
 ////
 
-export interface IApplicationComponent extends IObservable {
-	get:IApplicationComponent.Getters;
-	set:IApplicationComponent.Setters;
+export interface IApplicationComponent {
 	run?():IPromise<void>;
-}
-
-export declare module IApplicationComponent {
-	export interface Getters extends IObservable.Getters {
-		(key:'app'):IApplication;
-	}
-
-	export interface Setters extends IObservable.Setters {
-		(key:'app', value:IApplication):void;
-	}
 }
 
 ////

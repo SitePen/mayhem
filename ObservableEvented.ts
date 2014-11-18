@@ -18,7 +18,9 @@ class ObservableEvented extends Observable {
 		return Evented.prototype.emit.call(this, event.type, event);
 	}
 
+	get:ObservableEvented.Getters;
 	on:ObservableEvented.Events;
+	set:ObservableEvented.Setters;
 }
 
 ObservableEvented.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
