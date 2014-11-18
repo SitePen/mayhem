@@ -274,30 +274,7 @@ HtmlComment 'HTML comment'
 HtmlFragment 'HTML'
 	= content:(
 		comment:HtmlComment { return [ comment ]; }
-		// TODO: Not sure how valid these exclusions are
-		/ !(
-			// Optimization: Only check tag rules when the current position matches the tag opening token
-			& '<'
-
-			IfTagOpen
-			/ ElseIfTag
-			/ ElseTag
-			/ IfTagClose
-			/ ForTagOpen
-			/ ForTagClose
-			/ WhenTagOpen
-			/ RejectedTag
-			/ PendingTag
-			/ WhenTagClose
-			/ Placeholder
-			/ InvalidAlias
-			/ WidgetTagOpen
-			/ WidgetTagClose
-			/ AliasedWidgetTagOpen
-			/ AliasedWidgetTagClose
-		)
-
-		content:(HtmlTag / $(!HtmlTag .)+) {
+		/ !NonHtmlTags content:(HtmlTag / .) {
 			return [].concat(content);
 		}
 	)+ {
@@ -316,6 +293,27 @@ HtmlFragment 'HTML'
 
 		return flattenedFragment;
 	}
+
+NonHtmlTags
+	=
+		// Optimization: Only check tag rules when the current position matches the tag opening token
+		& '<'
+		IfTagOpen
+		/ ElseIfTag
+		/ ElseTag
+		/ IfTagClose
+		/ ForTagOpen
+		/ ForTagClose
+		/ WhenTagOpen
+		/ RejectedTag
+		/ PendingTag
+		/ WhenTagClose
+		/ Placeholder
+		/ InvalidAlias
+		/ WidgetTagOpen
+		/ WidgetTagClose
+		/ AliasedWidgetTagOpen
+		/ AliasedWidgetTagClose
 
 TagName
 	= firstChar:[a-zA-Z] restChars:[a-zA-Z0-9-]* {

@@ -431,6 +431,32 @@ registerSuite({
 		});
 	},
 
+	'Element after Element'() {
+		var ast = parser.parse('<div></div><widget is="Widget">Element</widget>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Element'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Element'),
+				content: [
+					'<div></div>',
+					{ $child: 0 }
+				],
+				children: [
+					{
+						constructor: 'Widget',
+						children: [
+							{
+								constructor: prefix('templating/html/ui/Element'),
+								children: [],
+								content: [ 'Element' ]
+							}
+						]
+					}
+				]
+			}
+		});
+	},
+
 	'HtmlComment'() {
 		var ast:templating.IParseTree;
 
