@@ -93,7 +93,7 @@ class Binder implements binding.IBinder {
 		}
 
 		function setSourceValue(change:binding.IChangeRecord<T>):void {
-			source.set(change.value);
+			source.set && source.set(change.value);
 		}
 
 		source.observe(setTargetValue);

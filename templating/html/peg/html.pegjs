@@ -325,6 +325,7 @@ Binding
 		}
 		else {
 			binding.$bind = value.slice(1, -1);
+			binding.direction = 1;
 		}
 
 		return binding;

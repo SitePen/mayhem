@@ -205,7 +205,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 					sourcePath: value.$bind,
 					target: this,
 					targetPath: key,
-					direction: value.$bind instanceof Array ? BindDirection.ONE_WAY : BindDirection.TWO_WAY
+					direction: value.direction
 				});
 			}
 		}

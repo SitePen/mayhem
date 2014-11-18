@@ -23,8 +23,8 @@ else {
 	};
 }
 
-var BIND:RegExp = /^bind (.*)$/;
-var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)-->/g;
+var BIND:RegExp = /^bind (.*)([12])$/;
+var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)([12])-->/g;
 var CHILD:RegExp = /^child ([0-9]+)$/;
 var EVENT_ATTRIBUTE:RegExp = /^on-(.*)$/;
 var PLACEHOLDER:RegExp = /^placeholder (.*)$/;
@@ -141,7 +141,7 @@ class ElementWidget extends Container {
 					htmlContent += '<!--placeholder ' + part.$placeholder + '-->';
 				}
 				else if (part.$bind !== undefined) {
-					htmlContent += '<!--bind ' + part.$bind + '-->';
+					htmlContent += '<!--bind ' + part.$bind + part.direction + '-->';
 				}
 			}
 
@@ -256,7 +256,8 @@ class ElementWidget extends Container {
 								source: model,
 								sourcePath: result[1],
 								target: <any> attribute,
-								targetPath: 'value'
+								targetPath: 'value',
+								direction: Number(result[2])
 							};
 
 							// Assume attempts to bind to two-way DOM attributes are actually attempts to bind to their
@@ -268,6 +269,9 @@ class ElementWidget extends Container {
 
 									// For anyone looking at the DOM in dev tools
 									attribute.value = '{' + result[1] + '}';
+									if (Number(result[2]) === BindDirection.TWO_WAY) {
+										attribute.value = '{' + attribute.value + '}';
+									}
 									break;
 								}
 							}

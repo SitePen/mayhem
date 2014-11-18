@@ -205,11 +205,7 @@ Observable.prototype.set = function (key:any, value?:any):void {
 		this[setter](value);
 	}
 	else if (this[getter]) {
-		// TODO: Should throw error to match ES5 strict mode, but this will break two-way bindings bound to a read-only
-		// property
-		// throw new TypeError('Cannot set read-only property "' + key + '"');
-		console.warn('Cannot set read-only property "' + key + '"');
-		return;
+		throw new TypeError('Cannot set read-only property "' + key + '"');
 	}
 	else {
 		this[privateKey] = value;

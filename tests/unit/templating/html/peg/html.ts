@@ -163,7 +163,7 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Conditional'),
 				conditions: [
 					{
-						condition: { $bind: 'foo' },
+						condition: { $bind: 'foo', direction: 1 },
 						consequent: { constructor: 'success' }
 					}
 				]
@@ -179,7 +179,7 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Conditional'),
 				conditions: [
 					{
-						condition: { $bind: 'foo' },
+						condition: { $bind: 'foo', direction: 1 },
 						consequent: { constructor: 'success' }
 					},
 					{
@@ -201,11 +201,11 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Conditional'),
 				conditions: [
 					{
-						condition: { $bind: 'foo' },
+						condition: { $bind: 'foo', direction: 1 },
 						consequent: { constructor: 'success' }
 					},
 					{
-						condition: { $bind: 'bar' },
+						condition: { $bind: 'bar', direction: 1 },
 						consequent: { constructor: 'else' }
 					}
 				]
@@ -219,15 +219,15 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Conditional'),
 				conditions: [
 					{
-						condition: { $bind: 'foo' },
+						condition: { $bind: 'foo', direction: 1 },
 						consequent: { constructor: 'success' }
 					},
 					{
-						condition: { $bind: 'bar' },
+						condition: { $bind: 'bar', direction: 1 },
 						consequent: { constructor: 'else' }
 					},
 					{
-						condition: { $bind: 'baz' },
+						condition: { $bind: 'baz', direction: 1 },
 						consequent: { constructor: 'else2' }
 					}
 				]
@@ -249,11 +249,11 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Conditional'),
 				conditions: [
 					{
-						condition: { $bind: 'foo' },
+						condition: { $bind: 'foo', direction: 1 },
 						consequent: { constructor: 'success' }
 					},
 					{
-						condition: { $bind: 'bar' },
+						condition: { $bind: 'bar', direction: 1 },
 						consequent: { constructor: 'else' }
 					},
 					{
@@ -276,15 +276,15 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Conditional'),
 				conditions: [
 					{
-						condition: { $bind: 'foo' },
+						condition: { $bind: 'foo', direction: 1 },
 						consequent: { constructor: 'success' }
 					},
 					{
-						condition: { $bind: 'bar' },
+						condition: { $bind: 'bar', direction: 1 },
 						consequent: { constructor: 'else' }
 					},
 					{
-						condition: { $bind: 'baz' },
+						condition: { $bind: 'baz', direction: 1 },
 						consequent: { constructor: 'else2' }
 					},
 					{
@@ -310,7 +310,7 @@ registerSuite({
 			constructors: [ prefix('templating/html/ui/Iterator'), 'Widget' ],
 			root: {
 				constructor: prefix('templating/html/ui/Iterator'),
-				collection: { $bind: 'foo' },
+				collection: { $bind: 'foo', direction: 1 },
 				itemConstructor: {
 					$ctor: {
 						constructor: 'Widget'
@@ -324,7 +324,7 @@ registerSuite({
 			constructors: [ prefix('templating/html/ui/Iterator'), 'Widget' ],
 			root: {
 				constructor: prefix('templating/html/ui/Iterator'),
-				collection: { $bind: 'foo' },
+				collection: { $bind: 'foo', direction: 1 },
 				as: 'foo',
 				itemConstructor: {
 					$ctor: {
@@ -366,7 +366,7 @@ registerSuite({
 	'Element'() {
 		var ast:templating.IParseTree;
 
-		ast = parser.parse('<div class={foo}>hello {bar}</div>');
+		ast = parser.parse('<div class={{foo}} data-baz="baz{blah}">hello {bar}</div>');
 		assert.deepEqual(ast, {
 			constructors: [ prefix('templating/html/ui/Element') ],
 			root: {
@@ -374,9 +374,14 @@ registerSuite({
 				children: [],
 				content: [
 					'<div class=',
-					{ $bind: 'foo' },
-					'>hello ',
-					{ $bind: 'bar' },
+					'"',
+					{ $bind: 'foo', direction: 2 },
+					'"',
+					' data-baz="',
+					'baz',
+					{ $bind: 'blah', direction: 1 },
+					'">hello ',
+					{ $bind: 'bar', direction: 1 },
 					'</div>'
 				]
 			}
@@ -478,7 +483,7 @@ registerSuite({
 			constructors: [ 'Widget' ],
 			root: {
 				constructor: 'Widget',
-				'class': { $bind: 'foo{bar}' }
+				'class': { $bind: 'foo{bar}', direction: 1 }
 			}
 		});
 	},
@@ -489,7 +494,7 @@ registerSuite({
 			constructors: [ 'Widget' ],
 			root: {
 				constructor: 'Widget',
-				'class': { $bind: 'foo}{bar' }
+				'class': { $bind: 'foo}{bar', direction: 1 }
 			}
 		});
 	}
