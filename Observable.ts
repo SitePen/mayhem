@@ -1,3 +1,4 @@
+import arrayUtil = require('dojo/_base/array');
 import core = require('./interfaces');
 import has = require('./has');
 import util = require('./util');
@@ -18,6 +19,8 @@ class Observable implements core.IObservable {
 	 * @returns {any} The value of the property.
 	 */
 	get:Observable.Getters;
+
+	_dependencies:HashMap<IHandle>;
 
 	// TODO: Why is this not private?
 	/**
@@ -49,6 +52,7 @@ class Observable implements core.IObservable {
 	 * @param {HashMap<any>=} kwArgs An initial set of properties to set on the object at construction time.
 	 */
 	constructor(kwArgs:HashMap<any> = {}) {
+		this._dependencies = has('es5') ? Object.create(null) : {};
 		this._observers = has('es5') ? Object.create(null) : {};
 		this._initialize();
 		this.set(kwArgs);
@@ -60,7 +64,10 @@ class Observable implements core.IObservable {
 	 */
 	destroy():void {
 		this.destroy = function () {};
-		this._observers = null;
+		for (var key in this._dependencies) {
+			this._dependencies[key].remove();
+		}
+		this._dependencies = this._observers = null;
 	}
 
 	/**
@@ -111,6 +118,32 @@ class Observable implements core.IObservable {
 
 		var observers:core.IObserver<any>[] = this._observers[key];
 		observers.push(observer);
+
+		var dependencyFactory:() => Array<string> = (<any> this)['_' + key + 'Dependencies'];
+		if (dependencyFactory && !this._dependencies[key]) {
+			var self = this;
+			var dependencies:string[] = dependencyFactory.call(this);
+			var handles:IHandle[] = [];
+			var notify = function ():void {
+				self._notify(key, self.get(key), undefined);
+			};
+			var register:(dependency:string) => void;
+
+			// TODO: Make Observable require an app object for this and integrate more closely with the binder
+			var app:core.IApplication = <any> this.get('app');
+			if (app) {
+				register = function (dependency:string):void {
+					handles.push(app.get('binder').observe(self, dependency, notify));
+				};
+			}
+			else {
+				register = function (dependency:string):void {
+					handles.push(self.observe(dependency, notify));
+				};
+			}
+
+			arrayUtil.forEach(dependencies, register);
+		}
 
 		return util.createHandle(function () {
 			util.spliceMatch(observers, observer);

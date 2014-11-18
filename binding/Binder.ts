@@ -5,7 +5,6 @@ import binding = require('./interfaces');
 import BindingError = require('./BindingError');
 import has = require('../has');
 import lang = require('dojo/_base/lang');
-import Observable = require('../Observable');
 import Promise = require('../Promise');
 import util = require('../util');
 import WeakMap = require('../WeakMap');
@@ -19,7 +18,7 @@ import WeakMap = require('../WeakMap');
  * {@link interface:binding.IBindingConstructor}, or module IDs that resolve to the same. When the Binder starts up,
  * any module IDs in the list will be loaded and replaced with the value of those modules.
  */
-class Binder extends Observable implements binding.IBinder {
+class Binder implements binding.IBinder {
 	private _bindingRegistry:WeakMap<{}, HashMap<binding.IBinding<any>>>;
 
 	/**
@@ -38,10 +37,10 @@ class Binder extends Observable implements binding.IBinder {
 	 */
 	private _useScheduler:boolean;
 
-	_initialize():void {
-		super._initialize();
-		this._useScheduler = false;
+	constructor(kwArgs:Binder.KwArgs) {
 		this._bindingRegistry = new WeakMap<{}, HashMap<binding.IBinding<any>>>();
+		this._constructors = kwArgs.constructors || [];
+		this._useScheduler = 'useScheduler' in kwArgs ? kwArgs.useScheduler : false;
 	}
 
 	/**
@@ -239,11 +238,22 @@ class Binder extends Observable implements binding.IBinder {
 		});
 	}
 
-	notify(object:Object, property:string, change:binding.IChangeRecord<any>):void {
+	notify(object:{}, property:string, change:binding.IChangeRecord<any>):void {
 		var bindings:HashMap<binding.IBinding<any>> = this._bindingRegistry.get(object);
 		if (bindings && bindings[property]) {
 			bindings[property].notify(change);
 		}
+	}
+
+	// TODO: Observable#observe should no longer be a thing eventually, anyone wanting to bind to such an object should
+	// simply use the binder directly
+	observe(object:{}, property:string, observer:binding.IObserver<any>):IHandle {
+		var binding = this.createBinding(object, property);
+		binding.observe(observer);
+		return util.createHandle(function () {
+			binding.destroy();
+			binding = null;
+		});
 	}
 
 	run():Promise<void> {
@@ -305,6 +315,13 @@ class Binder extends Observable implements binding.IBinder {
 		}
 
 		return false;
+	}
+}
+
+module Binder {
+	export interface KwArgs {
+		constructors:any[];
+		useScheduler?:boolean;
 	}
 }
 
