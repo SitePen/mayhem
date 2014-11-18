@@ -373,13 +373,10 @@ registerSuite({
 				constructor: prefix('templating/html/ui/Element'),
 				children: [],
 				content: [
-					'<div class=',
-					'"',
+					'<div class="',
 					{ $bind: 'foo', direction: 2 },
-					'"',
-					' data-baz="',
-					'baz',
-					{ $bind: 'blah', direction: 1 },
+					'" data-baz="',
+					{ $bind: [ 'baz', { $bind: 'blah', direction: 1 } ], direction: 1 },
 					'">hello ',
 					{ $bind: 'bar', direction: 1 },
 					'</div>'

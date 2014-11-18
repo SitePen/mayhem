@@ -1,4 +1,5 @@
 {
+	var concat = Array.prototype.concat;
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
 	var getKeys = function (object) {
 		var keys = [];
@@ -80,7 +81,7 @@
 
 		for (var i = 0, j = results.length; i < j; ++i) {
 			if (results[i].$bind) {
-				return { $bind: results };
+				return { $bind: results, direction: 1 };
 			}
 		}
 
@@ -219,8 +220,8 @@ Element 'HTML'
 		for (var i = 0, j = nodes.length; i < j; ++i) {
 			var node = nodes[i];
 
-			if (typeof node === 'string') {
-				content.push(node);
+			if (node instanceof Array) {
+				content.push.apply(content, node);
 			}
 			else if (node.$placeholder) {
 				content.push(node);
@@ -244,7 +245,7 @@ Element 'HTML'
 					Array.prototype.push.apply(results, parsed.$bind);
 				}
 				else {
-					results.push(parsed);
+					results.push(item);
 				}
 			}
 			else {
@@ -272,7 +273,7 @@ HtmlComment 'HTML comment'
 
 HtmlFragment 'HTML'
 	= content:(
-		HtmlComment
+		comment:HtmlComment { return [ comment ]; }
 		// TODO: Not sure how valid these exclusions are
 		/ !(
 			// Optimization: Only check tag rules when the current position matches the tag opening token
@@ -295,9 +296,48 @@ HtmlFragment 'HTML'
 			/ AliasedWidgetTagOpen
 			/ AliasedWidgetTagClose
 		)
-		character:. { return character; }
+
+		content:(HtmlTag / $(!HtmlTag .)+) {
+			return [].concat(content);
+		}
 	)+ {
-		return content.join('');
+		content = concat.apply([], content);
+		var flattenedFragment = [];
+		var lastIndex = -1;
+		for (var i = 0, j = content.length; i < j; ++i) {
+			if (typeof flattenedFragment[lastIndex] === 'string' && typeof content[i] === 'string') {
+				flattenedFragment[lastIndex] += content[i];
+			}
+			else {
+				flattenedFragment.push(content[i]);
+				++lastIndex;
+			}
+		}
+
+		return flattenedFragment;
+	}
+
+TagName
+	= firstChar:[a-zA-Z] restChars:[a-zA-Z0-9-]* {
+		// convert to lower-case for case-insensitive comparison
+		return (firstChar + restChars.join('')).toLowerCase();
+	}
+
+// It is necessary to parse HTML tags here in order to ensure well-formed attributes
+HtmlTag
+	= content:(
+		$('<' TagName S+)
+		HtmlAttributes
+		$('/'? '>')
+	) {
+		return concat.apply([], content);
+	}
+
+HtmlAttributes
+	= attributes:(key:$(AttributeNameChars '=') value:(AttributeStringValue / Binding) ws:$(S*) {
+		return [ key + '"', value, '"' + ws ];
+	})* {
+		return concat.apply([], attributes);
 	}
 
 // Curly brackets are escaped (\x7b, \x7d) due to https://github.com/dmajda/pegjs/issues/89
@@ -573,20 +613,14 @@ AliasedWidget '<tag></tag>'
 		return widget;
 	}
 
-AliasedTagName
-	= firstChar:[a-zA-Z] restChars:[a-zA-Z0-9-]* {
-		// convert to lower-case for case-insensitive comparison
-		return (firstChar + restChars.join('')).toLowerCase();
-	}
-
 AliasedWidgetTagOpen '<tag>'
-	= '<' tagName:AliasedTagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } kwArgs:AttributeMap & ('/'? '>') {
+	= '<' tagName:TagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } kwArgs:AttributeMap & ('/'? '>') {
 		kwArgs.tagName = tagName;
 		return kwArgs;
 	}
 
 AliasedWidgetTagClose '</tag>'
-	= '</' tagName:AliasedTagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } '>' {
+	= '</' tagName:TagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } '>' {
 		return tagName;
 	}
 
@@ -642,11 +676,14 @@ Attribute
 	}
 
 AttributeName
-	= nameChars:[a-zA-Z0-9\-]+ {
-		return nameChars.join('').toLowerCase().replace(/-([a-z0-9])/, function () {
+	= nameChars:AttributeNameChars {
+		return nameChars.join('').toLowerCase().replace(/-(.)/, function () {
 			return arguments[1].toUpperCase();
 		});
 	}
+
+AttributeNameChars
+	= [a-zA-Z0-9\-]+
 
 AttributeValue
 	= AttributeStringValue
