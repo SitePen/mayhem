@@ -13,11 +13,13 @@ interface Checkbox extends Widget {
 module Checkbox {
 	export interface Events extends Widget.Events {}
 	export interface Getters extends Widget.Getters {
-		(key:'checked'):boolean;
+		(key:'isChecked'):boolean;
+		(key:'isDisabled'):boolean;
 		(key:'value'):CheckboxValue;
 	}
 	export interface Setters extends Widget.Setters {
-		(key:'checked', value:boolean):void;
+		(key:'isChecked', value:boolean):void;
+		(key:'isDisabled', value:boolean):void;
 		(key:'value', value:CheckboxValue):void;
 	}
 }

@@ -10,7 +10,7 @@ class Checkbox extends DijitWidget implements ICheckbox {
 	static Ctor = DijitCheckbox;
 	static setupMap = util.deepCreate(DijitWidget.setupMap, {
 		properties: {
-			checked: 'checked'
+			isChecked: 'checked'
 		}
 	});
 
@@ -23,7 +23,7 @@ class Checkbox extends DijitWidget implements ICheckbox {
 	 * @set
 	 * @protected
 	 */
-	_checked:boolean;
+	_isChecked:boolean;
 
 	/**
 	 * @get
@@ -32,10 +32,10 @@ class Checkbox extends DijitWidget implements ICheckbox {
 	 */
 	_value:CheckboxValue;
 
-	_checkedGetter():boolean {
+	_isCheckedGetter():boolean {
 		return this.get('value') === CheckboxValue.TRUE;
 	}
-	_checkedSetter(value:boolean):void {
+	_isCheckedSetter(value:boolean):void {
 		this.set('value', value ? CheckboxValue.TRUE : CheckboxValue.FALSE);
 	}
 
@@ -50,7 +50,7 @@ class Checkbox extends DijitWidget implements ICheckbox {
 		(<any> this._widget)._onClick = function ():void {};
 
 		this.on('activate', function ():void {
-			this.set('checked', !this.get('checked'));
+			this.set('isChecked', !this.get('isChecked'));
 		});
 	}
 
@@ -61,13 +61,13 @@ class Checkbox extends DijitWidget implements ICheckbox {
 		this._value = value;
 
 		// Setting checked directly would make it impossible to set the indeterminate value
-		var oldChecked = this._checked;
-		this._checked = value === CheckboxValue.TRUE ? true : false;
-		this._notify('checked', this._checked, oldChecked);
+		var oldChecked = this._isChecked;
+		this._isChecked = value === CheckboxValue.TRUE ? true : false;
+		this._notify('isChecked', this._isChecked, oldChecked);
 	}
 }
 
-Checkbox.prototype._checked = false;
+Checkbox.prototype._isChecked = false;
 Checkbox.prototype._value = CheckboxValue.FALSE;
 
 module Checkbox {

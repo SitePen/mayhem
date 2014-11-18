@@ -12,12 +12,16 @@ interface RadioButton extends Checkbox {
 module RadioButton {
 	export interface Events extends Checkbox.Events {}
 	export interface Getters extends Checkbox.Getters {
-		(key:'name'):string;
-		(key:'value'):boolean;
+		(key:'checkedValue'):any;
+		(key:'formattedLabel'):string;
+		(key:'label'):string;
+		(key:'value'):any;
 	}
 	export interface Setters extends Checkbox.Setters {
-		(key:'name', value:string):void;
-		(key:'value', value:boolean):void;
+		(key:'checkedValue', value:any):void;
+		(key:'formattedLabel', value:string):void;
+		(key:'label', value:string):void;
+		(key:'value', value:any):void;
 	}
 }
 
