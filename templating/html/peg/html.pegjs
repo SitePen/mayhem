@@ -184,7 +184,7 @@
 // template root
 
 Template =
-	(HtmlComment / Alias / S)* body:(
+	(Alias / S)* body:(
 		// A non-element followed by anything other than whitespace should be considered a child of a root Element
 		// widget, otherwise the parser fails on whatever follows. Changing this to capture zero or more Any tokens
 		// would require modification to Template to special-case n = 1, which is unpleasant, and also generate a wacky
@@ -208,6 +208,7 @@ Template =
 Element 'HTML'
 	= nodes:(
 		AnyNonElement
+		/ Placeholder
 		/ HtmlFragment
 	)+ {
 		var element = { constructor: toAbsMid('../ui/Element') };
@@ -316,7 +317,17 @@ BoundText
 
 Binding
 	= value:BalancedBraces {
-		return { $bind: value.slice(1, -1) };
+		var binding = {};
+
+		if (value.charAt(1) === '{' && value.charAt(value.length - 2) === '}') {
+			binding.$bind = value.slice(2, -2);
+			binding.direction = 2;
+		}
+		else {
+			binding.$bind = value.slice(1, -1);
+		}
+
+		return binding;
 	}
 
 BalancedBraces
@@ -388,15 +399,21 @@ ElseTag '<else>'
 // loops
 
 For '<for></for>'
-	= kwArgs:ForTagOpen
+	= tagArgs:ForTagOpen
 	template:Any
 	ForTagClose {
-		kwArgs.constructor = toAbsMid('../ui/Iterator');
-		// $ctor is a special flag to the template processor to pass the generated constructor function for the widget
-		// instead of generating an instance of the widget
-		kwArgs.itemConstructor = { $ctor: template };
-		kwArgs.collection = kwArgs.each;
-		kwArgs.as = kwArgs.as;
+		var kwArgs = {
+			constructor: toAbsMid('../ui/Iterator'),
+			collection: tagArgs.each,
+			// $ctor is a special flag to the template processor to pass the generated constructor function for the
+			// widget instead of generating an instance of the widget
+			itemConstructor: { $ctor: template }
+		};
+
+		if (tagArgs.as) {
+			kwArgs.as = tagArgs.as;
+		}
+
 		return kwArgs;
 	}
 
@@ -616,16 +633,16 @@ AttributeMap
 	}
 
 Attribute
-	= S+ name:AttributeName value:(S* '=' S* value:AttributeValue {
-		// Treat attributes without values as true
-		return value === null ? true : value;
-	})? {
+	= S+ name:AttributeName value:(
+		S* '=' S* value:AttributeValue { return value; }
+		/ { return true; }
+	) {
 		return { name: name, value: value };
 	}
 
 AttributeName
-	= nameChars:[a-zA-Z\-]+ {
-		return nameChars.join('').toLowerCase().replace(/-([a-z])/, function () {
+	= nameChars:[a-zA-Z0-9\-]+ {
+		return nameChars.join('').toLowerCase().replace(/-([a-z0-9])/, function () {
 			return arguments[1].toUpperCase();
 		});
 	}
@@ -755,7 +772,6 @@ AnyNonElement
 	= If
 	/ For
 	/ When
-	/ Placeholder
 	/ InvalidAlias
 	/ Widget
 	/ AliasedWidget
