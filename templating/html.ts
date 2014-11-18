@@ -55,6 +55,11 @@ export interface BindableWidget extends Widget {
 	/**
 	 * @protected
 	 */
+	_parentGetter():Container;
+
+	/**
+	 * @protected
+	 */
 	_parentSetter(value:Container):void;
 }
 
@@ -135,6 +140,10 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		}
 
 		this._parent = value;
+	};
+
+	Ctor.prototype._parentGetter = function ():Container {
+		return this._parent;
 	};
 
 	Ctor.prototype.set = function (key:any, value?:any):void {

@@ -1,5 +1,6 @@
 import MultiNodeWidget = require('../../../ui/dom/MultiNodeWidget');
 import Promise = require('../../../Promise');
+import Proxy = require('../../../data/Proxy');
 import View = require('../../../ui/View');
 import util = require('../../../util');
 
@@ -16,10 +17,13 @@ function createSetter(property:string):(value:View) => void {
 }
 
 class PromiseWidget<T> extends MultiNodeWidget {
+	private _as:string;
 	private _fulfilled:View;
 	private _pending:View;
+	private _pendingAs:string;
 	private _value:Promise<T>;
 	private _rejected:View;
+	private _rejectedAs:string;
 
 	get:PromiseWidget.Getters<T>;
 	on:PromiseWidget.Events;
@@ -28,6 +32,14 @@ class PromiseWidget<T> extends MultiNodeWidget {
 	constructor(kwArgs?:HashMap<any>) {
 		util.deferSetters(this, [ 'value' ], '_render');
 		super(kwArgs);
+	}
+
+	_initialize():void {
+		super._initialize();
+
+		this._as = 'value';
+		this._pendingAs = 'progress';
+		this._rejectedAs = 'error';
 	}
 
 	_valueGetter():Promise<T> {
@@ -39,6 +51,30 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		this._value = Promise.resolve<T>(value);
 		var self = this;
 
+		function setModel(view:View, as:string, value:any):void {
+			var kwArgs:HashMap<any> = {
+				app: self._app,
+				model: self.get('model')
+			};
+			kwArgs[as] = value;
+			var proxy = new Proxy(kwArgs);
+
+			var oldModel:{ destroy:() => void } = <any>view.get('model');
+			view.set('model', proxy);
+
+			if (oldModel && oldModel.destroy) {
+				oldModel.destroy();
+			}
+		}
+
+		function attach(view:View):void {
+			self._lastNode.parentNode.insertBefore(view.detach(), self._lastNode);
+			view.set({
+				isAttached: self.get('isAttached'),
+				parent: self
+			});
+		}
+
 		if (!this._value.isResolved()) {
 			this._fulfilled.detach();
 		}
@@ -46,7 +82,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			this._rejected.detach();
 		}
 		if (!this._value.isFulfilled() && this._pending) {
-			this._lastNode.parentNode.insertBefore(this._pending.detach(), this._lastNode);
+			attach(this._pending);
 		}
 
 		this._value.always(function (value:T):T {
@@ -63,19 +99,19 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		}).then(
 			function (value:T):void {
 				if (self._fulfilled) {
-					self._fulfilled.set('model', value);
-					self._lastNode.parentNode.insertBefore(self._fulfilled.detach(), self._lastNode);
+					setModel(self._fulfilled, self._as, value);
+					attach(self._fulfilled);
 				}
 			},
 			function (error:Error):void {
 				if (self._rejected) {
-					self._rejected.set('model', error);
-					self._lastNode.parentNode.insertBefore(self._rejected.detach(), self._lastNode);
+					setModel(self._rejected, self._rejectedAs, error);
+					attach(self._rejected);
 				}
 			},
 			this._value.isFulfilled() ? null : function (progress:any):void {
 				if (self._pending) {
-					self._pending.set('model', progress);
+					setModel(self._pending, self._pendingAs, progress);
 				}
 			}
 		);
@@ -95,6 +131,16 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		return this._fulfilled;
 	}
 	_fulfilledSetter:(value:View) => void;
+
+	destroy():void {
+		this._fulfilled && this._fulfilled.destroy();
+		this._pending && this._pending.destroy();
+		this._rejected && this._rejected.destroy();
+
+		this._fulfilled = this._pending = this._rejected = null;
+
+		super.destroy();
+	}
 }
 
 PromiseWidget.prototype._pendingSetter = createSetter('_pending');

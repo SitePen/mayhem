@@ -487,10 +487,16 @@ When '<when></when>'
 		kwArgs.fulfilled = fulfilled;
 		if (optional) {
 			if (optional.rejected) {
-				kwArgs.rejected = optional.rejected;
+				if (optional.rejected.as) {
+					kwArgs.rejectedAs = optional.rejected.as;
+				}
+				kwArgs.rejected = optional.rejected.body;
 			}
 			if (optional.pending) {
-				kwArgs.pending = optional.pending;
+				if (optional.pending.as) {
+					kwArgs.pendingAs = optional.pending.as;
+				}
+				kwArgs.pending = optional.pending.body;
 			}
 		}
 		kwArgs.value = kwArgs.value;
@@ -501,7 +507,8 @@ WhenTagOpen '<when>'
 	= '<when'i kwArgs:AttributeMap '>' {
 		validate(kwArgs, {
 			type: '<when>',
-			required: [ 'value' ]
+			required: [ 'value' ],
+			optional: [ 'as' ]
 		});
 		return kwArgs;
 	}
@@ -511,12 +518,22 @@ WhenTagClose '</when>'
 
 PendingTag '<pending>'
 	= '<pending'i kwArgs:AttributeMap '>' body:Any? {
-		return body;
+		validate(kwArgs, {
+			type: '<pending>',
+			optional: [ 'as' ]
+		});
+		kwArgs.body = body;
+		return kwArgs;
 	}
 
 RejectedTag '<rejected>'
 	= '<rejected'i kwArgs:AttributeMap '>' body:Any? {
-		return body;
+		validate(kwArgs, {
+			type: '<rejected>',
+			optional: [ 'as' ]
+		});
+		kwArgs.body = body;
+		return kwArgs;
 	}
 
 RejectedPendingTags
