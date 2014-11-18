@@ -78,7 +78,10 @@ define([
 		'/test/fail': function (test) {
 			console.error('\x1b[31mFAIL: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)\x1b[0m');
 
-			if (test.error.name === 'AssertionError') {
+			if (
+				test.error.name === 'AssertionError' &&
+				(typeof test.error.actual === 'object' || typeof test.error.expected === 'object')
+			) {
 				console.log('\n' +
 					diffUtil.createPatch(
 						'',
