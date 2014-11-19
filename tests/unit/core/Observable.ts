@@ -246,6 +246,38 @@ registerSuite({
 			catch (error) {}
 
 			assert.strictEqual(count, 1);
+		},
+
+		'dependency triggers notification'() {
+			var observable = new Observable({
+				foo: 'FOO',
+				baz: 'BAZ',
+
+				fooGetter: function () {
+					return this._foo + '_' + this._baz;
+				},
+
+				fooSetter: function (value:any) {
+					this._foo = value;
+				}
+			});
+			var fooObservations:any[] = [];
+
+			observable.set('fooDependencies', function () {
+				return [ 'baz' ];
+			});
+
+			observable.observe('foo', function (newValue:any, oldValue:any, key:string) {
+				fooObservations.push(Array.prototype.slice.call(arguments, 0));
+			});
+
+			observable.set('foo', 'BAR');
+			observable.set('baz', 'QUUX');
+
+			assert.deepEqual(fooObservations, [
+				[ 'BAR_BAZ', 'FOO_BAZ', 'foo'],
+				[ 'BAR_QUUX', undefined, 'foo']
+			]);
 		}
 	}
 });
