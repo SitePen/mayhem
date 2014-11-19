@@ -11,21 +11,21 @@ registerSuite({
 		var evented = new ObservableEvented();
 		var count = 0;
 		var event = new Event({
-			type: 'test'
+			type: 'a-test'
 		});
 
-		evented.on('test', function (event) {
-			assert.isUndefined(event.foo);
+		evented.on('a-test', function (event) {
+			assert.isUndefined(event.target);
 			count++;
 		});
 		evented.emit(event);
 		assert.strictEqual(count, 1, 'Event count should have been incremented');
 
-		evented.on('test', function (event) {
-			assert.strictEqual(event.bar, 'bar', 'Event should have custom property');
+		evented.on('b-test', function (event) {
+			assert.strictEqual(event.target, 'test target');
 		});
-		event.bar = 'bar';
+		event.target = 'test target';
+		event.type= 'b-test';
 		evented.emit(event);
-		assert.strictEqual(count, 2, 'Event count should have been incremented');
 	}
 });

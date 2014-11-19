@@ -8,16 +8,15 @@ registerSuite({
 
 	'#constructor': {
 		'sets values from kwArgs'() {
-			var invalidConstructorValue = 'invalid';
 			var event = new Event({
-				foo: 'bar',
-				baz: 'quux',
-				constructor: invalidConstructorValue
+				currentTarget: 'test currentTarget',
+				target: 'test target',
+				constructor: 'invalid'
 			});
 
-			assert.strictEqual(event.foo, 'bar');
-			assert.strictEqual(event.baz, 'quux');
-			assert.notStrictEqual(event.constructor, invalidConstructorValue);
+			assert.strictEqual(event.currentTarget, 'test currentTarget');
+			assert.strictEqual(event.target, 'test target');
+			assert.notStrictEqual(event.constructor, 'invalid');
 		},
 
 		'accepts no kwArgs'() {
@@ -25,7 +24,7 @@ registerSuite({
 			assert.doesNotThrow(function () {
 				event = new Event();
 			});
-			assert.isUndefined(event.foo);
+			assert.isUndefined(event.currentTarget);
 		},
 
 		'default values'() {
