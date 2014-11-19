@@ -139,10 +139,9 @@ registerSuite({
 			assert.strictEqual(observable.get('bar'), 'lolbar');
 			assert.strictEqual(observable.get('baz'), undefined, 'Setters without getters should act like ES5');
 
-			// TODO: Re-enable after default one-way binding is enabled
-			// assert.throws(function () {
-			// 	observable.set('foo', 'oops');
-			// }, /read-only/);
+			assert.throws(function () {
+				observable.set('foo', 'oops');
+			}, TypeError, /read-only/);
 		},
 
 		'setters ignore constructor'() {
@@ -176,6 +175,9 @@ registerSuite({
 			observable.set('foo', 'FOO');
 			observable.set('baz', 'BAZ');
 			observable.set('foo', 'BAR');
+			observable.set('baz', 'QUUX');
+
+			// Calling 'set' with the same value should not result in extra notifications
 			observable.set('baz', 'QUUX');
 
 			assert.deepEqual(fooObservations, [
