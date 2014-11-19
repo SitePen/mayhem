@@ -1088,7 +1088,7 @@ app.startup();</code></pre>
 						<div class="a half" id="view-templating"></div>
 						<h3 data-id="view-templating">View templating</h3>
 
-						<p>The default templating system in Mayhem is an extension of HTML that overlays data binding, conditionals, loops, custom elements, and other basic features onto the language. <a href="#how-to-data-bind">Data binding paths</a> are placed inside curly brackets (<code>{}</code>) and bind to the <code>model</code> object (TODO: Should it be the code-behind view object instead? otherwise we’re restricted.) associated with the view:</p>
+						<p>The default templating system in Mayhem is an extension of HTML that overlays data binding, conditionals, loops, custom elements, and other basic features onto the language. <a href="#how-to-data-bind">Data binding paths</a> are placed inside curly brackets (<code>{path}</code> for one-way binding and <code>{{path}}</code> for two-way binding) and bind to the <code>model</code> object (TODO: Should it be the code-behind view object instead? otherwise we’re restricted.) associated with the view:</p>
 
 						<pre><code class="html">{name}</code></pre>
 						<pre><code class="typescript">view.set('model', { name: 'foo' });</code></pre>
