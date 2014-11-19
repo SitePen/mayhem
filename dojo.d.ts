@@ -202,6 +202,9 @@ declare module 'dojo/dom-construct' {
 		place<T extends Element>(node:T, refNode:Node, position?:number):T;
 		create(tag:'div', attrs:{}, refNode?:Node, position?:string):HTMLDivElement;
 		create(tag:'li', attrs:{}, refNode?:Node, position?:string):HTMLLIElement;
+		create(tag:'ol', attrs:{}, refNode?:Node, position?:string):HTMLOListElement;
+		create(tag:'p', attrs:{}, refNode?:Node, position?:string):HTMLParagraphElement;
+		create(tag:'ul', attrs:{}, refNode?:Node, position?:string):HTMLUListElement;
 		create(tag:string, attrs:{}, refNode?:Node, position?:string):Element;
 		destroy(node:Node):void;
 	};
