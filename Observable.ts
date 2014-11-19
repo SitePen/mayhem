@@ -143,6 +143,7 @@ class Observable implements core.IObservable {
 			}
 
 			arrayUtil.forEach(dependencies, register);
+			this._dependencies[key] = util.createCompositeHandle.apply(util, handles);
 		}
 
 		return util.createHandle(function () {
