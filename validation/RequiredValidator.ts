@@ -5,7 +5,7 @@ import Validator = require('./Validator');
 
 class RequiredValidator extends Validator {
 	validate(model:data.IModel, key:string, value:any):void {
-		if (value == null || value === '') {
+		if (value == null || value === '' || /* isNaN */ value !== value) {
 			model.addError(key, new ValidationError(i18n.required({ field: model.get('labels')[key] })));
 		}
 	}
