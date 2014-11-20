@@ -253,6 +253,14 @@ Element 'HTML'
 				}
 			}
 			else {
+				if (item.$bind !== undefined && item.$bind instanceof Array) {
+					for (var k = 0, l = item.$bind.length; k < l; ++k) {
+						var bindItem = item.$bind[k];
+						if (bindItem.$bind !== undefined) {
+							item.$bind[k] = { path: bindItem.$bind };
+						}
+					}
+				}
 				results.push(item);
 			}
 		}

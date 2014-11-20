@@ -23,8 +23,8 @@ else {
 	};
 }
 
-var BIND:RegExp = /^bind (.*)([12])$/;
-var BIND_ATTRIBUTE:RegExp = /<!--bind (.*?)([12])-->/g;
+var BIND:RegExp = /^bind ([0-9]+)$/;
+var BIND_ATTRIBUTE:RegExp = /<!--bind ([0-9]+)-->/g;
 var CHILD:RegExp = /^child ([0-9]+)$/;
 var EVENT_ATTRIBUTE:RegExp = /^on-(.*)$/;
 var PLACEHOLDER:RegExp = /^placeholder (.*)$/;
@@ -125,6 +125,7 @@ class ElementWidget extends Container {
 		var self = this;
 		var binder:binding.IBinder = this._app.get('binder');
 		var model = this.get('model') || {};
+		var bindings:Array<{ $bind:any; direction:number; }> = [];
 
 		function generateContent(source:any[]):Node {
 			var htmlContent:string = '';
@@ -141,7 +142,8 @@ class ElementWidget extends Container {
 					htmlContent += '<!--placeholder ' + part.$placeholder + '-->';
 				}
 				else if (part.$bind !== undefined) {
-					htmlContent += '<!--bind ' + part.$bind + part.direction + '-->';
+					bindings.push(part);
+					htmlContent += '<!--bind ' + (bindings.length - 1) + '-->';
 				}
 			}
 
@@ -176,7 +178,7 @@ class ElementWidget extends Container {
 
 					self._bindingHandles.push(binder.bind({
 						source: model,
-						sourcePath: result[1],
+						sourcePath: bindings[Number(result[1])].$bind,
 						target: newNode,
 						targetPath: 'nodeValue',
 						direction: BindDirection.ONE_WAY
@@ -206,7 +208,7 @@ class ElementWidget extends Container {
 								binding = new ProxyBinding<any>({
 									binder: binder,
 									object: model,
-									path: boundEvent[1]
+									path: bindings[Number(boundEvent[1])].$bind
 								});
 
 								self._bindingHandles.push(binding);
@@ -254,10 +256,10 @@ class ElementWidget extends Container {
 						if (result.index === 0 && result[0].length === nodeValue.length) {
 							var kwArgs = {
 								source: model,
-								sourcePath: result[1],
+								sourcePath: bindings[Number(result[1])].$bind,
 								target: <any> attribute,
 								targetPath: 'value',
-								direction: Number(result[2])
+								direction: bindings[Number(result[1])].direction
 							};
 
 							// Assume attempts to bind to two-way DOM attributes are actually attempts to bind to their
@@ -268,8 +270,8 @@ class ElementWidget extends Container {
 									kwArgs.targetPath = defaultDomKey;
 
 									// For anyone looking at the DOM in dev tools
-									attribute.value = '{' + result[1] + '}';
-									if (Number(result[2]) === BindDirection.TWO_WAY) {
+									attribute.value = '{' + kwArgs.sourcePath + '}';
+									if (kwArgs.direction === BindDirection.TWO_WAY) {
 										attribute.value = '{' + attribute.value + '}';
 									}
 									break;
@@ -287,7 +289,7 @@ class ElementWidget extends Container {
 
 							do {
 								compositeBinding.push(nodeValue.slice(lastIndex, result.index));
-								compositeBinding.push({ path: result[1] });
+								compositeBinding.push({ path: bindings[Number(result[1])].$bind });
 								lastIndex = result.index + result[0].length;
 							} while ((result = BIND_ATTRIBUTE.exec(nodeValue)));
 
