@@ -7,8 +7,9 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('intern');
 
 	grunt.initConfig({
-		all: [ '**/*.ts', '!node_modules/**/*.ts', '!**/templates/**/*.ts' ],
+		all: [ '**/*.ts', '!tests/**/*.ts', '!node_modules/**/*.ts', '!**/templates/**/*.ts' ],
 		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts' ],
+		tests: [ 'tests/**/*.ts', '!tests/unit/temp/**/*.ts' ],
 
 		clean: {
 			generator: {
@@ -37,32 +38,36 @@ module.exports = function (grunt) {
 			},
 			generator: {
 				src: [ '<%= ignoreDefinitions %>' ]
+			},
+			tests: {
+				options: {
+					module: 'amd'
+				},
+				src: [ '<%= tests %>', '!**/*.d.ts' ]
 			}
 		},
 
 		watch: {
-			ts: {
+			generator: {
 				files: [ '<%= all %>' ],
 				tasks: [ 'ts:generator' ]
+			},
+			tests: {
+				files: [ '<%= tests %>' ],
+				tasks: [ 'ts:tests' ]
 			}
 		},
 
 		intern: {
-			runner: {
-				options: {
-					runType: 'runner',
-					config: 'tests/mayhem.intern'
-				}
-			},
 			client: {
 				options: {
-					config: 'tests/mayhem.intern'
+					config: 'tests/generator.intern'
 				}
 			}
 		}
 	});
 
 	grunt.registerTask('test', [ 'intern:client' ]);
-	grunt.registerTask('build', [ 'ts:generator' ]);
-	grunt.registerTask('default', [ 'ts:generator', 'watch' ]);
+	grunt.registerTask('build', [ 'ts' ]);
+	grunt.registerTask('default', [ 'ts', 'watch' ]);
 };

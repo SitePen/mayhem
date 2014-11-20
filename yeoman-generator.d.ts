@@ -5,6 +5,7 @@
 
 declare module yo {
   export interface IYeomanGenerator {
+    options:{ [key:string]:any; };
     argument(name: string, config: IArgumentConfig): void;
     composeWith(namespace: string, options: any, settings?: IComposeSetting): IYeomanGenerator;
     defaultFor(name: string): void;
@@ -102,7 +103,7 @@ declare module yo {
 
   export interface ITestHelper {
     createDummyGenerator(): IYeomanGenerator;
-    createGenerator(name: string, dependencies: any[], args: any, options: any): IYeomanGenerator;
+    createGenerator(name: string, dependencies: any[], args?: any, options?: any): IYeomanGenerator;
     decorate(context: any, method: string, replacement: Function, options: any): void;
     gruntfile(options: any, done: Function): void;
     mockPrompt(generator: IYeomanGenerator, answers: any): void;
@@ -111,6 +112,10 @@ declare module yo {
 
     /** @param {String|Function} generator */
     run(generator: any): IRunContext;
+
+    testDirectory(dir:string, callback:Function):void;
+    assertFile(files:any[]):void;
+    assertFileContent(files:any[]):void;
   }
 
   export interface IRunContext {
@@ -125,15 +130,15 @@ declare module yo {
   }
 
   /** @type file file-utils */
-  var file: any;
-  var assert: IAssert;
-  var test: ITestHelper;
-  var generators: {
+  export var file: any;
+  export var assert: IAssert;
+  export var test: ITestHelper;
+  export var generators: {
     Base: IBase;
     NamedBase: INamedBase;
   };
 }
 
-declare module "yeoman-generator" {
+declare module 'yeoman-generator' {
   export = yo;
 }

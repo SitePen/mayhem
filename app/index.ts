@@ -1,5 +1,5 @@
-/// <reference path="../node.d.ts" />
-/// <reference path="../yeoman-generator.d.ts" />
+/// <reference path="../node" />
+/// <reference path="../yeoman-generator" />
 
 import path = require('path');
 import yeoman = require('yeoman-generator');
