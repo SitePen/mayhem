@@ -1,95 +1,118 @@
-declare var module:any;
-declare var process:any;
-declare var require:any;
+/// <reference path="../node.d.ts" />
+/// <reference path="../yeoman-generator.d.ts" />
 
-var appChoices:string[] = ['webapp'];
-var exec = require('child_process').exec;
-var path:any = require('path');
-var yeoman:any = require('yeoman-generator');
+import path = require('path');
+import yeoman = require('yeoman-generator');
+
+interface IAnswers {
+	appTitle:string;
+	nib:boolean;
+	oldBrowsers:boolean;
+	stylus:boolean;
+}
 
 var MayhemGenerator = yeoman.generators.Base.extend({
-
 	constructor():void {
 		yeoman.generators.Base.apply(this, arguments);
-		this.argument('type', { required: false });
-		this.argument('source', { required: false });
+
+		this.argument('appName', { type: String, required: false });
+		this.appName = this.appName || path.basename(process.cwd());
+		this.appName = this._.slugify(this._.humanize(this.appName));
+
+		this.config.defaults({
+			appName: this.appName,
+			appTitle: this.appName,
+			oldBrowsers: false,
+			stylus: true,
+			nib: true
+		});
 	},
 
 	initializing():void {
 		this.log('Welcome to the Mayhem Generator!');
 	},
 
-	prompting: {
-		method1():void {
-			if (appChoices.indexOf(this.type) === -1) {
-				var self = this;
-				var done = this.async();
-				var choices = [{
-					type: 'list',
-					name: 'apps',
-					message: 'Which kind of application are we making today?',
-					'default': 'index',
-					choices: ['Web']
-				}];
+	prompting():void {
+		var done:Function = this.async();
 
-				this.prompt(choices, (args:{ apps: string }):void => {
-					var type = args.apps.toLowerCase();
-					self.type = type + 'app';
-					done();
-				});
-			}
-		},
-		method2():void {
-			var self = this;
-			var done = this.async();
-			var choices = [{
+		this.prompt([
+			{
+				type: 'input',
+				name: 'appTitle',
+				message: 'What is the title of the application?',
+				default: this.config.get('appTitle')
+			},
+			{
 				type: 'confirm',
-				name: 'todo',
-				message: 'Would you like an example Todo app created as a starting point?',
-				'default': false
-			}];
+				name: 'oldBrowsers',
+				message: 'Do you need to support older browsers (ES3)?',
+				default: this.config.get('oldBrowsers')
+			},
+			{
+				type: 'confirm',
+				name: 'stylus',
+				message: 'Would you like to use Stylus?',
+				default: this.config.get('stylus')
+			},
+			{
+				type: 'confirm',
+				name: 'nib',
+				message: 'Would you like to use Sylus Nib?',
+				when: function (answers:IAnswers):boolean {
+					return answers.stylus;
+				},
+				default: this.config.get('nib')
+			}
+		], function (answers:IAnswers):void {
+			this.appTitle = answers.appTitle;
+			this.stylus = answers.stylus;
+			this.nib = answers.nib;
+			this.oldBrowsers = answers.oldBrowsers;
 
-			this.prompt(choices, (args:{ todo: boolean }):void => {
-				self.todo = args.todo;
-				done();
-			});
-		}
+			this.config.set(answers);
+
+			done();
+		}.bind(this));
 	},
 
 	configuring():void {
-		if (this.source) {
-			this.destinationRoot(this.source);
-		}
-
-		var source = this.source ? this.source : 'root directory';
-		this.log('Creating a ' + this.type + ' in ' + source);
-		this.copy('_tslint.json', 'tslint.json');
+		this.copy('_bowerrc', '.bowerrc');
+		this.copy('_bower.json', 'bower.json');
+		this.copy('_gitignore', '.gitignore');
+		this.copy('_Gruntfile.js', 'Gruntfile.js');
 		this.copy('_jshintrc', '.jshintrc');
+		this.copy('_package.json', 'package.json');
+		this.copy('_tslint.json', 'tslint.json');
+	},
 
-		if (this.todo) {
-			this.copy('_package.json', 'package.json');
-			this.copy('_Gruntfile.js', 'Gruntfile.js');
-			this.directory('src', 'src');
+	writing: {
+		index():void {
+			this.copy('src/_index.html', 'src/index.html');
+		},
+		css():void {
+			if (this.stylus) {
+				this.copy('src/app/resources/_main.styl', 'src/app/resources/main.styl');
+			}
+			else {
+				this.copy('src/app/resources/main.css', 'src/app/resources/main.css');
+			}
+		},
+		app():void {
+			this.copy('src/app/_main.ts', 'src/app/main.ts');
+			this.directory('src/app/viewModels', 'src/app/viewModels');
+			this.directory('src/app/views', 'src/app/views');
 		}
 	},
 
 	install():void {
-		var self = this;
-		var done = this.async();
-		this.npmInstall('', ():void => {
-			exec('grunt build');
-			var nodeModules = path.join(process.cwd(), '/node_modules/mayhem');
-			process.chdir(nodeModules);
-			self.npmInstall('', ():void => {
-				exec('grunt build');
-				done();
-			});
+		this.installDependencies({
+			skipInstall: this.options['skip-install']
 		});
 	},
 
 	end():void {
-		this.log('All done!  Thank you for using the Mayhem generator!');
+		this.log('All done! Thank you for using the Mayhem generator!');
 	}
 });
 
-module.exports = MayhemGenerator;
+export = MayhemGenerator;

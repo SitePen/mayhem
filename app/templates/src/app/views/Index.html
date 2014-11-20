@@ -1,23 +1,2 @@
-<alias from="form" to="mayhem/ui/form">
-<div>
-	<widget is="form/Text" value={todo.name} placeholder="What needs to be done?"></widget>
-<!--	<widget is="form/Error" field={todo.name%errors}></widget>-->
-	<widget is="form/Button" on-activate={saveNewTodo} label="Save"></widget>
-</div>
-<for each={todos} as="todo">
-	<div on-click="edit" class="{todo.class}">
-		<widget id="todo-{todo.id}" is="form/Checkbox" checked={todo.isCompleted}></widget>
-<!--		<if condition={todo.isEditing}>-->
-			<widget is="form/Text" value={todo.name}></widget>
-<!--		<else>-->
-<!--			<label for="todo-{todo.id}" class="{todo.class}">{todo.name}</span>-->
-<!--		</if>-->
-		<widget is="form/Button" on-activate={remove} label="Delete"></widget>
-	</div>
-</for>
-
-<div>
-	<a href="{app.router.createPath('index', { show: 'all' })}">All</a>
-	<a href="{app.router.createPath('index', { show: 'incomplete' })}">Incomplete</a>
-	<a href="{app.router.createPath('index', { show: 'complete' })}">Complete</a>
-</div>
+<!-- Index View -->
+{text}

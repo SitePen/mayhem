@@ -1,20 +1,20 @@
 import WebApplication = require('mayhem/WebApplication');
 
 var app:WebApplication = new WebApplication({
-	name: 'Mayhem TodoMVC',
+	name: '<%= appTitle %>',
 	components: {
 		router: {
 			routes: {
 				'index': {
 					model: 'app/viewModels/Index',
-					path: 'todos/<show:all|incomplete|complete>',
+					path: 'index',
 					view: 'app/views/Index.html'
 				}
 			}
 		}
 	}
 });
-app.startup().otherwise(function (error) {
+app.run().otherwise(function (error:Error):void {
 	console.log('app error', error);
 });
 

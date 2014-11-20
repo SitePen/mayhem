@@ -1,0 +1,9 @@
+*.js.map
+*.js
+!/Gruntfile.js
+/tscommand-*.tmp.txt
+/node_modules/
+/src/*
+!/src/<%= appName %><% if (stylus) { %>
+/src/<%= appName %>/**/*.css<% } %>
+!/src/index.html

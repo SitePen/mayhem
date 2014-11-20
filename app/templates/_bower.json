@@ -1,0 +1,15 @@
+{
+  "name": "<%= appName %>",
+  "version": "0.0.0",
+  "main": "main",
+  "moduleType": [
+    "amd"
+  ],
+  "private": true,
+  "ignore": [
+    "node_modules"
+  ],
+  "dependencies": {
+    "mayhem": "git@github.com:SitePen/mayhem.git#c20d2880d0a4ee506220db4ccaa5dbc31779ab29"
+  }
+}
