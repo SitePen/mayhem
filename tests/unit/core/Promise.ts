@@ -69,7 +69,7 @@ registerSuite({
 	},
 
 	'.resolve': {
-		'normal'() {
+		'with value'() {
 			var promise = Promise.resolve('resolved');
 
 			return promise.then(function (result) {
