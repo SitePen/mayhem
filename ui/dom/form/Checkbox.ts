@@ -47,7 +47,9 @@ class Checkbox extends DijitWidget implements ICheckbox {
 		// internal value of the checkbox back.
 		// Prevent this by turning the DOM `click` into a noop and listen for the Mayhem `activate` event to toggle
 		// the checkbox.
-		(<any> this._widget)._onClick = function ():void {};
+		(<any> this._widget)._onClick = function (event:Event):void {
+			event.preventDefault();
+		};
 
 		this.on('activate', function ():void {
 			this.set('isChecked', !this.get('isChecked'));
