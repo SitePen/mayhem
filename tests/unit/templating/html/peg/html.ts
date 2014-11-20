@@ -400,7 +400,7 @@ registerSuite({
 					'<div class="',
 					{ $bind: 'foo', direction: 2 },
 					'" data-baz="',
-					{ $bind: [ 'baz', { $bind: 'blah', direction: 1 } ], direction: 1 },
+					{ $bind: [ 'baz', { path: 'blah' } ], direction: 1 },
 					'">hello ',
 					{ $bind: 'bar', direction: 1 },
 					'</div>'
