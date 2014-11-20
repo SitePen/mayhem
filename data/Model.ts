@@ -170,14 +170,29 @@ class Model extends Observable implements data.IModel {
 		return true;
 	}
 
-	revert():void {
+	revert(keysToRevert?:string[]):void {
+		var isDirty = false;
 		var wasDirty = this.get('isDirty');
 		var properties = this._dirtyProperties;
-		for (var key in properties) {
-			this.set(key, this._dirtyProperties[key]);
+
+		if (keysToRevert) {
+			for (var i = 0, j = keysToRevert.length; i < j; ++i) {
+				if (key in properties) {
+					this.set(key, properties[key]);
+					delete properties[key];
+				}
+			}
+
+			isDirty = this.get('isDirty');
 		}
-		this._dirtyProperties = {};
-		this._notify('isDirty', false, wasDirty);
+		else {
+			for (var key in properties) {
+				this.set(key, properties[key]);
+			}
+			this._dirtyProperties = {};
+		}
+
+		this._notify('isDirty', isDirty, wasDirty);
 	}
 
 	_scenarioGetter():string {
