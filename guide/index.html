@@ -119,7 +119,8 @@
 						<li>
 							<a href="#data-models">Data models</a>
 							<ul class="subsections">
-								<li data-id="what-is-data-model"><a href="#what-is-data-model">What is a data model?</a></li>
+								<li data-id="mayhem-model"><a href="#mayhem-model">Data model basics</a></li>
+								<li data-id="tracking-model-changes"><a href="#tracking-model-changes">Tracking model changes</a></li>
 								<li data-id="scenarios"><a href="#scenarios">Scenarios</a></li>
 								<li data-id="validation"><a href="#validation">Validation</a></li>
 							</ul>
@@ -1160,8 +1161,6 @@ app.startup();</code></pre>
 
 						<p>The <a href="#view-templating">view templating</a> section describes the templating language in greater detail.</p>
 
-						<p>
-
 						<div class="a half" id="view-templating"></div>
 						<h3 data-id="view-templating">View templating</h3>
 
@@ -1255,17 +1254,145 @@ app.startup();</code></pre>
 
 						<p>Custom widgets should do their best to only update while their <code>isAttached</code> property is <code>true</code>. When <code>isAttached</code> is <code>false</code>, the widget is not attached to the view tree, and UI updates performed in this condition will never be seen by a user. Widgets should not use the <code>detach</code> method as an indicator to halt operations since this method is used a widget is simply moved from one part of the UI to another.</p>
 
-						<p>TODO: There should probably be rendering lifecycle methods to avoid <code>isAttached</code> churn?</p>
+						<p>TODO: There should probably be rendering lifecycle methods to avoid <code>isAttached</code> churn? Data binding loop, view read loop, view write loop.</p>
 					</article>
 
 					<article>
 						<div class="a" id="data-models"></div>
 						<h2 data-id="data-models">Data models</h2>
 
-						<div class="a half" id="what-is-data-model"></div>
-						<h3 data-id="what-is-data-model">What is a data model?</h3>
+						<div class="a half" id="mayhem-model"></div>
+						<h3 data-id="mayhem-model">Data model basics</h3>
 
-						<p>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.Lorem ipsum dolor sit amet.</p>
+						<p>TODO: Figure here?</p>
+
+						<p>A model is an object that provides business logic and data for an application (as opposed to a view–model which provides <em>view-specific</em> logic and data). For developers that have worked with databases but are unfamiliar with models, a model can be thought of as an object representing one record in a database table, where the properties of the model correspond to columns in the database.For example, we might create a Burger model corresponding to a type of burger on our menu:</p>
+
+						<pre><code class="typescript">import currency = require('dojo/currency');
+import Model = require('mayhem/data/Model');
+
+class Burger extends Model {
+	get:Burger.Getters;
+	set:Burger.Setters;
+
+	_formattedPriceGetter():string {
+		return currency.format(this.get('price') / 100);
+	}
+	_formattedPriceSetter(value:string) {
+		this.set('price', currency.parse(value) / 100);
+	}
+
+	_initialize() {
+		super._initialize();
+		this.set('name', 'Untitled burger');
+		this.set('ingredients', []);
+	}
+}
+
+module Burger {
+	export interface Getters {
+		(key:'name'):string;
+		(key:'formattedPrice'):string;
+		(key:'ingredients'):string[];
+		(key:'price'):number;
+	}
+
+	export interface Setters {
+		(key:'name', value:string):void;
+		(key:'formattedPrice'):string;
+		(key:'price', value:number):void;
+	}
+}
+
+export = Burger;</code></pre>
+
+						<p>In Mayhem, models are normally created as subclasses of <a href="TODO"><code>mayhem/data/Model</code></a>. Models that are designed to be saved and retrieved from a <a href="TODO">data store</a> are subclasses of <a href="TODO"><code>mayhem/data/PersistentModel</code></a>.</p>
+
+						<div class="a half" id="tracking-model-changes"></div>
+						<h3 data-id="tracking-model-changes">Tracking model changes</h3>
+
+						<p>Mayhem’s Models track the “dirtiness” of model properties, so you can determine whether or not the properties of a model have been changed and revert those changes before they are permanently committed:</p>
+
+						<pre><code class="typescript">var burger = new Burger({
+	name: 'Kales From The Crypt Burger',
+	formattedPrice: '$5.95'
+});
+
+log(burger.get('isDirty')); // false
+burger.set('formattedPrice', '$10.50');
+
+log(burger.get('isDirty')); // true
+log(burger.get('formattedPrice')); // '$10.50'
+
+burger.revert();
+
+log(burger.get('isDirty')); // false
+log(burger.get('formattedPrice')); // '$5.95'
+
+burger.set('formattedPrice', '$10.50');
+
+burger.commit();
+
+log(burger.get('isDirty')); // false
+log(burger.get('formattedPrice')); // '$10.50'</code></pre>
+
+						<div class="a half" id="scenarios"></div>
+						<h3 data-id="scenarios">Scenarios</h3>
+
+						<p>TODO Discuss scenarios</p>
+
+						<div class="a half" id="validation"></div>
+						<h3 data-id="validation">Validation</h3>
+
+						<p>Once a model is populated with data from a user, it’s usually necessary to validate that the data is actually valid. Validation rules for Mayhem models are declared by providing a validators key on the model that returns a map of property keys to validators:</p>
+
+						<pre><code class="typescript">import RequiredValidator = require('mayhem/validation/RequiredValidator');
+import StringValidator = require('mayhem/validation/StringValidator');
+import NumberValidator = require('mayhem/validation/NumberValidator');
+
+class Burger {
+	// …
+
+	_validatorsGetter() {
+		return {
+			name: [
+				new RequiredValidator(),
+				new StringValidator({ maxLength: 40 })
+			],
+			price: [
+				new RequiredValidator(),
+				new NumberValidator({ min: 500 })
+			]
+		};
+	}
+}
+
+export = Burger;</code></pre>
+
+						<p>Validation rules can be restricted to specific scenarios by specifying which scenarios are valid for a particular validator:</p>
+
+						<pre><code class="typescript">import Model = require('mayhem/data/PersistentModel');
+import RequiredValidator = require('mayhem/validation/RequiredValidator');
+
+class BurgerUser extends PersistentModel {
+	// …
+
+	_validatorsGetter() {
+		return {
+			email: [
+				new RequiredValidator()
+			],
+			confirmEmail: [
+				// TODO: Rename 'scenarios' to 'on' in code
+				new RequiredValidator({ on: [ 'insert' ] })
+			]
+		};
+	}
+}
+
+export = BurgerUser;</code></pre>
+
+						<p>In this case, the <code>confirmEmail</code> property only needs to be filled out when the <code>scenario</code> property of the model is set to <code>'insert'</code>. If the scenario is something else (like <code>'update'</code>), the validator no longer applies for that field.</p>
 					</article>
 				</main>
 			</div>
