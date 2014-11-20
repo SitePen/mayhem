@@ -331,34 +331,6 @@
 
 						<aside class="tip"><p>If you’re unfamiliar with TypeScript but want to learn how to use it, check out SitePen’s <a href="http://www.sitepen.com/blog/2013/12/31/definitive-guide-to-typescript/">Definitive Guide to TypeScript</a>. Remember that TypeScript is a full superset of JavaScript, so you can always write JavaScript and migrate to TypeScript over time—or vice-versa!</p></aside>
 
-						<p>Mayhem uses certain conventions to provide support for Proxy-like objects in pre-EcmaScript 6 environments, which are key to providing easy-to-use view-models. In order to work around limitations within the first version of TypeScript, … TODO (talking about Callers/Events/Getters/Setters interfaces here)</p>
-
-						<figure>
-							<pre><code class="typescript">import Observable = require('mayhem/Observable');
-
-class User extends Observable {
-	get:User.Getters;
-	set:User.Setters;
-}
-
-module User {
-	export interface Getters extends Observable.Getters {
-		(key:'username'):string;
-		(key:'password'):string;
-	}
-
-	export interface Setters extends Observable.Setters {
-		(key:'username', value:string):void;
-		(key:'password', value:string):void;
-	}
-}
-
-export = User;</code></pre>
-							<figcaption>Creating a basic Mayhem class in TypeScript</figcaption>
-						</figure>
-
-						<aside class="tip"><p>The <span class="sc">Mayhem generator</span> can create these more verbose data interfaces for you automatically. As the TypeScript language continues to mature, improved code generation and annotations will be used in order to eliminate the need to write longhand interface definitions. (One useful side-benefit of having to define getters and setters separately is that it becomes possible to type properties as being read-only or write-only within the compiler.)</p></aside>
-
 						<div class="a half" id="mvvm"></div>
 						<h3 data-id="mvvm">The MVVM pattern</h3>
 
@@ -388,6 +360,8 @@ export = User;</code></pre>
 						<div class="a half" id="conventions"></div>
 						<h3 data-id="conventions">Conventions</h3>
 
+						<p>Mayhem uses conventions that enable features similar to those only available in EcmaScript 6+ to be used in environments going back to EcmaScript 3. Because these conventions are used throughout code written with Mayhem, it is important to understand these conventions and why they exist. Over time, as the TypeScript compiler improves and support for older platforms is dropped, code written with Mayhem will become much more concise and easier to author.</p>
+
 						<h4>Object construction</h4>
 
 						<p>All constructors in Mayhem share the same constructor signature, with a single optional <dfn>keyword arguments</dfn> object accepted as the sole argument:</p>
@@ -403,9 +377,24 @@ export = User;</code></pre>
 							<li>No extra code is necessary for parameters that need to go through accessors/mutators, as the keyword arguments object is mass-assigned using <a href="TODO"><code>Observable#set</code></a></li>
 						</ul>
 
+						<h4>Default object properties</h4>
+
+						<p>Due to <a href="TODO">design limitations</a> in TypeScript 1, default property values should be defined by adding an <a href="TODO"><code>_initialize</code></a> function to subclasses instead of using the syntactic sugar for default properties built into TypeScript’s class syntax:</p>
+
+						<pre><code class="typescript">class Burger extends Observable {
+	hasCheese:boolean;
+
+	protected _initialize() {
+		super._initialize();
+		this.hasCheese = false;
+	}
+}</code></pre>
+
+						<p>It is expected that future revisions to TypeScript will re-enable the use of the default property value syntax without breaking the ability to use keyword arguments.</p>
+
 						<h4>Object usage</h4>
 
-						<p>Getting and setting the properties of most Mayhem class instances is done using <a href="TODO"><code>object.get(key)</code></a> and <a href="TODO"><code>object.set(key, value)</code></a> methods instead of using the normal property accessor (<code>.</code>) operator. This is necessary to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty#Custom_setters_and_getters">accessor/mutator functions</a> in pre-ES5 environments, and to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy-like behaviour</a> in pre-ES6 environments.</p>
+						<p>Getting and setting properties on most Mayhem objects is done using <a href="TODO"><code>object.get(key)</code></a> and <a href="TODO"><code>object.set(key, value)</code></a> methods instead of using the normal property accessor (<code>.</code>) operator. This is necessary to support observable <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty#Custom_setters_and_getters">accessor/mutator functions</a> in pre-ES5 environments, and to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy-like behaviour</a> in pre-ES6 environments. <a href="#base-object">The Base object</a> describes how to create and use objects in Mayhem.</p>
 
 						<h4>Object destruction</h4>
 
@@ -453,16 +442,104 @@ export = User;</code></pre>
 						<div class="a half" id="base-object"></div>
 						<h3 data-id="base-object">The Base object</h3>
 
-						<p>Within Mayhem, most objects are extended from the Observable (TODO: rename) object. The Observable object provides a consistent API for getting and setting properties that allows computed properties to be created in EcmaScript 3 environments and that allows proxy-like interactions to be created in EcmaScript 5 environments.</p>
+						<p>Within Mayhem, most objects are extended from the Observable (TODO: rename to Base) object. The Observable object provides a consistent API for getting and setting properties that allows computed properties to be created in EcmaScript 3 environments and that allows proxy-like interactions to be created in EcmaScript 5 environments.</p>
+
+						<p>ES3-compatible computed properties can be created on Observable objects by writing protected functions with the names <code>_<i>propertyName</i>Getter</code> and <code>_<i>propertyName</i>Setter</code>. You can also declare dependencies for a computed property by adding a <code>_<i>propertyName</i>Dependencies</code> function:</p>
+
+						<figure>
+							<pre><code class="typescript">import currency = require('dojo/currency');
+import Observable = require('mayhem/Observable');
+
+class Burger extends Observable {
+	get:Burger.Getters;
+	set:Burger.Setters;
+
+	protected _formattedPriceDependencies() {
+		return [ 'price' ];
+	}
+	protected _formattedPriceGetter():string {
+		return currency.format(this.get('price'));
+	}
+	protected _formattedPriceSetter(value:string) {
+		this.set('price', currency.parse(value));
+		this._notify('formattedPrice');
+	}
+}
+
+export = Burger;</code></pre>
+							<figcaption>ES3-compatible computed properties in Mayhem</figcaption>
+						</figure>
+
+						<p>If you don’t need to support EcmaScript 3 environments, you can use the native ES5 computed properties syntax for your computed properties instead:</p>
+
+						<figure>
+							<pre><code class="typescript">import currency = require('dojo/currency');
+import Observable = require('mayhem/Observable');
+
+class Burger extends Observable {
+	get:Burger.Getters;
+	set:Burger.Setters;
+
+	protected _formattedPriceDependencies() {
+		return [ 'price' ];
+	}
+	get formattedPrice():string {
+		return currency.format(this.get('price'));
+	}
+	set formattedPrice(value:string) {
+		this.set('price', currency.parse(value));
+		this._notify('formattedPrice');
+	}
+}
+
+export = Burger;</code></pre>
+							<figcaption>ES5 computed properties in Mayhem</figcaption>
+						</figure>
+
+						<p>Note that the <code>formattedPrice</code> setter in both of these examples has to perform its own notification that the value has changed. This allows computed property setters to control if and when change notifications occur, and matches the behaviour of the EcmaScript 6 <a href="TODO">Object.observe</a> API.</p>
+
+						<p>When extending an Observable object, extra interfaces must be created in order to provide accurate typing information for <code>get</code> and <code>set</code> calls:</p>
+
+						<figure>
+							<pre><code class="typescript">import Observable = require('mayhem/Observable');
+
+class Burger extends Observable {
+	get:Burger.Getters;
+	set:Burger.Setters;
+
+	// …
+}
+
+module Burger {
+	export interface Getters extends Observable.Getters {
+		(key:'formattedPrice'):string;
+		(key:'price'):number;
+	}
+
+	export interface Setters extends Observable.Setters {
+		(key:'formattedPrice', value:string):void;
+		(key:'price', value:number):void;
+	}
+}
+
+export = Burger;</code></pre>
+							<figcaption>Creating a basic Mayhem class in TypeScript</figcaption>
+						</figure>
+
+						<p>It is expected that future revisions to TypeScript will enable automatic generation of these interfaces.</p>
+
+						<aside class="tip"><p>TODO: Not true right now. The <span class="sc">Mayhem generator</span> can create these more verbose data interfaces for you automatically. As the TypeScript language continues to mature, improved code generation and annotations will be used in order to eliminate the need to write longhand interface definitions. (One useful side-benefit of having to define getters and setters separately is that it becomes possible to type properties as being read-only or write-only within the compiler.)</p></aside>
 
 						<h4>Setters vs observers</h4>
 
-						<p>When creating components that extend from Observable, it’s important to distinguish between the functionality of a setter function and the functionality of an observer function:</p>
+						<p>When creating components that extend from Observable, it’s important to distinguish between the functionality of a property setter function and the functionality of an property observer function:</p>
 
 						<ul>
-							<li>A <em>setter function</em> should be used when the way in which a property is set needs to be changed. For example, if you had a computed <code>formattedPrice</code> property that computed a human-readable price, you could also have a setter function to convert a formatted price value back into a number and then set it on <code>price</code>.</li>
+							<li>A <em>setter function</em> should be used when the way in which a property is set needs to be changed. For example, if you had a computed <code>formattedPrice</code> property that computed a human-readable price (as in the previous example), you could also have a setter function to convert a formatted price value back into a number and then set it on <code>price</code>.</li>
 							<li>An <em>observer function</em> should be used when an object needs to respond to the fact that a particular property has changed. For example, if you had a computed <code>totalPrice</code> property that was based on the subtotals of items in a shopping cart, the property would never be set directly but it would update frequently as items were added and removed from the cart.</li>
 						</ul>
+
+						<p>While property setters are defined declaratively as methods of an Observable subclass, property observers are normally added to objects using the application’s <a href="TODO">data binder</a>. TODO: Are we keeping Observable#observe? Should we add a declarative mechanism for observing property changes on oneself?</p>
 					</article>
 
 					<article>
@@ -893,7 +970,7 @@ binding.get(); // []
 a.foo.push('foo', 'bar');
 binding.get(); // [ 'foo', 'bar' ]</code></pre>
 
-						<aside class="whatAreYouCrazy"><p>Due to the limitations of EcmaScript 3/5, when working with arrays that are data bound, modifications must be performed using the array methods (<code>push</code>, <code>pop</code>, <code>splice</code>, etc.). Directly modifying array indices (<code>array[0] = 'foo'</code>) will not cause notifications. This limitation does not exist in environments that support the upcoming <code>Array.observe</code> standard.</p></aside>
+						<aside class="whatAreYouCrazy"><p>Due to the limitations of EcmaScript 3/5, when working with arrays that are data bound, modifications must be performed using the array methods (<code>push</code>, <code>pop</code>, <code>splice</code>, etc.). Directly modifying array indices (<code>array[0] = 'foo'</code>) will not cause notifications. This limitation does not exist in environments that support <a href="TODO">EcmaScript 6 <code>Array.observe</code></a>.</p></aside>
 
 						<div class="a half" id="extending-binding"></div>
 						<h3 data-id="extending-binding">Adding and extending bindings</h3>
@@ -1027,7 +1104,7 @@ var app = new WebApplication({
 							<li>Your application can use native UI controls (i.e. real iOS and Android widgets) with few or no changes</li>
 							<li>Your application can run from a Web Worker process, ensuring the UI thread is never blocked</li>
 							<li>You don’t need to understand complex tree diffing mechanisms like Virtual DOM, since monolithic <code>render</code> methods that rebuild the entire view when something changes aren’t used</li>
-							<li>You don’t have to worry about platform bugs or missing features (like Pointer Events), since they can be fully addressed by Mayhem’s UI abstraction layer</li>
+							<li>You don’t have to worry about platform bugs or missing features (like Pointer Events), since they can be handled by Mayhem’s UI abstraction layer</li>
 						</ul>
 
 						<aside class="tip"><p>Although your code won’t interact with the DOM directly, Mayhem comes with a familiar, HTML-like templating language that makes it easy for Web developers to start creating UIs for Web-only applications using a familiar syntax and more direct control over the DOM.</p></aside>
@@ -1176,9 +1253,19 @@ app.startup();</code></pre>
 
 						<p>When creating custom platform widgets, the <code>_render</code> method can be used to generate native UI controls knowing that all initial properties from the <code>kwArgs</code> object have been set. This method will only ever be invoked <em>once</em>. There is no guarantee about exactly when this method will be invoked, except that it will always be after all <code>kwArgs</code> properties have been set but before the widget is attached to the view tree.</p>
 
-						<p>Custom widgets should do their best to only do anything while their <code>isAttached</code> property is <code>true</code>. When <code>isAttached</code> is <code>false</code>, the widget is not attached to the view tree, and any UI updates performed in this condition are a waste of time. Widgets should not use the <code>detach</code> method as an indicator to halt operations since this method is used a widget is simply moved from one part of the UI to another.</p>
+						<p>Custom widgets should do their best to only update while their <code>isAttached</code> property is <code>true</code>. When <code>isAttached</code> is <code>false</code>, the widget is not attached to the view tree, and UI updates performed in this condition will never be seen by a user. Widgets should not use the <code>detach</code> method as an indicator to halt operations since this method is used a widget is simply moved from one part of the UI to another.</p>
 
 						<p>TODO: There should probably be rendering lifecycle methods to avoid <code>isAttached</code> churn?</p>
+					</article>
+
+					<article>
+						<div class="a" id="data-models"></div>
+						<h2 data-id="data-models">Data models</h2>
+
+						<div class="a half" id="what-is-data-model"></div>
+						<h3 data-id="what-is-data-model">What is a data model?</h3>
+
+						<p>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.Lorem ipsum dolor sit amet.</p>
 					</article>
 				</main>
 			</div>
