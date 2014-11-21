@@ -30,7 +30,6 @@ registerSuite({
 		'default values'() {
 			var event = new Event();
 
-			assert.isNumber(event.timestamp, 'timestamp should be a number');
 			assert.isTrue((+new Date()) >= event.timestamp, 'timestamp should not be greater than the current time');
 		}
 	},
@@ -65,7 +64,7 @@ registerSuite({
 		assert.isFalse(event.immediatePropagationStopped, 'stopImmediatePropagation should have no effect');
 	},
 
-	'stopPropagation'() {
+	'#stopPropagation'() {
 		var event = new Event({
 			bubbles: true,
 			propagationStopped: false

@@ -39,7 +39,6 @@ registerSuite({
 		return promise.then(function () {
 			assert.isFalse(true, 'promise should not be resolved');
 		}, function (error) {
-			assert.instanceOf(error, Error);
 			assert.strictEqual(error.message, 'rejected');
 		});
 	},
@@ -63,7 +62,6 @@ registerSuite({
 		return promise.then(function () {
 			assert.isFalse(true, 'promise should not be resolved');
 		}, function (error) {
-			assert.instanceOf(error, Error);
 			assert.strictEqual(error.message, 'bad intitializer');
 		});
 	},
@@ -112,7 +110,6 @@ registerSuite({
 		return promise.then(function () {
 			assert.isFalse(true, 'promise should not be resolved');
 		}, function (error) {
-			assert.instanceOf(error, Error);
 			assert.strictEqual(error.message, 'rejected');
 		});
 	}
