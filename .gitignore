@@ -1,9 +1,10 @@
-*.js.map
+node_modules
+src/mayhem
+src/messageformat
+src/d*
+src/put-selector
+src/xstyle
 *.js
+*.js.map
 !Gruntfile.js
-html-report/
-node_modules/
-third-party/
-!tests/support/reporter.js
-tscommand-*.tmp.txt
 .idea

@@ -1,0 +1,21 @@
+{
+  "name": "prototype2",
+  "version": "0.1.0",
+  "authors": [
+    "Ed Hager <ed.hager@gmail.com>"
+  ],
+  "moduleType": [
+    "amd"
+  ],
+  "license": "BSD 3-Clause",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "third-party",
+    "tests"
+  ],
+  "dependencies": {
+    "mayhem": "git@github.com:SitePen/mayhem.git#c20d2880d0a4ee506220db4ccaa5dbc31779ab29"
+  }
+}
