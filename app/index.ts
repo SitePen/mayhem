@@ -102,6 +102,9 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 			this.copy('src/app/_main.ts', 'src/app/main.ts');
 			this.directory('src/app/viewModels', 'src/app/viewModels');
 			this.directory('src/app/views', 'src/app/views');
+		},
+		tests():void {
+			this.directory('src/app/tests', 'src/app/tests');
 		}
 	},
 

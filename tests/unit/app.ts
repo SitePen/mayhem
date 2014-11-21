@@ -20,7 +20,13 @@ var expectedFiles:string[] = [
 	'src/app/main.ts',
 	'src/app/viewModels/Index.ts',
 	'src/app/views/Application.html',
-	'src/app/views/Index.html'
+	'src/app/views/Index.html',
+	'src/app/tests/app.intern.ts',
+	'src/app/tests/chai-assert.d.ts',
+	'src/app/tests/chai.d.ts',
+	'src/app/tests/functional/all.ts',
+	'src/app/tests/intern.d.ts',
+	'src/app/tests/unit/all.ts'
 ];
 var helpers = generator.test;
 var module:any = arguments[arguments.length - 1];
