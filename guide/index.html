@@ -174,7 +174,7 @@
 						<div class="a half" id="what-is-mayhem"></div>
 						<h3 data-id="what-is-mayhem">What is Mayhem?</h3>
 
-						<p>Mayhem is a framework for developing large, complex applications with TypeScript or JavaScript. Unlike other Web libraries and frameworks that place their emphasis on performance or file size, Mayhem is designed around these three key tenets:</p>
+						<p>Mayhem is a framework for developing large, complex applications with TypeScript or JavaScript. Unlike other Web libraries and frameworks that place absolute emphasis on performance or file size, Mayhem is designed around these three key tenets:</p>
 
 						<ul>
 							<li><strong>Predictability</strong>: As much as possible, the framework must be designed to minimise surprise. Mayhem uses as little magic as possible in order to accomplish its goals, while still being exceptionally powerful &amp; easy to use, with a minimum of rote.</li>
@@ -1392,7 +1392,85 @@ class BurgerUser extends PersistentModel {
 
 export = BurgerUser;</code></pre>
 
-						<p>In this case, the <code>confirmEmail</code> property only needs to be filled out when the <code>scenario</code> property of the model is set to <code>'insert'</code>. If the scenario is something else (like <code>'update'</code>), the validator no longer applies for that field.</p>
+						<p>In this case, the <code>confirmEmail</code> property only needs to be filled out when the <code>scenario</code> property of the model is set to <code>'insert'</code>. If the scenario is changed to something else (like <code>'update'</code>), the validator will no longer be applied.</p>
+
+						<p>TODO: Describe custom validators and asynchronous validators</p>
+
+						<div class="a half" id="persisting-data"></div>
+						<h3 data-id="persisting-data">Persisting data</h3>
+
+						<p>In order to persist data models across page loads, a data model should extend from the <a href="TODO"><code>mayhem/data/PersistentModel</code></a> class. The <code>PersistentModel</code> class
+					</article>
+
+					<article>
+						<div class="a" id="collections"></div>
+						<h2 data-id="collections">Collections</h2>
+
+						<div class="a half" id="what-is-collection"></div>
+						<h3 data-id="what-is-collection">Collections basics</h3>
+
+						<p>TODO: Figure of data layer, model | collection | store | HTTP | server.</p>
+
+						<p>Collections hold sets of data, just like arrays, but offer a better API for retrieving, filtering, and sorting data from asynchronous data sources.</p>
+
+						<p>Collections are created by creating a <a href="TODO"><code>dstore.Store</code></a> data store, which is itself a collection:</p>
+
+						<pre><code class="typescript">import RestStore = require('app/stores/RestStore');
+import Burger = require('app/models/Burger');
+
+var burgers = new RestStore({ Model: Burger, target: '/rest/burgers/' });
+burgers.fetch().then(function (allBurgers:Burger[]) {
+	// all the burgers
+});
+burgers.filter({ hasCheese: true }).fetch().then(function (cheeseburgers:Burger[]) {
+	// just the cheeseburgers
+});</code></pre>
+
+						<p></p>
+
+						<p>Collections can be created from other collections by using the same filtering methods that exist on stores:</p>
+
+						<pre><code class="typescript">import RestStore = require('app/stores/RestStore');
+import Burger = require('app/models/Burger');
+
+var burgers = new RestStore({ Model: Burger, target: '/rest/burgers/' });
+
+var cheeseburgers = burgers.filter({ hasCheese: true });
+var cheapCheeseburgers = cheeseburgers.filter({ })
+
+burgers.filter({ hasCheese: true }).fetch().then(function (burgers:Burger[]) {
+
+});</code></pre>
+
+
+						<p>Users familiar with SQL databases can map most:</p>
+
+						<table>
+							<tr>
+								<th>Mayhem / dstore</th>
+								<th>SQL</th>
+							</tr>
+							<tr>
+								<td>Store</td>
+								<td>Table</td>
+							</tr>
+							<tr>
+								<td>Collection</td>
+								<td><a href="https://en.wikipedia.org/wiki/View_%28SQL%29">View</a></td>
+							</tr>
+							<tr>
+								<td><code>Collection#filter</code></td>
+								<td><code>WHERE</code></td>
+							</tr>
+							<tr>
+								<td><code>Collection#sort</code></td>
+								<td><code>ORDER BY</code></td>
+							</tr>
+							<tr>
+								<td><code>Collection#fetchRange</code></td>
+								<td><code>LIMIT</code>/<code>OFFSET</code>/<code>FETCH FIRST</code></td>
+							</tr>
+						</table>
 					</article>
 				</main>
 			</div>
