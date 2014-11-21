@@ -155,7 +155,7 @@ export function escapedIndexOf(source:string, searchString:string, position?:num
 			break;
 		}
 
-		position = index;
+		position = index + 1;
 	} while (index > -1);
 
 	return index;
