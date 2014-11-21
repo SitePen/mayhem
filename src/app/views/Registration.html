@@ -1,8 +1,46 @@
-<h1>User Registration</h1>
-<div>Welcome!  Help us get to know you better.</div>
+<alias tag="button" to="mayhem/ui/form/Button"/>
+<alias tag="checkbox" to="mayhem/ui/form/Checkbox"/>
+<alias tag="datePicker" to="mayhem/ui/form/DatePicker"/>
+<alias tag="label" to="mayhem/ui/Label"/>
+<alias tag="radioButton" to="mayhem/ui/form/RadioButton"/>
+<alias tag="text" to="mayhem/ui/form/Text"/>
+<alias tag="error" to="mayhem/ui/form/Error"/>
 
-<div>
-    <label for="Name">Name:</label> <input type="text" id="Name" name="Name" value="{{model.name}}">
+<h1>User Registration</h1>
+<div>Welcome! Help us get to know you better.</div>
+
+<div class="registrationField">
+    <label text="Name: "/>
+    <text value={{name}} placeholder="What would you like us to call you?"/>
+</div>
+<div class="registrationField">
+    <label text="Date of birth: "/>
+    <datePicker value={{dateOfBirth}} placeholder="When did you enter this realm?"/>
+</div>
+<div class="registrationField">
+    <label text="What type of web developer are you?"/>
+    <radioButton value={{typeOfDeveloper}} label="Coder" checked-value="coder"/>
+    <radioButton value={{typeOfDeveloper}} label="Designer" checked-value="designer"/>
+</div>
+<div class="registrationField">
+    <label text="What is your favorite browser?"/>
+    <radioButton checked-value="chrome" label="Chrome" value={{favoriteBrowser}} />
+    <radioButton checked-value="firefox" label="Firefox" value={{favoriteBrowser}} />
+    <radioButton checked-value="ie" label="Internet Explorer" value={{favoriteBrowser}} />
+</div>
+<div class="registrationField">
+    <checkbox is-checked={{allowedToContact}} /> Will you allow us to contact you?
+    <if condition={allowedToContact}>
+        <div class="registrationField">
+            <label text="What is your email address?"/>
+            <text value={{email}} placeholder="We promise, no spam."/>
+        </div>
+        <error errors={errors.email} />
+    </if>
 </div>
 
-<div><button>Save</button> <button on-click="{app.router.go('index')}">Cancel</button></div>
+<div class="registrationField">
+    <!--These bindings are not working-->
+   <button label="Save" on-activate={save} />
+    <button label="Cancel" on-activate={app.router.go('index')} />
+</div>
