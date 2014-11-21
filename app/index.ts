@@ -70,6 +70,7 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 			this.oldBrowsers = answers.oldBrowsers;
 
 			this.config.set(answers);
+			this.config.save();
 
 			done();
 		}.bind(this));
