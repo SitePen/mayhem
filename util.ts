@@ -148,6 +148,10 @@ export function deferSetters(
 export function escapedIndexOf(source:string, searchString:string, position?:number):number {
 	var index:number;
 
+	if (source === '' || searchString === '' || position < 0) {
+		return -1;
+	}
+
 	do {
 		index = source.indexOf(searchString, position);
 
