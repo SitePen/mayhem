@@ -173,6 +173,11 @@ export function escapedSplit(source:string, separator:string):string[] {
 	var result:string[] = [];
 	var part:string = '';
 
+	if (separator === '') {
+		result.push(source);
+		return result;
+	}
+
 	for (var i = 0, j = source.length; i < j; ++i) {
 		if (source.charAt(i) === '\\') {
 			if (source.slice(i + 1, i + separator.length + 1) === separator) {
