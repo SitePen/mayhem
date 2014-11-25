@@ -317,6 +317,17 @@ registerSuite({
 		assert.strictEqual(result, 'abc&amp;def&lt;ghi>jkl\'m"n');
 	},
 
+	'.getModules'() {
+		var dfd = this.async(100);
+		var badModuleId = 'bad/module/id';
+
+		util.getModules([ badModuleId ]).then(function () {
+			dfd.reject(new Error('Promise should not resolve'));
+		}, dfd.callback(function (error:util.RequireError) {
+			assert.include(error.url, badModuleId);
+		}));
+	},
+
 	'.isEqual'() {
 		var obj = {};
 		var objRef = obj;
