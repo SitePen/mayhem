@@ -65,10 +65,7 @@ declare module yo {
     extend(protoProps: IQueueProps, staticProps?: any): IYeomanGenerator;
   }
 
-  export interface INamedBase {
-    new(args: string, options: any): IYeomanGenerator;
-    new(args: string[], options: any): IYeomanGenerator;
-  }
+  export interface INamedBase extends IBase {}
 
   export interface IAssert {
     file(path: string): void;
@@ -115,6 +112,7 @@ declare module yo {
 
     testDirectory(dir:string, callback:Function):void;
     assertFile(files:any[]):void;
+    assertNoFile(files:any[]):void;
     assertFileContent(files:any[]):void;
   }
 
