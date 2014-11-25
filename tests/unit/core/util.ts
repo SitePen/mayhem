@@ -129,15 +129,13 @@ registerSuite({
 					count++;
 				},
 
-				method2():void {
-					// no-op
-				}
+				noop():void {}
 			};
 
-			util.deferMethods(obj, [ 'method1' ], 'method2');
+			util.deferMethods(obj, [ 'method1' ], 'noop');
 			obj.method1();
 			assert.strictEqual(count, 0, 'method1 should not be called');
-			obj.method2();
+			obj.noop();
 			assert.strictEqual(count, 1, 'method1 should be called');
 		},
 
@@ -148,18 +146,16 @@ registerSuite({
 					count += increment;
 				},
 
-				method2():void {
-					// no-op
-				}
+				noop():void {}
 			};
 
-			util.deferMethods(obj, [ 'method1' ], 'method2', function () {
+			util.deferMethods(obj, [ 'method1' ], 'noop', function () {
 				return [ 2 ];
 			});
 
 			obj.method1();
 			assert.strictEqual(count, 0, 'method1 should not be called');
-			obj.method2();
+			obj.noop();
 			assert.strictEqual(count, 2, 'method1 should be called with instead arguments');
 		},
 
@@ -174,17 +170,15 @@ registerSuite({
 					message += 'B';
 				},
 
-				end():void {
-					// no-op
-				}
+				noop():void {}
 			};
 
-			util.deferMethods(obj, [ 'addA', 'addB' ], 'end');
+			util.deferMethods(obj, [ 'addA', 'addB' ], 'noop');
 
 			obj.addA();
 			obj.addB();
 			assert.strictEqual(message, '', 'deferred methods should not be called');
-			obj.end();
+			obj.noop();
 			assert.strictEqual(message, 'AB', 'deferred methods should be called in order');
 		}
 	},
