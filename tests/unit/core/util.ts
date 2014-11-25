@@ -134,9 +134,9 @@ registerSuite({
 
 			util.deferMethods(obj, [ 'method1' ], 'noop');
 			obj.method1();
-			assert.strictEqual(count, 0, 'method1 should not be called');
+			assert.strictEqual(count, 0, 'method1 should not be called until after the target method is called');
 			obj.noop();
-			assert.strictEqual(count, 1, 'method1 should be called');
+			assert.strictEqual(count, 1, 'method1 should have been called after the target method was called');
 		},
 
 		'with instead argument'() {
@@ -154,20 +154,20 @@ registerSuite({
 			});
 
 			obj.method1();
-			assert.strictEqual(count, 0, 'method1 should not be called');
+			assert.strictEqual(count, 0, 'method1 should not be called until after the target method is called');
 			obj.noop();
-			assert.strictEqual(count, 2, 'method1 should be called with instead arguments');
+			assert.strictEqual(count, 2, 'method1 should have been called with instead arguments');
 		},
 
 		'multiple deferred methods'() {
-			var message = '';
+			var count = 0;
 			var obj = {
 				addA():void {
-					message += 'A';
+					count++;
 				},
 
 				addB():void {
-					message += 'B';
+					count++;
 				},
 
 				noop():void {}
@@ -177,9 +177,10 @@ registerSuite({
 
 			obj.addA();
 			obj.addB();
-			assert.strictEqual(message, '', 'deferred methods should not be called');
+			assert.strictEqual(count, 0,
+					'deferred methods should not be called until after the target method is called');
 			obj.noop();
-			assert.strictEqual(message, 'AB', 'deferred methods should be called in order');
+			assert.strictEqual(count, 2, 'deferred methods should have been called after the target method was called');
 		}
 	},
 
@@ -190,14 +191,19 @@ registerSuite({
 			util.deferSetters(obj, [ 'foo', 'bar' ], 'end');
 
 			obj.set('foo', 'foo');
-			assert.strictEqual(obj.get('foo'), undefined, 'foo setter should be deferred');
+			assert.strictEqual(obj.get('foo'), undefined,
+				'foo setter not be called until after the target method is called');
+
 			obj.set('bar', 'bar');
-			assert.strictEqual(obj.get('bar'), undefined, 'bar setter should be deferred');
+			assert.strictEqual(obj.get('bar'), undefined,
+				'bar setter should not be called until after the target method is called');
 
 			obj.end();
 
-			assert.strictEqual(obj.get('foo'), 'foo', 'foo setter should be called');
-			assert.strictEqual(obj.get('bar'), 'bar', 'bar setter should be called');
+			assert.strictEqual(obj.get('foo'), 'foo',
+				'foo setter should have been called after the target method was called');
+			assert.strictEqual(obj.get('bar'), 'bar',
+				'bar setter should have been called after the target method was called');
 		},
 
 		'with instead argument'() {
@@ -208,14 +214,17 @@ registerSuite({
 			});
 
 			obj.set('foo', 'foo');
-			assert.strictEqual(obj.get('foo'), undefined, 'foo setter should be deferred');
+			assert.strictEqual(obj.get('foo'), undefined,
+				'foo setter not be called until after the target method is called');
+
 			obj.set('bar', 'bar');
-			assert.strictEqual(obj.get('bar'), undefined, 'bar setter should be deferred');
+			assert.strictEqual(obj.get('bar'), undefined,
+				'bar setter should not be called until after the target method is called');
 
 			obj.end();
 
-			assert.strictEqual(obj.get('foo'), 'FOO', 'foo setter should be called');
-			assert.strictEqual(obj.get('bar'), 'BAR', 'bar setter should be called');
+			assert.strictEqual(obj.get('foo'), 'FOO', 'foo setter should have been called with instead arguments');
+			assert.strictEqual(obj.get('bar'), 'BAR', 'bar setter should have been called with instead arguments');
 		}
 	},
 
