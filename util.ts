@@ -230,7 +230,7 @@ export function getModule<T>(moduleId:string):IPromise<T> {
 	});
 }
 
-interface RequireError extends Error {
+export interface RequireError extends Error {
 	url:string;
 	originalError:Error;
 }
