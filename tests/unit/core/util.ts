@@ -301,8 +301,6 @@ registerSuite({
 		result = util.escapedSplit('\\|a||b|c\\|', '|');
 		assert.deepEqual(result, [ '|a', '', 'b', 'c|' ]);
 
-		// TODO: is this the desired behavior?
-		// two backslashes are reduced to one; 3+ are reduced to two
 		result = util.escapedSplit('a|\\b|\\\\c', '|');
 		assert.deepEqual(result, [ 'a', '\\b', '\\c' ]);
 	},
@@ -341,7 +339,7 @@ registerSuite({
 		assert.isTrue(util.isEqual(5, 5));
 		assert.isFalse(util.isEqual(5, 1));
 		assert.isTrue(util.isEqual(obj, objRef));
-		assert.isTrue(util.isEqual((5 + undefined), (10 - undefined)));
+		assert.isTrue(util.isEqual(NaN, NaN));
 	},
 
 	'.isObject'() {
@@ -359,13 +357,13 @@ registerSuite({
 		assert.isFalse(util.spliceMatch(array, 'a'));
 
 		assert.isTrue(util.spliceMatch(array, 2));
-		assert.lengthOf(array, 2);
+		assert.deepEqual(array, [ 1, 3 ]);
 
 		assert.isFalse(util.spliceMatch(array, 2));
-		assert.lengthOf(array, 2);
+		assert.deepEqual(array, [ 1, 3 ]);
 
 		assert.isTrue(util.spliceMatch(array, 1));
-		assert.lengthOf(array, 1);
+		assert.deepEqual(array, [ 3 ]);
 
 		assert.isTrue(util.spliceMatch(array, 3));
 		assert.lengthOf(array, 0);
@@ -373,13 +371,13 @@ registerSuite({
 		array = [ 'a', 2, 'c' ];
 
 		assert.isTrue(util.spliceMatch(array, 2));
-		assert.lengthOf(array, 2);
+		assert.deepEqual(array, [ 'a', 'c' ]);
 
 		assert.isFalse(util.spliceMatch(array, 2));
-		assert.lengthOf(array, 2);
+		assert.deepEqual(array, [ 'a', 'c' ]);
 
 		assert.isTrue(util.spliceMatch(array, 'a'));
-		assert.lengthOf(array, 1);
+		assert.deepEqual(array, [ 'c' ]);
 
 		assert.isTrue(util.spliceMatch(array, 'c'));
 		assert.lengthOf(array, 0);
@@ -394,21 +392,9 @@ registerSuite({
 			var dfd = this.async(100);
 
 			util.spread([
-				new Promise(function (resolve) {
-					setTimeout(function () {
-						resolve(1);
-					}, 3);
-				}),
-				new Promise(function (resolve) {
-					setTimeout(function () {
-						resolve(2);
-					}, 1);
-				}),
-				new Promise(function (resolve) {
-					setTimeout(function () {
-						resolve(3);
-					}, 2);
-				}),
+				Promise.resolve(1),
+				Promise.resolve(2),
+				Promise.resolve(3)
 			], dfd.callback(function (a:number, b:number, c:number) {
 				assert.deepEqual([ a, b, c ], [ 1, 2, 3 ]);
 			}));
@@ -418,16 +404,8 @@ registerSuite({
 			var dfd = this.async(100);
 
 			util.spread([
-				new Promise(function (resolve) {
-					setTimeout(function () {
-						resolve(1);
-					}, 1)
-				}),
-				new Promise(function (resolve, reject) {
-					setTimeout(function () {
-						reject(new Error('rejected'));
-					}, 5);
-				})
+				Promise.resolve(1),
+				Promise.reject(new Error('rejected'))
 			], function () {
 				dfd.reject(new Error('deferred should not be resolved'));
 			}, dfd.callback(function (error:Error) {
