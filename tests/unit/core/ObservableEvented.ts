@@ -15,16 +15,16 @@ registerSuite({
 		});
 
 		evented.on('a-test', function (event) {
-			assert.isUndefined(event.target);
+			assert.strictEqual(event.type, 'a-test');
 			count++;
 		});
 		evented.emit(event);
-		assert.strictEqual(count, 1, 'Event count should have been incremented');
+		assert.strictEqual(count, 1, 'Event count should have been incremented by handler for emitted event');
 
 		evented.on('b-test', function (event) {
-			assert.strictEqual(event.target, 'test target');
+			assert.strictEqual(event.target.value, 'test target');
 		});
-		event.target = 'test target';
+		event.target = { value: 'test target' };
 		event.type= 'b-test';
 		evented.emit(event);
 	}
