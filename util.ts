@@ -374,5 +374,8 @@ export function unescapeXml(text:string):string {
 
 			return String.fromCharCode(Number(entity.slice(1)));
 		}
+		else {
+			return '&' + entity + ';';
+		}
 	});
 }
