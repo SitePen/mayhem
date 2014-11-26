@@ -9,13 +9,13 @@ registerSuite({
 	'#constructor': {
 		'sets values from kwArgs'() {
 			var event = new Event({
-				currentTarget: 'test currentTarget',
-				target: 'test target',
+				currentTarget: { value: 'test currentTarget' },
+				target: { value: 'test target' },
 				constructor: 'invalid'
 			});
 
-			assert.strictEqual(event.currentTarget, 'test currentTarget');
-			assert.strictEqual(event.target, 'test target');
+			assert.strictEqual(event.currentTarget.value, 'test currentTarget');
+			assert.strictEqual(event.target.value, 'test target');
 			assert.notStrictEqual(event.constructor, 'invalid');
 		},
 
