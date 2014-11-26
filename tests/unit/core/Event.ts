@@ -41,12 +41,14 @@ registerSuite({
 		});
 
 		event.preventDefault();
-		assert.isTrue(event.defaultPrevented, 'preventDefault should set defaultPrevented');
+		assert.isTrue(event.defaultPrevented, 'preventDefault should set defaultPrevented when an event is cancelable');
 
-		event.cancelable = false;
-		event.defaultPrevented = false;
+		event = new Event({
+			cancelable: false,
+			defaultPrevented: false
+		});
 		event.preventDefault();
-		assert.isFalse(event.defaultPrevented, 'preventDefault should have no effect')
+		assert.isFalse(event.defaultPrevented, 'preventDefault should have no effect when an event is not cancelable');
 	},
 
 	'#stopImmediatePropagation'() {
@@ -56,7 +58,8 @@ registerSuite({
 		});
 
 		event.stopImmediatePropagation();
-		assert.isTrue(event.immediatePropagationStopped, 'stopImmediatePropagation should set immediatePropagationStopped');
+		assert.isTrue(event.immediatePropagationStopped,
+			'stopImmediatePropagation should set immediatePropagationStopped');
 
 		event.bubbles = false;
 		event.immediatePropagationStopped = false;
