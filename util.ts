@@ -122,13 +122,13 @@ export function deferMethods(
 
 export function deferSetters(
 	target:Object,
-	methods:string[],
+	properties:string[],
 	untilMethod:string,
 	instead?:(setter:string, value:any) => any
 ):void {
 	deferMethods(
 		target,
-		array.map(methods, method => '_' + method + 'Setter'),
+		array.map(properties, property => '_' + property + 'Setter'),
 		untilMethod,
 		instead ? function (method:string, args:IArguments):any[] {
 			return instead.call(this, method.slice(1, -6), args[0]);
