@@ -22,7 +22,7 @@ registerSuite({
 			assert.isTrue(progressTriggered, 'progress event should be triggered');
 			assert.strictEqual(result, 'resolved');
 		}, function () {
-			assert.isTrue(false, 'promise should not be rejected');
+			throw new Error('promise should not be rejected');
 		}, function (progress) {
 			progressTriggered = true;
 			assert.strictEqual(progress, 'progress');
@@ -37,7 +37,7 @@ registerSuite({
 		});
 
 		return promise.then(function () {
-			assert.isFalse(true, 'promise should not be resolved');
+			throw new Error('promise should not be resolved');
 		}, function (error) {
 			assert.strictEqual(error.message, 'rejected');
 		});
@@ -60,7 +60,7 @@ registerSuite({
 		});
 
 		return promise.then(function () {
-			assert.isFalse(true, 'promise should not be resolved');
+			throw new Error('promise should not be resolved');
 		}, function (error) {
 			assert.strictEqual(error.message, 'bad intitializer');
 		});
@@ -73,7 +73,7 @@ registerSuite({
 			return promise.then(function (result) {
 				assert.strictEqual(result, 'resolved');
 			}, function (error) {
-				assert.isTrue(false, 'promise should not be rejected');
+				throw new Error('promise should not be rejected');
 			});
 		},
 
@@ -86,7 +86,7 @@ registerSuite({
 			return promise.then(function (result) {
 				assert.strictEqual(result, 'resolved');
 			}, function (error) {
-				assert.isTrue(false, 'promise should not be rejected');
+				throw new Error('promise should not be rejected');
 			});
 		},
 
@@ -99,7 +99,7 @@ registerSuite({
 			return promise.then(function (result) {
 				assert.strictEqual(result, 'resolved');
 			}, function (error) {
-				assert.isTrue(false, 'promise should not be rejected');
+				throw new Error('promise should not be rejected');
 			});
 		}
 	},
@@ -108,7 +108,7 @@ registerSuite({
 		var promise = Promise.reject(new Error('rejected'));
 
 		return promise.then(function () {
-			assert.isFalse(true, 'promise should not be resolved');
+			throw new Error('promise should not be resolved');
 		}, function (error) {
 			assert.strictEqual(error.message, 'rejected');
 		});
