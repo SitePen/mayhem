@@ -1,6 +1,8 @@
+/// <reference path="../../../dojo" />
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
+import lang = require('dojo/_base/lang');
 import Observable = require('../../../Observable');
 import Promise = require('../../../Promise');
 import util = require('../../../util');
@@ -29,6 +31,24 @@ class ObservableA extends Observable {
 	end():void {
 		// no-op
 	}
+}
+
+class SimpleObject {
+	g:number;
+}
+
+class NestedObject {
+	e:number;
+	f:SimpleObject;
+	h:any;
+}
+
+class MixedObject {
+	a:any;
+	b:any;
+	c:Object;
+	d:NestedObject;
+	i:string[];
 }
 
 registerSuite({
@@ -323,6 +343,19 @@ registerSuite({
 		assert.strictEqual(result, 'abc&amp;def&lt;ghi>jkl\'m"n');
 	},
 
+	'.unescapeXml'() {
+		var result:string;
+
+		result = util.unescapeXml('unchanged');
+		assert.strictEqual(result, 'unchanged');
+
+		result = util.unescapeXml('abc&amp;&def;&lt;ghi&gt;jkl&#39;m&quot;n');
+		assert.strictEqual(result, 'abc&&def;<ghi>jkl\'m"n')
+
+		result = util.unescapeXml('abc&amp;de&#x201C;f&lt;ghi>jkl\'m"n');
+		assert.strictEqual(result, 'abc&de“f<ghi>jkl\'m"n');
+	},
+
 	'.getModules'() {
 		var dfd = this.async(100);
 		var badModuleId = 'bad/module/id';
@@ -332,6 +365,20 @@ registerSuite({
 		}, dfd.callback(function (error:util.RequireError) {
 			assert.include(error.url, badModuleId);
 		}));
+	},
+
+	'.getObjectKeys'() {
+		var objA = {
+			key1: true,
+			key2: false
+		};
+		var objB = lang.delegate(objA, {
+			key3: true,
+			key4: false
+		});
+
+		assert.sameMembers(util.getObjectKeys(objA), [ 'key1', 'key2' ]);
+		assert.sameMembers(util.getObjectKeys(objB), [ 'key3', 'key4' ]);
 	},
 
 	'.isEqual'() {
@@ -416,6 +463,67 @@ registerSuite({
 			}, dfd.callback(function (error:Error) {
 				assert.strictEqual(error.message, 'rejected');
 			}));
+		}
+	},
+
+	'.deepMixin': {
+		'basic conditions and flat objects'() {
+			var objA = {
+				a: 1,
+				b: 2
+			};
+			var objB = {
+				c: 3,
+				d: 4
+			};
+			var expectedA = {
+				a: 1,
+				b: 2
+			};
+			var expectedMix = {
+				a: 1,
+				b: 2,
+				c: 3,
+				d: 4
+			};
+			var objC:Object;
+
+			util.deepMixin(objA, null);
+			assert.deepEqual(objA, expectedA, 'mixing in null should have no effect');
+
+			objC = util.deepMixin(objA, objB);
+			assert.strictEqual(objC, objA, 'target should be returned');
+			assert.deepEqual(objC, expectedMix);
+		},
+
+		'deep objects'() {
+			var objA = {};
+			var objB:MixedObject = {
+				a: null,
+				b: [],
+				c: {},
+				d: {
+					e: 1,
+					f: {
+						g: 2
+					},
+					h: null
+				},
+				i: [ 'a', 'b', 'c' ]
+			};
+
+			util.deepMixin(objA, objB);
+			assert.deepEqual(objA, objB);
+
+			objA = {
+				d: {
+					e: 1,
+					g: 3
+				}
+			};
+			util.deepMixin(objA, objB);
+			assert.notDeepEqual(objA, objB, 'objA should have extra properties not present on objB');
+			assert.deepPropertyVal(objA, 'd.g', 3, 'objA should retain original data after mixin');
 		}
 	}
 });
