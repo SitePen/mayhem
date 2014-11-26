@@ -68,6 +68,19 @@ class GetSetObservable extends Observable {
 	}
 }
 
+class DependentObservable extends Observable {
+	private _foo:string;
+	private _baz:string;
+
+	_fooGetter():string {
+		return this._foo + '_' + this._baz;
+	}
+
+	_fooSetter(value:string):void {
+		this._foo = value;
+	}
+}
+
 registerSuite({
 	name: 'mayhem/Observable',
 
@@ -161,11 +174,13 @@ registerSuite({
 			var fooObservations:any[] = [];
 			var bazObservations:any[] = [];
 			var ignoredPropObservations:any[] = [];
+			var bazNotifyCount = 0;
 
 			observable.observe('foo', function () {
 				fooObservations.push(slice.call(arguments, 0));
 			});
 			observable.observe('baz', function () {
+				bazNotifyCount++;
 				bazObservations.push(slice.call(arguments, 0));
 			});
 			observable.observe('ignored-prop', function () {
@@ -177,9 +192,6 @@ registerSuite({
 			observable.set('foo', 'BAR');
 			observable.set('baz', 'QUUX');
 
-			// Calling 'set' with the same value should not result in extra notifications
-			observable.set('baz', 'QUUX');
-
 			assert.deepEqual(fooObservations, [
 				[ 'FOO', 'bar', 'foo' ],
 				[ 'BAR', 'FOO', 'foo' ]
@@ -188,6 +200,11 @@ registerSuite({
 				[ 'BAZ', undefined, 'baz' ],
 				[ 'QUUX', 'BAZ', 'baz' ]
 			]);
+
+			observable.set('baz', 'QUUX');
+			assert.deepEqual(bazNotifyCount, 2,
+				'Calling `set` with the same value should not result in extra notifications');
+
 			assert.deepEqual(ignoredPropObservations, []);
 		},
 
@@ -251,17 +268,9 @@ registerSuite({
 		},
 
 		'dependency triggers notification'() {
-			var observable = new Observable({
+			var observable = new DependentObservable({
 				foo: 'FOO',
-				baz: 'BAZ',
-
-				fooGetter: function () {
-					return this._foo + '_' + this._baz;
-				},
-
-				fooSetter: function (value:any) {
-					this._foo = value;
-				}
+				baz: 'BAZ'
 			});
 			var fooObservations:any[] = [];
 
