@@ -43,9 +43,8 @@ registerSuite({
 		handle.remove();
 		assert.strictEqual(count, 1);
 
-		// Remove should be a no-op on subsequent calls
 		handle.remove();
-		assert.strictEqual(count, 1);
+		assert.strictEqual(count, 1, 'remove should be a no-op on subsequent calls');
 	},
 
 	'.createCompositeHandle'() {
@@ -59,7 +58,7 @@ registerSuite({
 		);
 
 		handle.remove();
-		assert.strictEqual(count, 2);
+		assert.strictEqual(count, 2, 'both destructors in the composite handle should have been called');
 	},
 
 	'.createTimer': {
@@ -71,41 +70,47 @@ registerSuite({
 			});
 		},
 
-		// TODO: is this a good thing to test? is this a good way to test it?
-		// Is it safe to assume the timers will run in the desired order, or could varying browser/platform clock
-		// resolution invalidate this test?
 		'cancel timer'() {
 			var dfd = this.async(50);
 			var handle = util.createTimer(function ():void {
 				dfd.reject(new Error('timer should be canceled'))
-			}, 20);
+			}, 0);
 
-			util.createTimer(function ():void {
-				handle.remove();
-			});
+			handle.remove();
 
-			util.createTimer(function (): void {
+			setTimeout(function ():void {
 				dfd.resolve();
-			}, 25);
+			}, 0)
 		}
 	},
 
 	'.debounce': {
 		'function execution is delayed'() {
 			var dfd = this.async(50);
-			var delay = 20;
+			var delay = 10;
+			var count = 0;
 			var lastTick:number;
 
 			var debouncedFunction = util.debounce(function ():void {
+				count++;
+
 				if (((new Date()).getTime() - lastTick) < delay) {
 					dfd.reject(new Error('debounced function should not run too soon'));
 				}
-
-				dfd.resolve();
 			}, delay);
 
 			lastTick = (new Date()).getTime();
+
 			debouncedFunction();
+			debouncedFunction();
+			debouncedFunction();
+			debouncedFunction();
+
+			assert.strictEqual(count, 0, 'debounced function should not have run yet');
+
+			setTimeout(dfd.callback(function () {
+				assert.strictEqual(count, 1, 'debounced function should only run once');
+			}), 20);
 		},
 
 		'method runs in context'() {
