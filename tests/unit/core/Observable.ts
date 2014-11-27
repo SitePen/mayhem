@@ -1,5 +1,9 @@
 /// <reference path="../../intern" />
+
+import Application = require('../../../Application');
 import assert = require('intern/chai!assert');
+import binding = require('../../../binding/interfaces');
+import core = require('../../../interfaces');
 import Observable = require('../../../Observable');
 import registerSuite = require('intern!object');
 
@@ -273,6 +277,10 @@ registerSuite({
 				baz: 'BAZ'
 			});
 			var fooObservations:any[] = [];
+			var expectedObservations = [
+				[ 'BAR_BAZ', 'FOO_BAZ', 'foo'],
+				[ 'BAR_QUUX', undefined, 'foo']
+			];
 
 			observable.set('fooDependencies', function () {
 				return [ 'baz' ];
@@ -285,10 +293,51 @@ registerSuite({
 			observable.set('foo', 'BAR');
 			observable.set('baz', 'QUUX');
 
-			assert.deepEqual(fooObservations, [
-				[ 'BAR_BAZ', 'FOO_BAZ', 'foo'],
-				[ 'BAR_QUUX', undefined, 'foo']
-			]);
+			assert.deepEqual(fooObservations, expectedObservations);
+
+			observable.destroy();
+
+			// After an observable is destroyed, behaviour becomes undefined
+			try {
+				observable.set('foo', 'AAA');
+			}
+			catch (error) {}
+
+			assert.deepEqual(fooObservations, expectedObservations, 'destroyed Observable should not notify observers');
+		},
+
+		'with application'() {
+			var binderCalled = false;
+			var app = new Application({
+				binder: {
+					observe: function (object:{}, property:string, observer:binding.IObserver<any>):IHandle {
+						binderCalled = true;
+						assert.strictEqual(property, 'baz', 'binder.observe should be called for `baz` property');
+
+						return {
+							remove: function ():void {}
+						}
+					}
+				},
+				components: {
+					binder: null
+				}
+			});
+
+			return app.run().then(function () {
+				var observable = new DependentObservable({
+					app: app,
+					foo: 'FOO',
+					baz: 'BAZ'
+				});
+
+				observable.set('fooDependencies', function () {
+					return [ 'baz' ];
+				});
+
+				observable.observe('foo', function (newValue:any, oldValue:any, key:string) {});
+				assert.isTrue(binderCalled, 'app.binder.observe should have been called');
+			});
 		}
 	}
 });
