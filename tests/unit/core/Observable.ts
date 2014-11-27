@@ -320,7 +320,8 @@ registerSuite({
 					}
 				},
 				components: {
-					binder: null
+					binder: null,
+					errorHandler: null
 				}
 			});
 
