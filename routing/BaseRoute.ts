@@ -210,7 +210,7 @@ class BaseRoute extends Observable {
 	 *
 	 * @param kwArgs - A hash map of arguments to serialize into a path.
 	 */
-	serialize(kwArgs:HashMap<any>):string {
+	serialize(kwArgs?:HashMap<any>):string {
 		// if someone passes an object they probably do not expect it to lose several of its properties, but we delete
 		// properties from this object as they are processed
 		kwArgs = <any> lang.mixin({}, kwArgs);

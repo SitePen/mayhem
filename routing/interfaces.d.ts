@@ -23,10 +23,10 @@ export declare module IRoute {
 }
 
 export interface IRouter extends core.IObservable {
-	createPath(routeId:string, kwArgs?:Object):string;
+	createPath(routeId:string, kwArgs?:{}):string;
 	destroy():void;
 	get:IRouter.Getters;
-	go(routeId:string, kwArgs:Object):void;
+	go(routeId:string, kwArgs?:{}):void;
 	normalizeId(routeId:string):string;
 	pause():void;
 	resetPath(path:string, replace?:boolean):void;

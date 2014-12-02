@@ -1,7 +1,6 @@
 /// <reference path="../dojo" />
 
 import array = require('dojo/_base/array');
-import Event = require('../Event');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
 import Promise = require('../Promise');
@@ -98,7 +97,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	/**
 	 * Creates a unique identifier for the given route.
 	 */
-	createPath(path:string, kwArgs?:Object):string {
+	createPath(path:string, kwArgs?:{}):string {
 		if (has('debug')) {
 			throw new Error('Abstract method "createPath" not implemented');
 		}
@@ -127,11 +126,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	}
 
 	private _emitError(error:Error):void {
-		this._app.emit(new Event({
-			type: 'error',
-			target: error,
-			message: error.message
-		}));
+		this._app.handleError(error);
 	}
 
 	_enterRoutes(event:RouteEvent):IPromise<any> {
@@ -178,7 +173,7 @@ class Router extends ObservableEvented implements routing.IRouter {
 	/**
 	 * Transitions to a new route.
 	 */
-	go(routeId:string, kwArgs:Object):void {
+	go(routeId:string, kwArgs?:{}):void {
 		if (has('debug')) {
 			throw new Error('Abstract method "go" not implemented');
 		}
