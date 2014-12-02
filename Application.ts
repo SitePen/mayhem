@@ -163,7 +163,7 @@ class Application extends ObservableEvented {
 
 	constructor(kwArgs?:HashMap<any>) {
 		// TODO: more robust configuration merging
-		kwArgs = <any> util.deepCopy((<typeof Application> this.constructor)._defaultConfig, kwArgs);
+		kwArgs = <any> util.deepCreate((<typeof Application> this.constructor)._defaultConfig, kwArgs);
 		super(kwArgs);
 	}
 
