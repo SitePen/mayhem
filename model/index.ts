@@ -1,13 +1,14 @@
 /// <reference path="../node" />
 /// <reference path="../yeoman-generator" />
 
+import ImportsFile = require('../common/ImportsFile');
 import yeoman = require('yeoman-generator');
 
 var ModelGenerator = yeoman.generators.NamedBase.extend({
 	constructor():void {
 		yeoman.generators.NamedBase.apply(this, arguments);
 
-		this.modelName = this._.camelize(this.name + '-model');
+		this.modelName = this._.camelize('-' + this.name + '-model');
 	},
 
     initializing():void {
@@ -57,25 +58,16 @@ var ModelGenerator = yeoman.generators.NamedBase.extend({
 			if (this.unitTest) {
 				this.copy('_Test.ts', 'src/app/tests/unit/models/' + this.modelName + '.ts');
 
-				var allTests = this.dest.read('src/app/tests/unit/all.ts');
-				var modelImportStatement = 'import models = require(\'./models/all\'); models;';
-				if (allTests.indexOf(modelImportStatement) === -1) {
-					// TODO: this is wrong
-					this.dest.write('src/app/tests/unit/all.ts', allTests + '\n' + modelImportStatement + '\n');
+				var allTests = new ImportsFile('src/app/tests/unit/all.ts', this.dest);
+				if (!allTests.containsImport('models', './models/all')) {
+					allTests.addImport('models', './models/all');
+					allTests.write();
 				}
 
-				if (!this.dest.exists('src/app/tests/unit/models/all.ts')) {
-					this.dest.write('src/app/tests/unit/models/all.ts', '\n');
-				}
-
-				var all = this.dest.read('src/app/tests/unit/models/all.ts');
-				var importStatement = 'import ' + this.modelName + ' = require(\'./' + this.modelName + '\'); ' + this.modelName + ';';
-				if (all.indexOf(importStatement) === -1) {
-					// Add the unit test to the tests imported
-					// TODO: can this be done better?
-					var result = all.trim() ? all : '';
-					result += (!result || /[\n]$/.test(all) ? '' : '\n') + importStatement + '\n';
-					this.dest.write('src/app/tests/unit/models/all.ts', result);
+				var all = new ImportsFile('src/app/tests/unit/models/all.ts', this.dest);
+				if (!all.containsImport(this.modelName, './' + this.modelName)) {
+					all.addImport(this.modelName, './' + this.modelName);
+					all.write();
 				}
 			}
 		}

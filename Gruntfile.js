@@ -7,7 +7,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('intern');
 
 	grunt.initConfig({
-		all: [ '**/*.ts', '!tests/**/*.ts', '!node_modules/**/*.ts', '!**/templates/**/*.ts' ],
+		all: [ '**/*.ts', '!tests/**/*.ts', '!node_modules/**/*.ts', '!html-report/**/*', '!**/templates/**/*.ts' ],
 		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts' ],
 		tests: [ 'tests/**/*.ts', '!tests/unit/temp/**/*.ts' ],
 
@@ -61,13 +61,25 @@ module.exports = function (grunt) {
 		intern: {
 			client: {
 				options: {
-					config: 'tests/generator.intern'
+					config: 'tests/generator.intern',
+					reporters: [ 'console' ]
 				}
 			}
 		}
 	});
 
-	grunt.registerTask('test', [ 'intern:client' ]);
+	grunt.registerTask('test', function () {
+		if (this.flags.coverage) {
+			var property = 'intern.client.options.reporters';
+			var value = grunt.config.get(property);
+
+			value.push('lcovhtml');
+
+			grunt.config.set(property, value);
+		}
+
+		grunt.task.run('intern:client');
+	});
 	grunt.registerTask('build', [ 'ts' ]);
 	grunt.registerTask('default', [ 'ts', 'watch' ]);
 };

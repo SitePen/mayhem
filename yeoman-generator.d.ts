@@ -119,6 +119,7 @@ declare module yo {
   export interface IRunContext {
     async(): Function;
     inDir(dirPath: string): IRunContext;
+	on(event:string, callback:Function):IRunContext;
 
     /** @param {String|String[]} args */
     withArguments(args: any): IRunContext;

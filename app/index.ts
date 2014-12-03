@@ -1,6 +1,7 @@
 /// <reference path="../node" />
 /// <reference path="../yeoman-generator" />
 
+import ImportsFile = require('../common/ImportsFile');
 import path = require('path');
 import yeoman = require('yeoman-generator');
 
@@ -105,6 +106,8 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 		},
 		tests():void {
 			this.directory('src/app/tests', 'src/app/tests');
+			(new ImportsFile('src/app/tests/unit/all.ts', this.dest)).write();
+			(new ImportsFile('src/app/tests/functional/all.ts', this.dest)).write();
 		}
 	},
 

@@ -2,3 +2,4 @@
 *.js
 !Gruntfile.js
 node_modules/
+html-report/
