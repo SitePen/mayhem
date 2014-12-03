@@ -1,3 +1,7 @@
 <h1>Error</h1>
 
-<p>The path <tt>{router.currentPath}</tt> could not be found.</p>
+<p><strong>{message}</strong></p>
+
+<if condition={request}>
+	<p>{request}</p>
+</if>

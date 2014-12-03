@@ -8,33 +8,8 @@ define([
 	'intern/dojo/node!path',
 	'intern',
 	'intern/lib/util',
-	'intern/dojo/node!diff',
-	'intern/dojo/node!util',
 	'intern/dojo/node!istanbul/index'
-], function (Instrumenter, Collector, Reporter, TextReporter, globule, fs, path, main, util, diffUtil, nodeUtil) {
-	var getCanonical = (function () {
-		var stack = [];
-
-		return function makeCanonical(value) {
-			if (value && typeof value === 'object' && !Array.isArray(value)) {
-				if (stack.indexOf(value) > -1) {
-					return '[Circular]';
-				}
-
-				var canonical = {};
-				var keys = Object.keys(value).sort();
-				stack.push(value);
-				keys.forEach(function (key) {
-					canonical[key] = makeCanonical(value[key]);
-				});
-				stack.pop();
-				return canonical;
-			}
-
-			return value;
-		};
-	})();
-
+], function (Instrumenter, Collector, Reporter, TextReporter, globule, fs, path, main, util) {
 	var instrumenter = new Instrumenter({
 		noCompact: true,
 		noAutoWrap: true
@@ -77,21 +52,6 @@ define([
 
 		'/test/fail': function (test) {
 			console.error('\x1b[31mFAIL: ' + test.get('id') + ' (' + test.timeElapsed + 'ms)\x1b[0m');
-
-			if (
-				test.error.name === 'AssertionError' &&
-				(typeof test.error.actual === 'object' || typeof test.error.expected === 'object')
-			) {
-				console.log('\n' +
-					diffUtil.createPatch(
-						'',
-						nodeUtil.inspect(getCanonical(test.error.actual), { depth: null }) + '\n',
-						nodeUtil.inspect(getCanonical(test.error.expected), { depth: null }) + '\n'
-					).split('\n').slice(5).join('\n').replace(/^([+-])(.*)$/gm, function (_, indicator, line) {
-						return '\x1b[3' + (indicator === '+' ? '2mE' : '1mA') + line + '\x1b[0m';
-					})
-				);
-			}
 			util.logError(test.error);
 		},
 

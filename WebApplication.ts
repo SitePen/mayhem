@@ -1,6 +1,6 @@
 import Application = require('./Application');
 import Master = require('./ui/Master');
-import routing = require('./routing/interfaces');
+import Router = require('./routing/Router');
 import util = require('./util');
 
 /**
@@ -34,12 +34,7 @@ class WebApplication extends Application {
 				constructor: require.toAbsMid('./ui/Master'),
 				view: require.toAbsMid('./templating/html') + '!app/views/Application.html'
 			}
-		},
-		// TODO: Probably wrong
-		modelPath: 'app/models',
-		templatePath: require.toAbsMid('./templating/html'),
-		viewPath: 'app/views',
-		viewModelPath: 'app/viewModels'
+		}
 	});
 
 	get:WebApplication.Getters;
@@ -55,31 +50,13 @@ class WebApplication extends Application {
 	private _name:string;
 
 	/**
-	 * The root module ID for data models.
-	 *
-	 * @get
-	 * @set
-	 * @default app/models
-	 */
-	private _modelPath:string;
-
-	/**
 	 * The router component.
 	 *
 	 * @get
 	 * @set
 	 * @default module:mayhem/routing/HashRouter
 	 */
-	private _router:routing.IRouter;
-
-	/**
-	 * The root module ID for view templates.
-	 *
-	 * @get
-	 * @set
-	 * @default mayhem/templating/html!app/views
-	 */
-	private _templatePath:string;
+	private _router:Router;
 
 	/**
 	 * The user interface component.
@@ -89,44 +66,18 @@ class WebApplication extends Application {
 	 * @default module:mayhem/ui/Master
 	 */
 	private _ui:Master;
-
-	/**
-	 * The root module ID for views.
-	 *
-	 * @get
-	 * @set
-	 * @default app/views
-	 */
-	private _viewPath:string;
-
-	/**
-	 * The root module ID for view models.
-	 *
-	 * @get
-	 * @set
-	 * @default app/viewModels
-	 */
-	private _viewModelPath:string;
 }
 
 module WebApplication {
 	export interface Events extends Application.Events {}
 	export interface Getters extends Application.Getters {
 		(key:'name'):string;
-		(key:'modelPath'):string;
-		(key:'router'):routing.IRouter;
-		(key:'templatePath'):string;
-		(key:'viewPath'):string;
-		(key:'viewModelPath'):string;
+		(key:'router'):Router;
 		(key:'ui'):Master;
 	}
 	export interface Setters extends Application.Setters {
 		(key:'name', value:string):void;
-		(key:'modelPath', value:string):void;
-		(key:'router', value:routing.IRouter):void;
-		(key:'templatePath', value:string):void;
-		(key:'viewPath', value:string):void;
-		(key:'viewModelPath', value:string):void;
+		(key:'router', value:Router):void;
 		(key:'ui', value:Master):void;
 	}
 }

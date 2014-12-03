@@ -1,9 +1,16 @@
 {
 	"name": "mayhem",
-	"version": "0.9.0",
+	"version": "0.9.0-pre",
 	"main": "main",
 	"description": "Mayhem. A framework for rich Internet applications.",
-	"dojoBuild": "package.js",
+	"bugs": {
+		"url": "https://github.com/SitePen/mayhem/issues"
+	},
+	"license": "BSD-3-Clause",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SitePen/mayhem.git"
+	},
 	"scripts": {
 		"install": "bower install"
 	},
@@ -18,7 +25,8 @@
 		"grunt-contrib-watch": "0.6.1",
 		"grunt-peg": "1.5.0",
 		"grunt-ts": "1.12.1",
-		"intern-geezer": "2.1.0",
+		"intern-geezer": "2.2.2",
 		"typescript": "1.3.0"
-	}
+	},
+	"dojoBuild": "package.js"
 }

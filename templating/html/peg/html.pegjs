@@ -43,6 +43,7 @@
 	function validate(attributes, rules) {
 		var required = rules.required || [];
 		var optional = rules.optional || [];
+		var oneOf = rules.oneOf || [];
 		var type = rules.type ? ' on ' + rules.type : '';
 
 		var i = 0;
@@ -54,6 +55,18 @@
 				throwError('Missing required attribute "' + required[i] + '"' + type);
 			}
 			permitted[required[i]] = true;
+		}
+
+		var hasOneOf = false;
+		for (i = 0, j = oneOf.length; i < j; ++i) {
+			if (hasOwnProperty.call(attributes, oneOf[i])) {
+				hasOneOf = true;
+				permitted[oneOf[i]] = true;
+				break;
+			}
+		}
+		if (oneOf.length && !hasOneOf) {
+			throwError('Missing one of the following attributes' + type + ': "' + oneOf.join('", "') + '"');
 		}
 
 		for (i = 0, j = optional.length; i < j; ++i) {
@@ -114,6 +127,7 @@
 	var tree = {
 		_constructors: {},
 		tagMap: {},
+		eventMap: {},
 
 		/**
 		 * Adds a new tag to the tags understood by this template.
@@ -148,14 +162,42 @@
 			}
 		},
 
+		addEvent: function (newEvent) {
+			var map = this.eventMap;
+
+			// Convert foo-bar-baz to onFooBarBaz
+			// TODO: is this the correct event name to reference it by?
+			var event = ('on-' + newEvent.event).toLowerCase().replace(/-(.)/, function () {
+				return arguments[1].toUpperCase();
+			});
+			var oldEvent = map[event];
+
+			if (oldEvent) {
+				// The same event has already been parsed once before, probably by some look-ahead; do not add it
+				// again
+				if (oldEvent.line === newEvent.line && oldEvent.column === newEvent.column) {
+					return;
+				}
+
+				throwError('Event "' + newEvent.event + '" was already defined at line ' + oldEvent.line +
+					', column ' + oldEvent.column,
+					newEvent.line, newEvent.column);
+			}
+			else {
+				map[event] = newEvent;
+			}
+		},
+
 		/**
 		 * Retrieves the root tree structure for the given node.
 		 *
 		 * @returns {Object} The validated syntax tree for the given root node.
 		 */
 		get: function (root) {
+			// TODO: Add event modules to constructors array
 			this._collectConstructors(root);
 
+			// TODO: Return the event mapping
 			return {
 				constructors: getKeys(this._constructors),
 				root: root
@@ -662,12 +704,18 @@ Alias '<alias>'
 	= '<alias'i alias:AttributeMap '/'? '>' {
 		validate(alias, {
 			type: '<alias>',
-			required: [ 'tag', 'to' ]
+			oneOf: [ 'tag', 'event' ],
+			required: [ 'to' ]
 		});
 		alias.line = line();
 		alias.column = column();
 
-		tree.addTag(alias);
+		if (alias.tag) {
+			tree.addTag(alias);
+		}
+		else if (alias.event) {
+			tree.addEvent(alias);
+		}
 		return undefined;
 	}
 

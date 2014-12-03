@@ -93,6 +93,7 @@ module Promise {
 		(error:Error):void;
 	}
 	export interface IResolver<T> {
+		(value:Promise<T>):void;
 		(value:T):void;
 	}
 }
