@@ -261,7 +261,9 @@ export function getModules<T>(moduleIds:string[]):IPromise<T[]> {
 					// Dojo's require function caches module requests, even failed ones
 					// This ensures subsequent attempts to load the same bad mid (e.g. 404) will continue to throw
 					// (...or if the resource was temporarily unavailable, subsequent attempts might actually succeed)
-					require.undef(moduleUrls[moduleUrl]);
+					if (require.undef) {
+						require.undef(moduleUrls[moduleUrl]);
+					}
 				}
 			}
 		});
