@@ -4,6 +4,7 @@
 import Application = require('../../../Application');
 import aspect = require('dojo/aspect');
 import assert = require('intern/chai!assert');
+import has = require('../../../has');
 import LogLevel = require('../../../LogLevel');
 import registerSuite = require('intern!object');
 
@@ -16,13 +17,43 @@ registerSuite({
 		app && app.destroy();
 	},
 
-	'#run'() {
-		app = new Application();
-		var runPromise = app.run();
+	'#run': {
+		simple() {
+			app = new Application();
+			var runPromise = app.run();
 
-		return runPromise.then(function () {
-			assert.strictEqual(app.run(), runPromise, 'app.run should return the same promise each call');
-		});
+			return runPromise.then(function (result) {
+				assert.strictEqual(result, app, 'app.run should resolve to the application instance');
+				assert.strictEqual(app.run(), runPromise, 'app.run should return the same promise each call');
+			}, function (error) {
+				throw error;
+			});
+		},
+
+		'with bad component module id'() {
+			if (has('host-node')) {
+				this.skip('require does not emit an error when loading a bad mid in Node.js');
+			}
+
+			var dfd = this.async(100);
+
+			app = new Application({
+				components: {
+					test: {
+						// TODO: require is broken and only throws an error on the first request for a mid that returns
+						// a 404
+						// For now, ensure that you don't reuse invalid mids in tests
+						constructor: 'App1/bad/module/id'
+					}
+				}
+			});
+
+			app.run().then(function () {
+				dfd.reject(new Error('app.run should reject when passed a bad module id'));
+			}, function () {
+				dfd.resolve();
+			});
+		}
 	},
 
 	'#handleError': {
@@ -45,23 +76,11 @@ registerSuite({
 
 				app.handleError(testError);
 				assert.strictEqual(receivedError, testError, 'error handler should receive passed Error object');
-
-				// TODO: remove this cleanup when Application is fixed
-				// https://github.com/SitePen/mayhem/issues/14
-				var defaultConfig = Application._defaultConfig;
-				// TS7017
-				(<any> defaultConfig)['errorHandler'] = null;
 			});
 		},
 
 		'without errorHandler'() {
 			var loggedLevel:number;
-
-			// TODO: remove this cleanup when Application is fixed
-			// https://github.com/SitePen/mayhem/issues/14
-			var defaultConfig = Application._defaultConfig;
-			// TS7017
-			(<any> defaultConfig)['errorHandler'] = null;
 
 			app = new Application({
 				logger: {
@@ -78,12 +97,6 @@ registerSuite({
 			return app.run().then(function () {
 				app.handleError(new Error('test error'));
 				assert.strictEqual(loggedLevel, LogLevel.ERROR, 'logger.log should be called with correct LogLevel');
-
-				// TODO: remove this cleanup when Application is fixed
-				// https://github.com/SitePen/mayhem/issues/14
-				var defaultConfig = Application._defaultConfig;
-				// TS7017
-				(<any> defaultConfig)['logger'] = null;
 			});
 		}
 	},
@@ -109,22 +122,10 @@ registerSuite({
 
 				app.log.apply(app, logArguments);
 				assert.deepEqual(receivedArguments, logArguments, 'logger.log should be called with correct arguments');
-
-				// TODO: remove this cleanup when Application is fixed
-				// https://github.com/SitePen/mayhem/issues/14
-				var defaultConfig = Application._defaultConfig;
-				// TS7017
-				(<any> defaultConfig)['logger'] = null;
 			});
 		},
 
 		'without logger'() {
-			// TODO: remove this cleanup when Application is fixed
-			// https://github.com/SitePen/mayhem/issues/14
-			var defaultConfig = Application._defaultConfig;
-			// TS7017
-			(<any> defaultConfig)['logger'] = null;
-
 			app = new Application({
 				components: {
 					logger: null
@@ -139,18 +140,23 @@ registerSuite({
 				[ 'ERROR', 'WARN', 'LOG', 'INFO', 'DEBUG' ].forEach(function (logLevel) {
 					var methodName = logLevel.toLowerCase();
 
-					handle = aspect.before(console, methodName, function () {
-						logMessage = arguments[0];
+					handle = aspect.around(console, methodName, function () {
+						return function () {
+							logMessage = arguments[0];
+						}
 					});
 
-					// TS7017
-					app.log(testMessage, (<any> LogLevel)[logLevel]);
+					try {
+						// TS7017
+						app.log(testMessage, (<any> LogLevel)[logLevel]);
 
-					assert.include(logMessage, testMessage,
-						'console.' + methodName + ' should be called with correct arguments');
-
-					handle.remove();
-					logMessage = '';
+						assert.include(logMessage, testMessage,
+							'console.' + methodName + ' should be called with correct arguments');
+					}
+					finally {
+						handle.remove();
+						logMessage = '';
+					}
 				});
 			});
 		}

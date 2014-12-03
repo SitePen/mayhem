@@ -2,6 +2,7 @@
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
+import has = require('../../../has');
 import lang = require('dojo/_base/lang');
 import Observable = require('../../../Observable');
 import Promise = require('../../../Promise');
@@ -357,8 +358,14 @@ registerSuite({
 	},
 
 	'.getModules'() {
+		if (has('host-node')) {
+			this.skip('require does not emit an error when loading a bad mid in Node.js');
+		}
+
 		var dfd = this.async(100);
-		var badModuleId = 'bad/module/id';
+		// TODO: require is broken and only throws an error on the first request for a mid that returns a 404
+		// For now, ensure that you don't reuse invalid mids in tests
+		var badModuleId = 'util1/bad/module/id';
 
 		util.getModules([ badModuleId ]).then(function () {
 			dfd.reject(new Error('Promise should not resolve'));
