@@ -101,3 +101,8 @@ declare module 'intern/dojo/Deferred' {
 	import Deferred = require('dojo/Deferred');
 	export = Deferred;
 }
+
+declare module 'intern/dojo/lang' {
+	import lang = require('dojo/_base/lang');
+	export = lang;
+}
