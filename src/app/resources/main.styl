@@ -1,8 +1,42 @@
-@import "../../dijit/themes/claro/claro.css";
+@import "../../dijit/themes/tundra/tundra.css";
 @import 'nib';
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.prototypeContent {
+  margin-left: 25px;
+  width: 600px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  position: relative;
+}
+
+.title {
+  width: 100%;
+  background-color: black;
+  color: white;
+  padding: 10px;
+  font-size: 35px;
+}
 
 .registrationField {
   margin: 15px;
+
+  .value {
+    font-weight: bold;
+  }
+}
+
+.notes {
+  .dijitTextArea {
+    margin-top: 10px;
+    width: 500px;
+  }
 }
 
 .notesInput {

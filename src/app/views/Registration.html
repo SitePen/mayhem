@@ -1,46 +1,112 @@
-<alias tag="button" to="mayhem/ui/form/Button"/>
-<alias tag="checkbox" to="mayhem/ui/form/Checkbox"/>
-<alias tag="datePicker" to="mayhem/ui/form/DatePicker"/>
-<alias tag="label" to="mayhem/ui/Label"/>
-<alias tag="radioButton" to="mayhem/ui/form/RadioButton"/>
-<alias tag="text" to="mayhem/ui/form/Text"/>
-<alias tag="error" to="mayhem/ui/form/Error"/>
+<alias tag="button" to="mayhem/ui/form/Button" />
+<alias tag="checkbox" to="mayhem/ui/form/Checkbox" />
+<alias tag="datePicker" to="mayhem/ui/form/DatePicker" />
+<alias tag="label" to="mayhem/ui/Label" />
+<alias tag="radioButton" to="mayhem/ui/form/RadioButton" />
+<alias tag="text" to="mayhem/ui/form/Text" />
+<alias tag="textarea" to="mayhem/ui/form/Textarea" />
+<alias tag="error" to="mayhem/ui/form/Error" />
 
 <h1>User Registration</h1>
-<div>Welcome! Help us get to know you better.</div>
+<div class="registrationForm">
+<if condition={routeState.review} >
 
-<div class="registrationField">
-    <label text="Name: "/>
-    <text value={{name}} placeholder="What would you like us to call you?"/>
-</div>
-<div class="registrationField">
-    <label text="Date of birth: "/>
-    <datePicker value={{dateOfBirth}} placeholder="When did you enter this realm?"/>
-</div>
-<div class="registrationField">
-    <label text="What type of web developer are you?"/>
-    <radioButton value={{typeOfDeveloper}} label="Coder" checked-value="coder"/>
-    <radioButton value={{typeOfDeveloper}} label="Designer" checked-value="designer"/>
-</div>
-<div class="registrationField">
-    <label text="What is your favorite browser?"/>
-    <radioButton checked-value="chrome" label="Chrome" value={{favoriteBrowser}} />
-    <radioButton checked-value="firefox" label="Firefox" value={{favoriteBrowser}} />
-    <radioButton checked-value="ie" label="Internet Explorer" value={{favoriteBrowser}} />
-</div>
-<div class="registrationField">
-    <checkbox is-checked={{allowedToContact}} /> Will you allow us to contact you?
-    <if condition={allowedToContact}>
-        <div class="registrationField">
-            <label text="What is your email address?"/>
-            <text value={{email}} placeholder="We promise, no spam."/>
-        </div>
-        <error errors={errors.email} />
-    </if>
-</div>
+	<div>Please take a moment to review your registration.</div>
 
-<div class="registrationField">
-    <!--These bindings are not working-->
-   <button label="Save" on-activate={save} />
-    <button label="Cancel" on-activate={app.router.go('index')} />
+	<div class="registrationField">
+		Your name is <span class="value">{{name}}</span>.
+	</div>
+	<if condition={dateOfBirth}>
+		<div class="registrationField">
+			Your date of birth is <span class="value">{formattedDateOfBirth}</span>.
+		</div>
+	</if>
+	<if condition={typeOfDeveloper}>
+		<div class="registrationField">
+			When it comes to web developement, you are a <span class="value">{typeOfDeveloper}</span>.
+		</div>
+	</if>
+	<if condition={favoriteBrowser}>
+		<div class="registrationField">
+			Your favorite browser is <span class="value">{favoriteBrowser}</span>.
+		</div>
+	</if>
+	<div class="registrationField">
+		<if condition={allowedToContact}>
+			You have allowed us to contact you at <span class="value">{email}</span>.
+		<else>
+			You do not want us to contact you.
+		</if>
+	</div>
+	<div class="registrationField">
+		Your story...<br/>
+		{notes}
+	</div>
+
+	<div class="registrationField">
+		<button label="Update" on-activate={app.router.go('registration')} />
+		<button label="Submit" on-activate={complete} />
+		<button label="Cancel" on-activate={app.router.go('index')} />
+	</div>
+
+<else>
+
+	<div>Help us get to know you better.</div>
+
+	<div class="registrationField">
+		<label text="What is your name?" />
+		<text value={{name}} placeholder="Required" />
+		<error errors={errors.name} />
+	</div>
+	<div class="registrationField">
+		<label text="What is a good user name for you?" />
+		<text value={{username}} placeholder="Required" />
+		<error errors={errors.username} />
+	</div>
+	<div class="registrationField">
+		<label text="Please provide a password." />
+		<text value={{password}} placeholder="Required" type="password" />
+		<error errors={errors.password} />
+	</div>
+	<div class="registrationField">
+		<label text="Please provide your password again." />
+		<text value={{passwordVerification}} placeholder="Required" />
+		<error errors={errors.passwordVerification} />
+	</div>
+	<div class="registrationField">
+		<label text="What is your date of birth?" />
+		<datePicker read-only=false value={{dateOfBirth}} placeholder="Optional" />
+	</div>
+	<div class="registrationField">
+		<label text="What type of web developer are you?" />
+		<radioButton label="Coder" checked-value="coder" value={{typeOfDeveloper}} />
+		<radioButton label="Designer" checked-value="designer" value={{typeOfDeveloper}} />
+	</div>
+	<div class="registrationField">
+		<label text="What is your favorite browser?" />
+		<radioButton checked-value="Chrome" label="Chrome" value={{favoriteBrowser}} />
+		<radioButton checked-value="Firefox" label="Firefox" value={{favoriteBrowser}} />
+		<radioButton checked-value="Internet Explorer" label="Internet Explorer" value={{favoriteBrowser}} />
+	</div>
+	<div class="registrationField">
+		<checkbox value={{allowedToContact}} />
+		Will you allow us to contact you?
+		<if condition={allowedToContact}>
+			<div class="registrationField">
+				<label text="What is your email address?" />
+				<text value={{email}} placeholder="We promise, no spam." />
+			</div>
+			<error errors={errors.email} />
+		</if>
+	</div>
+	<div class="registrationField notes">
+		<label text="Please tell us a story:" />
+		<textarea value={{notes}} />
+	</div>
+
+	<div class="registrationField">
+		<button label="Review" on-activate={review} />
+		<button label="Cancel" on-activate={cancel} />
+	</div>
+</if>
 </div>

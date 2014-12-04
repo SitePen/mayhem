@@ -16,6 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "mayhem": "git@github.com:SitePen/mayhem.git#c20d2880d0a4ee506220db4ccaa5dbc31779ab29"
+    "mayhem": "git@github.com:SitePen/mayhem.git#bd25809eeb5bf4368035c93237f7052e859e34dd"
   }
 }
