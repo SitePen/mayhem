@@ -21,7 +21,3 @@
 	* instance properties
 	* constructor
 	* instance methods
-
-# Regenerating the PEG parser
-
-Run `grunt parser` from within the repo
