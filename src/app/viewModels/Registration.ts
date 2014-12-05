@@ -11,20 +11,15 @@ class Registration extends Proxy<UserRegistration> {
 	get:Registration.Getters;
 	set:Registration.Setters;
 
-	private _validators:HashMap<Validator[]>;
+	_isInvalid:boolean;
 
 	constructor(kwargs?:any) {
+		var self = this;
 		super(kwargs);
 
-		this.set('target', new UserRegistration({
+		var target:UserRegistration = new UserRegistration({
+			autoSave: true,
 			validators: {
-				name: [
-					new RequiredValidator({
-						messages: {
-							missing: 'Please give us a name.'
-						}
-					})
-				],
 				email: [
 					new EmailValidator({
 						messages: {
@@ -32,9 +27,56 @@ class Registration extends Proxy<UserRegistration> {
 							invalid: 'Please enter something that looks like an email address.'
 						}
 					})
+				],
+				name: [
+					new RequiredValidator({
+						messages: {
+							missing: 'Please give us a name.'
+						}
+					})
+				],
+				username: [
+					new RequiredValidator({
+						messages: {
+							missing: 'Please give us a user name.'
+						}
+					})
+				],
+				password: [
+					new RequiredValidator({
+						minLength: 6,
+						messages: {
+							missing: 'Please enter a password.',
+							tooShort: 'Please enter a password that is at least 6 characters.'
+						}
+					})
+				],
+				passwordVerification: [
+					new RequiredValidator({
+						messages: {
+							missing: 'Please verify your password.'
+						}
+					}),
+					new MatchingStringValidator({
+						matchTo: 'password',
+						messages: {
+							mismatch: 'Your password verification does not match.'
+						}
+					})
 				]
 			}
-		}));
+		});
+
+		this.set('target', target);
+
+		this._isInvalid = !target.get('isValid');
+		target.observe('isValid', function(isValid){
+			self.set('isInvalid', !isValid);
+		});
+	}
+
+	_todayGetter():Date {
+		return new Date();
 	}
 
 	_formattedDateOfBirthGetter():string {
@@ -42,6 +84,11 @@ class Registration extends Proxy<UserRegistration> {
 		if (dob) {
 			return locale.format(dob, {selector: 'date', datePattern: 'MMMM d, yyyy'});
 		}
+	}
+
+	_passwordLengthGetter():number {
+		var password:string = this.get('target').get('password');
+		return password ? password.length : 0;
 	}
 
 	cancel():void {
@@ -68,45 +115,71 @@ class Registration extends Proxy<UserRegistration> {
 
 module Registration {
 	export interface Getters extends Proxy.Getters {
-		(key:'target'):UserRegistration;
 		(key:'app'):WebApplication;
-		(key:'formattedDateOfBirth'):String;
+		(key:'formattedDateOfBirth'):string;
+		(key:'isInvalid'):string;
+		(key:'passwordLength'):number
+		(key:'target'):UserRegistration;
+		(key:'today'):Date;
 	}
 	export interface Setters extends Proxy.Setters {
-		(key:'target', value:UserRegistration):void;
 		(key:'app', value:WebApplication):void;
+		(key:'isInvalid', value:string):void;
+		(key:'target', value:UserRegistration):void;
 	}
 }
 
-interface IMyValidatorOptions extends Validator.IOptions {
+interface IValidatorOptions extends Validator.IOptions {
 	messages:HashMap<string>;
 }
 
-class MyValidator extends Validator {
-	options:IMyValidatorOptions;
+interface IRequiredValidatorOptions extends IValidatorOptions {
+	minLength:number;
 }
 
-class RequiredValidator extends MyValidator {
+class RequiredValidator extends Validator {
+	options:IRequiredValidatorOptions;
 
 	validate(model:data.IModel, key:string, value:any):void {
+		var options:IRequiredValidatorOptions = this.options;
 		value = value && lang.trim(value);
-		if (!value) {
-			model.addError(key, new ValidationError(this.options.messages['missing']));
+		if (value) {
+			if (options.minLength > 0 && value.length < options.minLength) {
+				model.addError(key, new ValidationError(options.messages['tooShort']));
+			}
+		} else {
+			model.addError(key, new ValidationError(options.messages['missing']));
 		}
 	}
 }
 
 class EmailValidator extends RequiredValidator {
+	options:IRequiredValidatorOptions;
 
 	validate(model:data.IModel, key:string, value:any):void {
-		var email:string;
-
 		if (model.get('allowedToContact')) {
 			super.validate(model, key, value);
 			if (model.get('isValid')) {
 				if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
 					model.addError(key, new ValidationError(this.options.messages['invalid']));
 				}
+			}
+		}
+	}
+}
+
+interface IMatchingValidatorOptions extends IValidatorOptions {
+	matchTo:string;
+}
+
+class MatchingStringValidator extends Validator {
+	options:IMatchingValidatorOptions;
+
+	validate(model:data.IModel, key:string, value:any):void {
+		if (value) {
+			var matchTo:any = model.get(this.options.matchTo);
+			if (value !== String(matchTo)) {
+				model.addError(key, new ValidationError(this.options.messages['mismatch']));
 			}
 		}
 	}

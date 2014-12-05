@@ -14,11 +14,17 @@
 	<div>Please take a moment to review your registration.</div>
 
 	<div class="registrationField">
-		Your name is <span class="value">{{name}}</span>.
+		Your name is <span class="value">{name}</span>.
+	</div>
+	<div class="registrationField">
+		Your user name is <span class="value">{username}</span>.
+	</div>
+	<div class="registrationField">
+		Your password is <span class="value">{passwordLength}</span> characters long.
 	</div>
 	<if condition={dateOfBirth}>
 		<div class="registrationField">
-			Your date of birth is <span class="value">{formattedDateOfBirth}</span>.
+			Your date of birth is <span class="value">{formattedDateOfBirth}</span> which makes you {age} years old.
 		</div>
 	</if>
 	<if condition={typeOfDeveloper}>
@@ -38,10 +44,12 @@
 			You do not want us to contact you.
 		</if>
 	</div>
-	<div class="registrationField">
-		Your story...<br/>
-		{notes}
-	</div>
+	<if condition={notes}>
+		<div class="registrationField">
+			Your story...<br/>
+			<span class="value">{notes}</span>
+		</div>
+	</if>
 
 	<div class="registrationField">
 		<button label="Update" on-activate={app.router.go('registration')} />
@@ -65,17 +73,20 @@
 	</div>
 	<div class="registrationField">
 		<label text="Please provide a password." />
-		<text value={{password}} placeholder="Required" type="password" />
+		<text value={{password}} placeholder="Six characters or more required" type="password" />
 		<error errors={errors.password} />
 	</div>
 	<div class="registrationField">
 		<label text="Please provide your password again." />
-		<text value={{passwordVerification}} placeholder="Required" />
+		<text value={{passwordVerification}} placeholder="Required"  type="password" />
 		<error errors={errors.passwordVerification} />
 	</div>
 	<div class="registrationField">
 		<label text="What is your date of birth?" />
-		<datePicker read-only=false value={{dateOfBirth}} placeholder="Optional" />
+		<datePicker max={today} read-only=false value={{dateOfBirth}} placeholder="Optional" />
+		<if condition={dateOfBirth} >
+			You are {age} years old.
+		</if>
 	</div>
 	<div class="registrationField">
 		<label text="What type of web developer are you?" />
@@ -91,7 +102,7 @@
 	<div class="registrationField">
 		<checkbox value={{allowedToContact}} />
 		Will you allow us to contact you?
-		<if condition={allowedToContact}>
+		<if condition={allowedToContact} >
 			<div class="registrationField">
 				<label text="What is your email address?" />
 				<text value={{email}} placeholder="We promise, no spam." />
@@ -105,7 +116,7 @@
 	</div>
 
 	<div class="registrationField">
-		<button label="Review" on-activate={review} />
+		<button label="Review" on-activate={review} is-disabled={isInvalid} />
 		<button label="Cancel" on-activate={cancel} />
 	</div>
 </if>
