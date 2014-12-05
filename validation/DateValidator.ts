@@ -1,9 +1,14 @@
-/// <amd-dependency path="dojo/i18n!../nls/validator" />
 import data = require('../data/interfaces');
 import locale = require('dojo/date/locale');
 import ValidationError = require('./ValidationError');
 import Validator = require('./Validator');
-var i18n:any = require('dojo/i18n!../nls/validator');
+
+// TODO
+var i18n = {
+	notADate: 'Not a date',
+	dateTooSmall: 'Date too small',
+	dateTooLarge: 'Date too large'
+};
 
 /**
  * Ensures that the value is a valid date.

@@ -1,8 +1,13 @@
-/// <amd-dependency path="dojo/i18n!../nls/validator" />
 import data = require('../data/interfaces');
 import ValidationError = require('./ValidationError');
 import Validator = require('./Validator');
-var i18n:any = require('dojo/i18n!../nls/validator');
+
+// TODO
+var i18n = {
+	stringTooShort: 'String too short',
+	stringTooLong: 'String too long',
+	stringNotMatchingRegExp: 'String does not match pattern'
+};
 
 /**
  * A validator that ensure that a valid is a valid string.

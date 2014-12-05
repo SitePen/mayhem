@@ -1,7 +1,13 @@
 import data = require('../data/interfaces');
-import i18n = require('./i18n');
 import ValidationError = require('./ValidationError');
 import Validator = require('./Validator');
+
+// TODO
+var i18n = {
+	required: function (kwArgs:{}) {
+		return 'Field is required';
+	}
+};
 
 class RequiredValidator extends Validator {
 	validate(model:data.IModel, key:string, value:any):void {

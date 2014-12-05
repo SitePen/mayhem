@@ -3,8 +3,9 @@
 import createError = require('dojo/errors/create');
 import lang = require('dojo/_base/lang');
 
+// TODO
 var i18n = {
-	genericFieldName: 'TODO Field'
+	genericFieldName: 'Field'
 };
 
 interface ValidationError extends Error {

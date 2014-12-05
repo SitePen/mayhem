@@ -1,8 +1,14 @@
-/// <amd-dependency path="dojo/i18n!../nls/validator" />
 import data = require('../data/interfaces');
 import ValidationError = require('./ValidationError');
 import Validator = require('./Validator');
-var i18n:any = require('dojo/i18n!../nls/validator');
+
+// TODO
+var i18n = {
+	notANumber: 'Not a number',
+	notAnInteger: 'Not an integer',
+	numberTooSmall: 'Number too small',
+	numberTooLarge: 'Number too large'
+};
 
 /**
  * Ensures that the value is a valid number.
