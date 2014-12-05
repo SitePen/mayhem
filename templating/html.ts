@@ -129,8 +129,11 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		this._parentModelHandle && this._parentModelHandle.remove();
 		this._parentModelHandle = null;
 
+		var oldModel:Object = this._parent && this._parent.get('model');
+		this._parent = value;
+
 		if (!this._model) {
-			this._notify('model', value && value.get('model'), this._parent && this._parent.get('model'));
+			this._notify('model', value && value.get('model'), oldModel);
 			if (value) {
 				var self = this;
 				this._parentModelHandle = value.observe('model', function (newValue:Object, oldValue:Object):void {
@@ -138,8 +141,6 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 				});
 			}
 		}
-
-		this._parent = value;
 	};
 
 	Ctor.prototype._parentGetter = function ():Container {
