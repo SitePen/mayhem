@@ -242,6 +242,7 @@ class Model extends Observable implements data.IModel {
 	validate(keysToValidate?:string[]):IPromise<boolean> {
 		if (this._validatorInProgress) {
 			this._validatorInProgress.cancel(new Error('Validation restarted'));
+			this._validatorInProgress = null;
 		}
 
 		this.clearErrors();
