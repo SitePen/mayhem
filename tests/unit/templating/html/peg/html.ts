@@ -560,5 +560,11 @@ registerSuite({
 				'class': { $bind: 'foo}{bar', direction: 1 }
 			}
 		});
+	},
+
+	'Quoted binding'() {
+		var ast = parser.parse('<widget is="Foo" class="{foo}" />');
+		var ast2 = parser.parse('<widget is="Foo" class={foo} />');
+		assert.deepEqual(ast, ast2, 'Quoted bindings that have no other text should be equivalent to unquoted bindings');
 	}
 });
