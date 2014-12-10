@@ -84,9 +84,6 @@
 	<div class="registrationField">
 		<label text="What is your date of birth?" />
 		<datePicker max={today} read-only=false value={{dateOfBirth}} placeholder="Optional" />
-		<if condition={dateOfBirth} >
-			You are {age} years old.
-		</if>
 	</div>
 	<div class="registrationField">
 		<label text="What type of web developer are you?" />
@@ -105,19 +102,24 @@
 		<if condition={allowedToContact} >
 			<div class="registrationField">
 				<label text="What is your email address?" />
-				<text value={{email}} placeholder="We promise, no spam." />
+				<text value={{email}} placeholder="Required" />
 			</div>
 			<error errors={errors.email} />
 		</if>
 	</div>
 	<div class="registrationField notes">
 		<label text="Please tell us a story:" />
-		<textarea value={{notes}} />
+		<div class="characterCount">({notesLength} out of {notesMaxLength} characters)</div>
+		<textarea value={{notes}} max-length={notesMaxLength} />
 	</div>
 
 	<div class="registrationField">
 		<button label="Review" on-activate={review} is-disabled={isInvalid} />
 		<button label="Cancel" on-activate={cancel} />
 	</div>
+
+	<if condition={routeState.allErrors} >
+		<error errors={errors.quiet} />
+	</if>
 </if>
 </div>

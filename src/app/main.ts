@@ -12,7 +12,7 @@ var app:WebApplication = new WebApplication({
 				},
 				registration: {
 					model: 'app/viewModels/Registration',
-					view: 'app/views/Registration.html'
+					view: 'app/views/Registration'
 				},
 				thanks: {
 					view: 'app/views/Thanks.html'

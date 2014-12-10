@@ -7,21 +7,33 @@ import Validator = require('mayhem/validation/Validator');
 import WebApplication = require('mayhem/WebApplication');
 import locale = require('dojo/date/locale');
 
+function quietMissingErrors(fieldKey:string, errorKey:string):string {
+	//return fieldKey;
+	return errorKey === 'missing' ? 'quiet' : fieldKey;
+}
+
 class Registration extends Proxy<UserRegistration> {
 	get:Registration.Getters;
 	set:Registration.Setters;
 
 	_isInvalid:boolean;
+	_notesLength:number;
+	_notesMaxLength:number;
 
 	constructor(kwargs?:any) {
 		var self = this;
+		this._notesMaxLength = 500;
 		super(kwargs);
+
+		this._notesLength = 0;
 
 		var target:UserRegistration = new UserRegistration({
 			autoSave: true,
+			autoValidate: true, // all, single, false
 			validators: {
 				email: [
 					new EmailValidator({
+						fieldKey: quietMissingErrors,
 						messages: {
 							missing: 'Please oh please enter an email address.',
 							invalid: 'Please enter something that looks like an email address.'
@@ -30,21 +42,16 @@ class Registration extends Proxy<UserRegistration> {
 				],
 				name: [
 					new RequiredValidator({
+						fieldKey: quietMissingErrors,
 						messages: {
 							missing: 'Please give us a name.'
-						}
-					})
-				],
-				username: [
-					new RequiredValidator({
-						messages: {
-							missing: 'Please give us a user name.'
 						}
 					})
 				],
 				password: [
 					new RequiredValidator({
 						minLength: 6,
+						fieldKey: quietMissingErrors,
 						messages: {
 							missing: 'Please enter a password.',
 							tooShort: 'Please enter a password that is at least 6 characters.'
@@ -53,6 +60,7 @@ class Registration extends Proxy<UserRegistration> {
 				],
 				passwordVerification: [
 					new RequiredValidator({
+						fieldKey: quietMissingErrors,
 						messages: {
 							missing: 'Please verify your password.'
 						}
@@ -61,6 +69,14 @@ class Registration extends Proxy<UserRegistration> {
 						matchTo: 'password',
 						messages: {
 							mismatch: 'Your password verification does not match.'
+						}
+					})
+				],
+				username: [
+					new RequiredValidator({
+						fieldKey: quietMissingErrors,
+						messages: {
+							missing: 'Please give us a user name.'
 						}
 					})
 				]
@@ -73,10 +89,9 @@ class Registration extends Proxy<UserRegistration> {
 		target.observe('isValid', function(isValid){
 			self.set('isInvalid', !isValid);
 		});
-	}
-
-	_todayGetter():Date {
-		return new Date();
+		target.observe('notes', function (notes) {
+			self.set('notesLength', notes ? notes.length: 0);
+		});
 	}
 
 	_formattedDateOfBirthGetter():string {
@@ -91,9 +106,19 @@ class Registration extends Proxy<UserRegistration> {
 		return password ? password.length : 0;
 	}
 
+	_todayGetter():Date {
+		return new Date();
+	}
+
 	cancel():void {
 		this.get('target').reset();
 		this.get('app').get('router').go('index');
+	}
+
+	complete():void {
+		// TBD: reset the model
+		this.get('target').reset();
+		this.get('app').get('router').go('thanks');
 	}
 
 	review():void {
@@ -105,12 +130,6 @@ class Registration extends Proxy<UserRegistration> {
 			// Stay on screen.  This function stops errors from appearing in the console.
 		});
 	}
-
-	complete():void {
-		// TBD: reset the model
-		this.get('target').reset();
-		this.get('app').get('router').go('thanks');
-	}
 }
 
 module Registration {
@@ -118,6 +137,8 @@ module Registration {
 		(key:'app'):WebApplication;
 		(key:'formattedDateOfBirth'):string;
 		(key:'isInvalid'):string;
+		(key:'notesLength'):number;
+		(key:'notesMaxLength'):number;
 		(key:'passwordLength'):number
 		(key:'target'):UserRegistration;
 		(key:'today'):Date;
@@ -130,6 +151,7 @@ module Registration {
 }
 
 interface IValidatorOptions extends Validator.IOptions {
+	fieldKey:(defaultKey:string, errorKey:string) => string;
 	messages:HashMap<string>;
 }
 
@@ -137,7 +159,18 @@ interface IRequiredValidatorOptions extends IValidatorOptions {
 	minLength:number;
 }
 
-class RequiredValidator extends Validator {
+class MyValidator extends Validator {
+	options:IValidatorOptions;
+
+	protected _addError(model:data.IModel, key:string, errorKey:string):void {
+		var fieldKeyFn = this.options.fieldKey;
+		var fieldKey = fieldKeyFn ? fieldKeyFn(key, errorKey) : key;
+
+		model.addError(fieldKey, new ValidationError(this.options.messages[errorKey]));
+	}
+}
+
+class RequiredValidator extends MyValidator {
 	options:IRequiredValidatorOptions;
 
 	validate(model:data.IModel, key:string, value:any):void {
@@ -145,10 +178,10 @@ class RequiredValidator extends Validator {
 		value = value && lang.trim(value);
 		if (value) {
 			if (options.minLength > 0 && value.length < options.minLength) {
-				model.addError(key, new ValidationError(options.messages['tooShort']));
+				this._addError(model, key, 'tooShort');
 			}
 		} else {
-			model.addError(key, new ValidationError(options.messages['missing']));
+			this._addError(model, key, 'missing');
 		}
 	}
 }
@@ -161,7 +194,7 @@ class EmailValidator extends RequiredValidator {
 			super.validate(model, key, value);
 			if (model.get('isValid')) {
 				if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-					model.addError(key, new ValidationError(this.options.messages['invalid']));
+					this._addError(model, key, 'invalid');
 				}
 			}
 		}
@@ -172,14 +205,14 @@ interface IMatchingValidatorOptions extends IValidatorOptions {
 	matchTo:string;
 }
 
-class MatchingStringValidator extends Validator {
+class MatchingStringValidator extends MyValidator {
 	options:IMatchingValidatorOptions;
 
 	validate(model:data.IModel, key:string, value:any):void {
 		if (value) {
 			var matchTo:any = model.get(this.options.matchTo);
 			if (value !== String(matchTo)) {
-				model.addError(key, new ValidationError(this.options.messages['mismatch']));
+				this._addError(model, key, 'mismatch');
 			}
 		}
 	}
