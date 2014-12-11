@@ -37,7 +37,7 @@ registerSuite({
 		var key = document.body;
 		var weakMap = new MayhemWeakMap();
 		weakMap.set(key, 'test');
-		weakMap.delete(key);
+		weakMap['delete'](key); // for IE8 compat
 		assert.isFalse(weakMap.has(key), 'weakMap should no longer contain deleted key');
 		assert.isUndefined(weakMap.get(key), 'weakmMap should no longer contain value for deleted key');
 	},

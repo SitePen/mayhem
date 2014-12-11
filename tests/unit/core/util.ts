@@ -362,7 +362,8 @@ registerSuite({
 			this.skip('require does not emit an error when loading a bad mid in Node.js');
 		}
 
-		var dfd = this.async(100);
+		// This test sometimes times out, so give it a long timeout value
+		var dfd = this.async(10000);
 		// TODO: require is broken and only throws an error on the first request for a mid that returns a 404
 		// For now, ensure that you don't reuse invalid mids in tests
 		var badModuleId = 'util1/bad/module/id';
@@ -370,7 +371,7 @@ registerSuite({
 		util.getModules([ badModuleId ]).then(function () {
 			dfd.reject(new Error('Promise should not resolve'));
 		}, dfd.callback(function (error:util.RequireError) {
-			assert.include(error.url, badModuleId);
+			assert.include(error.message, badModuleId);
 		}));
 	},
 

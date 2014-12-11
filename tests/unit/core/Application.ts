@@ -2,7 +2,7 @@
 /// <reference path="../../intern" />
 
 import Application = require('../../../Application');
-import aspect = require('dojo/aspect');
+import arrayUtil = require('dojo/_base/array');
 import assert = require('intern/chai!assert');
 import has = require('../../../has');
 import LogLevel = require('../../../LogLevel');
@@ -35,7 +35,8 @@ registerSuite({
 				this.skip('require does not emit an error when loading a bad mid in Node.js');
 			}
 
-			var dfd = this.async(100);
+			// This test sometimes times out, so give it a long timeout value
+			var dfd = this.async(10000);
 
 			app = new Application({
 				components: {
@@ -134,17 +135,17 @@ registerSuite({
 
 			return app.run().then(function () {
 				var testMessage = 'test message';
-				var logMessage:string;
+				var logMessage:any;
 				var handle:IHandle;
 
-				[ 'ERROR', 'WARN', 'LOG', 'INFO', 'DEBUG' ].forEach(function (logLevel) {
+				arrayUtil.forEach([ 'ERROR', 'WARN', 'LOG', 'INFO', 'DEBUG' ], function (logLevel) {
 					var methodName = logLevel.toLowerCase();
+					var originalMethod = console[methodName];
 
-					handle = aspect.around(console, methodName, function () {
-						return function () {
-							logMessage = arguments[0];
-						}
-					});
+					// dojo/aspect does not work on console methods in IE8
+					console[methodName] = function (message:any) {
+						logMessage = message;
+					};
 
 					try {
 						// TS7017
@@ -154,7 +155,7 @@ registerSuite({
 							'console.' + methodName + ' should be called with correct arguments');
 					}
 					finally {
-						handle.remove();
+						console[methodName] = originalMethod;
 						logMessage = '';
 					}
 				});
