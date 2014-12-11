@@ -272,6 +272,20 @@ export function getModules<T>(moduleIds:string[]):IPromise<T[]> {
 	require(moduleIds, function (...modules:T[]):void {
 		handle && handle.remove();
 		handle = null;
+
+		// require does not emit an 'error' event in some environments (IE8, Node.js), instead the module is
+		// not resolved ('not-a-module'). This improves behavior in IE8, but it's still broken in Node.js.
+		array.every(modules, function (module:T, index:number, modules:T[]):boolean {
+			if (<any> module === 'not-a-module') {
+				var reportedError:RequireError = <any> new Error('Couldn\'t load module ' + moduleIds[index]);
+				dfd.reject(reportedError);
+
+				return false;
+			}
+
+			return true;
+		});
+
 		dfd.resolve(modules);
 	});
 
