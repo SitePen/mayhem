@@ -127,6 +127,10 @@ registerSuite({
 		},
 
 		'without logger'() {
+			if (typeof console === 'undefined') {
+				this.skip('Test requires console object');
+			}
+
 			app = new Application({
 				components: {
 					logger: null
@@ -136,14 +140,13 @@ registerSuite({
 			return app.run().then(function () {
 				var testMessage = 'test message';
 				var logMessage:any;
-				var handle:IHandle;
 
 				arrayUtil.forEach([ 'ERROR', 'WARN', 'LOG', 'INFO', 'DEBUG' ], function (logLevel) {
 					var methodName = logLevel.toLowerCase();
-					var originalMethod = console[methodName];
+					var originalMethod = (<any> console)[methodName];
 
 					// dojo/aspect does not work on console methods in IE8
-					console[methodName] = function (message:any) {
+					(<any> console)[methodName] = function (message:any) {
 						logMessage = message;
 					};
 
@@ -155,7 +158,7 @@ registerSuite({
 							'console.' + methodName + ' should be called with correct arguments');
 					}
 					finally {
-						console[methodName] = originalMethod;
+						(<any> console)[methodName] = originalMethod;
 						logMessage = '';
 					}
 				});
