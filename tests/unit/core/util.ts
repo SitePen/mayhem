@@ -363,7 +363,7 @@ registerSuite({
 		}
 
 		// This test sometimes times out, so give it a long timeout value
-		var dfd = this.async(10000);
+		var dfd = this.async(30000);
 		// TODO: require is broken and only throws an error on the first request for a mid that returns a 404
 		// For now, ensure that you don't reuse invalid mids in tests
 		var badModuleId = 'util1/bad/module/id';
