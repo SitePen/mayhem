@@ -32,6 +32,10 @@ class Checkbox extends DijitWidget implements ICheckbox {
 	 */
 	_value:CheckboxValue;
 
+	destroy() {
+		super.destroy();
+	}
+
 	_isCheckedGetter():boolean {
 		return this.get('value') === CheckboxValue.TRUE;
 	}
@@ -60,6 +64,10 @@ class Checkbox extends DijitWidget implements ICheckbox {
 		return this._value;
 	}
 	_valueSetter(value:CheckboxValue):void {
+		if (value === this._value) {
+			return;
+		}
+
 		this._value = value;
 
 		// Setting checked directly would make it impossible to set the indeterminate value

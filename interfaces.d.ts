@@ -72,7 +72,7 @@ export declare module IObservable {
 	}
 
 	export interface Setters {
-		(kwArgs:HashMap<any>):void;
+		(kwArgs:{}):void;
 		(key:string, value:any):void;
 	}
 }

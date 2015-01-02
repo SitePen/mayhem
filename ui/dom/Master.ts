@@ -26,22 +26,19 @@ class Master extends MultiNodeWidget implements IMaster {
 	}
 
 	destroy():void {
-		this._view.destroy();
+		this._view && this._view.destroy();
 		this._view = this._root = null;
 		super.destroy();
 	}
 
 	_initialize():void {
-		this._root = document.body;
+		super._initialize();
+		this.set('root', document.body);
 	}
 
 	private _initializeView():void {
 		this._root.appendChild(this._view.detach());
 		this._view.set('isAttached', true);
-
-		// TODO: Changing root after loading EventManager once will break things right now, it needs to be
-		// much more graceful
-		this._eventManager = new EventManager(this);
 	}
 
 	_rootGetter():Element {
@@ -49,7 +46,13 @@ class Master extends MultiNodeWidget implements IMaster {
 	}
 	_rootSetter(root:Element):void {
 		this._root = root;
-		root && this._view && this._initializeView();
+		this._eventManager && this._eventManager.destroy();
+
+		if (root) {
+			// TODO: Should not allow view to be a string?
+			this._view && typeof this._view === 'object' && this._initializeView();
+			this._eventManager = new EventManager(this);
+		}
 	}
 
 	run():Promise<void> {
@@ -85,8 +88,8 @@ class Master extends MultiNodeWidget implements IMaster {
 	_viewSetter(view:View):void;
 	_viewSetter(view:string):void;
 	_viewSetter(view:any):void {
-		if (this._view && this._view.destroy) {
-			this._view.destroy();
+		if (this._view && this._view.detach) {
+			this._view.detach();
 		}
 
 		this._view = view;

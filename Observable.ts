@@ -51,7 +51,7 @@ class Observable implements core.IObservable {
 	 * @constructor module:mayhem/Observable
 	 * @param {HashMap<any>=} kwArgs An initial set of properties to set on the object at construction time.
 	 */
-	constructor(kwArgs:HashMap<any> = {}) {
+	constructor(kwArgs:{} = {}) {
 		this._dependencies = has('es5') ? Object.create(null) : {};
 		this._observers = has('es5') ? Object.create(null) : {};
 		this._initialize();
@@ -67,6 +67,9 @@ class Observable implements core.IObservable {
 		for (var key in this._dependencies) {
 			this._dependencies[key].remove();
 		}
+		this._notify = function () {
+			console.debug('BUG');
+		};
 		this._dependencies = this._observers = null;
 	}
 

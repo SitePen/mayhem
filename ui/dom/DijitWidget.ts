@@ -72,13 +72,13 @@ class DijitWidget extends SingleNodeWidget {
 			dijitName = setupMap.properties[mayhemName];
 			// Binding must be from the Mayhem object to the widget in order to set the correct default values from
 			// the Mayhem widget, not from the Dijit widget
-			this._app.get('binder').bind({
+			this._eventListeners.push(this._app.get('binder').bind({
 				source: this,
 				sourcePath: mayhemName,
 				target: widget,
 				targetPath: dijitName,
 				direction: BindDirection.TWO_WAY
-			});
+			}));
 		}
 
 		var eventName:string;

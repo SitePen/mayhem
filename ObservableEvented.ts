@@ -9,9 +9,21 @@ import Observable = require('./Observable');
  * class should be used as a base class for objects that also need to emit events.
  */
 class ObservableEvented extends Observable {
-	constructor(kwArgs?:HashMap<any>) {
+	protected _eventListeners:IHandle[];
+
+	constructor(kwArgs?:{}) {
+		this._eventListeners = [];
 		super(kwArgs);
 		Evented.apply(this, arguments);
+	}
+
+	destroy() {
+		super.destroy();
+
+		var handle:IHandle;
+		while ((handle = this._eventListeners.pop())) {
+			handle.remove();
+		}
 	}
 
 	emit(event:core.IEvent):boolean {
@@ -24,7 +36,9 @@ class ObservableEvented extends Observable {
 }
 
 ObservableEvented.prototype.on = function (type:any, listener:core.IEventListener<core.IEvent>):IHandle {
-	return Evented.prototype.on.call(this, type, listener);
+	var handle = Evented.prototype.on.call(this, type, listener);
+	this._eventListeners.push(handle);
+	return handle;
 };
 
 module ObservableEvented {

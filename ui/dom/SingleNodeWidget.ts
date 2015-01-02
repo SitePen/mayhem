@@ -6,7 +6,7 @@ class SingleNodeWidget extends Widget {
 	 */
 	_node:Element;
 
-	constructor(kwArgs?:HashMap<any>) {
+	constructor(kwArgs?:{}) {
 		super(kwArgs);
 		// TODO: Use a unique-per-app key name
 		// TS7017

@@ -25,7 +25,9 @@ Widget.prototype.on = function (type:any, listener:core.IEventListener<core.IEve
 	// TODO: Should be HashMap of Mayhem extension events
 	var _actions:HashMap<Function> = <any> actions;
 	if (typeof type === 'string' && _actions[type]) {
-		return _actions[type](this, listener);
+		var handle = _actions[type](this, listener);
+		this._eventListeners.push(handle);
+		return handle;
 	}
 
 	return CommonWidget.prototype.on.apply(this, arguments);

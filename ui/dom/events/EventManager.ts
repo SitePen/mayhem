@@ -46,6 +46,12 @@ class EventManager {
 		];
 	}
 
+	destroy() {
+		this.destroy = function () {};
+		this._pointerManager.destroy();
+		this._keyboardManager.destroy();
+	}
+
 	private _emitKeyboardEvent(type:string, keyInfo:KeyboardManager.KeyInfo):boolean {
 		var target:Widget = domUtil.findNearestParent(this._master, document.activeElement);
 		var event:ui.KeyboardEvent = <any> new Event({

@@ -89,6 +89,11 @@ class Binder implements binding.IBinder {
 		target = this.createBinding<T>(kwArgs.target, kwArgs.targetPath);
 
 		function setTargetValue(change:binding.IChangeRecord<T>):void {
+			if (!target) {
+				console.debug('BUG');
+				return;
+			}
+
 			target.set(change.value);
 		}
 

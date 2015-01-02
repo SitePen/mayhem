@@ -53,7 +53,7 @@ class Widget extends ObservableEvented implements IWidget {
 	on:Widget.Events;
 	set:Widget.Setters;
 
-	constructor(kwArgs?:HashMap<any>) {
+	constructor(kwArgs?:{}) {
 		this._classList = new ClassList();
 
 		super(kwArgs);
