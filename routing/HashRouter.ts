@@ -9,9 +9,14 @@ import topic = require('dojo/topic');
 class HashRouter extends Router {
 	protected _handle:IHandle;
 	protected _oldHash:string;
+	protected _prefix:string;
 
 	get:HashRouter.Getters;
 	set:HashRouter.Setters;
+
+	createUrl(routeId:string, kwArgs?:{}):string {
+		return '#' + this.get('prefix') + super.createUrl(routeId, kwArgs);
+	}
 
 	destroy():void {
 		super.destroy();
@@ -34,7 +39,9 @@ class HashRouter extends Router {
 	}
 
 	protected _handleHashChange(newHash:string) {
-		if (this._oldHash === newHash) {
+		var prefix = this.get('prefix');
+
+		if (this._oldHash === newHash || (newHash.length && newHash.slice(0, prefix.length) !== prefix)) {
 			return;
 		}
 
@@ -44,14 +51,14 @@ class HashRouter extends Router {
 		}
 
 		var self = this;
-		var searchIndex = location.hash.indexOf('?');
+		var searchIndex = newHash.indexOf('?');
 
 		var request = new Request({
 			host: location.host,
 			method: 'GET',
-			path: location.hash.slice(1, searchIndex > -1 ? searchIndex : Infinity),
+			path: newHash.slice(prefix.length, searchIndex > -1 ? searchIndex : Infinity),
 			protocol: location.protocol,
-			vars: searchIndex > -1 ? ioQuery.queryToObject(location.hash.slice(searchIndex + 1)) : {}
+			vars: searchIndex > -1 ? ioQuery.queryToObject(newHash.slice(searchIndex + 1)) : {}
 		});
 
 		return this._handleRequest(request).then(function () {
@@ -60,6 +67,10 @@ class HashRouter extends Router {
 			self._oldHash && hash(self._oldHash, true);
 			self.get('app').handleError(error);
 		});
+	}
+
+	_initialize() {
+		this._prefix = '!';
 	}
 
 	protected _listen() {
@@ -73,8 +84,12 @@ class HashRouter extends Router {
 }
 
 module HashRouter {
-	export interface Getters extends Router.Getters {}
-	export interface Setters extends Router.Setters {}
+	export interface Getters extends Router.Getters {
+		(key:'prefix'):string;
+	}
+	export interface Setters extends Router.Setters {
+		(key:'prefix', value:string):void;
+	}
 }
 
 export = HashRouter;
