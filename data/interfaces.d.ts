@@ -39,6 +39,8 @@ export interface IModel extends core.IObservable {
 export declare module IModel {
 	export interface Getters extends core.IObservable.Getters {
 		(key:'app'):core.IApplication;
+		(key:'autoSave'):boolean;
+		(key:'autoValidate'):boolean;
 		(key:'isDirty'):boolean;
 		(key:'isExtensible'):boolean;
 		(key:'isValid'):boolean;
@@ -48,6 +50,8 @@ export declare module IModel {
 		(key:'validators'):HashMap<Validator[]>;
 	}
 	export interface Setters extends core.IObservable.Setters {
+		(key:'autoSave', value:boolean):void;
+		(key:'autoValidate', value:boolean):void;
 		(key:'isExtensible', value:boolean):void;
 		(key:'labels', value:HashMap<string>):void;
 		(key:'scenario', value:string):void;

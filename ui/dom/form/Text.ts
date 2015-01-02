@@ -9,6 +9,7 @@ class Text extends DijitWidget implements IText {
 	static Ctor = DijitText;
 	static setupMap = util.deepCreate(DijitWidget.setupMap, {
 		properties: {
+			autoCommit: 'intermediateChanges',
 			placeholder: 'placeHolder',
 			readOnly: 'readOnly',
 			value: 'value'
@@ -18,6 +19,13 @@ class Text extends DijitWidget implements IText {
 	get:Text.Getters;
 	on:Text.Events;
 	set:Text.Setters;
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
+	_autoCommit:boolean;
 
 	/**
 	 * @get
@@ -41,6 +49,7 @@ class Text extends DijitWidget implements IText {
 	_value:string;
 }
 
+Text.prototype._autoCommit = false;
 Text.prototype._placeholder = '';
 Text.prototype._readOnly = false;
 Text.prototype._value = '';

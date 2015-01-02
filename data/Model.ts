@@ -14,6 +14,7 @@ import Validator = require('../validation/Validator');
 var NON_DATA_KEYS:HashMap<boolean> = {
 	app: true,
 	autoSave: true,
+	autoValidate: true,
 	currentScenarioKeys: true,
 	dirtyProperties: true,
 	errors: true,
@@ -41,6 +42,11 @@ class Model extends Observable implements data.IModel {
 	 * @protected
 	 */
 	_app:core.IApplication;
+
+	/**
+	 * @protected
+	 */
+	_autoValidate:boolean;
 
 	/**
 	 * @protected
@@ -102,8 +108,11 @@ class Model extends Observable implements data.IModel {
 	_initialize():void {
 		super._initialize();
 		this._autoSave = false;
+		this._autoValidate = false;
 		this._dirtyProperties = {};
 		this._errors = {};
+		this._isExtensible = false;
+		this._scenario = 'default';
 	}
 
 	addError(key:string, error:ValidationError):void {
@@ -324,6 +333,9 @@ Model.prototype.set = function (key:any, value?:any):void {
 			// TODO: Probably want to debounce this
 			this.save();
 		}
+		else if (this._autoValidate) {
+			this.validate();
+		}
 	}
 };
 
@@ -335,7 +347,5 @@ module Model {
 
 // `app` must always be assignable directly to the model since it is used internally and is a reserved name
 Model.prototype._app = null;
-Model.prototype._isExtensible = false;
-Model.prototype._scenario = 'default';
 
 export = Model;
