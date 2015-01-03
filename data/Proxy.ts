@@ -53,10 +53,14 @@ class Proxy<T> extends Observable {
 		wrapperCollection.removeSync = lang.hitch(collection, 'removeSync');
 
 		collection.on('add', function (event:dstore.ChangeEvent):void {
-			put.call(wrapperCollection, new Ctor({
-				app: event.target.get('app'),
-				target: event.target
-			}), { index: event.index });
+			// undefined index means that the add event doesn't match our filtered collection, so should not be put
+			// in the wrapper collection either
+			if (event.index !== undefined) {
+				put.call(wrapperCollection, new Ctor({
+					app: event.target.get('app'),
+					target: event.target
+				}), { index: event.index });
+			}
 		});
 		collection.on('update', function (event:dstore.ChangeEvent):void {
 			var id = collection.getIdentity(event.target);
