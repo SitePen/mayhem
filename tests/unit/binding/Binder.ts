@@ -3,6 +3,7 @@
 import assert = require('intern/chai!assert');
 import Binder = require('../../../binding/Binder');
 import Binding = require('../../../binding/Binding');
+import BindingError = require('../../../binding/BindingError');
 import bindingInterface = require('../../../binding/interfaces');
 import MockBinder = require('../../support/MockBinder');
 import registerSuite = require('intern!object');
@@ -119,18 +120,84 @@ registerSuite({
 		}));
 	},
 
-	'#createBinding'() {
-		var obj = {
-			foo: 'bar',
-			test: true
-		};
-		var binder = new Binder({
-			constructors: [ MockBinder ]
-		});
-		var binding = binder.createBinding(obj, 'foo');
+	'#createBinding': {
+		simple() {
+			var obj = {
+				foo: 'bar',
+				test: true
+			};
+			var binder = new Binder({
+				constructors: [ MockBinder ]
+			});
+			var binding = binder.createBinding(obj, 'foo');
 
-		assert.strictEqual(binding.kwArgs.object, obj);
-		assert.strictEqual(binding.kwArgs.path, 'foo');
-		assert.strictEqual(binding.kwArgs.binder, binder);
+			assert.strictEqual((<any> binding).kwArgs.object, obj);
+			assert.strictEqual((<any> binding).kwArgs.path, 'foo');
+			assert.strictEqual((<any> binding).kwArgs.binder, binder);
+		},
+
+		'no binding constructor'() {
+			var obj = {
+				foo: 'bar',
+				test: true
+			};
+			var binder = new Binder({ constructors: [] });
+
+			function createBinding() {
+				binder.createBinding(obj, 'foo');
+			}
+
+			assert.throws(createBinding, BindingError);
+		},
+
+		'observe, notify, binding.destroy'() {
+			var obj = {
+				foo: 'bar',
+				test: true
+			};
+			var binder = new Binder({
+				constructors: [ MockBinder ]
+			});
+			var binding = binder.createBinding(obj, 'foo');
+			var originalObserve = MockBinder.prototype.observe;
+			var originalNotify = MockBinder.prototype.notify;
+			var observeCalled = false;
+			var notifyCalled = false;
+
+			MockBinder.prototype.observe = <any> function () {
+				observeCalled = true;
+				return {
+					remove: function () {}
+				};
+			};
+
+			MockBinder.prototype.notify = <any> function () {
+				notifyCalled = true;
+			};
+
+			try {
+				// The binding returned by 'createBinding' may be a delegated object with its own 'observe' method, or
+				// a plain instance of one of the Binder's Binding constructors - in either case, the 'observe' method
+				// should be called
+				binding.observe(function () {});
+				assert.isTrue(observeCalled, 'binding\'s observe method should have been called');
+
+				// Calling 'notify' on the Binder should route through the relevant Binding instance's 'notify' method
+				binder.notify(obj, 'foo', {});
+				assert.isTrue(notifyCalled, 'binding\'s notify method should have been called');
+
+				// TODO: <any> casting: the IBinding interface does not define any params for destroy method;
+				// the object returned by Binder.createBinding has a destroy method that accepts a param
+				// TODO: should we test 'observe' on a destroyed binding? (current behavior = throw error)
+				(<any> binding).destroy(true);
+				notifyCalled = false;
+				binder.notify(obj, 'foo', {});
+				assert.isFalse(notifyCalled, 'notifications should not be called on a destroyed binding');
+			}
+			finally {
+				MockBinder.prototype.observe = originalObserve;
+				MockBinder.prototype.notify = originalNotify;
+			}
+		}
 	}
 });
