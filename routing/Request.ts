@@ -52,7 +52,7 @@ module Request {
 		method?:string;
 		path?:string;
 		protocol?:string;
-		vars?:HashMap<any>;
+		vars?:{};
 	}
 }
 
