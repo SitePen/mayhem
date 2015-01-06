@@ -1,12 +1,21 @@
 /// <reference path="../../intern" />
 
 import assert = require('intern/chai!assert');
+import BindDirection = require('../../../binding/BindDirection');
 import Binder = require('../../../binding/Binder');
 import Binding = require('../../../binding/Binding');
 import BindingError = require('../../../binding/BindingError');
 import bindingInterface = require('../../../binding/interfaces');
+import has = require('../../../has');
 import MockBinder = require('../../support/MockBinder');
+import Observable = require('../../../Observable');
+import ObservableBinding = require('../../../binding/bindings/ObservableBinding');
 import registerSuite = require('intern!object');
+
+class SomeObservable extends Observable {
+	foo:string;
+	bar:string;
+}
 
 registerSuite({
 	name: 'mayhem/binding/Binder',
@@ -150,7 +159,7 @@ registerSuite({
 			assert.throws(createBinding, BindingError);
 		},
 
-		'observe, notify, binding.destroy'() {
+		'notify, binding.observe, binding.destroy'() {
 			var obj = {
 				foo: 'bar',
 				test: true
@@ -199,5 +208,96 @@ registerSuite({
 				MockBinder.prototype.notify = originalNotify;
 			}
 		}
+	},
+
+	observe() {
+		var obj = {
+			foo: 'bar',
+			test: true
+		};
+		var binder = new Binder({
+			constructors: [ MockBinder ]
+		});
+		var observeCalled = false;
+		var originalObserve = MockBinder.prototype.observe;
+		var handle:IHandle;
+
+		MockBinder.prototype.observe = <any> function () {
+			observeCalled = true;
+			return {
+				remove: function () {}
+			};
+		};
+
+		try {
+			handle = binder.observe(obj, 'foo', function () {});
+			assert.isTrue(observeCalled, 'binding\'s observe method should have been called');
+		}
+		finally {
+			MockBinder.prototype.observe = originalObserve;
+		}
+	},
+
+	bind() {
+		var binder = new Binder({
+			constructors: [ ObservableBinding ]
+		});
+		var sourceObject = new SomeObservable();
+		var targetObject = new SomeObservable();
+		var handle = binder.bind({
+			source: sourceObject,
+			sourcePath: 'foo',
+			target: targetObject,
+			targetPath: 'bar'
+		});
+
+		sourceObject.set('foo', 'test1');
+		assert.strictEqual(sourceObject.get('foo'), targetObject.get('bar'),
+			'bound property values should be the same');
+
+		targetObject.set('bar', 'test2');
+		assert.strictEqual(sourceObject.get('foo'), targetObject.get('bar'),
+			'bound property values should be the same');
+
+		sourceObject = new SomeObservable();
+		handle.setSource(sourceObject);
+		sourceObject.set('foo', 'test3');
+		assert.strictEqual(sourceObject.get('foo'), targetObject.get('bar'),
+			'bound property values should be the same');
+
+		handle.setSource(sourceObject, 'bar');
+		sourceObject.set('bar', 'test4');
+		assert.strictEqual(sourceObject.get('bar'), targetObject.get('bar'),
+			'bound property values should be the same');
+
+		targetObject = new SomeObservable();
+		handle.setTarget(targetObject);
+		targetObject.set('bar', 'test5');
+		assert.strictEqual(sourceObject.get('bar'), targetObject.get('bar'),
+			'bound property values should be the same');
+
+		handle.setTarget(targetObject, 'foo');
+		targetObject.set('foo', 'test6');
+		assert.strictEqual(sourceObject.get('bar'), targetObject.get('foo'),
+			'bound property values should be the same');
+
+		handle.setDirection(BindDirection.ONE_WAY);
+		targetObject.set('foo', 'test7');
+		assert.notStrictEqual(sourceObject.get('bar'), targetObject.get('foo'),
+			'target to source binding should no longer be active');
+
+		handle.setDirection(BindDirection.TWO_WAY);
+		targetObject.set('foo', 'test8');
+		assert.strictEqual(sourceObject.get('bar'), targetObject.get('foo'),
+			'bound property values should be the same');
+
+		handle.remove();
+		sourceObject.set('bar', 'test9');
+		assert.notStrictEqual(sourceObject.get('bar'), targetObject.get('foo'),
+			'binding should no longer be active');
+
+		targetObject.set('foo', 'test10');
+		assert.notStrictEqual(sourceObject.get('bar'), targetObject.get('foo'),
+			'binding should no longer be active');
 	}
 });
