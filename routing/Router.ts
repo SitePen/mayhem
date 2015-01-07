@@ -11,6 +11,8 @@ class Router extends Observable {
 	get:Router.Getters;
 	set:Router.Setters;
 
+	protected _routeInProgress:Promise<void>;
+
 	protected _rules:UrlRule[];
 	protected _rulesGetter() {
 		return this._rules;
@@ -64,7 +66,8 @@ class Router extends Observable {
 		var self = this;
 		var oldRoute:Router.Route = this.get('currentRoute');
 
-		return this
+		this._routeInProgress && this._routeInProgress.cancel();
+		var promise = this
 			._loadRoute(routeInfo.routeId)
 			.then(function (newRoute) {
 				if (newRoute === oldRoute) {
@@ -83,9 +86,19 @@ class Router extends Observable {
 						return newRoute.enter(routeInfo.kwArgs);
 					})
 					.then(function () {
+						self._routeInProgress = null;
 						self.set('currentRoute', newRoute);
 					});
+			})
+			.otherwise(function (error) {
+				self._routeInProgress = null;
+				if (error.name !== 'CancelError') {
+					throw error;
+				}
 			});
+
+		this._routeInProgress = promise;
+		return promise;
 	}
 
 	protected _handleRequest(request:Request):Promise<void> {
