@@ -15,7 +15,7 @@ var BindingError:{
 
 function Ctor(message:string, kwArgs:binding.IBindingArguments):void {
 	if (!message) {
-		message = 'Could not create Binding object for "{binding}" on {object}.';
+		message = 'Could not create Binding object for "{path}" on {object}.';
 	}
 
 	this.message = lang.replace(message, kwArgs);

@@ -76,11 +76,7 @@ class Binder implements binding.IBinder {
 	 */
 	bind<T>(kwArgs:binding.IBindArguments):binding.IBindingHandle {
 		var self = this;
-
-		if (!kwArgs.direction) {
-			kwArgs.direction = BindDirection.TWO_WAY;
-		}
-
+		var direction = kwArgs.direction || BindDirection.TWO_WAY;
 		var source:binding.IBinding<T>;
 		var target:binding.IBinding<T>;
 		var targetObserverHandle:IHandle;
@@ -104,7 +100,7 @@ class Binder implements binding.IBinder {
 		source.observe(setTargetValue);
 		setTargetValue({ value: source.get() });
 
-		if (kwArgs.direction === BindDirection.TWO_WAY) {
+		if (direction === BindDirection.TWO_WAY) {
 			targetObserverHandle = target.observe(setSourceValue);
 		}
 
@@ -129,7 +125,7 @@ class Binder implements binding.IBinder {
 					this['_target'] = target;
 				}
 
-				if (kwArgs.direction === BindDirection.TWO_WAY) {
+				if (direction === BindDirection.TWO_WAY) {
 					targetObserverHandle = target.observe(setSourceValue);
 				}
 
@@ -170,10 +166,6 @@ class Binder implements binding.IBinder {
 	 * @returns A new Binding object.
 	 */
 	createBinding<T>(object:Object, path:string, options:{ useScheduler?:boolean; } = {}):binding.IBinding<T> {
-		if (options.useScheduler === undefined) {
-			options.useScheduler = this._useScheduler;
-		}
-
 		var map:HashMap<binding.IBinding<any>> = this._bindingRegistry.get(object);
 		if (!map) {
 			map = {};
@@ -216,7 +208,7 @@ class Binder implements binding.IBinder {
 
 		return lang.delegate(binding, {
 			_localObservers: [],
-			destroy: function (destroyAll:boolean = false):void {
+			destroy: function ():void {
 				this.destroy = function ():void {};
 				var observers = this._observers;
 				var localObservers = this._localObservers;
@@ -224,10 +216,8 @@ class Binder implements binding.IBinder {
 					util.spliceMatch(observers, observer);
 				}
 				this._localObservers = null;
-				if (destroyAll) {
-					binding.destroy();
-					map[path] = null;
-				}
+				// NOTE: the binding is not destroyed as it may be in use by other callers (if multiple callers created
+				// a binding to the same object & property)
 				binding = map = null;
 			},
 			observe: function (observer:binding.IObserver<T>):IHandle {
