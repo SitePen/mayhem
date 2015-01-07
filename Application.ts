@@ -11,24 +11,26 @@ import Promise = require('./Promise');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
 
+var resolve:(moduleId:string) => string = (<any> require).toAbsMid || (<any> require).resolve;
+
 var defaultBindings:string[] = [
-	require.toAbsMid('./binding/bindings/CompositeBinding'),
-	require.toAbsMid('./binding/bindings/NestedBinding'),
-	require.toAbsMid('./binding/bindings/ObjectMethodBinding'),
-	require.toAbsMid('./binding/bindings/ObservableBinding'),
-	require.toAbsMid('./binding/bindings/StatefulBinding'),
-	require.toAbsMid('./binding/bindings/CollectionLengthBinding'),
-	require.toAbsMid('./binding/bindings/ArrayBinding'),
-	require.toAbsMid('./binding/bindings/DomInputBinding')
+	resolve('./binding/bindings/CompositeBinding'),
+	resolve('./binding/bindings/NestedBinding'),
+	resolve('./binding/bindings/ObjectMethodBinding'),
+	resolve('./binding/bindings/ObservableBinding'),
+	resolve('./binding/bindings/StatefulBinding'),
+	resolve('./binding/bindings/CollectionLengthBinding'),
+	resolve('./binding/bindings/ArrayBinding'),
+	resolve('./binding/bindings/DomInputBinding')
 ];
 
 if (has('es7-object-observe')) {
-	defaultBindings.push(require.toAbsMid('./binding/bindings/Es7Binding'));
+	defaultBindings.push(resolve('./binding/bindings/Es7Binding'));
 }
 else {
 	defaultBindings.push(
-		require.toAbsMid('./binding/bindings/Es5Binding'),
-		require.toAbsMid('./binding/bindings/ObjectTargetBinding')
+		resolve('./binding/bindings/Es5Binding'),
+		resolve('./binding/bindings/ObjectTargetBinding')
 	);
 }
 
@@ -105,14 +107,14 @@ class Application extends ObservableEvented {
 	static _defaultConfig = {
 		components: {
 			binder: {
-				constructor: require.toAbsMid('./binding/Binder'),
+				constructor: resolve('./binding/Binder'),
 				constructors: defaultBindings
 			},
 			errorHandler: {
-				constructor: require.toAbsMid('./ErrorHandler')
+				constructor: resolve('./ErrorHandler')
 			},
 			scheduler: {
-				constructor: require.toAbsMid('./Scheduler')
+				constructor: resolve('./Scheduler')
 			}
 		}
 	};
