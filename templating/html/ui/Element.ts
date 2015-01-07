@@ -4,7 +4,7 @@ import Container = require('../../../ui/dom/Container');
 import domConstruct = require('dojo/dom-construct');
 import has = require('../../../has');
 import lang = require('dojo/_base/lang');
-import ProxyBinding = require('../../../binding/ProxyBinding');
+import ProxyBinding = require('../binding/ProxyBinding');
 import ui = require('../../../ui/interfaces');
 import Widget = require('../../../ui/dom/Widget');
 

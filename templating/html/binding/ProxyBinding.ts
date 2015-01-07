@@ -1,6 +1,6 @@
-import binding = require('./interfaces');
-import BindDirection = require('./BindDirection');
-import Binding = require('./Binding');
+import binding = require('../../../binding/interfaces');
+import BindDirection = require('../../../binding/BindDirection');
+import Binding = require('../../../binding/Binding');
 import lang = require('dojo/_base/lang');
 
 class ProxyBinding<T> extends Binding<T> {
