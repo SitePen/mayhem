@@ -12,24 +12,22 @@ registerSuite({
 		'default message'() {
 			var error = new BindingError('', {
 				binder: null,
-				binding: 'testBinding',
 				object: 'testObject',
 				path: 'testPath'
 			});
 
-			assert.include(error.message, 'testBinding', 'Error message should include \'binding\' property value');
+			assert.include(error.message, 'testPath', 'Error message should include \'path\' property value');
 			assert.include(error.message, 'testObject', 'Error message should include \'object\' property value');
 		},
 
 		'custom message'() {
-			var error = new BindingError('Test binding error message: {binding}, {object}', {
+			var error = new BindingError('Test binding error message: {path}, {object}', {
 				binder: null,
-				binding: 'testBinding',
 				object: 'testObject',
 				path: 'testPath'
 			});
 
-			assert.strictEqual(error.message, 'Test binding error message: testBinding, testObject',
+			assert.strictEqual(error.message, 'Test binding error message: testPath, testObject',
 				'Error message should equal custom message with token replacement');
 		}
 	}

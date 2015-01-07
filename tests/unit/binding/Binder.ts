@@ -194,14 +194,6 @@ registerSuite({
 				// Calling 'notify' on the Binder should route through the relevant Binding instance's 'notify' method
 				binder.notify(obj, 'foo', {});
 				assert.isTrue(notifyCalled, 'binding\'s notify method should have been called');
-
-				// TODO: <any> casting: the IBinding interface does not define any params for destroy method;
-				// the object returned by Binder.createBinding has a destroy method that accepts a param
-				// TODO: should we test 'observe' on a destroyed binding? (current behavior = throw error)
-				(<any> binding).destroy(true);
-				notifyCalled = false;
-				binder.notify(obj, 'foo', {});
-				assert.isFalse(notifyCalled, 'notifications should not be called on a destroyed binding');
 			}
 			finally {
 				MockBinder.prototype.observe = originalObserve;
