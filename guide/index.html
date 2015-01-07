@@ -101,9 +101,8 @@
 							<a href="#routing">Routing</a>
 							<ul class="subsections">
 								<li data-id="what-is-routing"><a href="#what-is-routing">What is routing?</a></li>
-								<li data-id="defining-routes"><a href="#defining-routes">Defining routes</a></li>
-								<li data-id="custom-paths"><a href="#custom-paths">Creating custom paths</a></li>
-								<li data-id="pausing-routes"><a href="#pausing-routes">Pausing &amp; cancelling route changes</a></li>
+								<li data-id="defining-routes"><a href="#defining-routes">Defining routes &amp; URLs</a></li>
+								<li data-id="writing-routes"><a href="#writing-routes">Writing routes</a></li>
 							</ul>
 						</li>
 						<li>
@@ -289,11 +288,11 @@
 
 						<p>This will create a new skeleton Web app in the <code>src</code> directory (actually, a TodoMVC app). All that needs to be done now is to open the test application in a browser:</p>
 
-						<pre class="m1"><tt>http://localhost/path/to/src/index.html</tt></pre>
+						<pre class="m1"><kbd>http://localhost/path/to/src/index.html</kbd></pre>
 
 						<p>Navigating to this index page should display a fully functioning client-side TodoMVC application, ready for you to start hacking away!</p>
 
-						<aside class="tip"><p>The <span class="sc">Mayhem generator</span> does more than just scaffold a basic app: It automatically generate new models quickly and easily; allows you to generate routing configurations for apps that don’t have direct access to the filesystem to safely auto-discover the available views; and watches for and automatically recompiles changed TypeScript and Stylus files. Just run <tt>yo mayhem</tt> to get an overview of all the available commands.</p></aside>
+						<aside class="tip"><p>The <span class="sc">Mayhem generator</span> does more than just scaffold a basic app: It automatically generate new models quickly and easily; allows you to generate routing configurations for apps that don’t have direct access to the filesystem to safely auto-discover the available views; and watches for and automatically recompiles changed TypeScript and Stylus files. Just run <kbd>yo mayhem</kbd> to get an overview of all the available commands.</p></aside>
 
 						<p>TODO: Continue tutorialising the basic TodoMVC app; maybe add in user authentication or something.</p>
 					</article>
@@ -301,6 +300,8 @@
 					<article>
 						<div class="a" id="fundamentals"></div>
 						<h2 data-id="fundamentals">Fundamentals</h2>
+
+						<p>TODO: Describe core technologies like AMD, Promises, …</p>
 
 						<div class="a half" id="fundamentals-overview"></div>
 						<h3 data-id="fundamentals-overview">Overview</h3>
@@ -320,7 +321,7 @@
 							<li><strong>Routing</strong>: The <dfn>routing subsystem</dfn> is responsible for discovering, loading, and linking together data models and sub-views in response to navigation within an application.</li>
 							<li><strong>Security</strong>: The <dfn>security subsystem</dfn> is responsible for providing user authentication &amp; authorization, access control, and other security-oriented application functionality.</li>
 							<li><strong>Templating</strong>: The <dfn>templating subsystem</dfn> is responsible for creating views and linking data models to the views using easy-to-write declarative templates.</li>
-							<li><strong>Views</strong>: The <dfn>view subsystem</dfn> is responsible for handling all <abbr title="User Interface">UI</abbr> input and output.</li>
+							<li><strong>Views</strong>: The <dfn>view subsystem</dfn> is responsible for handling all <abbr title="User Interface">UI</abbr> input and output, and providing an abstraction layer over the platform’s own UI system.</li>
 						</ul>
 
 						<div class="a half" id="typescript"></div>
@@ -371,9 +372,9 @@
 
 						<ul>
 							<li>Constructors can always be extended in a backwards-compatible manner, since new properties can simply be added to the list of accepted properties without a signature change</li>
-							<li>Constructors can always be indirectly invoked using the <code>new</code> keyword, with <a href="https://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible" title="“Use of .apply() with 'new' operator. Is this possible?” on Stack Overflow">no additional overhead</a></li>
+							<li>Constructors can always be indirectly invoked using the <code>new</code> keyword, with <a href="https://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible" title="“Use of .apply() with 'new' operator. Is this possible?” on Stack Overflow">no additional overhead in pre-ES6 environments</a></li>
 							<li>All arguments are clear from the call itself and do not <a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-Event-initMouseEvent" title="The DOM 2 Event#initMouseEvent API, featuring 6 number and 6 boolean parameters">require looking at the constructor’s parameter list</a></li>
-							<li>No extra code is necessary for parameters that need to go through accessors/mutators, as the keyword arguments object is mass-assigned using <a href="TODO"><code>Observable#set</code></a></li>
+							<li>No extra code is necessary for parameters that need to go through accessors/mutators, as the keyword arguments object is mass-assigned at construction time</li>
 						</ul>
 
 						<h4>Default object properties</h4>
@@ -413,25 +414,13 @@
 
 						<h4>Module paths</h4>
 
-						<p>Mayhem assumes that a Mayhem application will use a default set of module ID paths. Each of them can be customised if needed.</p>
+						<p>Mayhem recommends the use of a standard set of paths for holding different object types:</p>
 
 						<ul>
-							<li><code><strong>app/models</strong></code>: This path holds all application data models. It can be customised via <a href="TODO"><code>Application#modelPath</code></a>.</li>
-							<li><code><strong>app/viewModels</strong></code>: This path holds all application view models. It can be customised via <a href="TODO"><code>Application#viewModelPath</code></a>.</li>
-							<li><code><strong>app/views</strong></code>: This path holds all application views and templates. It can be customised via <a href="TODO"><code>Application#viewPath</code></a> and <a href="TODO"><code>Application#templatePath</code></a>.</li>
-						</ul>
-
-						<p>The physical location of the <code>app</code> package on the filesystem can be modified by setting [TODO: Need some Dojo configuration stuff] <code>dojoConfig.packages = [ { name: 'app', location: 'path/to/app' } ];</code> in your application’s <code>index.html</code> file.
-
-						<h4>Routes</h4>
-
-						<p>The default router in Mayhem will automatically generate missing keys for a route based on the route ID of a route. These keys will be generated as follows: TODO these defaults suck and will change</p>
-
-						<ul>
-							<li><code><strong>path</strong></code>: The same as the route ID.</li>
-							<li><code><strong>model</strong></code>: The <code>Application#modelPath</code>, joined with the route ID, with the first letter of the last segment of the route ID capitalised. For example, given a route ID <code>transactions/account</code>, the model would become <code>app/models/transactions/Account</code>.</li>
-							<li><code><strong>viewModel</strong></code>: The <code>Application#viewModelPath</code>, joined with the route ID, with the first letter of the last segment of the route ID capitalised. For example, given a route ID <code>transactions/account</code>, the view-model would become <code>app/viewModels/transactions/Account</code>.</li>
-							<li><code><strong>view</strong></code>: The <code>Application#templatePath</code>, joined with the route ID, with the first letter of the last segment of the route ID capitalised. For example, given a route ID <code>transactions/account</code>, the view would become <code>mayhem/templating/html!transactions/Account.html</code>.</li>
+							<li><code><strong>app/models</strong></code>: This path holds all application data models.</li>
+							<li><code><strong>app/routes</strong></code>: This path holds all application routes.</li>
+							<li><code><strong>app/viewModels</strong></code>: This path holds all application view models.</li>
+							<li><code><strong>app/views</strong></code>: This path holds all application views and templates.</li>
 						</ul>
 
 						<h4>Code conventions</h4>
@@ -577,7 +566,7 @@ log(app.get('name'));</code></pre>
 
 						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside>
 
-						<p>Once the application object is ready for use, call <code>app.startup()</code> to start it:</p>
+						<p>Once the application object is ready for use, call <code>app.run()</code> to start it:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -586,10 +575,10 @@ var app = new Application({
 	name: 'Bob’s Burgers'
 });
 
-log(app.startup().then(function () {
+log(app.run().then(function () {
 	// started successfully
 }, function (error:Error) {
-	// an error occurred during startup
+	// an error occurred during start-up
 }));</code></pre>
 							<pre class="align-bottom"><code class="javascript">&lt;Promise></code></pre>
 						</div>
@@ -628,9 +617,9 @@ var app = new Application({
 
 log(app.get('components'));</code></pre>
 							<pre class="align-bottom"><code class="javascript">{
-	binding: {
+	binder: {
 		constructor: 'mayhem/binding/Binder',
-		bindings: [ /* … */ ]
+		constructors: [ /* … */ ]
 	},
 	/* … */
 	burgerStore: {
@@ -649,7 +638,7 @@ var app = new Application({
 	name: 'Bob’s Burgers',
 
 	components: {
-		binding: null,
+		binder: null,
 		/* … */
 		burgerStore: {
 			constructor: 'app/stores/RestStore',
@@ -660,7 +649,7 @@ var app = new Application({
 
 log(app.get('components'));</code></pre>
 							<pre class="align-bottom"><code class="javascript">{
-	binding: null,
+	binder: null,
 	/* … */
 	burgerStore: {
 		constructor: 'app/stores/RestStore',
@@ -734,9 +723,9 @@ log(app.get('components'));</code></pre>
 							<li>Freeze the <code>components</code> property so it can no longer be modified</li>
 							<li>Load modules for any unloaded application components whose <code>constructor</code> properties were strings</li>
 							<li>Instantiate all the application components, assigning them each to the corresponding key directly on the Application instance</li>
-							<li>Call the <code>startup</code> method on all application components that need to perform additional startup actions</li>
+							<li>Call the <code>run</code> method on all application components that need to perform additional start-up actions</li>
 							<li>Wait for all application components to finish starting</li>
-							<li>Resolve the returned <code>startup</code> promise</li>
+							<li>Resolve the returned <code>run</code> promise</li>
 						</ol>
 
 						<aside class="whatAreYouCrazy"><p>Replacing any of the components attached to the Application object once the application has been started is not supported.</p></aside>
@@ -754,8 +743,8 @@ class BurgerComponent extends Observable {
 		log(kwArgs);
 	}
 
-	startup():Promise&lt;void> {
-		// a component can do its own startup work here,
+	run():Promise&lt;void> {
+		// a component can do its own start-up work here,
 		// and optionally return a Promise for asynchronous
 		// work
 		return new Promise(function (resolve:Promise.IResolver&lt;void>) {
@@ -775,7 +764,7 @@ var app = new Application({
 	}
 });
 
-app.startup().then(function () {
+app.run().then(function () {
 	log(app.get('burgers'));
 });
 </code></pre>
@@ -828,8 +817,7 @@ var app = new Application({
 	}
 });
 
-// TODO: `run`
-app.startup();
+app.run();
 
 export = app;</code></pre>
 						</div>
@@ -1020,73 +1008,160 @@ handle.remove();</code></pre>
 						<div class="a half" id="what-is-routing"></div>
 						<h3 data-id="what-is-routing">What is routing?</h3>
 
-						<p>In many application frameworks, including Mayhem, <dfn>routing</dfn> is the primary mechanism by which an application manages its state. Usually, this state management is based on an addressable state mechanism (like a URL).</p>
+						<p>In many application frameworks, including Mayhem, <dfn>routing</dfn> is the primary mechanism by which an application manages its state. Usually, this state management is based on an addressable state mechanism (like a URL). (This is also sometimes called the front controller pattern.)</p>
 
-						<p>Routing is performed by the <dfn>router</dfn> application component. This component is responsible for a few things:</p>
+						<p>Routing in Mayhem is performed by the <dfn>router</dfn> application component. This component is responsible for a few things:</p>
 
 						<ul>
 							<li>Reacting to changes to the address of the application (for example, from a browser’s address bar);</li>
-							<li>Loading and unloading the appropriate views for the new state (for applications with a user interface); and</li>
-							<li>Loading and setting the correct view model for a given view state.</li>
+							<li>Loading and unloading the appropriate routes for the new state; and</li>
+							<li>Passing arguments parsed from the new address to the active route.</li>
 						</ul>
 
-						<p>The default <a href="TODO"><code>HashRouter</code></a> router for a Mayhem Web application breaks the task of routing down into individual <dfn>routes</dfn>, each of which allows a different part of an application to manage its own routing. For example, the a menu of burgers might be displayed in a list or a grid view; the route for the menu would instantiate and place the menu view, and also handle telling the view to change how it should be displayed in response to a route state change.</p>
+						<p>The built-in Mayhem application routers break routing cycles down into three phases:</p>
 
-						<p>Other parts of an application can interact directly with the router to change the current route, or to ask the router for the address of a particular route. For example, one Web page may want to </p>
+						<ol>
+							<li>Incoming requests are normalised into <a href="TODO"><code>mayhem/routing/Request</code></a> objects. This allows the framework to handle requests identically whether they come from HTML5 history, a <code>hashchange</code> event, a Node.js HTTP server, or any other address source that can be converted to a Request object.</li>
+							<li>The Request object is passed through a list of URL rules. URL rules provide the relationship between a URL and a route. In the case of an incoming request, a URL rule returns a route identifier and a map of arguments to be passed to the route object. The first URL rule that matches an incoming request wins.</li>
+							<li>A route matching the route ID from the URL rule is looked up a route map. If the route exists, it is loaded, and the route arguments are passed to the route. The route then performs actions in response to the routing change (loads models, loads views, etc.).</li>
+						</ol>
 
-						<p><a href="TODO"><code>HashRouter</code></a> is the default router that is used by <a href="TODO"><code>WebApplication</code></a>. It enables an application to respond to changes to the hash-part of a URL.</p>
+						<figure>
+							<img src="http://placekitten.com/600/320">
+							<figcaption>The default routing architecture</figcaption>
+						</figure>
 
 						<aside><p class="tip">Future versions of Mayhem will include additional ways to manage application state, including those that work well with applications that don’t have addressable states (undo/redo-based applications).</p></aside>
 
 						<div class="a half" id="defining-routes"></div>
 						<h3 data-id="defining-routes">Defining routes</h3>
 
-						<p>TODO: This is weird, these are <a href="http://www.yiiframework.com/doc/guide/1.1/en/basics.controller">MVC controllers</a>.</p>
+						<p>A routing configuration for a very basic Web application with a single route might look like this:</p>
 
-						<p>TODO: This information does not match reality right now; reality needs to change</p>
+						<pre><code class="typescript">import Application = require('mayhem/Application');
 
-						<p>Application routes are defined in a similar manner to <a href="TODO">binding constructors</a>, except each route is given its own unique identifier:</p>
-
-						<pre><code class="typescript">import WebApplication = require('mayhem/WebApplication');
-
-// TODO: Not final syntax
-var app = new WebApplication({
+var app = new Application({
 	name: 'Bob’s Burgers',
 	components: {
 		router: {
-			defaultRoute: [ 'index' ],
 			routes: {
-				index: {
-					constructor: 'app/pages/Index'
-				}
+				menu: 'app/routes/Menu'
 			}
 		}
 	}
 });</code></pre>
 
-						<p>Each Route object is an instance of <a href="TODO"><code>mayhem/routing/interfaces.IRoute</code></a>. Once a <a href="TODO"><code>Route</code></a> is defined, its <code>startup</code> (TODO: “run”) method will be called when the router is first started. Like all other startup methods, a Promise can be returned from this method to perform asynchronous actions, like preloading other modules, or making requests to a server.</p>
+						<p>When the menu route is activated—which happens when a user visits a specific URL, described below—the router will use the <code>app/routes/Menu</code> module as the constructor for the route.</p>
 
-						<aside class="tip"><p>Currently, all routes must be registered before the router is started.</p></aside>
+						<p>Routes are each given a unique string identifier so that the router can be asked to generate a URL to a specific route:</p>
 
-						<p>TODO: Routing lifecycle diagram</p>
+						<pre><code class="typescript">import Application = require('mayhem/Application');
 
-						<p>The default router in Mayhem is responsible for determining which routes should be activated according to their registered <a href="TODO"><code>path</code></a>. Once the router determines that a route should be activated, its <a href="TODO"><code>enter</code></a> method is called with information about the current state:</p>
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		router: {
+			routes: {
+				menu: 'app/routes/Menu'
+			}
+		}
+	}
+});
+
+app.run().then(function () {
+	app.get('router').createUrl('menu'); // '#!?routeId=menu'
+});
+
+</code></pre>
+
+						<p>As demonstrated in the previous example, with no URL rules at all and using the default <a href="TODO"><code>mayhem/routing/HashRouter</code></a>, this route would be accessible by navigating to <kbd>http://localhost/path/to/app/#!?routeId=menu</kbd>.</p>
+
+						<p>By adding a URL rule, the URL used for a given route can be made friendlier:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		router: {
+			routes: {
+				menu: 'app/routes/Menu'
+			},
+			rules: [
+				{
+					routeId: 'menu',
+					path: 'menu'
+				}
+			]
+		}
+	}
+});</code></pre>
+
+						<p>With this change, the menu route can now be accessed by navigating instead to <kbd>http://localhost/path/to/app/#!/menu</kbd>.</p>
+
+						<p>Separating URL rules from the routes themselves makes it possible to also create URL rules that map to routes generically, using parameterised regular expression strings:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		router: {
+			routes: {
+				'menu': 'app/routes/Menu'
+			},
+			rules: [
+				{
+					path: '&lt;routeId:\\w+>'
+				}
+			]
+		}
+	}
+});</code></pre>
+
+						<p>This generic rule will work the same as the explicitly defined menu rule, but requires no new URL rules when adding additional routes to an application.</p>
+
+						<p>It is also possible to define a default route state that will be used if a visitor navigates directly to the index page of an application:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		router: {
+			defaultRoute: { routeId: 'menu' },
+			routes: {
+				'menu': 'app/routes/Menu'
+			},
+			rules: [
+				{
+					path: '&lt;routeId:\\w+>'
+				}
+			]
+		}
+	}
+});</code></pre>
+
+						<div class="a half" id="writing-routes"></div>
+						<h3 data-id="writing-routes">Writing routes</h3>
+
+						<p>When a route is activated after previously being inactive, its <code>beforeEnter</code> and <code>enter</code> methods are called:</p>
 
 						<pre><code class="typescript">TODO</code></pre>
 
-						<p>Because routes are hierarchical, multiple routes may be active at the same time:</p>
+						<p>Similarly, when a route is deactivated after previously being active, its <code>beforeExit</code> and <code>exit</code> methods are called:</p>
 
 						<pre><code class="typescript">TODO</code></pre>
 
-						<p>When multiple routes will be activated, <code>enter</code> is called starting at the highest route and working down until it reaches the bottom of the route tree. Each route can temporarily pause the route change by returning a <code>Promise</code>:</p>
+						<p>The overall order of execution is <code>beforeExit</code>, <code>beforeEnter</code>, <code>exit</code>, <code>enter</code>. This pattern allows the exiting route an opportunity to pause or cancel the route change (for example, if the user needs to save changes) as well as allows the entering route to to pause or cancel the change (for example, if the user has no permission to access to the new route).</p>
+
+						<p>All the routing lifecycle methods have the ability to pause routing to perform asynchronous operations by returning a Promise:</p>
 
 						<pre><code class="typescript">TODO</code></pre>
 
-						<p>All promises must eventually resolve. TODO: What to do about in-progress routing changes that are aborted due to user navigation? Stopping navigation on enter because a user does not have proper access credentials?</p>
+						<p>Rejecting a returned promise, or throwing an error, will cause the application’s <code>errorHandler</code> to be invoked unless the thrown error is a <code>dojo/promise/CancelError</code>, in which case the routing action will simply be cancelled. Attempting to navigate to another route while an existing route transition is underway will cause the existing transition to be cancelled.</p>
 
-						<p>If a route is already active and the router detects a state change that will not deactivate an active route, the <a href="TODO"><code>stateChange</code></a> method will be called on the active route to notify it of a change. TODO: This is still a possibly weird event model. What if the route isn’t being exited but still wants to prevent the change?</p>
-
-						<p>For routes that are currently active that are going to become inactive as the result of a state change, the router will first call the <a href="TODO"><code>beforeExit</code></a> method on all routes that are going to become inactive, starting at the lowest route and working up until it reaches the top of the route tree. If any of these methods throw a <a href="TODO"><code>CancelError</code></a>, or return a <code>Promise</code> that rejects with a <code>CancelError</code>, the routing action will be aborted. This is useful for routes that need to perform an action (for example, to verify that a user wants to navigate away with unsaved changes, or to automatically persist their incomplete changes to storage) prior to exit. TODO: How about unpreventable navigations, like leaving the app? Once all <code>beforeExit</code> handlers have indicated that they are OK with a state change, <a href="TODO"><code>exit</code></a> methods will be called on each of the routes that is being exited, starting again from the lowest route and working up.</p>
+						<p>If a route is already active and the router detects a state change that will not deactivate the active route, the <a href="TODO"><code>update</code></a> method will be called on the active route to notify it of the changed route parameters.</p>
 
 						<aside class="tip"><p>Errors are used instead of passing an event with a <code>preventDefault</code> method, or using a boolean return value, in order to provide a standard way for routes to give additional details to the router or other parts of the application about why a routing change was prevented.</p></aside>
 					</article>
@@ -1156,7 +1231,7 @@ var app = new WebApplication({
 	}
 });
 
-app.startup();</code></pre>
+app.run();</code></pre>
 
 						<p>The <a href="#view-templating">view templating</a> section describes the templating language in greater detail.</p>
 
