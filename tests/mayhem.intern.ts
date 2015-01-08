@@ -16,6 +16,7 @@ var config:intern.Config = {
 			{ name: 'xstyle', location: 'third-party/xstyle' },
 			{ name: 'dgrid', location: 'third-party/dgrid' },
 			{ name: 'dstore', location: 'third-party/dstore' },
+			{ name: 'esprima', location: 'third-party/esprima', main: 'esprima' },
 			{ name: 'tests', location: 'tests' }
 		]
 	},

@@ -15,8 +15,8 @@ var resolve:(moduleId:string) => string = (<any> require).toAbsMid || (<any> req
 
 var defaultBindings:string[] = [
 	resolve('./binding/bindings/CompositeBinding'),
-	resolve('./binding/bindings/NestedBinding'),
 	resolve('./binding/bindings/ObjectMethodBinding'),
+	resolve('./binding/bindings/NestedBinding'),
 	resolve('./binding/bindings/ObservableBinding'),
 	resolve('./binding/bindings/StatefulBinding'),
 	resolve('./binding/bindings/CollectionLengthBinding'),
