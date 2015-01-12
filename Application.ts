@@ -12,23 +12,23 @@ import Scheduler = require('./Scheduler');
 import util = require('./util');
 
 var defaultBindings:string[] = [
-	require.toAbsMid('./binding/bindings/CompositeBinding'),
-	require.toAbsMid('./binding/bindings/NestedBinding'),
-	require.toAbsMid('./binding/bindings/ObjectMethodBinding'),
-	require.toAbsMid('./binding/bindings/ObservableBinding'),
-	require.toAbsMid('./binding/bindings/StatefulBinding'),
-	require.toAbsMid('./binding/bindings/CollectionLengthBinding'),
-	require.toAbsMid('./binding/bindings/ArrayBinding'),
-	require.toAbsMid('./binding/bindings/DomInputBinding')
+	util.toAbsMid('./binding/bindings/CompositeBinding'),
+	util.toAbsMid('./binding/bindings/NestedBinding'),
+	util.toAbsMid('./binding/bindings/ObjectMethodBinding'),
+	util.toAbsMid('./binding/bindings/ObservableBinding'),
+	util.toAbsMid('./binding/bindings/StatefulBinding'),
+	util.toAbsMid('./binding/bindings/CollectionLengthBinding'),
+	util.toAbsMid('./binding/bindings/ArrayBinding'),
+	util.toAbsMid('./binding/bindings/DomInputBinding')
 ];
 
 if (has('es7-object-observe')) {
-	defaultBindings.push(require.toAbsMid('./binding/bindings/Es7Binding'));
+	defaultBindings.push(util.toAbsMid('./binding/bindings/Es7Binding'));
 }
 else {
 	defaultBindings.push(
-		require.toAbsMid('./binding/bindings/Es5Binding'),
-		require.toAbsMid('./binding/bindings/ObjectTargetBinding')
+		util.toAbsMid('./binding/bindings/Es5Binding'),
+		util.toAbsMid('./binding/bindings/ObjectTargetBinding')
 	);
 }
 
@@ -105,14 +105,14 @@ class Application extends ObservableEvented {
 	static _defaultConfig = {
 		components: {
 			binder: {
-				constructor: require.toAbsMid('./binding/Binder'),
+				constructor: util.toAbsMid('./binding/Binder'),
 				constructors: defaultBindings
 			},
 			errorHandler: {
-				constructor: require.toAbsMid('./ErrorHandler')
+				constructor: util.toAbsMid('./ErrorHandler')
 			},
 			scheduler: {
-				constructor: require.toAbsMid('./Scheduler')
+				constructor: util.toAbsMid('./Scheduler')
 			}
 		}
 	};

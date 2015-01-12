@@ -88,7 +88,7 @@ class Router extends Observable {
 			});
 	}
 
-	protected _handleRequest(request:Request):Promise<void> {
+	protected _handleRequest(request:Request):Promise<any> {
 		var self = this;
 
 		// Wrapped in a promise for automatic rejection if _parseRequest throws
@@ -156,7 +156,7 @@ module Router {
 		beforeEnter?(kwArgs:{}):Promise<void>;
 		beforeExit?(kwArgs:{}):Promise<void>;
 		destroy():void;
-		enter(kwArgs:{}):Promise<void>;
+		enter(kwArgs:{}):Promise<any>;
 		exit?(kwArgs:{}):Promise<void>;
 		update?(kwArgs:{}):Promise<void>;
 	}

@@ -3,6 +3,7 @@
 !Gruntfile.js
 html-report/
 node_modules/
+!node-boot.js
 third-party/
 !tests/support/reporter.js
 tscommand-*.tmp.txt

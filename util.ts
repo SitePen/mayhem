@@ -400,3 +400,7 @@ export function unescapeXml(text:string):string {
 		}
 	});
 }
+
+export function toAbsMid(mid:string):string {
+	return require.toAbsMid ? require.toAbsMid.apply(require, arguments) : mid;
+}

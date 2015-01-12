@@ -15,7 +15,8 @@
 		"install": "bower install"
 	},
 	"dependencies": {
-		"bower": "1.x"
+		"bower": "1.x",
+		"jsgi-node": ">=0.3.3"
 	},
 	"devDependencies": {
 		"diff": "1.0.8",
