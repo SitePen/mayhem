@@ -78,8 +78,11 @@ class HashRouter extends Router {
 	}
 
 	run() {
-		this._listen();
-		this._handleHashChange(hash());
+		var self = this;
+		this.get('app').run().then(function () {
+			self._listen();
+			self._handleHashChange(hash());
+		});
 	}
 }
 
