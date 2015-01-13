@@ -70,6 +70,7 @@ class HashRouter extends Router {
 	}
 
 	_initialize() {
+		super._initialize();
 		this._prefix = '!';
 	}
 
