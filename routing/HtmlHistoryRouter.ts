@@ -112,7 +112,10 @@ class HtmlHistoryRouter extends Router {
 		);
 
 		this._retargetLinkCapture(ui.get('root'));
-		this._handleHistoryChange(history.state || location);
+
+		this.get('app').run().then(function () {
+			self._handleHistoryChange(history.state || location);
+		});
 	}
 }
 
