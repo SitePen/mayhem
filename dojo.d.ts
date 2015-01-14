@@ -195,6 +195,18 @@ declare module 'dojo/Deferred' {
 	export = Deferred;
 }
 
+declare module 'dojo/dom-class' {
+	var domClass:{
+		contains(node:Element, classStr:string):boolean;
+		add(node:Element, classStr:string):void;
+		remove(node:Element, classStr:string):void;
+		replace(node:Element, addClassStr:string, removeClassStr?:string):void;
+		toggle(node:Element, classStr:string, condition?:boolean):void;
+	}
+
+	export = domClass;
+}
+
 declare module 'dojo/dom-construct' {
 	var domConstruct:{
 		toDom(html:string):Node;
