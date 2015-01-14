@@ -264,6 +264,12 @@ class Model extends Observable implements data.IModel {
 			setCanceler:(canceler:Promise.ICanceler) => void
 		):void {
 			var validators:HashMap<Validator[]> = self.get('validators');
+
+			if (!validators) {
+				resolve(self.get('isValid'));
+				return;
+			}
+
 			var propertiesKeys = util.getObjectKeys(validators);
 			var i = 0;
 			var currentValidator:Promise<void>;
