@@ -66,7 +66,7 @@ class UrlRule extends Observable {
 	_hostSetter(value:string) {
 		this._host = value;
 		this._hostExpression = value
-			? this._parsePattern(value, '.', PathRegExp.Direction.RIGHT, this.get('isCaseSensitive'), this.get('defaults'))
+			? this._parsePattern(value, '.', PathRegExp.Direction.RIGHT, false, this.get('defaults'))
 			: null;
 	}
 
