@@ -566,5 +566,29 @@ registerSuite({
 		var ast = parser.parse('<widget is="Foo" class="{foo}" />');
 		var ast2 = parser.parse('<widget is="Foo" class={foo} />');
 		assert.deepEqual(ast, ast2, 'Quoted bindings that have no other text should be equivalent to unquoted bindings');
+	},
+
+	'Escaped binding': {
+		'in attribute'() {
+			var ast = parser.parse('<widget is="Foo" class="\\{foo}" />');
+			assert.deepEqual(ast, {
+				constructors: [ 'Foo' ],
+				root: {
+					constructor: 'Foo',
+					class: '{foo}'
+				}
+			});
+		},
+		'inline'() {
+			var ast = parser.parse('\\{}');
+			assert.deepEqual(ast, {
+				constructors: [ prefix('templating/html/ui/Element') ],
+				root: {
+					constructor: prefix('templating/html/ui/Element'),
+					content: [ '{}' ],
+					children: []
+				}
+			});
+		}
 	}
 });

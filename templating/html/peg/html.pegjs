@@ -291,7 +291,7 @@ Element 'HTML'
 					Array.prototype.push.apply(results, parsed.$bind);
 				}
 				else {
-					results.push(item);
+					results.push(parsed);
 				}
 			}
 			else {
