@@ -167,11 +167,16 @@ module Router {
 
 	export interface Route {
 		beforeEnter?(kwArgs:{}):Promise<void>;
+		beforeEnter?(kwArgs:{}):void;
 		beforeExit?(kwArgs:{}):Promise<void>;
+		beforeExit?(kwArgs:{}):void;
 		destroy():void;
 		enter(kwArgs:{}):Promise<void>;
+		enter(kwArgs:{}):void;
 		exit?(kwArgs:{}):Promise<void>;
+		exit?(kwArgs:{}):void;
 		update?(kwArgs:{}):Promise<void>;
+		update?(kwArgs:{}):void;
 	}
 
 	export interface Setters extends Observable.Setters {
