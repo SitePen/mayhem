@@ -16,13 +16,24 @@ function proxyAttachmentState(widget:DropDown, properties:string[], value:any) {
 	}
 }
 
+function contains(maybeParent:Widget, candidate:Widget):boolean {
+	do {
+		if (maybeParent === candidate) {
+			return true;
+		}
+	} while ((maybeParent = maybeParent.get('parent')));
+
+	return false;
+}
+
 class DropDown extends SingleNodeWidget implements IDropDown {
 	get:DropDown.Getters;
 	on:DropDown.Events;
 	set:DropDown.Setters;
 
 	protected _dropDownNode:HTMLDivElement;
-	protected _handle:IHandle;
+	protected _globalHandle:IHandle;
+	protected _labelHandle:IHandle;
 	protected _labelNode:HTMLDivElement;
 
 	constructor(kwArgs?:{}) {
@@ -85,7 +96,7 @@ class DropDown extends SingleNodeWidget implements IDropDown {
 		return this._label;
 	}
 	_labelSetter(value:Widget):void {
-		this._handle && this._handle.remove();
+		this._labelHandle && this._labelHandle.remove();
 
 		if (this._label) {
 			this._label.detach();
@@ -96,7 +107,7 @@ class DropDown extends SingleNodeWidget implements IDropDown {
 
 		if (value) {
 			var self = this;
-			this._handle = util.createCompositeHandle(
+			this._labelHandle = util.createCompositeHandle(
 				value.on('activate', lang.hitch(this, '_toggle')),
 				value.observe('parent', function (newParent:Widget) {
 					if (newParent !== self) {
@@ -110,15 +121,37 @@ class DropDown extends SingleNodeWidget implements IDropDown {
 		}
 	}
 
-	protected _toggle(event:ui.UiEvent):void {
-		console.log('activate');
-		this.set('isOpen', !this.get('isOpen'));
+	destroy():void {
+		super.destroy();
+		this._label && this._label.destroy();
+		this._dropDown && this._dropDown.destroy();
+		this._globalHandle.remove();
 	}
 
 	_render():void {
 		this._node = domConstruct.create('div', { className: 'DropDown' });
 		this._labelNode = domConstruct.create('div', { className: 'LabelContainer' }, this._node);
 		this._dropDownNode = domConstruct.create('div', { className: 'DropDownContainer' }, this._node);
+
+		var self = this;
+		// TODO: Should be able to get information on events that occur outside any widget but within the application
+		// root, but currently this is not happening because EventManager will abort if it cannot find a widget target
+		// instead of just emitting on the master UI
+		this._globalHandle = this.get('app').get('ui').on('pointerdown', function (event:ui.PointerEvent) {
+			if (self.get('isOpen') && !contains(self.get('dropDown'), <Widget> event.target)) {
+				self.set('isOpen', false);
+				event.stopPropagation();
+				event.preventDefault();
+			}
+		});
+	}
+
+	protected _toggle(event:ui.UiEvent):void {
+		if (!this.get('isOpen')) {
+			this.set('isOpen', true);
+			event.stopPropagation();
+			event.preventDefault();
+		}
 	}
 }
 

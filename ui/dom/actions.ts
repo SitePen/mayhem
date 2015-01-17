@@ -1,3 +1,4 @@
+import aspect = require('dojo/aspect');
 import Event = require('../../Event');
 import ui = require('../interfaces');
 import util = require('../../util');
@@ -40,9 +41,14 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 	return function (target:Widget, callback:(event?:ui.ClickEvent) => void):IHandle {
 		return util.createCompositeHandle(
 			target.on('pointerdown', function (event:ui.PointerEvent):void {
-				if (!event.isPrimary) {
+				if (!event.isPrimary || event.defaultPrevented) {
 					return;
 				}
+
+				aspect.after(event, 'preventDefault', function () {
+					lastTarget = lastX = lastY = null;
+					numClicks = 0;
+				});
 
 				// If a click occurred and then the DOM mutated to cause a different target to be rendered at the same
 				// coordinates in the window, we should treat it as a start from zero clicks
@@ -59,9 +65,11 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 				}
 			}),
 			target.on('pointerup', function (event:ui.PointerEvent):void {
-				if (!event.isPrimary) {
+				if (!event.isPrimary || event.defaultPrevented) {
 					return;
 				}
+
+				// TODO: Need to know when the event cycle has finished to know whether we should do a default action
 
 				if (
 					event.timestamp - lastTimestamp < CLICK_SPEED &&

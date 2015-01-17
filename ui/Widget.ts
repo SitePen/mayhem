@@ -5,6 +5,7 @@ import Container = require('./Container');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
+import WebApplication = require('../WebApplication');
 
 interface Widget extends ObservableEvented {
 	get:Widget.Getters;
@@ -18,8 +19,6 @@ module Widget {
 	export interface Events extends ObservableEvented.Events {
 		// TODO: Research iOS/Android for extra native events
 		// TODO: Fix core.IEvent to be the right event types for pointers
-		(type:'gotpointercapture', listener:core.IEventListener<core.IEvent>):IHandle;
-		(type:'lostpointercapture', listener:core.IEventListener<core.IEvent>):IHandle;
 		(type:'pointercancel', listener:core.IEventListener<core.IEvent>):IHandle;
 		(type:'pointerdown', listener:core.IEventListener<core.IEvent>):IHandle;
 		(type:'pointerenter', listener:core.IEventListener<core.IEvent>):IHandle;
@@ -27,12 +26,11 @@ module Widget {
 		(type:'pointermove', listener:core.IEventListener<core.IEvent>):IHandle;
 		(type:'pointerout', listener:core.IEventListener<core.IEvent>):IHandle;
 		(type:'pointerover', listener:core.IEventListener<core.IEvent>):IHandle;
-		(type:'pointerstart', listener:core.IEventListener<core.IEvent>):IHandle;
 		(type:'pointerup', listener:core.IEventListener<core.IEvent>):IHandle;
 	}
 
 	export interface Getters extends ObservableEvented.Getters {
-		(key:'app'):core.IApplication;
+		(key:'app'):WebApplication;
 		(key:'class'):string;
 		(key:'classList'):ClassList;
 		(key:'id'):string;
@@ -42,7 +40,7 @@ module Widget {
 	}
 
 	export interface Setters extends ObservableEvented.Setters {
-		(key:'app', value:core.IApplication):void;
+		(key:'app', value:WebApplication):void;
 		(key:'class', value:string):void;
 		(key:'id', value:string):void;
 		(key:'isAttached', value:boolean):void;

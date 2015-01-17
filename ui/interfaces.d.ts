@@ -26,7 +26,6 @@ export interface KeyboardEvent extends UiEvent {
 	char:string;
 	code:string;
 	key:string;
-	keyType:string;
 }
 
 export declare module PointerEvent {
