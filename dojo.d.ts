@@ -219,6 +219,7 @@ declare module 'dojo/dom-construct' {
 		create(tag:'ul', attrs:{}, refNode?:Node, position?:string):HTMLUListElement;
 		create(tag:string, attrs:{}, refNode?:Node, position?:string):Element;
 		destroy(node:Node):void;
+		empty(node:Element):void;
 	};
 	export = domConstruct;
 }
