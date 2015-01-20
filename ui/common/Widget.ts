@@ -106,11 +106,6 @@ class Widget extends ObservableEvented implements IWidget {
 			parent.emit(event);
 		}
 
-		// TODO: This is a bad hack. Master UI should pass itself so events can propagate to master UI more smartly.
-		if (!this.get('parent') && this.get('isAttached')) {
-			this.get('app').get('ui').emit(event);
-		}
-
 		return !event.defaultPrevented;
 	}
 

@@ -6,6 +6,7 @@ import Promise = require('../../Promise');
 import util = require('../../util');
 import View = require('./View');
 
+// TODO: Should not really extend any widget, as master UI is not placed anywhere else. Should just implement IEvented
 class Master extends MultiNodeWidget implements IMaster {
 	private _eventManager:EventManager;
 	private _root:Element;
@@ -38,7 +39,10 @@ class Master extends MultiNodeWidget implements IMaster {
 
 	private _initializeView():void {
 		this._root.appendChild(this._view.detach());
-		this._view.set('isAttached', true);
+		this._view.set({
+			isAttached: true,
+			parent: this
+		});
 	}
 
 	_rootGetter():Element {

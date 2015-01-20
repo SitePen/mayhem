@@ -105,7 +105,7 @@ class EventManager {
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
 
 		if (!target) {
-			return false;
+			target = this._master;
 		}
 
 		var shouldCancel:boolean = this._emitPointerEvent('pointerover', pointer, target);
@@ -125,7 +125,7 @@ class EventManager {
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY);
 
 		if (!target) {
-			return false;
+			target = this._master;
 		}
 
 		var shouldCancel:boolean = this._emitPointerEvent('pointercancel', pointer, target);
@@ -140,19 +140,15 @@ class EventManager {
 	}
 
 	private _handlePointerChange(pointer:PointerManager.Pointer):boolean {
-		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
-
-		if (!target) {
-			return false;
-		}
-
+		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY) || this._master;
 		var previousTarget:Widget;
 		var changes:PointerManager.Changes = pointer.lastChanged;
 		var shouldCancel:boolean = false;
 		var hasMoved:boolean = changes.clientX || changes.clientY;
 
 		if (hasMoved) {
-			previousTarget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY);
+			previousTarget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY)
+				|| this._master;
 		}
 
 		if (hasMoved && target !== previousTarget) {
@@ -192,11 +188,8 @@ class EventManager {
 	}
 
 	private _handlePointerRemove(pointer:PointerManager.Pointer):boolean {
-		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY);
-
-		if (!target) {
-			return false;
-		}
+		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY)
+			|| this._master;
 
 		var shouldCancel:boolean = false;
 

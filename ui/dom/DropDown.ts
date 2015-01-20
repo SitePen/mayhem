@@ -21,7 +21,7 @@ function contains(maybeParent:Widget, candidate:Widget):boolean {
 		if (maybeParent === candidate) {
 			return true;
 		}
-	} while ((maybeParent = maybeParent.get('parent')));
+	} while ((candidate = candidate.get('parent')));
 
 	return false;
 }
