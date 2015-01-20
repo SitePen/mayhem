@@ -6,7 +6,6 @@ import ContainerMixin = require('../common/Container');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
 import has = require('../../has');
 import OnDemandList = require('dgrid/OnDemandList');
-import Proxy = require('../../data/Proxy');
 import QueryResults = require('dojo/store/util/QueryResults');
 import SingleNodeWidget = require('./SingleNodeWidget');
 import util = require('../../util');
@@ -34,7 +33,6 @@ var oidKey:string = '__ListViewOid' + String(Math.random()).slice(2);
  */
 class IteratorList<T> extends OnDemandList {
 	private _app:core.IApplication;
-	private _as:string;
 	private _itemConstructor:ListView.IItemConstructor<T>;
 	private _isAttached:boolean;
 	private _parent:ListView<T>;
@@ -49,16 +47,11 @@ class IteratorList<T> extends OnDemandList {
 		this._setApp(kwArgs['app']);
 		this._setItemConstructor(kwArgs['itemConstructor']);
 		// they also do not use underscored property names
-		this._setAs(kwArgs['as']);
 		this._setParent(kwArgs['parent']);
 	}
 
 	_setApp(value:core.IApplication):void {
 		this._app = value;
-	}
-
-	_setAs(value:string):void {
-		this._as = value;
 	}
 
 	_setItemConstructor(value:ListView.IItemConstructor<T>):void {
@@ -88,18 +81,9 @@ class IteratorList<T> extends OnDemandList {
 	renderRow(model:Object, options?:Object):HTMLElement {
 		var Ctor:ListView.IItemConstructor<T> = this._itemConstructor;
 
-		var as = this._as || 'item';
-
 		var widget:SingleNodeWidget = new Ctor({
 			app: this._app,
-			model: new Proxy((function ():HashMap<any> {
-				var kwArgs:HashMap<any> = {
-					app: this._app,
-					target: this._parent.get('model')
-				};
-				kwArgs[as] = model;
-				return kwArgs;
-			}).call(this))
+			model: model
 		});
 
 		var rowNode:HTMLElement = <HTMLElement> widget.detach();
@@ -144,12 +128,6 @@ class IteratorList<T> extends OnDemandList {
 }
 
 class ListView<T> extends SingleNodeWidget {
-	/**
-	 * @get
-	 * @set
-	 */
-	private _as:string;
-
 	/**
 	 * @get
 	 * @set
@@ -215,7 +193,6 @@ class ListView<T> extends SingleNodeWidget {
 
 	_render():void {
 		this._widget = new IteratorList<T>({
-			as: this._as,
 			app: this._app,
 			itemConstructor: this._itemConstructor,
 			parent: this
