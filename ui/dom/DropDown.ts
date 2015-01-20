@@ -134,9 +134,6 @@ class DropDown extends SingleNodeWidget implements IDropDown {
 		this._dropDownNode = domConstruct.create('div', { className: 'DropDownContainer' }, this._node);
 
 		var self = this;
-		// TODO: Should be able to get information on events that occur outside any widget but within the application
-		// root, but currently this is not happening because EventManager will abort if it cannot find a widget target
-		// instead of just emitting on the master UI
 		this._globalHandle = this.get('app').get('ui').on('pointerdown', function (event:ui.PointerEvent) {
 			if (self.get('isOpen') && !contains(self.get('dropDown'), <Widget> event.target)) {
 				self.set('isOpen', false);
