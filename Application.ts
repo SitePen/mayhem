@@ -20,6 +20,7 @@ var defaultBindings:string[] = [
 	resolve('./binding/bindings/ObservableBinding'),
 	resolve('./binding/bindings/StatefulBinding'),
 	resolve('./binding/bindings/CollectionLengthBinding'),
+	resolve('./binding/bindings/CollectionBinding'),
 	resolve('./binding/bindings/ArrayBinding'),
 	resolve('./binding/bindings/DomInputBinding')
 ];

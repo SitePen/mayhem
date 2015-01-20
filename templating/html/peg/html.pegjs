@@ -368,6 +368,8 @@ NonHtmlTags
 		/ WidgetTagClose
 		/ AliasedWidgetTagOpen
 		/ AliasedWidgetTagClose
+		/ PropertyTagOpen
+		/ PropertyTagClose
 
 TagName
 	= firstChar:[a-zA-Z] restChars:[a-zA-Z0-9-]* {
@@ -613,8 +615,8 @@ PendingRejectedTags
 // widgets
 
 Widget '<widget></widget>'
-	= kwArgs:WidgetTagOpen children:(
-		'/>' { return []; } / '>' children:Any* WidgetTagClose { return children; }
+	= kwArgs:WidgetTagOpen S* children:(
+		'/>' { return []; } / '>' children:Any* S* WidgetTagClose { return children; }
 	) {
 		var widget = {};
 
@@ -630,6 +632,15 @@ Widget '<widget></widget>'
 		if (typeof widget.constructor !== 'string') {
 			throwError('Widget constructor must be a string');
 		}
+
+		children = children.filter(function (value) {
+			if (value && value.key && value.value) {
+				widget[value.key] = value.value;
+				return false;
+			}
+
+			return true;
+		});
 
 		if (children.length) {
 			widget.children = children;
@@ -657,7 +668,7 @@ AliasedWidget '<tag></tag>'
 		kwArgs:AliasedWidgetTagOpen '/>' {
 			return { kwArgs: kwArgs, children: [] };
 		}
-		/ kwArgs:AliasedWidgetTagOpen '>' children:Any* end:AliasedWidgetTagClose &{ return end === kwArgs.tagName; } {
+		/ kwArgs:AliasedWidgetTagOpen '>' S* children:Any* S* end:AliasedWidgetTagClose &{ return end === kwArgs.tagName; } {
 			return { kwArgs: kwArgs, children: children };
 		}
 	) {
@@ -674,6 +685,15 @@ AliasedWidget '<tag></tag>'
 			}
 			widget[key] = kwArgs[key];
 		}
+
+		children = children.filter(function (value) {
+			if (value && value.key && value.value) {
+				widget[value.key] = value.value;
+				return false;
+			}
+
+			return true;
+		});
 
 		if (children.length) {
 			widget.children = children;
@@ -692,6 +712,31 @@ AliasedWidgetTagClose '</tag>'
 	= '</' tagName:TagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } '>' {
 		return tagName;
 	}
+
+// properties
+
+Property '<property></property>'
+	= kwArgs:PropertyTagOpen widget:(
+		'/>' { return null; } / '>' widget:Any? PropertyTagClose { return widget; }
+	) {
+		var value = kwArgs.constructor === true ? { $ctor: widget } : widget;
+
+		return { key: kwArgs.name, value: value };
+	}
+
+PropertyTagOpen '<property>'
+	= '<property'i kwArgs:AttributeMap &('/'? '>') {
+		validate(kwArgs, {
+			type: '<property>',
+			required: [ 'name' ],
+			optional: [ 'constructor' ]
+		});
+
+		return kwArgs;
+	}
+
+PropertyTagClose '</property>'
+	= '</property>'i
 
 // all others
 
@@ -882,7 +927,8 @@ Any
 	/ Element
 
 AnyNonElement
-	= If
+	= Property
+	/ If
 	/ For
 	/ When
 	/ InvalidAlias

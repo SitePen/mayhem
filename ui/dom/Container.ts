@@ -28,8 +28,10 @@ class Container extends MultiNodeWidget implements IContainer {
 	add(child:Widget, position?:AddPosition):IHandle;
 	add(child:Widget, position?:number):IHandle;
 	add(child:Widget, position:any = AddPosition.LAST):IHandle {
+		var children = this._children;
+
 		if (position === AddPosition.LAST) {
-			position = this._children.length;
+			position = children.length;
 		}
 
 		var nextWidget:Widget = this._children[position];
@@ -37,6 +39,7 @@ class Container extends MultiNodeWidget implements IContainer {
 
 		nextNode.parentNode.insertBefore(child.detach(), nextNode);
 		ContainerMixin.prototype.add.call(this, child);
+		children.splice(position, 0, child);
 
 		var self = this;
 		return util.createHandle(function () {

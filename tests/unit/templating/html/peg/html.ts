@@ -590,5 +590,49 @@ registerSuite({
 				}
 			});
 		}
+	},
+
+	'Widget properties'() {
+		var ast = parser.parse('<widget is="Foo" class="foo"><property name="bar">bar</property><property name="baz" constructor>baz</property></widget>');
+		assert.deepEqual(ast, {
+			constructors: [ 'Foo', prefix('templating/html/ui/Element') ],
+			root: {
+				constructor: 'Foo',
+				class: 'foo',
+				bar: {
+					constructor: prefix('templating/html/ui/Element'),
+					children: [],
+					content: [ 'bar' ]
+				},
+				baz: {
+					$ctor: {
+						constructor: prefix('templating/html/ui/Element'),
+						children: [],
+						content: [ 'baz' ]
+					}
+				}
+			}
+		});
+
+		ast = parser.parse('<alias tag="foo" to="Foo"><foo class="foo"><property name="bar">bar</property><property name="baz" constructor>baz</property></foo>');
+		assert.deepEqual(ast, {
+			constructors: [ 'Foo', prefix('templating/html/ui/Element') ],
+			root: {
+				constructor: 'Foo',
+				class: 'foo',
+				bar: {
+					constructor: prefix('templating/html/ui/Element'),
+					children: [],
+					content: [ 'bar' ]
+				},
+				baz: {
+					$ctor: {
+						constructor: prefix('templating/html/ui/Element'),
+						children: [],
+						content: [ 'baz' ]
+					}
+				}
+			}
+		});
 	}
 });

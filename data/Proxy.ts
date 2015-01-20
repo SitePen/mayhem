@@ -16,7 +16,7 @@ class Proxy<T> extends Observable {
 		var Store:typeof MemoryStore = <any> declare([ MemoryStore, TrackableStore ], {
 			Model: null
 		});
-		var wrapperCollection:MemoryStore<Proxy<data.IModel>> = new Store<Proxy<data.IModel>>().track();
+		var wrapperCollection:MemoryStore<Proxy<data.IModel>> = new Store<Proxy<data.IModel>>();
 		var Ctor = this;
 
 		collection = collection.track();

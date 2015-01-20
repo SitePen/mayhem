@@ -23,6 +23,6 @@
     "messageformat": "SlexAxton/messageformat.js#f11b9c8a257928b8d6dd49e55a2a2b63902af1af",
     "put-selector": "0.3.5",
     "xstyle": "0.2.1",
-    "dstore": "SitePen/dstore#1.0.0"
+    "dstore": "SitePen/dstore#9afdf9e3047f74f5b3882c0b7e6d06e305c3e2c0"
   }
 }
