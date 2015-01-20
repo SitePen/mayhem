@@ -134,7 +134,6 @@ class Iterator<T> extends Container {
 					}).call(this))
 				});
 
-				console.log(widget, change.index, index, change.index + index);
 				this.add(<Widget> widget, change.index + index);
 			});
 		}
