@@ -472,7 +472,7 @@ IfTagOpen '<if>'
 	}
 
 IfTagClose '</if>'
-	= '</if>'i
+	= '</if' S* '>'i
 
 ElseIfTag '<elseif>'
 	= '<elseif'i kwArgs:AttributeMap '>' {
@@ -523,7 +523,7 @@ ForTagOpen '<for>'
 	}
 
 ForTagClose '</for>'
-	= '</for>'i
+	= '</for' S* '>'i
 
 // promises
 
@@ -566,7 +566,7 @@ WhenTagOpen '<when>'
 	}
 
 WhenTagClose '</when>'
-	= '</when>'i
+	= '</when' S* '>'i
 
 PendingTag '<pending>'
 	= '<pending'i kwArgs:AttributeMap '>' body:Any? {
@@ -661,7 +661,7 @@ WidgetTagOpen '<widget>'
 	}
 
 WidgetTagClose '</widget>'
-	= '</widget>'i
+	= '</widget' S* '>'i
 
 AliasedWidget '<tag></tag>'
 	= value:(
@@ -709,7 +709,7 @@ AliasedWidgetTagOpen '<tag>'
 	}
 
 AliasedWidgetTagClose '</tag>'
-	= '</' tagName:TagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } '>' {
+	= '</' tagName:TagName &{ return hasOwnProperty.call(tree.tagMap, tagName); } S* '>' {
 		return tagName;
 	}
 
@@ -736,7 +736,7 @@ PropertyTagOpen '<property>'
 	}
 
 PropertyTagClose '</property>'
-	= '</property>'i
+	= '</property' S* '>'i
 
 // all others
 
