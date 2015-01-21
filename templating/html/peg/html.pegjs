@@ -208,7 +208,7 @@
 		 * Walks the widget tree, collecting constructor module IDs for the given node and its children.
 		 */
 		_collectConstructors: function (node) {
-			if (hasOwnProperty.call(node, 'constructor')) {
+			if (node && hasOwnProperty.call(node, 'constructor')) {
 				this._constructors[node.constructor] = true;
 			}
 
@@ -634,7 +634,7 @@ Widget '<widget></widget>'
 		}
 
 		children = children.filter(function (value) {
-			if (value && value.key && value.value) {
+			if (value && 'key' in value && 'value' in value) {
 				widget[value.key] = value.value;
 				return false;
 			}
@@ -687,7 +687,7 @@ AliasedWidget '<tag></tag>'
 		}
 
 		children = children.filter(function (value) {
-			if (value && value.key && value.value) {
+			if (value && 'key' in value && 'value' in value) {
 				widget[value.key] = value.value;
 				return false;
 			}

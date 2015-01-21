@@ -634,5 +634,54 @@ registerSuite({
 				}
 			}
 		});
+	},
+
+	'Whitespace in close tags'() {
+		var ast = parser.parse('<alias tag="foo" to="Foo" ><widget is="Foo"></widget ><foo><property name="foo"></property ></foo ><if condition="foo"></if ><when value="foo">foo</when >');
+
+		assert.deepEqual(ast, {
+			constructors: [
+				'templating/html/ui/Element',
+				'Foo',
+				'templating/html/ui/Conditional',
+				'templating/html/ui/Promise'
+			],
+			root: {
+				constructor: 'templating/html/ui/Element',
+				children: [
+					{
+						constructor: 'Foo'
+					},
+					{
+						constructor: 'Foo',
+						foo: null
+					},
+					{
+						constructor: 'templating/html/ui/Conditional',
+						conditions: [
+							{
+								condition: 'foo',
+								consequent: null
+							}
+						]
+					},
+					{
+						value: 'foo',
+						constructor: 'templating/html/ui/Promise',
+						fulfilled: {
+							constructor: 'templating/html/ui/Element',
+							children: [],
+							content: [ 'foo' ]
+						}
+					}
+				],
+				content: [
+					{ $child: 0 },
+					{ $child: 1 },
+					{ $child: 2 },
+					{ $child: 3 }
+				]
+			}
+		});
 	}
 });
