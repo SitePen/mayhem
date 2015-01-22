@@ -88,7 +88,7 @@ class DropDown extends SingleNodeWidget implements IDropDown {
 	}
 	_isOpenSetter(value:boolean) {
 		this._isOpen = value;
-		domClass.toggle(this._dropDownNode, 'open', value);
+		domClass.toggle(this._node, 'open', value);
 	}
 
 	protected _label:Widget;
