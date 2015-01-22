@@ -219,7 +219,7 @@ class Model extends Observable implements data.IModel {
 		// and all keys are allowed
 		if (scenarios) {
 			var scenario = scenarios[value];
-			var keys = this._currentScenarioKeys = {};
+			var keys:HashMap<boolean> = this._currentScenarioKeys = {};
 			for (var i = 0, j = scenario.length; i < j; ++i) {
 				keys[scenario[i]] = true;
 			}
