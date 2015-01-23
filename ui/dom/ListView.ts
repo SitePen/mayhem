@@ -34,14 +34,11 @@ var oidKey:string = '__ListViewOid' + String(Math.random()).slice(2);
 class IteratorList<T> extends OnDemandList {
 	private _app:core.IApplication;
 	private _itemConstructor:ListView.IItemConstructor<T>;
-	private _isAttached:boolean;
 	private _parent:ListView<T>;
 	private _rowIdToObject:{ [id:string]:{}; };
 
 	constructor(kwArgs?:HashMap<any>) {
 		super(kwArgs);
-
-		this._isAttached = false;
 
 		// dgrid kwArgs don't call setters
 		this._setApp(kwArgs['app']);
@@ -68,7 +65,10 @@ class IteratorList<T> extends OnDemandList {
 			var rowElement:any = document.getElementById(id);
 			rowElement && rowElement[oidKey].set('isAttached', value);
 		}
-		this._isAttached = value;
+
+		if (value) {
+			this._started ? this.resize() : this.startup();
+		}
 	}
 
 	insertRow():HTMLElement {
@@ -177,12 +177,12 @@ class ListView<T> extends SingleNodeWidget {
 		return this._isAttached;
 	}
 	_isAttachedSetter(value:boolean):void {
+		if (this._isAttached === value) {
+			return;
+		}
+
 		this._widget.set('isAttached', value);
 		this._isAttached = value;
-
-		if (value) {
-			this._widget._started ? this._widget.resize() : this._widget.startup();
-		}
 	}
 
 	// TODO: Implement necessary container interfaces
