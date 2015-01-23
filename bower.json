@@ -17,7 +17,7 @@
     "tests"
   ],
   "dependencies": {
-    "dgrid": "0.3.14",
+    "dgrid": "SitePen/dgrid#e5505e5c330b64e9941b4fa6c2f595724e7bd813",
     "dijit": "1.10.2",
     "dojo": "1.10.2",
     "messageformat": "SlexAxton/messageformat.js#f11b9c8a257928b8d6dd49e55a2a2b63902af1af",
