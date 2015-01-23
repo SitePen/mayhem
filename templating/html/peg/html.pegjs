@@ -167,7 +167,7 @@
 
 			// Convert foo-bar-baz to onFooBarBaz
 			// TODO: is this the correct event name to reference it by?
-			var event = ('on-' + newEvent.event).toLowerCase().replace(/-(.)/, function () {
+			var event = ('on-' + newEvent.event).toLowerCase().replace(/-(.)/g, function () {
 				return arguments[1].toUpperCase();
 			});
 			var oldEvent = map[event];
@@ -797,7 +797,7 @@ Attribute
 
 AttributeName
 	= nameChars:AttributeNameChars {
-		return nameChars.join('').toLowerCase().replace(/-(.)/, function () {
+		return nameChars.join('').toLowerCase().replace(/-(.)/g, function () {
 			return arguments[1].toUpperCase();
 		});
 	}

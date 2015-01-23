@@ -85,14 +85,15 @@ registerSuite({
 	'AttributeMap'() {
 		var ast:templating.IParseTree;
 
-		ast = parser.parse('<widget is="Widget" is-a="\'a\'" is-2="2" is-boolean />');
+		ast = parser.parse('<widget is="Widget" is-a="\'a\'" is-2="2" is-boolean has-many-words />');
 		assert.deepEqual(ast, {
 			constructors: [ 'Widget' ],
 			root: {
 				constructor: 'Widget',
 				isA: '\'a\'',
 				is2: '2',
-				isBoolean: true
+				isBoolean: true,
+				hasManyWords: true
 			}
 		});
 
