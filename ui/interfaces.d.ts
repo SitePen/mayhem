@@ -7,6 +7,7 @@ export interface ClickEvent extends PointerEvent {
 }
 
 export interface PointerEvent extends UiEvent {
+	button:number;
 	buttons:number;
 	clientX:number;
 	clientY:number;

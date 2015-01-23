@@ -78,6 +78,7 @@ class EventManager {
 
 		var event:ui.PointerEvent = <any> new Event({
 			bubbles: BUBBLES[type],
+			button: pointer.lastState.buttons ^ pointer.buttons,
 			buttons: pointer.buttons,
 			cancelable: CANCELABLE[type],
 			clientX: pointer.clientX,
