@@ -24,6 +24,8 @@ class DijitWidget extends SingleNodeWidget {
 		}
 	};
 
+	protected _bindingHandles:IHandle[];
+
 	/**
 	 * @get
 	 * @set
@@ -59,11 +61,17 @@ class DijitWidget extends SingleNodeWidget {
 		this._isFocused = value;
 	}
 
-	/**
-	 * @protected
-	 */
-	_render():void {
-		var widget:_WidgetBase = new (<typeof DijitWidget> this.constructor).Ctor();
+	_initialize():void {
+		super._initialize();
+		this._bindingHandles = [];
+		this._isDisabled = false;
+		this._isFocused = false;
+	}
+
+	protected _bindWidget():void {
+		var widget = this._widget;
+
+		this._clearInternalBindings();
 
 		var dijitName:string;
 		var mayhemName:string;
@@ -72,7 +80,7 @@ class DijitWidget extends SingleNodeWidget {
 			dijitName = setupMap.properties[mayhemName];
 			// Binding must be from the Mayhem object to the widget in order to set the correct default values from
 			// the Mayhem widget, not from the Dijit widget
-			this._eventListeners.push(this._app.get('binder').bind({
+			this._bindingHandles.push(this._app.get('binder').bind({
 				source: this,
 				sourcePath: mayhemName,
 				target: widget,
@@ -83,17 +91,33 @@ class DijitWidget extends SingleNodeWidget {
 
 		var eventName:string;
 		for (eventName in setupMap.events) {
-			widget.on(eventName, lang.hitch(this, function (eventName:string, ...args:any[]):void {
+			this._bindingHandles.push(widget.on(eventName, lang.hitch(this, function (eventName:string, ...args:any[]):void {
 				setupMap.events[eventName].apply(this, args);
-			}, eventName));
+			}, eventName)));
 		}
+	}
 
+	protected _clearInternalBindings():void {
+		var oldHandle:IHandle;
+		while ((oldHandle = this._bindingHandles.pop())) {
+			oldHandle.remove();
+		}
+	}
+
+	/**
+	 * @protected
+	 */
+	_render():void {
+		var widget:_WidgetBase = new (<typeof DijitWidget> this.constructor).Ctor();
 		this._widget = widget;
 		this._node = widget.domNode;
+		this._bindWidget();
 	}
 
 	destroy():void {
 		super.destroy();
+
+		this._clearInternalBindings();
 
 		var widget:{ _setStateClass?:Function; destroyRecursive:() => void; } = this._widget;
 
@@ -108,8 +132,6 @@ class DijitWidget extends SingleNodeWidget {
 		this._widget = this._node = null;
 	}
 }
-
-DijitWidget.prototype._isDisabled = false;
 
 module DijitWidget {
 	export interface Events extends SingleNodeWidget.Events {}

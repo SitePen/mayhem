@@ -13,11 +13,15 @@ module Text {
 	export interface Events extends Widget.Events {}
 
 	export interface Getters extends Widget.Getters {
+		(key:'autoCommit'):boolean;
+		(key:'isMultiLine'):boolean;
 		(key:'placeholder'):string;
 		(key:'value'):string;
 	}
 
 	export interface Setters extends Widget.Setters {
+		(key:'autoCommit', value:boolean):void;
+		(key:'isMultiLine', value:boolean):void;
 		(key:'placeholder', value:string):void;
 		(key:'value', value:string):void;
 	}
