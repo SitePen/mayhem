@@ -2,9 +2,6 @@
   "name": "mayhem",
   "version": "0.9.0",
   "homepage": "https://github.com/SitePen/mayhem",
-  "authors": [
-    "Bryan Forbes <bryan@reigndropsfall.net>"
-  ],
   "moduleType": [
     "amd"
   ],
@@ -17,12 +14,12 @@
     "tests"
   ],
   "dependencies": {
-    "dgrid": "SitePen/dgrid#e5505e5c330b64e9941b4fa6c2f595724e7bd813",
+    "dgrid": "0.3.17",
     "dijit": "1.10.2",
     "dojo": "1.10.2",
     "messageformat": "SlexAxton/messageformat.js#f11b9c8a257928b8d6dd49e55a2a2b63902af1af",
     "put-selector": "0.3.5",
     "xstyle": "0.2.1",
-    "dstore": "SitePen/dstore#9afdf9e3047f74f5b3882c0b7e6d06e305c3e2c0"
+    "dstore": "1.0.1"
   }
 }
