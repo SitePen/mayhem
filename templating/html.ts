@@ -5,7 +5,6 @@
  */
 
 import arrayUtil = require('dojo/_base/array');
-import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import Container = require('../ui/dom/Container');
 import lang = require('dojo/_base/lang');
@@ -30,17 +29,17 @@ export interface BindableWidget extends Widget {
 	/**
 	 * @protected
 	 */
-	_bindingHandles:{ [key:string]:binding.IBindingHandle; };
+	__bindingHandles:{ [key:string]:binding.IBindingHandle; };
 
 	/**
 	 * @private
 	 */
-	_modelHandle:IHandle;
+	__modelHandle:IHandle;
 
 	/**
 	 * @private
 	 */
-	_parentModelHandle:IHandle;
+	__parentModelHandle:IHandle;
 
 	/**
 	 * @protected
@@ -83,15 +82,15 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	Ctor.prototype._initialize = function ():void {
 		BaseCtor.prototype._initialize.call(this);
 		// Element subclass extends binding handles as an array instead of an object
-		this._bindingHandles = this._bindingHandles || {};
+		this.__bindingHandles = this.__bindingHandles || {};
 
 		var self = this;
-		// TODO: _modelHandle should not be necessary unless having the observer intact during destruction causes
+		// TODO: __modelHandle should not be necessary unless having the observer intact during destruction causes
 		// problems; test!
-		this._modelHandle = this.observe('model', function (value:Object):void {
+		this.__modelHandle = this.observe('model', function (value:Object):void {
 			value = value || {};
 
-			var bindingHandles:{ [key:string]:binding.IBindingHandle; } = self._bindingHandles;
+			var bindingHandles:{ [key:string]:binding.IBindingHandle; } = self.__bindingHandles;
 			for (var key in bindingHandles) {
 				bindingHandles[key] && bindingHandles[key].setSource(value);
 			}
@@ -99,13 +98,13 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	};
 
 	Ctor.prototype.destroy = function ():void {
-		for (var key in this._bindingHandles) {
-			this._bindingHandles[key].remove();
+		for (var key in this.__bindingHandles) {
+			this.__bindingHandles[key].remove();
 		}
 
-		this._modelHandle.remove();
-		this._parentModelHandle && this._parentModelHandle.remove();
-		this._modelHandle = this._parentModelHandle = this._bindingHandles = this._model = null;
+		this.__modelHandle.remove();
+		this.__parentModelHandle && this.__parentModelHandle.remove();
+		this.__modelHandle = this.__parentModelHandle = this.__bindingHandles = this._model = null;
 		BaseCtor.prototype.destroy.call(this);
 	};
 
@@ -120,14 +119,14 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 	};
 
 	Ctor.prototype._modelSetter = function (value:Object):void {
-		this._parentModelHandle && this._parentModelHandle.remove();
-		this._parentModelHandle = null;
+		this.__parentModelHandle && this.__parentModelHandle.remove();
+		this.__parentModelHandle = null;
 		this._model = value;
 	};
 
 	Ctor.prototype._parentSetter = function (value:Container):void {
-		this._parentModelHandle && this._parentModelHandle.remove();
-		this._parentModelHandle = null;
+		this.__parentModelHandle && this.__parentModelHandle.remove();
+		this.__parentModelHandle = null;
 
 		var oldModel:Object = this._parent && this._parent.get('model');
 		this._parent = value;
@@ -136,7 +135,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			this._notify('model', value && value.get('model'), oldModel);
 			if (value) {
 				var self = this;
-				this._parentModelHandle = value.observe('model', function (newValue:Object, oldValue:Object):void {
+				this.__parentModelHandle = value.observe('model', function (newValue:Object, oldValue:Object):void {
 					self._notify('model', newValue, oldValue);
 				});
 			}
@@ -152,8 +151,8 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			var eventName:string = key.charAt(2).toLowerCase() + key.slice(3);
 
 			if (value && value.$bind !== undefined) {
-				if (this._bindingHandles[key]) {
-					this._bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
+				if (this.__bindingHandles[key]) {
+					this.__bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
 				}
 				else {
 					var binder:binding.IBinder = this._app.get('binder');
@@ -172,7 +171,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 						}
 					});
 
-					this._bindingHandles[key] = {
+					this.__bindingHandles[key] = {
 						setSource: rebind,
 						remove: function ():void {
 							this.remove = function () {};
@@ -206,11 +205,11 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 			}
 
 			// TODO: Need a way to hook from property changes that are widget-induced back to the view model
-			if (this._bindingHandles[key]) {
-				this._bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
+			if (this.__bindingHandles[key]) {
+				this.__bindingHandles[key].setSource(this.get('model') || {}, value.$bind);
 			}
 			else {
-				this._bindingHandles[key] = this._app.get('binder').bind({
+				this.__bindingHandles[key] = this._app.get('binder').bind({
 					source: this.get('model') || {},
 					sourcePath: value.$bind,
 					target: this,
