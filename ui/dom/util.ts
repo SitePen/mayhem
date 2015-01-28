@@ -332,18 +332,39 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
  * @returns The widget at the given point.
  */
 function findWidgetAtPoint(widget:Widget, x:number, y:number):Widget {
-	var children:Widget[] = <any> widget.get('children');
+	var node:Node = widget.get('firstNode');
+
+	if (node.nodeType === Node.COMMENT_NODE) {
+		node = node.nextSibling;
+	}
+	else {
+		node = node.firstChild;
+	}
+
 	// if this widget has no children then we know we hit the right one
-	if (!children || !children.length) {
+	if (!node) {
 		return widget;
 	}
 
 	// otherwise we need to find out which child is responsible for the event
-	for (var i = 0, child:Widget; (child = children[i]); ++i) {
-		if (checkPointInWidget(child, x, y)) {
-			return child;
+	var lastCandidate:Widget;
+
+	do {
+		if (node.nodeType === Node.COMMENT_NODE && (<any> node)['widget']) {
+			var candidateWidget:Widget = (<any> node)['widget'];
+
+			if (node.nodeValue.charAt(0) !== '/') {
+				if (checkPointInWidget(candidateWidget, x, y)) {
+					lastCandidate = candidateWidget;
+				}
+			}
+			else if (candidateWidget === lastCandidate) {
+				// This is the end node of the innermost nested candidate, which means it is the innermost widget
+				// and we can stop looking
+				return lastCandidate;
+			}
 		}
-	}
+	} while ((node = node.nextSibling));
 
 	// none of the children were responsible for the event, so it is either us, or the node did not belong to our app
 	return checkPointInWidget(widget, x, y) ? widget : null;
