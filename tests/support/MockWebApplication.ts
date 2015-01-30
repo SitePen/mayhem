@@ -4,9 +4,7 @@ import WebApplication = require('../../WebApplication');
 class MockWebApplication extends WebApplication {
 	static _defaultConfig = util.deepCreate(WebApplication._defaultConfig, {
 		components: {
-			router: {
-				constructor: require.toAbsMid('../../routing/NullRouter')
-			},
+			router: null,
 			ui: {
 				root: null,
 				view: null

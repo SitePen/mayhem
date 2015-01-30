@@ -8,7 +8,7 @@ import has = require('intern/dojo/has');
 import MultiNodeWidget = require('../../../../ui/dom/MultiNodeWidget');
 import registerSuite = require('intern!object');
 import SingleNodeWidget = require('../../../../ui/dom/SingleNodeWidget');
-import WebApplication = require('../../../../WebApplication');
+import WebApplication = require('../../../support/MockWebApplication');
 import Widget = require('../../../../ui/dom/Widget');
 
 function showFailurePoint(x:number, y:number) {
