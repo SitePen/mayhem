@@ -110,7 +110,7 @@ class Binder implements binding.IBinder {
 				source = self.createBinding<T>(newSource, newSourcePath);
 
 				if (has('debug')) {
-					this['_source'] = source;
+					this._source = source;
 				}
 
 				source.observe(setTargetValue);
@@ -122,7 +122,7 @@ class Binder implements binding.IBinder {
 				target = self.createBinding<T>(newTarget, newTargetPath);
 
 				if (has('debug')) {
-					this['_target'] = target;
+					this._target = target;
 				}
 
 				if (direction === BindDirection.TWO_WAY) {
@@ -138,7 +138,7 @@ class Binder implements binding.IBinder {
 				}
 			},
 			remove: function ():void {
-				this.remove = function () {};
+				this.remove = function ():void {};
 				source.destroy();
 				target.destroy();
 				self = source = target = targetObserverHandle = null;
