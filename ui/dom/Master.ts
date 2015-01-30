@@ -27,6 +27,7 @@ class Master extends MultiNodeWidget implements IMaster {
 	}
 
 	destroy():void {
+		this._eventManager && this._eventManager.destroy();
 		this._view && this._view.destroy();
 		this._view = this._root = null;
 		super.destroy();
