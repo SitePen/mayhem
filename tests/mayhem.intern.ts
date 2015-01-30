@@ -25,6 +25,7 @@ var config:intern.Config = {
 		'tests/unit/core/all',
 		'tests/unit/binding/all',
 		'tests/unit/routing/all',
+		'tests/unit/ui/all',
 		'tests/unit/templating/all'
 	]
 };

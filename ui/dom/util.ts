@@ -258,7 +258,7 @@ else {
  * Finds the nearest widget parent to the given node.
  *
  * @param node The node to find ownership over.
- * @param master The master UI should be searched.
+ * @param master The master UI that the discovered widget should belong to.
  * @returns The nearest widget.
  */
 export function findNearestParent(master:Master, searchNode:Node):Widget {
@@ -332,13 +332,14 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
  * @returns The widget at the given point.
  */
 function findWidgetAtPoint(widget:Widget, x:number, y:number):Widget {
-	var node:Node = widget.get('firstNode');
+	var widgetNode:Node = widget.get('firstNode');
+	var node:Node;
 
-	if (node.nodeType === Node.COMMENT_NODE) {
-		node = node.nextSibling;
+	if (widgetNode.nodeType === Node.COMMENT_NODE) {
+		node = widgetNode.nextSibling;
 	}
 	else {
-		node = node.firstChild;
+		node = widgetNode.firstChild;
 	}
 
 	// if this widget has no children then we know we hit the right one
@@ -366,8 +367,8 @@ function findWidgetAtPoint(widget:Widget, x:number, y:number):Widget {
 		}
 	} while ((node = node.nextSibling));
 
-	// none of the children were responsible for the event, so it is either us, or the node did not belong to our app
-	return checkPointInWidget(widget, x, y) ? widget : null;
+	// at this point, none of the children were responsible for the event, so it must be us
+	return widget;
 }
 
 /**
