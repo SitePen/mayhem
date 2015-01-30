@@ -54,6 +54,23 @@ class EventManager {
 
 	private _emitKeyboardEvent(type:string, keyInfo:KeyboardManager.KeyInfo):boolean {
 		var target:Widget = domUtil.findNearestParent(this._master, document.activeElement);
+
+		// HTML-LS 6.4.6 Focus management APIs
+		// If there is nothing else focused in a page, then the focused element is either the body, the document
+		// element, or null. In these cases these keyboard events are "global" and so should be passed to this
+		// application master UI for processing
+		if (
+			!document.activeElement ||
+			document.activeElement === document.body ||
+			document.activeElement === document.documentElement
+		) {
+			target = this._master;
+		}
+
+		if (!target) {
+			return;
+		}
+
 		var event:ui.KeyboardEvent = <any> new Event({
 			bubbles: true,
 			cancelable: true,
