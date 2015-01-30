@@ -170,6 +170,15 @@ class Application extends ObservableEvented {
 		super(kwArgs);
 	}
 
+	destroy() {
+		for (var key in this) {
+			var component:{ destroy?:() => void; } = (<any> this)[key];
+			component.destroy && component.destroy();
+		}
+
+		super.destroy();
+	}
+
 	handleError(error:Error):void {
 		// TODO: Finish implementation
 		var errorHandler:{ handleError:Function; } = <any> this.get('errorHandler');

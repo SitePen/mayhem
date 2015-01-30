@@ -83,7 +83,9 @@ class Widget extends ObservableEvented implements IWidget {
 	}
 
 	destroy():void {
-		this._parent && this._parent.remove(this);
+		// parent may be a container, in which case it has some extra bookkeeping to do, but not always.
+		// TODO: Should we just emit an event instead?
+		this._parent && this._parent.remove && this._parent.remove(this);
 		this._classList = null;
 		super.destroy();
 	}
