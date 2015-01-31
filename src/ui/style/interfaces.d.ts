@@ -1,4 +1,3 @@
-import BackgroundRepeat = require('./BackgroundRepeat');
 import core = require('../../interfaces');
 
 export interface IBackgroundImage {
@@ -6,7 +5,7 @@ export interface IBackgroundImage {
 	clip: string /* should be enum */;
 	origin: string /* should be enum */;
 	position: string /* should be enum */;
-	repeat: BackgroundRepeat;
+	repeat: string /* should be enum */;
 	size: string /* should be enum */;
 	url: string;
 }
