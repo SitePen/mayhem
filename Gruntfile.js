@@ -3,10 +3,11 @@
 var dtsGenerator = require('dts-generator');
 
 module.exports = function (grunt) {
-	grunt.loadNpmTasks('grunt-ts');
-	grunt.loadNpmTasks('grunt-peg');
-	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-peg');
+	grunt.loadNpmTasks('grunt-ts');
 	grunt.loadNpmTasks('intern-geezer');
 
 	grunt.initConfig({
@@ -69,6 +70,15 @@ module.exports = function (grunt) {
 			}
 		},
 
+		copy: {
+			framework: {
+				expand: true,
+				cwd: 'src/',
+				src: [ '**/*.html' ],
+				dest: 'dist/'
+			}
+		},
+
 		watch: {
 			ts: {
 				files: [ '<%= all %>' ],
@@ -112,6 +122,6 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask('test', [ 'intern:client' ]);
-	grunt.registerTask('build', [ 'peg:parser', 'ts:framework', 'dts' ]);
-	grunt.registerTask('default', [ 'peg:parser', 'ts:framework', 'dts', 'watch' ]);
+	grunt.registerTask('build', [ 'peg:parser', 'ts:framework', 'copy', 'dts' ]);
+	grunt.registerTask('default', [ 'peg:parser', 'ts:framework', 'copy', 'dts', 'watch' ]);
 };
