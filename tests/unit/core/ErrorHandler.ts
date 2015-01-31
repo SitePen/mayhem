@@ -1,5 +1,3 @@
-/// <reference path="../../intern" />
-
 import Application = require('../../../Application');
 import aspect = require('dojo/aspect');
 import assert = require('intern/chai!assert');

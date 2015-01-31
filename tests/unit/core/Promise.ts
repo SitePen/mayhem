@@ -1,6 +1,3 @@
-/// <reference path="../../../dojo" />
-/// <reference path="../../intern" />
-
 import assert = require('intern/chai!assert');
 import Deferred = require('dojo/Deferred');
 import Promise = require('../../../Promise');

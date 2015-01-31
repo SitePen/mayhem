@@ -1,5 +1,3 @@
-/// <reference path="../../intern" />
-
 import assert = require('intern/chai!assert');
 import BindDirection = require('../../../binding/BindDirection');
 import Binder = require('../../../binding/Binder');

@@ -1,5 +1,3 @@
-/// <reference path="../../../../intern" />
-
 import assert = require('intern/chai!assert');
 import parser = require('../../../../../templating/html/peg/html');
 import registerSuite = require('intern!object');

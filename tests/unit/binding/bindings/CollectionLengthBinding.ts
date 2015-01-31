@@ -1,6 +1,3 @@
-/// <reference path="../../../../dstore" />
-/// <reference path="../../../intern" />
-
 import assert = require('intern/chai!assert');
 import bindingInterface = require('../../../../binding/interfaces');
 import CollectionLengthBinding = require('../../../../binding/bindings/CollectionLengthBinding');

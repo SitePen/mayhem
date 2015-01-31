@@ -1,6 +1,3 @@
-/// <reference path="../../../dojo" />
-/// <reference path="../../intern" />
-
 import assert = require('intern/chai!assert');
 import lang = require('dojo/_base/lang');
 import Request = require('../../../routing/Request');

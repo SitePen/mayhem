@@ -1,9 +1,10 @@
+.idea
 *.js.map
-*.js
-!Gruntfile.js
+dist/
 html-report/
 node_modules/
-third-party/
+tests/**/*.js
 !tests/support/reporter.js
+third-party/
+src/*.js
 tscommand-*.tmp.txt
-.idea

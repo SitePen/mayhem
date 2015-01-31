@@ -1,5 +1,3 @@
-/// <reference path="../../../intern" />
-
 import assert = require('intern/chai!assert');
 import Container = require('../../../../ui/dom/Container');
 import domUtil = require('../../../../ui/dom/util');

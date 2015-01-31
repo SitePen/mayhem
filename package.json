@@ -1,32 +1,31 @@
 {
-	"name": "mayhem",
-	"version": "0.9.0-pre",
-	"main": "main",
-	"description": "Mayhem. A framework for rich Internet applications.",
-	"bugs": {
-		"url": "https://github.com/SitePen/mayhem/issues"
-	},
-	"license": "BSD-3-Clause",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/SitePen/mayhem.git"
-	},
-	"scripts": {
-		"install": "bower install"
-	},
-	"dependencies": {
-		"bower": "1.x"
-	},
-	"devDependencies": {
-		"diff": "1.0.8",
-		"globule": "0.2.0",
-		"grunt": "0.4.2",
-		"grunt-contrib-clean": "0.5.0",
-		"grunt-contrib-watch": "0.6.1",
-		"grunt-peg": "1.5.0",
-		"grunt-ts": "1.12.1",
-		"intern-geezer": "2.2.2",
-		"typescript": "1.4.1"
-	},
-	"dojoBuild": "package.js"
+  "name": "mayhem",
+  "version": "0.1.0-pre",
+  "main": "main",
+  "description": "Mayhem. A framework for rich Internet applications.",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/SitePen/mayhem/issues"
+  },
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SitePen/mayhem.git"
+  },
+  "dependencies": {
+    "dojo": "1.10.2",
+    "esprima": "1.2.2"
+  },
+  "devDependencies": {
+    "diff": "1.0.8",
+    "dts-generator": "SitePen/dts-generator#5e7b2601648803e326155981a3104405267405e0",
+    "globule": "0.2.0",
+    "grunt": "0.4.2",
+    "grunt-contrib-clean": "0.5.0",
+    "grunt-contrib-watch": "0.6.1",
+    "grunt-peg": "1.5.0",
+    "grunt-ts": "1.12.1",
+    "intern-geezer": "2.2.2",
+    "typescript": "1.4.1"
+  }
 }

@@ -1,5 +1,3 @@
-/// <reference path="../../../intern" />
-
 import assert = require('intern/chai!assert');
 import bindingInterface = require('../../../../binding/interfaces');
 import Es5Binding = require('../../../../binding/bindings/Es5Binding');

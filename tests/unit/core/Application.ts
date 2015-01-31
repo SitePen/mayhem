@@ -1,6 +1,3 @@
-/// <reference path="../../../dojo" />
-/// <reference path="../../intern" />
-
 import Application = require('../../../Application');
 import arrayUtil = require('dojo/_base/array');
 import assert = require('intern/chai!assert');

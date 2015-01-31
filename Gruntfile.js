@@ -1,5 +1,7 @@
 /* jshint node:true */
 
+var dtsGenerator = require('dts-generator');
+
 module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-ts');
 	grunt.loadNpmTasks('grunt-peg');
@@ -9,8 +11,9 @@ module.exports = function (grunt) {
 
 	grunt.initConfig({
 		// TODO: Always build, or never build, tests
-		all: [ '**/*.ts', '!node_modules/**/*.ts', '!**/tests/integration/**' ],
-		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts' ],
+		all: [ 'src/**/*.ts', 'typings/tsd.d.ts' ],
+		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts', 'typings/tsd.d.ts' ],
+		tests: [ 'tests/**/*.ts', 'typings/tsd.d.ts' ],
 
 		clean: {
 			framework: {
@@ -36,10 +39,10 @@ module.exports = function (grunt) {
 
 		peg: {
 			parser: {
-				src: 'templating/html/peg/html.pegjs',
-				dest: 'templating/html/peg/html.js',
+				src: 'src/templating/html/peg/html.pegjs',
+				dest: 'dist/templating/html/peg/html.js',
 				options: {
-					allowedStartRules: ['Template', 'BoundText'],
+					allowedStartRules: [ 'Template', 'BoundText' ],
 					wrapper: function (src, parser) {
 						return 'define([\'require\', \'module\'], function (require, module) {\n' +
 							'return ' + parser + ';\n' +
@@ -58,14 +61,18 @@ module.exports = function (grunt) {
 				fast: 'never'
 			},
 			framework: {
-				src: [ '<%= ignoreDefinitions %>' ]
+				src: [ '<%= ignoreDefinitions %>' ],
+				outDir: 'dist'
+			},
+			tests: {
+				src: [ '<%= tests %>' ]
 			}
 		},
 
 		watch: {
 			ts: {
 				files: [ '<%= all %>' ],
-				tasks: [ 'ts:framework' ]
+				tasks: [ 'ts:framework', 'dts' ]
 			},
 			parser: {
 				files: [ '<%= peg.parser.src %>' ],
@@ -88,7 +95,23 @@ module.exports = function (grunt) {
 		}
 	});
 
+	grunt.registerTask('dts', function () {
+		var done = this.async();
+
+		dtsGenerator.generate({
+			name: 'mayhem',
+			baseDir: 'src',
+			out: 'dist/mayhem.d.ts'
+		}).then(function () {
+			done(true);
+		},
+		function (error) {
+			grunt.log.error(error.message);
+			done(false);
+		});
+	});
+
 	grunt.registerTask('test', [ 'intern:client' ]);
-	grunt.registerTask('build', [ 'peg:parser', 'ts:framework' ]);
-	grunt.registerTask('default', [ 'peg:parser', 'ts:framework', 'watch' ]);
+	grunt.registerTask('build', [ 'peg:parser', 'ts:framework', 'dts' ]);
+	grunt.registerTask('default', [ 'peg:parser', 'ts:framework', 'dts', 'watch' ]);
 };

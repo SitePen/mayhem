@@ -1,5 +1,3 @@
-/// <reference path="../../intern" />
-
 import assert = require('intern/chai!assert');
 import Scheduler = require('../../../Scheduler');
 import registerSuite = require('intern!object');

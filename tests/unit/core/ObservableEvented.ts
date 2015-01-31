@@ -1,4 +1,3 @@
-/// <reference path="../../intern" />
 import assert = require('intern/chai!assert');
 import Event = require('../../../Event');
 import ObservableEvented = require('../../../ObservableEvented');

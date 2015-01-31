@@ -1,4 +1,4 @@
-/// <reference path="./intern" />
+/// <reference path="../typings/tsd" />
 
 import has = require('intern/dojo/has');
 import intern = require('intern');
