@@ -1,7 +1,6 @@
 /// <amd-dependency path="./dom/Widget" />
 
 import ClassList = require('./style/ClassList');
-import Container = require('./Container');
 import core = require('../interfaces');
 import has = require('../has');
 import ObservableEvented = require('../ObservableEvented');
@@ -36,7 +35,7 @@ module Widget {
 		(key:'id'):string;
 		(key:'index'):number;
 		(key:'isAttached'):boolean;
-		(key:'parent'):Container;
+		(key:'parent'):Widget;
 	}
 
 	export interface Setters extends ObservableEvented.Setters {
@@ -44,7 +43,7 @@ module Widget {
 		(key:'class', value:string):void;
 		(key:'id', value:string):void;
 		(key:'isAttached', value:boolean):void;
-		(key:'parent', value:Container):void;
+		(key:'parent', value:Widget):void;
 	}
 }
 

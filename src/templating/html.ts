@@ -6,7 +6,6 @@
 
 import arrayUtil = require('dojo/_base/array');
 import binding = require('../binding/interfaces');
-import Container = require('../ui/dom/Container');
 import lang = require('dojo/_base/lang');
 import parser = require('./html/peg/html');
 import templating = require('./interfaces');
@@ -54,12 +53,12 @@ export interface BindableWidget extends Widget {
 	/**
 	 * @protected
 	 */
-	_parentGetter():Container;
+	_parentGetter():Widget;
 
 	/**
 	 * @protected
 	 */
-	_parentSetter(value:Container):void;
+	_parentSetter(value:Widget):void;
 }
 
 /**
@@ -124,7 +123,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		this._model = value;
 	};
 
-	Ctor.prototype._parentSetter = function (value:Container):void {
+	Ctor.prototype._parentSetter = function (value:Widget):void {
 		this.__parentModelHandle && this.__parentModelHandle.remove();
 		this.__parentModelHandle = null;
 
@@ -142,7 +141,7 @@ function addBindings(BaseCtor:WidgetConstructor):WidgetConstructor {
 		}
 	};
 
-	Ctor.prototype._parentGetter = function ():Container {
+	Ctor.prototype._parentGetter = function ():Widget {
 		return this._parent;
 	};
 

@@ -47,7 +47,7 @@ class Widget extends ObservableEvented implements IWidget {
 	/**
 	 * @protected
 	 */
-	_parent:IContainer;
+	_parent:IWidget	;
 
 	get:Widget.Getters;
 	on:Widget.Events;
@@ -79,13 +79,14 @@ class Widget extends ObservableEvented implements IWidget {
 	}
 
 	private _indexGetter():number {
-		return this._parent ? this._parent.getChildIndex(this) : -1;
+		return this._parent && (<IContainer>this._parent).getChildIndex
+			? (<IContainer>this._parent).getChildIndex(this) : -1;
 	}
 
 	destroy():void {
 		// parent may be a container, in which case it has some extra bookkeeping to do, but not always.
 		// TODO: Should we just emit an event instead?
-		this._parent && this._parent.remove && this._parent.remove(this);
+		this._parent && (<IContainer>this._parent).remove && (<IContainer>this._parent).remove(this);
 		this._classList = null;
 		super.destroy();
 	}
@@ -103,7 +104,7 @@ class Widget extends ObservableEvented implements IWidget {
 
 		ObservableEvented.prototype.emit.call(this, event);
 
-		var parent:IContainer = this.get('parent');
+		var parent:IWidget = this.get('parent');
 		if (event.bubbles && !event.propagationStopped && parent) {
 			parent.emit(event);
 		}

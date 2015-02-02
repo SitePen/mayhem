@@ -1,6 +1,5 @@
 import actions = require('./actions');
 import CommonWidget = require('../common/Widget');
-import Container = require('./Container');
 import core = require('../../interfaces');
 
 /**
@@ -38,7 +37,7 @@ module Widget {
 	export interface Getters extends CommonWidget.Getters {
 		(key:'firstNode'):Node;
 		(key:'lastNode'):Node;
-		(key:'parent'):Container;
+		(key:'parent'):Widget;
 	}
 	export interface Setters extends CommonWidget.Setters {}
 }
