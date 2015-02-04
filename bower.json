@@ -18,9 +18,12 @@
     "dijit": "1.10.2",
     "dojo": "1.10.2",
     "esprima": "1.2.2",
-    "messageformat": "SlexAxton/messageformat.js#f11b9c8a257928b8d6dd49e55a2a2b63902af1af",
+    "intl-messageformat": "1.0.4",
     "put-selector": "0.3.5",
     "xstyle": "0.2.1",
     "dstore": "1.0.1"
+  },
+  "typescript": {
+    "definition": "mayhem.d.ts"
   }
 }
