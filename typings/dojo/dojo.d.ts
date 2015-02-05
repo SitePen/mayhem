@@ -148,6 +148,30 @@ declare module 'dojo/aspect' {
 	export = aspect;
 }
 
+declare module 'dojo/currency' {
+	import numberUtil = require('dojo/number');
+
+	module currency {
+		export function format(number:number, options?:currency.IFormatOptions):string;
+		export function parse(number:string, options?:currency.IFormatOptions):number;
+		export function regexp(options:numberUtil.IRegExpOptions):RegExp;
+
+		export interface IFormatOptions extends numberUtil.IFormatOptions {
+			symbol?: string;
+			currency?: string;
+			places?: number;
+		}
+
+		export interface IParseOptions extends numberUtil.IParseOptions {
+			currency?:string;
+			symbol?:string;
+			places?:number;
+		}
+	}
+
+	export = currency;
+}
+
 declare module 'dojo/date/locale' {
 	module locale {
 		export interface IFormatOptions {
@@ -312,6 +336,42 @@ declare module 'dojo/NodeList' {
 		unshift(...items:Element[]):number;
 	}
 	export = NodeList;
+}
+
+declare module 'dojo/number' {
+	module numberUtil {
+		export function format(number:number, options?:IFormatOptions):string;
+		export function parse(number:string, options?:IParseOptions):number;
+		export function regexp(options?:IRegExpOptions):RegExp;
+		export function round(value:number, places?:number, increment?:number):number;
+
+		export interface IFormatOptions {
+			fractional?: boolean;
+			locale?: string;
+			pattern?: string;
+			places?: number;
+			type?: string;
+			round?: number;
+		}
+
+		export interface IParseOptions {
+			pattern?:string;
+			type?:string;
+			locale?:string;
+			strict?:boolean;
+			fractional?:boolean|boolean[];
+		}
+
+		export interface IRegExpOptions {
+			pattern?:string;
+			type?:string;
+			locale?:string;
+			strict?:boolean;
+			places?:number|string;
+		}
+	}
+
+	export = numberUtil;
 }
 
 declare module 'dojo/on' {
