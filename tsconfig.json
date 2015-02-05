@@ -3,9 +3,9 @@
         "target": "es5",
         "module": "amd",
         "declaration": false,
-        "noimplicitany": true,
+        "noImplicitAny": true,
         "outDir": "./dist",
-        "removecomments": false
+        "removeComments": false
     },
     "filesGlob": [
         "./src/**/*.ts",
