@@ -1,9 +1,9 @@
 import assert = require('intern/chai!assert');
-import Binder = require('../../../../binding/Binder');
-import bindingInterface = require('../../../../binding/interfaces');
-import CompositeBinding = require('../../../../binding/bindings/CompositeBinding');
-import ObservableBinding = require('../../../../binding/bindings/ObservableBinding');
-import Observable = require('../../../../Observable');
+import Binder = require('mayhem/binding/Binder');
+import bindingInterface = require('mayhem/binding/interfaces');
+import CompositeBinding = require('mayhem/binding/bindings/CompositeBinding');
+import ObservableBinding = require('mayhem/binding/bindings/ObservableBinding');
+import Observable = require('mayhem/Observable');
 import registerSuite = require('intern!object');
 
 class SomeObservable extends Observable {

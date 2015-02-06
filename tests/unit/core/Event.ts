@@ -1,5 +1,5 @@
 import assert = require('intern/chai!assert');
-import Event = require('../../../Event');
+import Event = require('mayhem/Event');
 import registerSuite = require('intern!object');
 
 registerSuite({

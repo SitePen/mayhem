@@ -1,8 +1,8 @@
-import Application = require('../../../Application');
+import Application = require('mayhem/Application');
 import aspect = require('dojo/aspect');
 import assert = require('intern/chai!assert');
-import ErrorHandler = require('../../../ErrorHandler');
-import has = require('../../../has');
+import ErrorHandler = require('mayhem/ErrorHandler');
+import has = require('mayhem/has');
 import MockWebApplication = require('../../support/MockWebApplication');
 import registerSuite = require('intern!object');
 

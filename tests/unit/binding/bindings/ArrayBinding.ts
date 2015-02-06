@@ -1,6 +1,6 @@
 import assert = require('intern/chai!assert');
-import bindingInterface = require('../../../../binding/interfaces');
-import ArrayBinding = require('../../../../binding/bindings/ArrayBinding');
+import bindingInterface = require('mayhem/binding/interfaces');
+import ArrayBinding = require('mayhem/binding/bindings/ArrayBinding');
 import registerSuite = require('intern!object');
 
 var collection:string[];

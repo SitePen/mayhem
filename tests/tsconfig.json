@@ -1,0 +1,48 @@
+{
+    "compilerOptions": {
+        "declaration": false,
+        "module": "amd",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "target": "es5"
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "../../typings/tsd.d.ts"
+    ],
+    "files": [
+        "./mayhem.intern.ts",
+        "./support/MockBinder.ts",
+        "./support/MockWebApplication.ts",
+        "./typings/mayhem.d.ts",
+        "./typings/tsd.d.ts",
+        "./unit/binding/Binder.ts",
+        "./unit/binding/BindingError.ts",
+        "./unit/binding/all.ts",
+        "./unit/binding/bindings/ArrayBinding.ts",
+        "./unit/binding/bindings/CollectionLengthBinding.ts",
+        "./unit/binding/bindings/CompositeBinding.ts",
+        "./unit/binding/bindings/DomInputBinding.ts",
+        "./unit/binding/bindings/Es5Binding.ts",
+        "./unit/binding/bindings/ObjectMethodBinding.ts",
+        "./unit/core/Application.ts",
+        "./unit/core/ErrorHandler.ts",
+        "./unit/core/Event.ts",
+        "./unit/core/I18n.ts",
+        "./unit/core/Observable.ts",
+        "./unit/core/ObservableEvented.ts",
+        "./unit/core/Promise.ts",
+        "./unit/core/Scheduler.ts",
+        "./unit/core/WeakMap.ts",
+        "./unit/core/all.ts",
+        "./unit/core/util.ts",
+        "./unit/routing/UrlRule.ts",
+        "./unit/routing/all.ts",
+        "./unit/templating/all.ts",
+        "./unit/templating/html/peg/html.ts",
+        "./unit/ui/all.ts",
+        "./unit/ui/dom/all.ts",
+        "./unit/ui/dom/util.ts"
+    ]
+}

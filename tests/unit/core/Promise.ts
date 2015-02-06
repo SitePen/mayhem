@@ -1,6 +1,6 @@
 import assert = require('intern/chai!assert');
 import Deferred = require('dojo/Deferred');
-import Promise = require('../../../Promise');
+import Promise = require('mayhem/Promise');
 import registerSuite = require('intern!object');
 
 registerSuite({

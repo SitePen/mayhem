@@ -9,7 +9,7 @@ var config:intern.Config = {
 		/(?:^|[\/\\])(?:(?:html-report|nls|node_modules|tests[\w.]*|third-party)[\/\\]|(?:Gruntfile|package)\.js$)/,
 	loader: {
 		packages: [
-			{ name: 'mayhem', location: '.' },
+			{ name: 'mayhem', location: 'dist' },
 			{ name: 'dojo', location: 'third-party/dojo' },
 			{ name: 'dijit', location: 'third-party/dijit' },
 			{ name: 'put-selector', location: 'third-party/put-selector' },

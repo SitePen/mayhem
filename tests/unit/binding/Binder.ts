@@ -1,13 +1,13 @@
 import assert = require('intern/chai!assert');
-import BindDirection = require('../../../binding/BindDirection');
-import Binder = require('../../../binding/Binder');
-import Binding = require('../../../binding/Binding');
-import BindingError = require('../../../binding/BindingError');
-import bindingInterface = require('../../../binding/interfaces');
-import has = require('../../../has');
+import BindDirection = require('mayhem/binding/BindDirection');
+import Binder = require('mayhem/binding/Binder');
+import Binding = require('mayhem/binding/Binding');
+import BindingError = require('mayhem/binding/BindingError');
+import bindingInterface = require('mayhem/binding/interfaces');
+import has = require('mayhem/has');
 import MockBinder = require('../../support/MockBinder');
-import Observable = require('../../../Observable');
-import ObservableBinding = require('../../../binding/bindings/ObservableBinding');
+import Observable = require('mayhem/Observable');
+import ObservableBinding = require('mayhem/binding/bindings/ObservableBinding');
 import registerSuite = require('intern!object');
 
 class SomeObservable extends Observable {

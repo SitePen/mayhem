@@ -1,5 +1,5 @@
 import assert = require('intern/chai!assert');
-import BindingError = require('../../../binding/BindingError');
+import BindingError = require('mayhem/binding/BindingError');
 import registerSuite = require('intern!object');
 
 registerSuite({

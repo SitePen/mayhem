@@ -1,8 +1,8 @@
-import Application = require('../../../Application');
+import Application = require('mayhem/Application');
 import assert = require('intern/chai!assert');
-import binding = require('../../../binding/interfaces');
-import core = require('../../../interfaces');
-import Observable = require('../../../Observable');
+import binding = require('mayhem/binding/interfaces');
+import core = require('mayhem/interfaces');
+import Observable = require('mayhem/Observable');
 import registerSuite = require('intern!object');
 
 class ExtendedObservable extends Observable {

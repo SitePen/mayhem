@@ -1,6 +1,7 @@
 import Application = require('./Application'); Application;
 import ErrorHandler = require('./ErrorHandler'); ErrorHandler;
 import Event = require('./Event'); Event;
+import I18n = require('./I18n'); I18n;
 import Observable = require('./Observable'); Observable;
 import ObservableEvented = require('./ObservableEvented'); ObservableEvented;
 import Promise = require('./Promise'); Promise;

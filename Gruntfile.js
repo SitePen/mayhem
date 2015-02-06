@@ -121,7 +121,8 @@ module.exports = function (grunt) {
 		});
 	});
 
-	grunt.registerTask('test', [ 'intern:client' ]);
+	grunt.registerTask('test', [ 'ts:tests', 'intern:client' ]);
 	grunt.registerTask('build', [ 'peg:parser', 'ts:framework', 'copy', 'dts' ]);
-	grunt.registerTask('default', [ 'peg:parser', 'ts:framework', 'copy', 'dts', 'watch' ]);
+	grunt.registerTask('ci', [ 'build', 'test' ]);
+	grunt.registerTask('default', [ 'build', 'watch' ]);
 };

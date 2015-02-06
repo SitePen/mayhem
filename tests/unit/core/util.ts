@@ -1,9 +1,9 @@
 import assert = require('intern/chai!assert');
-import has = require('../../../has');
+import has = require('mayhem/has');
 import lang = require('dojo/_base/lang');
-import Observable = require('../../../Observable');
-import Promise = require('../../../Promise');
-import util = require('../../../util');
+import Observable = require('mayhem/Observable');
+import Promise = require('mayhem/Promise');
+import util = require('mayhem/util');
 import registerSuite = require('intern!object');
 
 class ObservableA extends Observable {

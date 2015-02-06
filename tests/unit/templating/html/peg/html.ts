@@ -1,14 +1,11 @@
 import assert = require('intern/chai!assert');
-import parser = require('../../../../../templating/html/peg/html');
+import parser = require('mayhem/templating/html/peg/html');
 import registerSuite = require('intern!object');
-import templating = require('../../../../../templating/interfaces');
+import templating = require('mayhem/templating/interfaces');
 
-var prefix = (function (prefix:string) {
-	prefix = prefix ? prefix + '/' : '';
-	return function (mid:string):string {
-		return prefix + mid;
-	};
-})(require.toAbsMid('../../../../../'));
+function prefix(mid:string):string {
+	return 'mayhem/' + mid;
+}
 
 registerSuite({
 	name: 'templating/html/peg/html',
@@ -640,13 +637,13 @@ registerSuite({
 
 		assert.deepEqual(ast, {
 			constructors: [
-				'templating/html/ui/Element',
+				prefix('templating/html/ui/Element'),
 				'Foo',
-				'templating/html/ui/Conditional',
-				'templating/html/ui/Promise'
+				prefix('templating/html/ui/Conditional'),
+				prefix('templating/html/ui/Promise')
 			],
 			root: {
-				constructor: 'templating/html/ui/Element',
+				constructor: prefix('templating/html/ui/Element'),
 				children: [
 					{
 						constructor: 'Foo'
@@ -656,7 +653,7 @@ registerSuite({
 						foo: null
 					},
 					{
-						constructor: 'templating/html/ui/Conditional',
+						constructor: prefix('templating/html/ui/Conditional'),
 						conditions: [
 							{
 								condition: 'foo',
@@ -666,9 +663,9 @@ registerSuite({
 					},
 					{
 						value: 'foo',
-						constructor: 'templating/html/ui/Promise',
+						constructor: prefix('templating/html/ui/Promise'),
 						fulfilled: {
-							constructor: 'templating/html/ui/Element',
+							constructor: prefix('templating/html/ui/Element'),
 							children: [],
 							content: [ 'foo' ]
 						}

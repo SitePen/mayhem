@@ -1,7 +1,7 @@
 import assert = require('intern/chai!assert');
-import bindingInterface = require('../../../../binding/interfaces');
-import Es5Binding = require('../../../../binding/bindings/Es5Binding');
-import has = require('../../../../has');
+import bindingInterface = require('mayhem/binding/interfaces');
+import Es5Binding = require('mayhem/binding/bindings/Es5Binding');
+import has = require('mayhem/has');
 import registerSuite = require('intern!object');
 
 var binding:Es5Binding<any>;

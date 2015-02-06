@@ -1,7 +1,7 @@
 import assert = require('intern/chai!assert');
-import has = require('../../../has');
+import has = require('mayhem/has');
 import registerSuite = require('intern!object');
-import MayhemWeakMap = require('../../../WeakMap');
+import MayhemWeakMap = require('mayhem/WeakMap');
 
 registerSuite({
 	name: 'mayhem/WeakMap',

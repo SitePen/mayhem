@@ -1,5 +1,5 @@
 import assert = require('intern/chai!assert');
-import Scheduler = require('../../../Scheduler');
+import Scheduler = require('mayhem/Scheduler');
 import registerSuite = require('intern!object');
 
 var scheduler:Scheduler;

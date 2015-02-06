@@ -1,4 +1,4 @@
-import bindingInterface = require('../../binding/interfaces');
+import bindingInterface = require('mayhem/binding/interfaces');
 
 class MockBinder {
 	_observers:any[];

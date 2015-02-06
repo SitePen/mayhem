@@ -1,1 +1,1 @@
-import dom = require('./dom/all'); dom;
+/// <amd-dependency path="intern/dojo/has!host-browser?./dom/all" />

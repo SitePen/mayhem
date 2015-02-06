@@ -1,5 +1,5 @@
-import util = require('../../util');
-import WebApplication = require('../../WebApplication');
+import util = require('mayhem/util');
+import WebApplication = require('mayhem/WebApplication');
 
 class MockWebApplication extends WebApplication {
 	static _defaultConfig = util.deepCreate(WebApplication._defaultConfig, {

@@ -1,6 +1,6 @@
 import assert = require('intern/chai!assert');
-import Event = require('../../../Event');
-import ObservableEvented = require('../../../ObservableEvented');
+import Event = require('mayhem/Event');
+import ObservableEvented = require('mayhem/ObservableEvented');
 import registerSuite = require('intern!object');
 
 registerSuite({

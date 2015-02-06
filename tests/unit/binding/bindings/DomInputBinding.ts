@@ -1,7 +1,7 @@
 import assert = require('intern/chai!assert');
-import bindingInterface = require('../../../../binding/interfaces');
-import DomInputBinding = require('../../../../binding/bindings/DomInputBinding');
-import has = require('../../../../has');
+import bindingInterface = require('mayhem/binding/interfaces');
+import DomInputBinding = require('mayhem/binding/bindings/DomInputBinding');
+import has = require('mayhem/has');
 import registerSuite = require('intern!object');
 
 registerSuite({

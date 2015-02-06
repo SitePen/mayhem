@@ -1,7 +1,7 @@
 import assert = require('intern/chai!assert');
 import lang = require('dojo/_base/lang');
-import Request = require('../../../routing/Request');
-import UrlRule = require('../../../routing/UrlRule');
+import Request = require('mayhem/routing/Request');
+import UrlRule = require('mayhem/routing/UrlRule');
 import registerSuite = require('intern!object');
 
 function createRequest(overrides?:{}) {

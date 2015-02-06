@@ -1,8 +1,8 @@
 import assert = require('intern/chai!assert');
-import Binder = require('../../../../binding/Binder');
-import bindingInterface = require('../../../../binding/interfaces');
-import has = require('../../../../has');
-import ObjectMethodBinding = require('../../../../binding/bindings/ObjectMethodBinding');
+import Binder = require('mayhem/binding/Binder');
+import bindingInterface = require('mayhem/binding/interfaces');
+import has = require('mayhem/has');
+import ObjectMethodBinding = require('mayhem/binding/bindings/ObjectMethodBinding');
 import registerSuite = require('intern!object');
 
 var binder:Binder;
