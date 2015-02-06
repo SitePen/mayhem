@@ -1,6 +1,7 @@
 import currencyFormatter = require('dojo/currency');
 import dateFormatter = require('dojo/date/locale');
 import has = require('./has');
+import IntlMessageFormat = require('./i18n/IntlMessageFormat');
 import lang = require('dojo/_base/lang');
 import numberFormatter = require('dojo/number');
 import Observable = require('./Observable');
@@ -12,9 +13,14 @@ declare var process:any;
 
 function mergeBundle(locale:string, id:string, target:I18n.Dictionary, source:HashMap<any>) {
 	for (var key in source) {
+		// dojo/i18n adds an extra key specifying the locale, which is not actually a message
+		if (key === '$locale') {
+			continue;
+		}
+
 		var message = source[key];
 
-		if (message.format) {
+		if (message && message.format) {
 			message = message.format.bind(message);
 		}
 		else if (typeof message === 'string') {
@@ -31,8 +37,8 @@ function mergeBundle(locale:string, id:string, target:I18n.Dictionary, source:Ha
 
 class I18n extends Observable {
 	// TODO: At some point, should support multiple locale preferences
-	protected _currentLocale:string;
 	private _loadedBundles:HashMap<boolean>;
+	protected _locale:string;
 	protected _messages:I18n.Dictionary;
 
 	get:I18n.Getters;
@@ -40,32 +46,34 @@ class I18n extends Observable {
 
 	_initialize() {
 		super._initialize();
-		this._currentLocale = this._getDefaultLocale();
 		this._loadedBundles = {};
+		this._locale = this._getDefaultLocale();
 		this._messages = {};
 	}
 
-	formatCurrency(amount:number, options:Intl.NumberFormatOptions = {}):string {
-		var dojoOptions:currencyFormatter.IFormatOptions;
-		dojoOptions = Object.create(options);
-		dojoOptions.locale = this.get('currentLocale');
+	formatCurrency(amount:number, options:currencyFormatter.IFormatOptions = {}):string {
+		if (!options.locale) {
+			options = Object.create(options);
+			options.locale = this.get('locale');
+		}
 
 		return currencyFormatter.format(amount, options);
 	}
 
-	// <any> due to bug in TS1.4 intl.d.ts, TS#1951
-	formatDate(date:Date, options:Intl.DateTimeFormatOptions = <any> {}):string {
-		var dojoOptions:dateFormatter.IFormatOptions;
-		dojoOptions = Object.create(options);
-		dojoOptions.locale = this.get('currentLocale');
+	formatDate(date:Date, options:dateFormatter.IFormatOptions = {}):string {
+		if (!options.locale) {
+			options = Object.create(options);
+			options.locale = this.get('locale');
+		}
 
 		return dateFormatter.format(date, options);
 	}
 
-	formatNumber(number:number, options:Intl.NumberFormatOptions = {}):string {
-		var dojoOptions:numberFormatter.IFormatOptions;
-		dojoOptions = Object.create(options);
-		dojoOptions.locale = this.get('currentLocale');
+	formatNumber(number:number, options:numberFormatter.IFormatOptions = {}):string {
+		if (!options.locale) {
+			options = Object.create(options);
+			options.locale = this.get('locale');
+		}
 
 		return numberFormatter.format(number, options);
 	}
@@ -88,14 +96,16 @@ class I18n extends Observable {
 	}
 
 	loadBundle(id:string):Promise<void> {
+		id = 'dojo/i18n!' + id;
+
 		if (this._loadedBundles[id]) {
 			return Promise.resolve<void>(undefined);
 		}
 
 		this._loadedBundles[id] = true;
 
-		var locale = this.get('currentLocale');
-		var bundleId = id.replace('/nls/', `/nls/${locale}`);
+		var locale = this.get('locale');
+		var bundleId = id.replace('/nls/', '/nls/' + locale + '/');
 
 		var self = this;
 		return util.getModule(bundleId).then(function (bundle:Bundle) {
@@ -106,7 +116,7 @@ class I18n extends Observable {
 	parseCurrency(amount:string, options:currencyFormatter.IParseOptions = {}):number {
 		if (!options.locale) {
 			options = Object.create(options);
-			options.locale = this.get('currentLocale');
+			options.locale = this.get('locale');
 		}
 
 		return currencyFormatter.parse(amount, options);
@@ -115,7 +125,7 @@ class I18n extends Observable {
 	parseDate(date:string, options:dateFormatter.IFormatOptions = {}):Date {
 		if (!options.locale) {
 			options = Object.create(options);
-			options.locale = this.get('currentLocale');
+			options.locale = this.get('locale');
 		}
 
 		return dateFormatter.parse(date, options);
@@ -124,51 +134,52 @@ class I18n extends Observable {
 	parseNumber(number:string, options:numberFormatter.IParseOptions = {}):number {
 		if (!options.locale) {
 			options = Object.create(options);
-			options.locale = this.get('currentLocale');
+			options.locale = this.get('locale');
 		}
 
 		return numberFormatter.parse(number, options);
 	}
 
 	run() {
-		return this.switchToLocale(this.get('currentLocale'));
+		return this.switchToLocale(this.get('locale'));
 	}
 
 	switchToLocale(locale:string):Promise<void> {
-		this.set('currentLocale', null);
+		this.set('locale', null);
 
 		var bundleIds = Object.keys(this._loadedBundles).map(function (bundleId:string) {
-			return bundleId.replace('nls/', 'nls/' + locale + '/');
+			return bundleId.replace('/nls/', '/nls/' + locale + '/');
 		});
 
 		var self = this;
 		return util.getModules(bundleIds.concat([
 			'dojo/i18n!dojo/cldr/nls/' + locale + '/gregorian',
-			'dojo/i18n!dojo/cldr/nls/' + locale + '/currency'
-		])).then(function () {
+			'dojo/i18n!dojo/cldr/nls/' + locale + '/currency',
+			'dojo/i18n!dojo/cldr/nls/' + locale + '/number'
+		])).then(function (bundles: any[]) {
 			var allMessages:I18n.Dictionary = {};
 
-			for (var i = 0, j = arguments.length - 2; i < j; ++i) {
-				mergeBundle(locale, bundleIds[i], allMessages, arguments[i]);
+			for (var i = 0, j = bundles.length - 3; i < j; ++i) {
+				mergeBundle(locale, bundleIds[i], allMessages, bundles[i]);
 			}
 
 			self._messages = allMessages;
 			self._notify('messages', allMessages, undefined);
-			self.set('currentLocale', locale);
+			self.set('locale', locale);
 		});
 	}
 }
 
 module I18n {
-	export type Dictionary = HashMap<IntlMessageFormat<any>>;
+	export type Dictionary = HashMap<(values:{}) => string>;
 
 	export interface Getters extends Observable.Getters {
-		(key:'currentLocale'):string;
+		(key:'locale'):string;
 		(key:'messages'):I18n.Dictionary;
 	}
 
 	export interface Setters extends Observable.Setters {
-		(key:'currentLocale', value:string):void;
+		(key:'locale', value:string):void;
 	}
 }
 

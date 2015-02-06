@@ -6,9 +6,9 @@ import has = require('mayhem/has');
 import registerSuite = require('intern!object');
 
 var app:Application;
-var i18n:I18n;
 var handle:IHandle;
 var globalListener:any;
+var i18n:I18n;
 
 declare var process:any;
 
@@ -32,7 +32,7 @@ registerSuite({
 	},
 
 	beforeEach() {
-		i18n = new I18n({ app });
+		i18n = new I18n({ app, locale: 'en-us' });
 		return i18n.run();
 	},
 
@@ -41,15 +41,37 @@ registerSuite({
 	},
 
 	'#formatCurrency'() {
-		this.skip('TODO');
+		assert.strictEqual(i18n.formatCurrency(25, { currency: 'USD' }), '$25.00');
+		assert.strictEqual(i18n.formatCurrency(25, { currency: 'GBP' }), '£25.00');
+		assert.strictEqual(i18n.formatCurrency(25, { currency: 'JPY' }), '¥25');
+
+		return i18n.switchToLocale('es').then(function () {
+			assert.strictEqual(i18n.formatCurrency(12.20, { currency: 'USD' }), '12,20\xa0$');
+			assert.strictEqual(i18n.formatCurrency(12.20, { currency: 'GBP' }), '12,20\xa0GBP');
+			assert.strictEqual(i18n.formatCurrency(25, { currency: 'JPY' }), '25\xa0JPY');
+		});
 	},
 
 	'#formatDate'() {
-		this.skip('TODO');
+		var date = new Date(1970, 0, 2, 12, 34, 56);
+
+		assert.strictEqual(i18n.formatDate(date), '1/2/70, 12:34 PM');
+		assert.strictEqual(i18n.formatDate(date, { formatLength: 'medium' }), 'Jan 2, 1970, 12:34:56 PM');
+
+		return i18n.switchToLocale('es').then(function () {
+			assert.strictEqual(i18n.formatDate(date), '2/1/70 12:34');
+			assert.strictEqual(i18n.formatDate(date, { formatLength: 'medium' }), '2/1/1970 12:34:56');
+		});
 	},
 
 	'#formatNumber'() {
-		this.skip('TODO');
+		assert.strictEqual(i18n.formatNumber(25), '25');
+		assert.strictEqual(i18n.formatNumber(25, { places: 2 }), '25.00');
+
+		return i18n.switchToLocale('es').then(function () {
+			assert.strictEqual(i18n.formatNumber(25), '25');
+			assert.strictEqual(i18n.formatNumber(25, { places: 2 }), '25,00');
+		});
 	},
 
 	'#parseCurrency'() {
@@ -65,6 +87,31 @@ registerSuite({
 	},
 
 	'#messages'() {
-		this.skip('TODO');
+		return i18n.loadBundle(require.toAbsMid('../../support/nls/test')).then(function () {
+			assert.strictEqual(i18n.get('messages')['asString']({ number: 0 }), 'en zero');
+			assert.strictEqual(i18n.get('messages')['asString']({ number: 1 }), 'en 1');
+			assert.strictEqual(i18n.get('messages')['asFunction']({ number: 0 }), 'en 0');
+			assert.strictEqual(i18n.get('messages')['asFunction']({ number: 1 }), 'en 1');
+			assert.strictEqual(i18n.get('messages')['asObject']({ number: 0 }), 'en 0');
+			assert.strictEqual(i18n.get('messages')['asObject']({ number: 1 }), 'en 1');
+
+			return i18n.switchToLocale('es').then(function () {
+				assert.strictEqual(i18n.get('messages')['asString']({ number: 0 }), 'es cero');
+				assert.strictEqual(i18n.get('messages')['asString']({ number: 1 }), 'es 1');
+				assert.strictEqual(i18n.get('messages')['asFunction']({ number: 0 }), 'es 0');
+				assert.strictEqual(i18n.get('messages')['asFunction']({ number: 1 }), 'es 1');
+				assert.strictEqual(i18n.get('messages')['asObject']({ number: 0 }), 'es 0');
+				assert.strictEqual(i18n.get('messages')['asObject']({ number: 1 }), 'es 1');
+
+				return i18n.switchToLocale('ja');
+			}).then(function () {
+				assert.strictEqual(i18n.get('messages')['asString']({ number: 0 }), 'ROOT zero');
+				assert.strictEqual(i18n.get('messages')['asString']({ number: 1 }), 'ROOT 1');
+				assert.strictEqual(i18n.get('messages')['asFunction']({ number: 0 }), 'ROOT 0');
+				assert.strictEqual(i18n.get('messages')['asFunction']({ number: 1 }), 'ROOT 1');
+				assert.strictEqual(i18n.get('messages')['asObject']({ number: 0 }), 'ROOT 0');
+				assert.strictEqual(i18n.get('messages')['asObject']({ number: 1 }), 'ROOT 1');
+			});
+		});
 	}
 });

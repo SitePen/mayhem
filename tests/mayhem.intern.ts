@@ -9,15 +9,17 @@ var config:intern.Config = {
 		/(?:^|[\/\\])(?:(?:html-report|nls|node_modules|tests[\w.]*|third-party)[\/\\]|(?:Gruntfile|package)\.js$)/,
 	loader: {
 		packages: [
-			{ name: 'mayhem', location: 'dist' },
-			{ name: 'dojo', location: 'third-party/dojo' },
-			{ name: 'dijit', location: 'third-party/dijit' },
-			{ name: 'put-selector', location: 'third-party/put-selector' },
-			{ name: 'xstyle', location: 'third-party/xstyle' },
 			{ name: 'dgrid', location: 'third-party/dgrid' },
 			{ name: 'dstore', location: 'third-party/dstore' },
+			{ name: 'dojo', location: 'third-party/dojo' },
+			{ name: 'dijit', location: 'third-party/dijit' },
 			{ name: 'esprima', location: 'third-party/esprima', main: 'esprima' },
-			{ name: 'tests', location: 'tests' }
+			{ name: 'intl', location: 'third-party/intl', main: 'Intl.complete' },
+			{ name: 'intl-messageformat', location: 'third-party/intl-messageformat/dist', main: 'intl-messageformat-with-locales' },
+			{ name: 'mayhem', location: 'dist' },
+			{ name: 'put-selector', location: 'third-party/put-selector' },
+			{ name: 'tests', location: 'tests' },
+			{ name: 'xstyle', location: 'third-party/xstyle' }
 		]
 	},
 	reporters: has('host-node') ? [ 'tests/support/reporter' ] : [ 'console', 'html' ],

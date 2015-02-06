@@ -48,6 +48,7 @@
         "./src/data/interfaces.d.ts",
         "./src/data/stores/DomStorage.ts",
         "./src/has.ts",
+        "./src/i18n/IntlMessageFormat.ts",
         "./src/interfaces.d.ts",
         "./src/routing/HashRouter.ts",
         "./src/routing/HtmlHistoryRouter.ts",
