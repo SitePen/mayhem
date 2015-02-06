@@ -112,6 +112,9 @@ class Application extends ObservableEvented {
 			errorHandler: {
 				constructor: resolve('./ErrorHandler')
 			},
+			i18n: {
+				constructor: resolve('./I18n')
+			},
 			scheduler: {
 				constructor: resolve('./Scheduler')
 			}
