@@ -22,7 +22,7 @@
     "intl": "0.1.4",
     "intl-messageformat": "1.0.4",
     "put-selector": "0.3.5",
-    "xstyle": "0.2.1",
+    "xstyle": "0.2.1"
   },
   "typescript": {
     "definition": "mayhem.d.ts"
