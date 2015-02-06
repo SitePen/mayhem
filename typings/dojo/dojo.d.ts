@@ -153,7 +153,7 @@ declare module 'dojo/currency' {
 
 	module currency {
 		export function format(number:number, options?:currency.IFormatOptions):string;
-		export function parse(number:string, options?:currency.IFormatOptions):number;
+		export function parse(number:string, options?:currency.IParseOptions):number;
 		export function regexp(options:numberUtil.IRegExpOptions):RegExp;
 
 		export interface IFormatOptions extends numberUtil.IFormatOptions {

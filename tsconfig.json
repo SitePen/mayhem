@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "amd",
         "declaration": false,
+        "module": "amd",
         "noImplicitAny": true,
         "outDir": "./dist",
-        "removeComments": false
+        "removeComments": false,
+        "sourceMap": true,
+        "target": "es5"
     },
     "filesGlob": [
         "./src/**/*.ts",
@@ -15,7 +16,7 @@
         "./src/Application.ts",
         "./src/ErrorHandler.ts",
         "./src/Event.ts",
-        "./src/Intl.ts",
+        "./src/I18n.ts",
         "./src/LogLevel.ts",
         "./src/Observable.ts",
         "./src/ObservableEvented.ts",

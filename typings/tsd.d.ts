@@ -6,5 +6,5 @@
 /// <reference path="dstore/dstore.d.ts" />
 /// <reference path="esprima/esprima.d.ts" />
 /// <reference path="intern/intern.d.ts" />
-/// <reference path="messageformat.js/messageformat.d.ts" />
+/// <reference path="intl-messageformat/intl-messageformat.d.ts" />
 /// <reference path="xstyle/xstyle.d.ts" />
