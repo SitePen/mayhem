@@ -40,6 +40,7 @@ class I18n extends Observable {
 	private _loadedBundles:HashMap<boolean>;
 	protected _locale:string;
 	protected _messages:I18n.Dictionary;
+	protected _preload:string[];
 
 	get:I18n.Getters;
 	set:I18n.Setters;
@@ -49,6 +50,7 @@ class I18n extends Observable {
 		this._loadedBundles = {};
 		this._locale = this._getDefaultLocale();
 		this._messages = {};
+		this._preload = [];
 	}
 
 	formatCurrency(amount:number, options:currencyFormatter.IFormatOptions = {}):string {
@@ -96,8 +98,6 @@ class I18n extends Observable {
 	}
 
 	loadBundle(id:string):Promise<void> {
-		id = 'dojo/i18n!' + id;
-
 		if (this._loadedBundles[id]) {
 			return Promise.resolve<void>(undefined);
 		}
@@ -105,7 +105,7 @@ class I18n extends Observable {
 		this._loadedBundles[id] = true;
 
 		var locale = this.get('locale');
-		var bundleId = id.replace('/nls/', '/nls/' + locale + '/');
+		var bundleId = 'dojo/i18n!' + id.replace('/nls/', '/nls/' + locale + '/');
 
 		var self = this;
 		return util.getModule(bundleId).then(function (bundle:Bundle) {
@@ -141,6 +141,11 @@ class I18n extends Observable {
 	}
 
 	run() {
+		var preload = this.get('preload');
+		for (var i = 0, j = preload.length; i < j; ++i) {
+			this._loadedBundles[preload[i]] = true;
+		}
+
 		return this.switchToLocale(this.get('locale'));
 	}
 
@@ -148,7 +153,7 @@ class I18n extends Observable {
 		this.set('locale', null);
 
 		var bundleIds = Object.keys(this._loadedBundles).map(function (bundleId:string) {
-			return bundleId.replace('/nls/', '/nls/' + locale + '/');
+			return 'dojo/i18n!' + bundleId.replace('/nls/', '/nls/' + locale + '/');
 		});
 
 		var self = this;
@@ -176,10 +181,12 @@ module I18n {
 	export interface Getters extends Observable.Getters {
 		(key:'locale'):string;
 		(key:'messages'):I18n.Dictionary;
+		(key:'preload'):string[];
 	}
 
 	export interface Setters extends Observable.Setters {
 		(key:'locale', value:string):void;
+		(key:'preload', value:string[]):void;
 	}
 }
 
