@@ -111,8 +111,17 @@ module.exports = function (grunt) {
 		dtsGenerator.generate({
 			name: 'mayhem',
 			baseDir: 'src',
+			externs: [
+				'../dgrid/dgrid.d.ts',
+				'../dojo/dojo.d.ts',
+				'../dojo/dijit.d.ts',
+				'../dstore/dstore.d.ts',
+				'../esprima/esprima.d.ts',
+				'../intl-messageformat/intl-messageformat.d.ts',
+				'../xstyle/xstyle.d.ts'
+			],
 			out: 'dist/mayhem.d.ts'
-		}).then(function () {
+		}, grunt.verbose.writeln.bind(grunt.verbose)).then(function () {
 			done(true);
 		},
 		function (error) {

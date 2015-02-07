@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "diff": "1.0.8",
-    "dts-generator": "SitePen/dts-generator#5e7b2601648803e326155981a3104405267405e0",
+    "dts-generator": "SitePen/dts-generator#1.0.0",
     "globule": "0.2.0",
     "grunt": "0.4.5",
     "grunt-contrib-clean": "0.5.0",
