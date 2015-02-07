@@ -75,15 +75,40 @@ registerSuite({
 	},
 
 	'#parseCurrency'() {
-		this.skip('TODO');
+		assert.strictEqual(i18n.parseCurrency('$12.34', { currency: 'USD' }), 12.34);
+		assert.strictEqual(i18n.parseCurrency('£12.34', { currency: 'GBP' }), 12.34);
+		assert.strictEqual(i18n.parseCurrency('¥25', { currency: 'JPY' }), 25);
+		assert.isTrue(isNaN(i18n.parseCurrency('12,20\xa0$', { currency: 'USD' })));
+
+		return i18n.switchToLocale('es').then(function () {
+			assert.isTrue(isNaN(i18n.parseCurrency('$12.34', { currency: 'USD' })));
+			assert.strictEqual(i18n.parseCurrency('12,20\xa0$', { currency: 'USD' }), 12.20);
+			assert.strictEqual(i18n.parseCurrency('12,20\xa0GBP', { currency: 'GBP' }), 12.20);
+			assert.strictEqual(i18n.parseCurrency('25\xa0JPY', { currency: 'JPY' }), 25);
+		});
 	},
 
 	'#parseDate'() {
-		this.skip('TODO');
+		var shortDate = Number(new Date(1970, 0, 2, 12, 34, 0));
+		var fullDate = Number(new Date(1970, 0, 2, 12, 34, 56));
+
+		assert.strictEqual(Number(i18n.parseDate('1/2/70, 12:34 PM')), shortDate);
+		assert.strictEqual(Number(i18n.parseDate('Jan 2, 1970, 12:34:56 PM', { formatLength: 'medium' })), fullDate);
+
+		return i18n.switchToLocale('es').then(function () {
+			assert.strictEqual(Number(i18n.parseDate('2/1/70 12:34')), shortDate);
+			assert.strictEqual(Number(i18n.parseDate('2/1/1970 12:34:56', { formatLength: 'medium' })), fullDate);
+		});
 	},
 
 	'#parseNumber'() {
-		this.skip('TODO');
+		assert.strictEqual(i18n.parseNumber('12.34'), 12.34);
+		assert.isTrue(isNaN(i18n.parseNumber('12,34')));
+
+		return i18n.switchToLocale('es').then(function () {
+			assert.strictEqual(i18n.parseNumber('12,34'), 12.34);
+			assert.isTrue(isNaN(i18n.parseNumber('12.34')));
+		});
 	},
 
 	'#messages'() {
