@@ -133,6 +133,14 @@
 							</ul>
 						</li>
 						<li>
+							<a href="#intl">Internationalisation</a>
+							<ul class="subsections">
+								<li data-id="i18n-object"><a href="#i18n-object">The I18n object</a></li>
+								<li data-id="i18n-messages"><a href="#i18n-messages">Translating messages</a></li>
+								<li data-id="i18n-numbers-dates"><a href="#i18n-numbers-dates">Numbers &amp; dates</a></li>
+							</ul>
+						</li>
+						<li>
 							<a href="#security">Security</a>
 							<ul class="subsections">
 								<li data-id="user-object"><a href="#user-object">The User object</a></li>
@@ -593,6 +601,7 @@ log(app.run().then(function () {
 						<ul>
 							<li><code><strong>binder</strong></code>: An implementation of the <a href="TODO"><code>mayhem/binding/interfaces.IBinder</code></a> interface. Provides data binding.</li>
 							<li><code><strong>errorHandler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IErrorHandler</code></a> interface. Provides error handling for an application.</li>
+							<li><code><strong>i18n</strong></code>: An implementation of the <a href="TODO"><code>mayhem/I18n</code></a> interface. Provides internationalisation and localisation for an application.</li>
 							<li><code><strong>router</strong></code>: An implementation of the <a href="TODO"><code>mayhem/routing/interfaces.IRouter</code></a> interface. Provides navigation &amp; application state management.</li>
 							<li><code><strong>scheduler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IScheduler</code></a> interface. Provides event scheduling.</li>
 							<li><code><strong>ui</strong></code>: An implementation of the <a href="TODO"><code>mayhem/ui/Master</code></a> interface. Provides user interface support.</li>
@@ -1566,7 +1575,92 @@ export = BurgerUser;</code></pre>
 						<div class="a half" id="persisting-data"></div>
 						<h3 data-id="persisting-data">Persisting data</h3>
 
-						<p>In order to persist data models across page loads, a data model should extend from the <a href="TODO"><code>mayhem/data/PersistentModel</code></a> class. The <code>PersistentModel</code> class
+						<p>In order to persist data models across page loads, a data model should extend from the <a href="TODO"><code>mayhem/data/PersistentModel</code></a> class. The <code>PersistentModel</code> class TODO</p>
+					</article>
+
+					<article>
+						<div class="a" id="intl"></div>
+						<h2 data-id="intl">Internationalisation</h2>
+
+						<div class="a half" id="i18n-object"></div>
+						<h3 data-id="i18n-object">The I18n object</h3>
+
+						<p>The I18n application component provides all the necessary functionality for internationalising Mayhem applications.</p>
+
+						<p>By default, the locale used by the I18n component is taken from the current environment, using <code>navigator.language</code> in browsers and <code>process.env.LANG</code> in Node.js. The locale can be overridden at startup by setting the <code>locale</code> property, or at runtime by calling <a href="TODO"><code>I18n#switchToLocale</code></a>:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		i18n: {
+			locale: 'en-us'
+		}
+	}
+});
+
+app.run();</code></pre>
+
+						<div class="a half" id="i18n-messages"></div>
+						<h3 data-id="i18n-messages">Translating messages</h3>
+
+						<p>Mayhem uses the standard Unicode <a href="http://userguide.icu-project.org/formatparse/messages">MessageFormat</a> specification to provide accurate translation of plurals and gender in messages:</p>
+
+						<pre><code class="messageformat">{GENDER, select,
+    male {He}
+  female {She}
+   other {They}
+} found {NUM_RESULTS, plural,
+            one {1 result}
+          other {# results}
+        } in {NUM_CATEGORIES, plural,
+                  one {1 category}
+                other {# categories}
+			}.</code></pre>
+
+						<p>Translation dictionaries are created by writing <a href="TODO">NLS bundles</a>. NLS bundles are simply modules placed inside an <code>nls</code> directory, separated by locale:</p>
+
+						<pre>app/
+	nls/
+		myBundle.ts
+		en/
+			myBundle.ts
+		es/
+			myBundle.ts</pre>
+
+						<p>The root NLS bundle (<code>app/nls/myBundle</code> in this example) defines the list of available translation locales for that bundle. It also provides a set of default backup translations for locales without translations. The default translations are provided on the <code>root</code> property:</p>
+
+						<pre><code class="typescript">// in app/nls/myBundle.ts
+
+// Available locales, `en` and `es`
+export var en = true;
+export var es = true;
+
+// Default translations for locales other than `en` and `es`
+export var root = {
+	greeting: 'Hello, {NAME}!',
+	orderBurgers: `Order {NUM_BURGERS, plural,
+	                       zero {zero burgers},
+	                        one {one burger},
+	                      other {# burgers}
+	                     }`
+};</code></pre>
+
+						<p>Locale-specific bundles simply export each message directly:</p>
+
+						<pre><code class="typescript">// in app/nls/es/myBundle.ts
+export var greeting = 'Hola, {NAME}!';
+export var orderBurders = `Pedir {NUM_BURGERS, plural,
+                                    zero {cero hamburguesas},
+                                     one {una hamburguesa},
+                                   other {# hamburguesas}
+                                 }`;</code></pre>
+
+						<div class="a half" id="i18n-numbers-dates"></div>
+						<h3 data-id="i18n-numbers-dates">Numbers &amp; dates</h3>
+
+						<p>Mayhem provides currency, number, and date formatting and parsing functionality.</p>
 					</article>
 
 					<article>
