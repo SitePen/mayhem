@@ -133,7 +133,7 @@
 							</ul>
 						</li>
 						<li>
-							<a href="#intl">Internationalisation</a>
+							<a href="#i18n">Internationalisation</a>
 							<ul class="subsections">
 								<li data-id="i18n-object"><a href="#i18n-object">The I18n object</a></li>
 								<li data-id="i18n-messages"><a href="#i18n-messages">Translating messages</a></li>
@@ -1579,8 +1579,8 @@ export = BurgerUser;</code></pre>
 					</article>
 
 					<article>
-						<div class="a" id="intl"></div>
-						<h2 data-id="intl">Internationalisation</h2>
+						<div class="a" id="i18n"></div>
+						<h2 data-id="i18n">Internationalisation</h2>
 
 						<div class="a half" id="i18n-object"></div>
 						<h3 data-id="i18n-object">The I18n object</h3>
@@ -1605,7 +1605,7 @@ app.run();</code></pre>
 						<div class="a half" id="i18n-messages"></div>
 						<h3 data-id="i18n-messages">Translating messages</h3>
 
-						<p>Mayhem uses the standard Unicode <a href="http://userguide.icu-project.org/formatparse/messages">MessageFormat</a> specification to provide accurate translation of plurals and gender in messages:</p>
+						<p>Mayhem uses the standard <a href="http://userguide.icu-project.org/formatparse/messages">Unicode MessageFormat</a> format to provide accurate translation of plurals, gender, and other features that vary across locales:</p>
 
 						<pre><code class="messageformat">{GENDER, select,
     male {He}
@@ -1629,7 +1629,7 @@ app.run();</code></pre>
 		es/
 			myBundle.ts</pre>
 
-						<p>The root NLS bundle (<code>app/nls/myBundle</code> in this example) defines the list of available translation locales for that bundle. It also provides a set of default backup translations for locales without translations. The default translations are provided on the <code>root</code> property:</p>
+						<p>The root NLS bundle (<code>app/nls/myBundle</code> in this example) defines the list of available translation locales for that bundle. It also provides a set of default backup translations for locales without translations. The list of supported locales are simply boolean values on the exported object, whereas the default translations are provided on the <code>root</code> property:</p>
 
 						<pre><code class="typescript">// in app/nls/myBundle.ts
 
@@ -1657,10 +1657,71 @@ export var orderBurders = `Pedir {NUM_BURGERS, plural,
                                    other {# hamburguesas}
                                  }`;</code></pre>
 
+						<p>To load an NLS bundle into I18n at runtime, call <a href="TODO"><code>I18n#loadBundle</code></a>, passing the root bundle’s module ID. It is also possible to preload message bundles at startup by setting the <code>preload</code> property to an array of module IDs:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		i18n: {
+			locale: 'en-us',
+			preload: [ 'app/nls/myBundle' ]
+		}
+	}
+});
+
+app.run();</code></pre>
+
+						<p>When a bundle is loaded, its values will be compiled into functions (if they are not already functions) and added to the existing set of messages. To use a message, call the formatter from the <code>messages</code> key, passing any arguments necessary for the translation to be completed successfully:</p>
+
+						<pre><code class="typescript">import Application = require('mayhem/Application');
+
+var app = new Application({
+	name: 'Bob’s Burgers',
+	components: {
+		i18n: {
+			locale: 'en-us',
+			preload: [ 'app/nls/myBundle' ]
+		}
+	}
+});
+
+app.run().then(function () {
+	app.get('i18n').get('messages')['orderBurgers']({ NUM_BURGERS: 1 }); // 'Order one burger'
+});</code></pre>
+
+						<aside class="tip"><p>While it may look like you’re loading a lot of modules when writing translations, by performing a build, you can combine all your NLS bundles into built bundles that require only one HTTP request to load all translations for a locale.</p></aside>
+
 						<div class="a half" id="i18n-numbers-dates"></div>
 						<h3 data-id="i18n-numbers-dates">Numbers &amp; dates</h3>
 
-						<p>Mayhem provides currency, number, and date formatting and parsing functionality.</p>
+						<p>The I18n object also provides currency, number, and date formatting/parsing functionality, built on top of the Dojo date &amp; number libraries:</p>
+
+						<table>
+							<tr>
+								<th>Type</th>
+								<th>Parsing function</th>
+								<th>Formatting function</th>
+							</tr>
+							<tr>
+								<td>Date/time</td>
+								<td><code>I18n#parseDate(string, <a href="http://dojotoolkit.org/api/?qs=1.10/dojo/date/locale.__FormatOptions">options</a>)</code></td>
+								<td><code>I18n#formatDate(date, <a href="http://dojotoolkit.org/api/?qs=1.10/dojo/date/locale.__FormatOptions">options</a>)</code></td>
+							</tr>
+							<tr>
+								<td>Currency</td>
+								<td><code>I18n#parseCurrency(string, <a href="http://dojotoolkit.org/api/?qs=1.10/dojo/currency.__ParseOptions">options</a>)</code></td>
+								<td><code>I18n#formatCurrency(number, <a href="http://dojotoolkit.org/api/?qs=1.10/dojo/currency.__FormatOptions">options</a>)</code></td>
+							</tr>
+							<tr>
+								<td>Number</td>
+								<td><code>I18n#parseNumber(string, <a href="http://dojotoolkit.org/api/?qs=1.10/dojo/number.__ParseOptions">options</a>)</code></td>
+								<td><code>I18n#formatNumber(number, <a href="http://dojotoolkit.org/api/?qs=1.10/dojo/number.__FormatOptions">options</a>)</code></td>
+							</tr>
+						</table>
+
+						<p>Dates, currency, and numbers will be formatted/parsed according to the currently defined locale, using data from the <a href="http://cldr.unicode.org/">Unicode Common Locale Data Repository</a>.</p>
 					</article>
 
 					<article>
