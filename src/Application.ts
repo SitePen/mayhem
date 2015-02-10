@@ -1,13 +1,23 @@
+import Base = require('./Base');
 import binding = require('./binding/interfaces');
 import core = require('./interfaces');
 import ErrorHandler = require('./ErrorHandler');
 import has = require('./has');
+import I18n = require('./I18n');
 import lang = require('dojo/_base/lang');
 import LogLevel = require('./LogLevel');
 import ObservableEvented = require('./ObservableEvented');
 import Promise = require('./Promise');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
+
+// TODO: External interface
+type ApplicationComponent = { run?(): Promise<any> | void; };
+type Constructor = string | ComponentConstructor;
+type Destroyable = { destroy(): void; };
+
+// TODO: External module
+type Logger = { log(message: string, level?: LogLevel, category?: string ): void; };
 
 var resolve:(moduleId:string) => string = (<any> require).toAbsMid || (<any> require).resolve;
 
@@ -34,8 +44,8 @@ else {
 }
 
 interface ComponentConstructor {
-	new (kwArgs?:HashMap<any>):core.IApplicationComponent;
-	prototype:core.IApplicationComponent;
+	new (kwArgs?:{}): ApplicationComponent;
+	prototype: ApplicationComponent;
 }
 
 /**
@@ -97,13 +107,11 @@ interface ComponentConstructor {
  * });
  * ```
  */
-class Application extends ObservableEvented {
+class Application extends Base {
 	/**
 	 * The default configuration for the Application class.
-	 *
-	 * @protected
 	 */
-	static _defaultConfig = {
+	protected static defaultConfig = {
 		components: {
 			binder: {
 				constructor: resolve('./binding/Binder'),
@@ -123,12 +131,9 @@ class Application extends ObservableEvented {
 
 	/**
 	 * The data binder component.
-	 *
-	 * @get
-	 * @set
 	 * @default module:mayhem/binding/Binder
 	 */
-	private _binder:binding.IBinder;
+	binder: binding.IBinder;
 
 	/**
 	 * A hash map of application components that will be dynamically loaded and set on the Application object when it is
@@ -137,52 +142,53 @@ class Application extends ObservableEvented {
 	 * function to use. The `constructor` value can either be a module ID, in which case the module will be dynamically
 	 * loaded at runtime and its value used as the constructor, or a constructor function, in which case it will be used
 	 * as-is. The constructor must accept a keyword arguments object as its only argument.
-	 *
-	 * @get
-	 * @set
 	 */
-	private _components:HashMap<any>;
+	components: {};
 
 	/**
 	 * The error handler component.
-	 *
-	 * @get
-	 * @set
 	 * @default module:mayhem/ErrorHandler
 	 */
-	private _errorHandler:ErrorHandler;
+	errorHandler: ErrorHandler;
+
+	/**
+	 * The internationalisation component.
+	 * @default module:mayhem/I18n
+	 */
+	i18n: I18n;
+
+	/**
+	 * The debug logger component.
+	 */
+	logger: Logger;
 
 	/**
 	 * The event scheduler component.
-	 *
-	 * @get
-	 * @set
 	 * @default module:mayhem/Scheduler
 	 */
-	private _scheduler:Scheduler;
+	scheduler: Scheduler;
 
-	get:Application.Getters;
-	on:Application.Events;
-	set:Application.Setters;
-
-	constructor(kwArgs?:HashMap<any>) {
+	constructor(kwArgs?: {}) {
 		// TODO: more robust configuration merging
-		kwArgs = <any> util.deepCreate((<typeof Application> this.constructor)._defaultConfig, kwArgs);
+		kwArgs = <any> util.deepCreate((<typeof Application> this.constructor).defaultConfig, kwArgs);
 		super(kwArgs);
 	}
 
-	destroy() {
+	protected configureApp(): void {
+		this.app = this;
+	}
+
+	destroy(): void {
 		for (var key in this) {
-			var component:{ destroy?:() => void; } = (<any> this)[key];
+			var component: Destroyable = (<any> this)[key];
 			component.destroy && component.destroy();
 		}
 
 		super.destroy();
 	}
 
-	handleError(error:Error):void {
-		// TODO: Finish implementation
-		var errorHandler:{ handleError:Function; } = <any> this.get('errorHandler');
+	handleError(error: Error): void {
+		var errorHandler = this.errorHandler;
 		if (errorHandler) {
 			errorHandler.handleError(error);
 		}
@@ -191,9 +197,8 @@ class Application extends ObservableEvented {
 		}
 	}
 
-	log(message:string, level:LogLevel = LogLevel.LOG, category:string = null):void {
-		// TODO: Finish implementation
-		var logger:{ log:Function; } = <any> this.get('logger');
+	log(message: string, level: LogLevel = LogLevel.LOG, category: string = null): void {
+		var logger = this.logger;
 		if (logger) {
 			logger.log(message, level, category);
 		}
@@ -209,21 +214,21 @@ class Application extends ObservableEvented {
 	 *
 	 * @returns A promise that is resolved once all application components have loaded and started.
 	 */
-	run():IPromise<Application> {
+	run(): Promise<Application> {
 		var self = this;
-		var components:HashMap<any> = this._components;
+		var components: HashMap<any> = <any> this.components;
 
-		function getConstructors():IPromise<HashMap<ComponentConstructor>> {
-			var ctors:HashMap<IPromise<ComponentConstructor>> = {};
+		function getConstructors(): Promise<HashMap<ComponentConstructor>> {
+			var ctors: HashMap<Promise<ComponentConstructor>> = {};
 
 			for (var key in components) {
-				// User may have disabled a component by setting its value to null/undefined
+				// Author may have disabled a component by setting its value to null/undefined
 				if (!components[key]) {
 					continue;
 				}
 
-				ctors[key] = new Promise<any>(function (resolve:Promise.IResolver<any>, reject:Promise.IRejecter):void {
-					var ctor:any = components[key].constructor;
+				ctors[key] = new Promise<any>(function (resolve, reject) {
+					var ctor: Constructor = components[key].constructor;
 
 					if (typeof ctor === 'string') {
 						util.getModule(ctor).then(resolve, reject);
@@ -232,7 +237,7 @@ class Application extends ObservableEvented {
 						resolve(ctor);
 					}
 					else {
-						reject(new Error('Constructor for ' + key + ' must be a string or function'));
+						reject(new Error(`${key}.constructor should be a string or function, not ${typeof ctor}`));
 					}
 				});
 			}
@@ -240,14 +245,14 @@ class Application extends ObservableEvented {
 			return Promise.all(ctors);
 		}
 
-		function instantiateComponents(ctors:HashMap<ComponentConstructor>):IPromise<any> {
-			var instance:core.IApplicationComponent;
-			var instances:core.IApplicationComponent[] = [];
-			var startups:IPromise<any>[] = [];
+		function instantiateComponents(ctors: HashMap<ComponentConstructor>): Promise<any> {
+			var instance: ApplicationComponent;
+			var instances: ApplicationComponent[] = [];
+			var startups: Array<void | Promise<any>> = [];
 
 			for (var key in ctors) {
 				instance = new ctors[key](<any> lang.mixin({ app: self }, components[key], { constructor: undefined }));
-				self.set(key, instance);
+				(<any> self)[key] = instance;
 				instances.push(instance);
 			}
 
@@ -258,20 +263,13 @@ class Application extends ObservableEvented {
 			return Promise.all(startups);
 		}
 
-		// TODO: Nothing does this right now
-		if (has('debug')) {
-			this.on('error', function (event:any):void {
-				console.error(event.message);
-			});
-		}
-
 		var promise = getConstructors()
 			.then(instantiateComponents)
-			.then(function ():Application {
+			.then(function () {
 				return self;
 			});
 
-		this.run = function ():IPromise<Application> {
+		this.run = function (): Promise<Application> {
 			return promise;
 		};
 
@@ -280,18 +278,12 @@ class Application extends ObservableEvented {
 }
 
 module Application {
-	export interface Events extends ObservableEvented.Events, core.IApplication.Events {}
-	export interface Getters extends ObservableEvented.Getters {
-		(key:'binder'):binding.IBinder;
-		(key:'components'):HashMap<HashMap<any>>;
-		(key:'errorHandler'):ErrorHandler;
-		(key:'scheduler'):Scheduler;
-	}
-	export interface Setters extends ObservableEvented.Setters {
-		(key:'binder', value:binding.IBinder):void;
-		(key:'components', value:HashMap<HashMap<any>>):void;
-		(key:'errorHandler', value:ErrorHandler):void;
-		(key:'scheduler', value:Scheduler):void;
+	export interface KwArgs extends Base.KwArgs {
+		binder?: typeof Application.prototype.binder;
+		components?: typeof Application.prototype.components;
+		errorHandler?: typeof Application.prototype.errorHandler;
+		i18n?: typeof Application.prototype.i18n;
+		scheduler?: typeof Application.prototype.scheduler;
 	}
 }
 
