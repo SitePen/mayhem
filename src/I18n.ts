@@ -53,6 +53,9 @@ class I18n extends Observable {
 		this._preload = [];
 	}
 
+	_formatCurrencyDependencies() {
+		return [ 'locale' ];
+	}
 	formatCurrency(amount:number, options:currencyFormatter.IFormatOptions = {}):string {
 		if (!options.locale) {
 			options = Object.create(options);
@@ -62,6 +65,9 @@ class I18n extends Observable {
 		return currencyFormatter.format(amount, options);
 	}
 
+	_formatDateDependencies() {
+		return [ 'locale' ];
+	}
 	formatDate(date:Date, options:dateFormatter.IFormatOptions = {}):string {
 		if (!options.locale) {
 			options = Object.create(options);
@@ -71,6 +77,9 @@ class I18n extends Observable {
 		return dateFormatter.format(date, options);
 	}
 
+	_formatNumberDependencies() {
+		return [ 'locale' ];
+	}
 	formatNumber(number:number, options:numberFormatter.IFormatOptions = {}):string {
 		if (!options.locale) {
 			options = Object.create(options);
@@ -113,6 +122,9 @@ class I18n extends Observable {
 		});
 	}
 
+	_parseCurrencyDependencies() {
+		return [ 'locale' ];
+	}
 	parseCurrency(amount:string, options:currencyFormatter.IParseOptions = {}):number {
 		if (!options.locale) {
 			options = Object.create(options);
@@ -122,6 +134,9 @@ class I18n extends Observable {
 		return currencyFormatter.parse(amount, options);
 	}
 
+	_parseDateDependencies() {
+		return [ 'locale' ];
+	}
 	parseDate(date:string, options:dateFormatter.IFormatOptions = {}):Date {
 		if (!options.locale) {
 			options = Object.create(options);
@@ -131,6 +146,9 @@ class I18n extends Observable {
 		return dateFormatter.parse(date, options);
 	}
 
+	_parseNumberDependencies() {
+		return [ 'locale' ];
+	}
 	parseNumber(number:string, options:numberFormatter.IParseOptions = {}):number {
 		if (!options.locale) {
 			options = Object.create(options);
