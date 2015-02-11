@@ -1,11 +1,17 @@
 # Mayhem
 
-## Setup
+** PRE-RELEASE SOFTWARE **
 
-* Install `bower` and `grunt-cli` globally, `npm install -g bower grunt-cli`
+## Setup for end users
+
+* `bower install SitePen/mayhem` or `npm install mayhem`
+* Read the fine [user guide](https://sitepen.github.io/mayhem/guide/)!
+
+## Setup for framework hackers
+
 * Clone the repo, `git clone git@github.com:SitePen/mayhem.git`
-* Setup development dependencies, `npm install`
-* Compile TypeScript and PEG parser with `grunt build`
+* Install development dependencies, `npm install`
+* Compile with `grunt build`
 
 ## Conventions
 
