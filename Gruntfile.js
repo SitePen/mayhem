@@ -12,10 +12,8 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('intern-geezer');
 
 	grunt.initConfig({
-		// TODO: Always build, or never build, tests
 		all: [ 'src/**/*.ts', 'typings/tsd.d.ts' ],
 		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts', 'typings/tsd.d.ts' ],
-		tests: [ 'tests/**/*.ts', 'typings/tsd.d.ts' ],
 
 		clean: {
 			framework: {
@@ -36,43 +34,6 @@ module.exports = function (grunt) {
 				src: [
 					'templating/html/peg/html.js*'
 				]
-			}
-		},
-
-		peg: {
-			parser: {
-				src: 'src/templating/html/peg/html.pegjs',
-				dest: 'dist/templating/html/peg/html.js',
-				options: {
-					allowedStartRules: [ 'Template', 'BoundText' ],
-					wrapper: function (src, parser) {
-						return 'define([\'require\', \'module\'], function (require, module) {\n' +
-							'return ' + parser + ';\n' +
-						'});';
-					}
-				}
-			}
-		},
-
-		ts: {
-			options: {
-				// TODO: Remove `failOnTypeErrors` with TS1.5; see TS#1133
-				failOnTypeErrors: false,
-				target: 'es5',
-				module: 'amd',
-				sourceMap: true,
-				noImplicitAny: true,
-				fast: 'never'
-			},
-			framework: {
-				src: [ '<%= ignoreDefinitions %>' ],
-				outDir: 'dist',
-				options: {
-					mapRoot: '../dist/_debug'
-				}
-			},
-			tests: {
-				src: [ '<%= tests %>' ]
 			}
 		},
 
@@ -103,6 +64,57 @@ module.exports = function (grunt) {
 			}
 		},
 
+		dts: {
+			options: {
+				name: 'mayhem',
+				baseDir: 'src'
+			},
+			framework: {
+				options: {
+					externs: [
+						'../dgrid/dgrid.d.ts',
+						'../dojo/dojo.d.ts',
+						'../dojo/dijit.d.ts',
+						'../dstore/dstore.d.ts',
+						'../esprima/esprima.d.ts',
+						'../intern/intern.d.ts',
+						'../intl-messageformat/intl-messageformat.d.ts',
+						'../xstyle/xstyle.d.ts'
+					],
+					out: 'dist/_typings/mayhem/mayhem.d.ts'
+				}
+			}
+		},
+
+		intern: {
+			runner: {
+				options: {
+					runType: 'runner',
+					config: 'tests/mayhem.intern'
+				}
+			},
+			client: {
+				options: {
+					config: 'tests/mayhem.intern'
+				}
+			}
+		},
+
+		peg: {
+			parser: {
+				src: 'src/templating/html/peg/html.pegjs',
+				dest: 'dist/templating/html/peg/html.js',
+				options: {
+					allowedStartRules: [ 'Template', 'BoundText' ],
+					wrapper: function (src, parser) {
+						return 'define([\'require\', \'module\'], function (require, module) {\n' +
+							'return ' + parser + ';\n' +
+						'});';
+					}
+				}
+			}
+		},
+
 		rename: {
 			sourceMaps: {
 				expand: true,
@@ -122,6 +134,28 @@ module.exports = function (grunt) {
 			}
 		},
 
+		ts: {
+			options: {
+				// TODO: Remove `failOnTypeErrors` with TS1.5; see TS#1133
+				failOnTypeErrors: false,
+				target: 'es5',
+				module: 'amd',
+				sourceMap: true,
+				noImplicitAny: true,
+				fast: 'never'
+			},
+			framework: {
+				src: [ '<%= ignoreDefinitions %>' ],
+				outDir: 'dist',
+				options: {
+					mapRoot: '../dist/_debug'
+				}
+			},
+			tests: {
+				src: [ 'tests/**/*.ts' ]
+			}
+		},
+
 		watch: {
 			ts: {
 				files: [ '<%= all %>' ],
@@ -131,40 +165,14 @@ module.exports = function (grunt) {
 				files: [ '<%= peg.parser.src %>' ],
 				tasks: [ 'peg:parser' ]
 			}
-		},
-
-		intern: {
-			runner: {
-				options: {
-					runType: 'runner',
-					config: 'tests/mayhem.intern'
-				}
-			},
-			client: {
-				options: {
-					config: 'tests/mayhem.intern'
-				}
-			}
 		}
 	});
 
-	grunt.registerTask('dts', function () {
+	grunt.registerMultiTask('dts', function () {
 		var done = this.async();
+		var onProgress = grunt.verbose.writeln.bind(grunt.verbose);
 
-		dtsGenerator.generate({
-			name: 'mayhem',
-			baseDir: 'src',
-			externs: [
-				'../dgrid/dgrid.d.ts',
-				'../dojo/dojo.d.ts',
-				'../dojo/dijit.d.ts',
-				'../dstore/dstore.d.ts',
-				'../esprima/esprima.d.ts',
-				'../intl-messageformat/intl-messageformat.d.ts',
-				'../xstyle/xstyle.d.ts'
-			],
-			out: 'dist/_typings/mayhem/mayhem.d.ts'
-		}, grunt.verbose.writeln.bind(grunt.verbose)).then(done, done);
+		dtsGenerator.generate(this.options(), onProgress).then(done, done);
 	});
 
 	grunt.registerMultiTask('rewriteSourceMapSources', function () {
@@ -187,7 +195,7 @@ module.exports = function (grunt) {
 		'peg:parser',
 		'ts:framework',
 		'copy:typings',
-		'dts',
+		'dts:framework',
 		'copy:framework',
 		'copy:sourceForDebugging',
 		'copy:staticFiles',

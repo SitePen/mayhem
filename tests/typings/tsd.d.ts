@@ -1,2 +1,1 @@
-/// <reference path="../../typings/tsd.d.ts" />
-/// <reference path="mayhem.d.ts" />
+/// <reference path="../../dist/_typings/mayhem/mayhem.d.ts" />
