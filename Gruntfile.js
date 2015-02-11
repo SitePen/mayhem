@@ -115,8 +115,8 @@ module.exports = function (grunt) {
 		rewriteSourceMapSources: {
 			framework: {
 				options: {
-					find: /^(?:\.\.\/)*src\//,
-					replace: ''
+					find: /^.*\/([^\/]+)$/,
+					replace: '$1'
 				},
 				src: [ 'dist/**/*.js.map' ]
 			}
