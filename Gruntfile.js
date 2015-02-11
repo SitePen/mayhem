@@ -7,7 +7,6 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-peg');
-	grunt.loadNpmTasks('grunt-rename');
 	grunt.loadNpmTasks('grunt-ts');
 	grunt.loadNpmTasks('intern-geezer');
 
@@ -15,6 +14,7 @@ module.exports = function (grunt) {
 		all: [ 'src/**/*.ts', 'typings/tsd.d.ts' ],
 		ignoreDefinitions: [ '<%= all %>', '!**/*.d.ts', 'typings/tsd.d.ts' ],
 
+		// TODO: Not really useful any more; just delete `dist`
 		clean: {
 			framework: {
 				src: [
@@ -190,17 +190,26 @@ module.exports = function (grunt) {
 		});
 	});
 
+	grunt.registerMultiTask('rename', function () {
+		this.files.forEach(function (file) {
+			grunt.file.mkdir(require('path').dirname(file));
+			require('fs').renameSync(file.src[0], file.dest);
+			grunt.verbose.writeln('Renamed ' + file.src[0] + ' to ' + file.dest);
+		});
+		grunt.log.writeln('Moved ' + this.files.length + ' files');
+	});
+
 	grunt.registerTask('test', [ 'ts:tests', 'intern:client' ]);
 	grunt.registerTask('build', [
 		'peg:parser',
 		'ts:framework',
 		'copy:typings',
-		'dts:framework',
 		'copy:framework',
 		'copy:sourceForDebugging',
 		'copy:staticFiles',
 		'rewriteSourceMapSources',
-		'rename:sourceMaps'
+		'rename:sourceMaps',
+		'dts:framework'
 	]);
 	grunt.registerTask('ci', [ 'build', 'test' ]);
 	grunt.registerTask('default', [ 'build', 'watch' ]);
