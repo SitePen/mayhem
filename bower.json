@@ -1,6 +1,6 @@
 {
   "name": "mayhem",
-  "version": "0.3.0-pre",
+  "version": "0.3.0-alpha.1",
   "homepage": "https://github.com/SitePen/mayhem",
   "moduleType": [
     "amd"
