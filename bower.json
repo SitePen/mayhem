@@ -1,18 +1,11 @@
 {
   "name": "mayhem",
-  "version": "0.9.0",
+  "version": "0.3.0-pre",
   "homepage": "https://github.com/SitePen/mayhem",
   "moduleType": [
     "amd"
   ],
-  "license": "BSD 3-Clause",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "third-party",
-    "tests"
-  ],
+  "license": "BSD-3-Clause",
   "dependencies": {
     "dgrid": "0.3.17",
     "dijit": "1.10.2",
@@ -25,6 +18,6 @@
     "xstyle": "0.2.1"
   },
   "typescript": {
-    "definition": "mayhem.d.ts"
+    "definition": "dist/mayhem.d.ts"
   }
 }

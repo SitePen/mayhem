@@ -7,6 +7,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-peg');
+	grunt.loadNpmTasks('grunt-rename');
 	grunt.loadNpmTasks('grunt-ts');
 	grunt.loadNpmTasks('intern-geezer');
 
@@ -55,6 +56,8 @@ module.exports = function (grunt) {
 
 		ts: {
 			options: {
+				// TODO: Remove `failOnTypeErrors` with TS1.5; see TS#1133
+				failOnTypeErrors: false,
 				target: 'es5',
 				module: 'amd',
 				sourceMap: true,
@@ -63,7 +66,10 @@ module.exports = function (grunt) {
 			},
 			framework: {
 				src: [ '<%= ignoreDefinitions %>' ],
-				outDir: 'dist'
+				outDir: 'dist',
+				options: {
+					mapRoot: '../dist/_debug'
+				}
 			},
 			tests: {
 				src: [ '<%= tests %>' ]
@@ -76,6 +82,43 @@ module.exports = function (grunt) {
 				cwd: 'src/',
 				src: [ '**/*.html' ],
 				dest: 'dist/'
+			},
+			sourceForDebugging: {
+				expand: true,
+				cwd: 'src/',
+				src: [ '**/*.ts' ],
+				dest: 'dist/_debug/'
+			},
+			typings: {
+				expand: true,
+				cwd: 'typings/',
+				src: [ '**/*.d.ts', '!tsd.d.ts' ],
+				dest: 'dist/_typings/'
+			},
+			staticFiles: {
+				expand: true,
+				cwd: '.',
+				src: [ 'README.md', 'LICENSE', 'package.json', 'bower.json' ],
+				dest: 'dist/'
+			}
+		},
+
+		rename: {
+			sourceMaps: {
+				expand: true,
+				cwd: 'dist/',
+				src: [ '**/*.js.map' ],
+				dest: 'dist/_debug/'
+			}
+		},
+
+		rewriteSourceMapSources: {
+			framework: {
+				options: {
+					find: /^(?:\.\.\/)*src\//,
+					replace: ''
+				},
+				src: [ 'dist/**/*.js.map' ]
 			}
 		},
 
@@ -120,18 +163,37 @@ module.exports = function (grunt) {
 				'../intl-messageformat/intl-messageformat.d.ts',
 				'../xstyle/xstyle.d.ts'
 			],
-			out: 'dist/mayhem.d.ts'
-		}, grunt.verbose.writeln.bind(grunt.verbose)).then(function () {
-			done(true);
-		},
-		function (error) {
-			grunt.log.error(error.message);
-			done(false);
+			out: 'dist/_typings/mayhem/mayhem.d.ts'
+		}, grunt.verbose.writeln.bind(grunt.verbose)).then(done, done);
+	});
+
+	grunt.registerMultiTask('rewriteSourceMapSources', function () {
+		var find = this.options().find;
+		var replace = this.options().replace;
+
+		grunt.log.writeln('Replacing ' + find + ' with ' + replace + ' in ' + this.filesSrc.length + ' files');
+
+		this.filesSrc.forEach(function (file) {
+			var map = JSON.parse(grunt.file.read(file));
+			map.sources = map.sources.map(function (source) {
+				return source.replace(find, replace);
+			});
+			grunt.file.write(file, JSON.stringify(map));
 		});
 	});
 
 	grunt.registerTask('test', [ 'ts:tests', 'intern:client' ]);
-	grunt.registerTask('build', [ 'peg:parser', 'ts:framework', 'copy', 'dts' ]);
+	grunt.registerTask('build', [
+		'peg:parser',
+		'ts:framework',
+		'copy:typings',
+		'dts',
+		'copy:framework',
+		'copy:sourceForDebugging',
+		'copy:staticFiles',
+		'rewriteSourceMapSources',
+		'rename:sourceMaps'
+	]);
 	grunt.registerTask('ci', [ 'build', 'test' ]);
 	grunt.registerTask('default', [ 'build', 'watch' ]);
 };
