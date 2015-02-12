@@ -20,6 +20,7 @@ Contribution guidelines
   code
 * Code should conform to our [code style guidelines](https://github.com/SitePen/mayhem/#conventions)
 * If possible and appropriate, updated tests should be a part of your pull request
+* If you would like to contribute improvements to the [Mayhem user guide](https://sitepen.github.io/mayhem/guide/), this is found in the gh-pages branch of the Mayhem repository
 
 ## Committers!
 
