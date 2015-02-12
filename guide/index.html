@@ -285,7 +285,7 @@
 							<p>Sections that look like this tell you about dangerous anti-patterns that can break, slow down, or make your application less maintainable.</p>
 						</aside>
 
-						<p>Later sections of this guide are designed to be built upon knowledge presented in earlier parts. If you jump into the middle and feel confused, step back a section or two until you find the information you need to move forward. We also accept <a href="TODO">pull requests</a> to the documentation in order to improve its flow and clarity.</p>
+						<p>Later sections of this guide are designed to be built upon knowledge presented in earlier parts. If you jump into the middle and feel confused, step back a section or two until you find the information you need to move forward. We also accept <a href="https://github.com/SitePen/mayhem/blob/master/CONTRIBUTING.md">pull requests</a> to the documentation in order to improve its flow and clarity.</p>
 
 						<div class="a half" id="first-app"></div>
 						<h3 data-id="first-app">Creating your first app</h3>
@@ -355,7 +355,7 @@
 
 						<h4>Model</h4>
 
-						<p>The term <dfn>model</dfn> in the context of the MVVM pattern refers to a “business” object—an object that contains code and data that performs the actual work of the business. Models operate completely independently from any user interface, so can be fully reused across many different systems. For example, if you were writing software for managing a bank, <em>bank accounts</em> and <em>transactions</em> would be two different types of <em>models</em>. Models within Mayhem are normally created by subclassing the <a href="#TODO"><code>mayhem/data/Model</code></a> class, which provides standard functionality for defining, loading, validating, and saving data.</p>
+						<p>The term <dfn>model</dfn> in the context of the MVVM pattern refers to a “business” object—an object that contains code and data that performs the actual work of the business. Models operate completely independently from any user interface, so can be fully reused across many different systems. For example, if you were writing software for managing a bank, <em>bank accounts</em> and <em>transactions</em> would be two different types of <em>models</em>. Models within Mayhem are normally created by subclassing the <!--<a href="#TODO">--><code>mayhem/data/Model</code><!--</a>--> class, which provides standard functionality for defining, loading, validating, and saving data.</p>
 
 						<h4>View</h4>
 
@@ -363,11 +363,11 @@
 
 						<h4>View-model</h4>
 
-						<p>The term <dfn>view-model</dfn> refers to a Model object that exposes properties that are required by a specific view. For example, if you had a <em>transaction history view</em> in your application, you would create an associated view-model that exposed a <a href="TODO">Collection</a> of <code>Transaction</code> objects to display in the list, plus additional properties that could be updated by the view in order to dynamically change the contents of the <code>Transactions</code> collection.</p>
+						<p>The term <dfn>view-model</dfn> refers to a Model object that exposes properties that are required by a specific view. For example, if you had a <em>transaction history view</em> in your application, you would create an associated view-model that exposed a <!--<a href="TODO">-->Collection<!--</a>--> of <code>Transaction</code> objects to display in the list, plus additional properties that could be updated by the view in order to dynamically change the contents of the <code>Transactions</code> collection.</p>
 
 						<p>One of the key differences between an MVVM view-model and an MVC controller is that the view-model is never given a reference to its associated view. Instead, properties are [TODO: should talk about data binding before getting here?] data-bound between the view and the view-model, so that when something in the view changes, a bound property of the view-model is updated, and vice-versa. This approach allows view-models to be decoupled from and reused by multiple different views, and also allows their logic to be tested completely independently from any user interface. It also has the added benefit of preventing any UI-specific code from ending up outside of the view subsystem.</p>
 
-						<p>In many cases, view-models are simple proxies back to real data models. For example, while a Transaction model may store the amount of a transaction in USD cents, your view may want to display the transaction amount in its equivalent in euros, with the correct currency symbol and locale-specific number formatting. Since all other information—like the transaction ID and recipient—can be taken as-is from the original data model, there is no reason to create an entirely separate view-model that re-exposes these properties just to add this one extra piece for the view. <a href="TODO"><code>mayhem/data/ProxyModel</code>s</a> allow you to wrap an existing model object with extra properties for display in a view, with all other properties delegating back to the original data model.</p>
+						<p>In many cases, view-models are simple proxies back to real data models. For example, while a Transaction model may store the amount of a transaction in USD cents, your view may want to display the transaction amount in its equivalent in euros, with the correct currency symbol and locale-specific number formatting. Since all other information—like the transaction ID and recipient—can be taken as-is from the original data model, there is no reason to create an entirely separate view-model that re-exposes these properties just to add this one extra piece for the view. <!--<a href="TODO">--><code>mayhem/data/ProxyModel</code>s<!--</a>--> allow you to wrap an existing model object with extra properties for display in a view, with all other properties delegating back to the original data model.</p>
 
 						<div class="a half" id="conventions"></div>
 						<h3 data-id="conventions">Conventions</h3>
@@ -391,7 +391,7 @@
 
 						<h4>Default object properties</h4>
 
-						<p>Due to <a href="TODO">design limitations</a> in TypeScript 1, default property values should be defined by adding an <a href="TODO"><code>_initialize</code></a> function to subclasses instead of using the syntactic sugar for default properties built into TypeScript’s class syntax:</p>
+						<p>Due to <!--<a href="TODO">-->design limitations<!--</a>--> in TypeScript 1, default property values should be defined by adding an <!--<a href="TODO">--><code>_initialize</code><!--</a>--> function to subclasses instead of using the syntactic sugar for default properties built into TypeScript’s class syntax:</p>
 
 						<pre><code class="typescript">class Burger extends Observable {
 	hasCheese:boolean;
@@ -406,15 +406,15 @@
 
 						<h4>Object usage</h4>
 
-						<p>Getting and setting properties on most Mayhem objects is done using <a href="TODO"><code>object.get(key)</code></a> and <a href="TODO"><code>object.set(key, value)</code></a> methods instead of using the normal property accessor (<code>.</code>) operator. This is necessary to support observable <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty#Custom_setters_and_getters">accessor/mutator functions</a> in pre-ES5 environments, and to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy-like behaviour</a> in pre-ES6 environments. <a href="#base-object">The Base object</a> describes how to create and use objects in Mayhem.</p>
+						<p>Getting and setting properties on most Mayhem objects is done using <!--<a href="TODO">--><code>object.get(key)</code><!--</a>--> and <!--<a href="TODO">--><code>object.set(key, value)</code><!--</a>--> methods instead of using the normal property accessor (<code>.</code>) operator. This is necessary to support observable <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty#Custom_setters_and_getters">accessor/mutator functions</a> in pre-ES5 environments, and to support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy-like behaviour</a> in pre-ES6 environments. <a href="#base-object">The Base object</a> describes how to create and use objects in Mayhem.</p>
 
 						<h4>Object destruction</h4>
 
-						<p>When you are done working with a class instance in Mayhem, it should always be destroyed by calling <a href="TODO"><code>object.destroy</code></a>. Doing this ensures that any internally held references to other objects that may still be retained elsewhere are broken, and that any necessary clean-up work is completed.</p>
+						<p>When you are done working with a class instance in Mayhem, it should always be destroyed by calling <!--<a href="TODO">--><code>object.destroy</code><!--</a>-->. Doing this ensures that any internally held references to other objects that may still be retained elsewhere are broken, and that any necessary clean-up work is completed.</p>
 
 						<h4>Event registration</h4>
 
-						<p>Mayhem continues the best practice established in the <a href="http://dojotoolkit.org">Dojo Toolkit</a> of returning an <a href="TODO"><code>IHandle</code></a> object from methods that perform registrations (event listeners, method aspects, data bindings, registry entries, etc.) instead of providing symmetric add/remove APIs. This practice offers many significant benefits over symmetric APIs:</p>
+						<p>Mayhem continues the best practice established in the <a href="http://dojotoolkit.org">Dojo Toolkit</a> of returning an <!--<a href="TODO">--><code>IHandle</code><!--</a>--> object from methods that perform registrations (event listeners, method aspects, data bindings, registry entries, etc.) instead of providing symmetric add/remove APIs. This practice offers many significant benefits over symmetric APIs:</p>
 
 						<ul>
 							<li>You only need to keep a reference to the <code>IHandle</code> object, instead of needing to keep references to all arguments passed to the event registration function, or using hacks like namespaced events</li>
@@ -496,7 +496,7 @@ export = Burger;</code></pre>
 							<figcaption>ES5 computed properties in Mayhem</figcaption>
 						</figure>
 
-						<p>Note that the <code>formattedPrice</code> setter in both of these examples has to perform its own notification that the value has changed. This allows computed property setters to control if and when change notifications occur, and matches the behaviour of the EcmaScript 6 <a href="TODO">Object.observe</a> API.</p>
+						<p>Note that the <code>formattedPrice</code> setter in both of these examples has to perform its own notification that the value has changed. This allows computed property setters to control if and when change notifications occur, and matches the behaviour of the EcmaScript 6 <!--<a href="TODO">-->Object.observe<!--</a>--> API.</p>
 
 						<p>When extending an Observable object, extra interfaces must be created in order to provide accurate typing information for <code>get</code> and <code>set</code> calls:</p>
 
@@ -539,7 +539,7 @@ export = Burger;</code></pre>
 							<li>An <em>observer function</em> should be used when an object needs to respond to the fact that a particular property has changed. For example, if you had a computed <code>totalPrice</code> property that was based on the subtotals of items in a shopping cart, the property would never be set directly but it would update frequently as items were added and removed from the cart.</li>
 						</ul>
 
-						<p>While property setters are defined declaratively as methods of an Observable subclass, property observers are normally added to objects using the application’s <a href="TODO">data binder</a>. TODO: Are we keeping Observable#observe? Should we add a declarative mechanism for observing property changes on oneself?</p>
+						<p>While property setters are defined declaratively as methods of an Observable subclass, property observers are normally added to objects using the application’s <!--<a href="TODO">-->data binder<!--</a>-->. TODO: Are we keeping Observable#observe? Should we add a declarative mechanism for observing property changes on oneself?</p>
 					</article>
 
 					<article>
@@ -549,7 +549,7 @@ export = Burger;</code></pre>
 						<div class="a half" id="application-class"></div>
 						<h3 data-id="application-class">Creating an application</h3>
 
-						<p>Mayhem provides a base <a href="TODO"><code>mayhem/Application</code> class</a> for creating new applications:</p>
+						<p>Mayhem provides a base <!--<a href="TODO">--><code>mayhem/Application</code> class<!--</a>--> for creating new applications:</p>
 
 						<pre><code class="typescript">import Application = require('mayhem/Application');</code></pre>
 
@@ -574,7 +574,7 @@ log(app.get('name'));</code></pre>
 
 						<aside class="tip"><p>The <code>name</code> property of an application will be used as the title of the application in user interfaces that support titles.</p></aside>
 
-						<p>It is also possible to create custom applications by subclassing an existing Application class. For example, the <a href="TODO"><code>mayhem/WebApplication</code> class</a> is a subclass of <code>mayhem/Application</code> with a different default configuration suitable for writing Web applications.</p>
+						<p>It is also possible to create custom applications by subclassing an existing Application class. For example, the <!--<a href="TODO">--><code>mayhem/WebApplication</code> class<!--</a>--> is a subclass of <code>mayhem/Application</code> with a different default configuration suitable for writing Web applications.</p>
 
 						<aside class="tip"><p><code>mayhem/WebApplication</code> is recommended as the default class for all applications created with the initial release of Mayhem, which focuses primarily on client-side Web apps. Future versions of Mayhem will include more Application subclasses to choose from for native mobile, server-side, and command-line apps.</p></aside>
 
@@ -598,21 +598,21 @@ log(app.run().then(function () {
 						<div class="a half" id="application-components"></div>
 						<h3 data-id="application-components">Application components</h3>
 
-						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load and instantiate different <dfn>application components</dfn> that implement the individual functions necessary to create a complete application. For example, the <a href="TODO"><code>mayhem/binding/Binder</code> class</a> is an application component that is used to perform all data binding within an application, and the <a href="TODO"><code>mayhem/ui/Master</code> class</a> is an application component that is used to provide a user interface.</p>
+						<p>The Application class on its own does relatively little; its power comes in the ability to dynamically load and instantiate different <dfn>application components</dfn> that implement the individual functions necessary to create a complete application. For example, the <!--<a href="TODO">--><code>mayhem/binding/Binder</code> class<!--</a>--> is an application component that is used to perform all data binding within an application, and the <!--<a href="TODO">--><code>mayhem/ui/Master</code> class<!--</a>--> is an application component that is used to provide a user interface.</p>
 
 						<p>The default Mayhem application components can be overridden with custom implementations. However, keep in mind that some parts of the framework that require features from application components expect them to exist at specific keys on the Application instance:</p>
 
 						<ul>
-							<li><code><strong>binder</strong></code>: An implementation of the <a href="TODO"><code>mayhem/binding/interfaces.IBinder</code></a> interface. Provides data binding.</li>
-							<li><code><strong>errorHandler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IErrorHandler</code></a> interface. Provides error handling for an application.</li>
-							<li><code><strong>i18n</strong></code>: An implementation of the <a href="TODO"><code>mayhem/I18n</code></a> interface. Provides internationalisation and localisation for an application.</li>
-							<li><code><strong>router</strong></code>: An implementation of the <a href="TODO"><code>mayhem/routing/interfaces.IRouter</code></a> interface. Provides navigation &amp; application state management.</li>
-							<li><code><strong>scheduler</strong></code>: An implementation of the <a href="TODO"><code>mayhem/interfaces.IScheduler</code></a> interface. Provides event scheduling.</li>
-							<li><code><strong>ui</strong></code>: An implementation of the <a href="TODO"><code>mayhem/ui/Master</code></a> interface. Provides user interface support.</li>
-							<li><code><strong>user</strong></code>: An implementation of the <a href="TODO"><code>mayhem/auth/User</code></a> object. Provides user authentication and authorization for single-user applications.</li>
+							<li><code><strong>binder</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/binding/interfaces.IBinder</code><!--</a>--> interface. Provides data binding.</li>
+							<li><code><strong>errorHandler</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/interfaces.IErrorHandler</code><!--</a>--> interface. Provides error handling for an application.</li>
+							<li><code><strong>i18n</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/I18n</code><!--</a>--> interface. Provides internationalisation and localisation for an application.</li>
+							<li><code><strong>router</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/routing/interfaces.IRouter</code><!--</a>--> interface. Provides navigation &amp; application state management.</li>
+							<li><code><strong>scheduler</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/interfaces.IScheduler</code><!--</a>--> interface. Provides event scheduling.</li>
+							<li><code><strong>ui</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/ui/Master</code><!--</a>--> interface. Provides user interface support.</li>
+							<li><code><strong>user</strong></code>: An implementation of the <!--<a href="TODO">--><code>mayhem/auth/User</code><!--</a>--> object. Provides user authentication and authorization for single-user applications.</li>
 						</ul>
 
-						<p>Application components can be dynamically added to an application at runtime using the <a href="TODO"><code>components</code></a> property of the configuration object. The configuration object gets <a href="TODO">deep copied</a> onto the default configuration, so default application components will continue to exist even if they are not set in the configuration object:</p>
+						<p>Application components can be dynamically added to an application at runtime using the <!--<a href="TODO">--><code>components</code><!--</a>--> property of the configuration object. The configuration object gets <!--<a href="TODO">-->deep copied<!--</a>--> onto the default configuration, so default application components will continue to exist even if they are not set in the configuration object:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -701,7 +701,7 @@ log(app.get('components'));</code></pre>
 
 						<p>Using a string value for a <code>constructor</code> property causes the Application instance to dynamically load a module matching the given string once it is started. The value of the module will be used as the constructor function to create a component.</p>
 
-						<p>Application component constructors can also be explicitly imported and provided directly, which helps to automate <a href="TODO">build-time dependency resolution</a>:</p>
+						<p>Application component constructors can also be explicitly imported and provided directly, which helps to automate <!--<a href="TODO">-->build-time dependency resolution<!--</a>-->:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -743,7 +743,7 @@ log(app.get('components'));</code></pre>
 
 						<aside class="whatAreYouCrazy"><p>Replacing any of the components attached to the Application object once the application has been started is not supported.</p></aside>
 
-						<p>Application components are instantiated using the value of the <a href="TODO"><code>constructor</code></a> property from the configuration object as the constructor function. The rest of the properties on the configuration object, plus an extra <code>app</code> property pointing to the Application instance, are passed as keyword arguments to the constructor:</p>
+						<p>Application components are instantiated using the value of the <!--<a href="TODO">--><code>constructor</code><!--</a>--> property from the configuration object as the constructor function. The rest of the properties on the configuration object, plus an extra <code>app</code> property pointing to the Application instance, are passed as keyword arguments to the constructor:</p>
 
 						<div class="codeMirror">
 							<pre><code class="typescript">import Application = require('mayhem/Application');
@@ -835,7 +835,7 @@ app.run();
 export = app;</code></pre>
 						</div>
 
-						<aside class="whatAreYouCrazy"><p>It is strongly recommended to pass the application object directly to constructors instead of having constructor modules explicitly reference the application module. For convenience, the <a href="TODO">data modelling subsystem</a> can be configured with a default application object based on module identifier. This is the only place where this functionality should normally be used.</p></aside>
+						<aside class="whatAreYouCrazy"><p>It is strongly recommended to pass the application object directly to constructors instead of having constructor modules explicitly reference the application module. For convenience, the <!--<a href="TODO">-->data modelling subsystem<!--</a>--> can be configured with a default application object based on module identifier. This is the only place where this functionality should normally be used.</p></aside>
 					</article>
 
 					<article>
@@ -856,7 +856,7 @@ export = app;</code></pre>
 						<div class="a half" id="how-to-data-bind"></div>
 						<h3 data-id="how-to-data-bind">How to bind data in Mayhem</h3>
 
-						<p>In Mayhem applications, all data binding is performed by the central <dfn>data binder</dfn> application component. By convention, this component is always created at <a href="TODO"><code>Application#binder</code></a>. Using the data binder, it is possible to create simple bindings between two properties just by calling <a href="TODO"><code>Binder#bind</code></a>:</p>
+						<p>In Mayhem applications, all data binding is performed by the central <dfn>data binder</dfn> application component. By convention, this component is always created at <!--<a href="TODO">--><code>Application#binder</code><!--</a>-->. Using the data binder, it is possible to create simple bindings between two properties just by calling <!--<a href="TODO">--><code>Binder#bind</code><!--</a>-->:</p>
 
 						<pre><code class="typescript">import BindDirection = require('mayhem/binding/BindDirection');
 
@@ -880,9 +880,9 @@ a.foo = 'blah';
 // Removes the binding
 handle.remove();</code></pre>
 
-						<aside class="tip"><p>Much of the time, data binding in a Mayhem application will be done more concisely using the <a href="TODO">templating system</a>, which provides a declarative mechanism for binding data to the UI. Applications that implement their own UI components programmatically, or that want to create data bindings between non-UI objects, will use the data binder directly.</p></aside>
+						<aside class="tip"><p>Much of the time, data binding in a Mayhem application will be done more concisely using the <!--<a href="TODO">-->templating system<!--</a>-->, which provides a declarative mechanism for binding data to the UI. Applications that implement their own UI components programmatically, or that want to create data bindings between non-UI objects, will use the data binder directly.</p></aside>
 
-						<p>With the <a href="TODO">default set of Binding constructors</a>, the data binding system allows you to bind to arbitrarily nested properties, including those that do not exist yet, using normal dotted object syntax:</p>
+						<p>With the <!--<a href="TODO">-->default set of Binding constructors<!--</a>-->, the data binding system allows you to bind to arbitrarily nested properties, including those that do not exist yet, using normal dotted object syntax:</p>
 
 						<pre><code class="typescript">var binder = this.get('app').get('binder');
 
@@ -917,7 +917,7 @@ binder.bind({
 	targetPath: 'foo'
 });</code></pre>
 
-						<p>It is also possible to more directly observe and modify a property by creating a low-level <a href="TODO"><code>Binding</code></a> object with <a href="TODO"><code>Binder#createBinding</code></a>. <dfn>Binding objects</dfn> are abstractions that allow us to ignore <em>how</em> and <em>where</em> a property is bound and instead focus solely on the value of the bound property:</p>
+						<p>It is also possible to more directly observe and modify a property by creating a low-level <!--<a href="TODO">--><code>Binding</code><!--</a>--> object with <!--<a href="TODO">--><code>Binder#createBinding</code><!--</a>-->. <dfn>Binding objects</dfn> are abstractions that allow us to ignore <em>how</em> and <em>where</em> a property is bound and instead focus solely on the value of the bound property:</p>
 
 						<pre><code class="typescript">var binder = this.get('app').get('binder');
 
@@ -971,12 +971,12 @@ binding.get(); // []
 a.foo.push('foo', 'bar');
 binding.get(); // [ 'foo', 'bar' ]</code></pre>
 
-						<aside class="whatAreYouCrazy"><p>Due to the limitations of EcmaScript 3/5, when working with arrays that are data bound, modifications must be performed using the array methods (<code>push</code>, <code>pop</code>, <code>splice</code>, etc.). Directly modifying array indices (<code>array[0] = 'foo'</code>) will not cause notifications. This limitation does not exist in environments that support <a href="TODO">EcmaScript 6 <code>Array.observe</code></a>.</p></aside>
+						<aside class="whatAreYouCrazy"><p>Due to the limitations of EcmaScript 3/5, when working with arrays that are data bound, modifications must be performed using the array methods (<code>push</code>, <code>pop</code>, <code>splice</code>, etc.). Directly modifying array indices (<code>array[0] = 'foo'</code>) will not cause notifications. This limitation does not exist in environments that support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/observe">EcmaScript 7 <code>Array.observe</code></a>.</p></aside>
 
 						<div class="a half" id="extending-binding"></div>
 						<h3 data-id="extending-binding">Adding and extending bindings</h3>
 
-						<p>As with all application components, the default data binder included with Mayhem, <a href="TODO"><code>mayhem/binding/Binder</code></a>, can be replaced by a totally different data binder, if desired:</p>
+						<p>As with all application components, the default data binder included with Mayhem, <!--<a href="TODO">--><code>mayhem/binding/Binder</code><!--</a>-->, can be replaced by a totally different data binder, if desired:</p>
 
 						<pre><code class="typescript">import Application = require('mayhem/Application');
 
@@ -1003,7 +1003,7 @@ var app = new Application({
 	}
 });</code></pre>
 
-						<p>Binding constructors can also be added and removed dynamically while the application is running by calling <a href="TODO"><code>mayhem/binding/Binder#add</code></a>:</p>
+						<p>Binding constructors can also be added and removed dynamically while the application is running by calling <!--<a href="TODO">--><code>mayhem/binding/Binder#add</code><!--</a>-->:</p>
 
 						<pre><code class="typescript">var binder = this.get('app').get('binder');
 
@@ -1034,7 +1034,7 @@ handle.remove();</code></pre>
 						<p>The built-in Mayhem application routers break routing cycles down into three phases:</p>
 
 						<ol>
-							<li>Incoming requests are normalised into <a href="TODO"><code>mayhem/routing/Request</code></a> objects. This allows the framework to handle requests identically whether they come from HTML5 history, a <code>hashchange</code> event, a Node.js HTTP server, or any other address source that can be converted to a Request object.</li>
+							<li>Incoming requests are normalised into <!--<a href="TODO">--><code>mayhem/routing/Request</code><!--</a>--> objects. This allows the framework to handle requests identically whether they come from HTML5 history, a <code>hashchange</code> event, a Node.js HTTP server, or any other address source that can be converted to a Request object.</li>
 							<li>The Request object is passed through a list of URL rules. URL rules provide the relationship between a URL and a route. In the case of an incoming request, a URL rule returns a route identifier and a map of arguments to be passed to the route object. The first URL rule that matches an incoming request wins.</li>
 							<li>A route matching the route ID from the URL rule is looked up a route map. If the route exists, it is loaded, and the route arguments are passed to the route. The route then performs actions in response to the routing change (loads models, loads views, etc.).</li>
 						</ol>
@@ -1087,7 +1087,7 @@ app.run().then(function () {
 
 </code></pre>
 
-						<p>As demonstrated in the previous example, with no URL rules at all and using the default <a href="TODO"><code>mayhem/routing/HashRouter</code></a>, this route would be accessible by navigating to <kbd>http://localhost/path/to/app/#!?routeId=menu</kbd>.</p>
+						<p>As demonstrated in the previous example, with no URL rules at all and using the default <!--<a href="TODO">--><code>mayhem/routing/HashRouter</code><!--</a>-->, this route would be accessible by navigating to <kbd>http://localhost/path/to/app/#!?routeId=menu</kbd>.</p>
 
 						<p>By adding a URL rule, the URL used for a given route can be made friendlier:</p>
 
@@ -1174,7 +1174,7 @@ var app = new Application({
 
 						<p>Rejecting a returned promise, or throwing an error, will cause the application’s <code>errorHandler</code> to be invoked unless the thrown error is a <code>dojo/promise/CancelError</code>, in which case the routing action will simply be cancelled. Attempting to navigate to another route while an existing route transition is underway will cause the existing transition to be cancelled.</p>
 
-						<p>If a route is already active and the router detects a state change that will not deactivate the active route, the <a href="TODO"><code>update</code></a> method will be called on the active route to notify it of the changed route parameters.</p>
+						<p>If a route is already active and the router detects a state change that will not deactivate the active route, the <!--<a href="TODO">--><code>update</code><!--</a>--> method will be called on the active route to notify it of the changed route parameters.</p>
 
 						<aside class="tip"><p>Errors are used instead of passing an event with a <code>preventDefault</code> method, or using a boolean return value, in order to provide a standard way for routes to give additional details to the router or other parts of the application about why a routing change was prevented.</p></aside>
 					</article>
@@ -1186,7 +1186,7 @@ var app = new Application({
 						<div class="a half" id="mayhem-views"></div>
 						<h3 data-id="mayhem-views">How views work</h3>
 
-						<p>The view subsystem in Mayhem is different from most other Web application frameworks (Ember, Polymer, Angular, React, etc.) because it fully abstracts the platform UI (i.e. the DOM). This means that unless you are creating a <a href="TODO">custom platform widget</a>, you never touch the DOM directly. This approach requires thinking slightly differently about how user interfaces are created, but it allows you to do several exceptional things:</p>
+						<p>The view subsystem in Mayhem is different from most other Web application frameworks (Ember, Polymer, Angular, React, etc.) because it fully abstracts the platform UI (i.e. the DOM). This means that unless you are creating a <!--<a href="TODO">-->custom platform widget<!--</a>-->, you never touch the DOM directly. This approach requires thinking slightly differently about how user interfaces are created, but it allows you to do several exceptional things:</p>
 
 						<ul>
 							<li>Your application can use native UI controls (i.e. real iOS and Android widgets) with few or no changes</li>
@@ -1200,8 +1200,8 @@ var app = new Application({
 						<p>Views in Mayhem are composed of multiple widgets and other views. <dfn>Widgets</dfn> are views that represent reusable UI components—text labels, input controls, lists, grids, and so on. Widgets and views can be created using one of three approaches:</p>
 
 						<ul>
-							<li><strong>Declarative approach</strong>: using <a href="TODO">view templating</a> to generate a view from markup</li>
-							<li><strong>Programmatic approach</strong>: using inheritance to extend the base <a href="TODO"><code>Widget</code></a> class</li>
+							<li><strong>Declarative approach</strong>: using <!--<a href="TODO">-->view templating<!--</a>--> to generate a view from markup</li>
+							<li><strong>Programmatic approach</strong>: using inheritance to extend the base <!--<a href="TODO">--><code>Widget</code><!--</a>--> class</li>
 							<li><strong>Hybrid approach</strong>: extending a View generated declaratively and adding extra features programmatically</li>
 						</ul>
 
@@ -1224,7 +1224,7 @@ TODO: This does not work with dstore collections
 	Sorry, we have no burgers
 &lt;/if></code></pre>
 
-						<p>The <a href="TODO">HTML templating engine</a> is implemented as an <a href="TODO">AMD loader plugin</a>, so loading a templated view is straightforward in most cases:</p>
+						<p>The <!--<a href="TODO">-->HTML templating engine<!--</a>--> is implemented as an <a href="http://dojotoolkit.org/reference-guide/1.10/loader/amd.html#plugins">AMD loader plugin</a>, so loading a templated view is straightforward in most cases:</p>
 
 						<pre><code class="typescript">import WebApplication = require('mayhem/WebApplication');
 
@@ -1278,9 +1278,9 @@ app.run();</code></pre>
 						<p>Mayhem’s HTML templating includes some extra, special tags for conditionals, loops, and Promise handling:</p>
 
 						<ul>
-							<li><strong><code>&lt;if></code>, <code>&lt;elseif></code>, and <code>&lt;else></code></strong>: Allows content to be conditionally displayed. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Conditional</code></a> widget.</li>
-							<li><strong><code>&lt;when></code>, <code>&lt;pending></code>, and <code>&lt;rejected></code></strong>: Allows different content to be displayed while a Promise is being resolved. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Promise</code></a> widget.</li>
-							<li><strong><code>&lt;for></code></strong>: Allows simple iteration over an array or <a href="TODO">Collection</a>. Internally, creates an instance of the <a href="TODO"><code>mayhem/templating/html/ui/Iterator</code></a> widget.</li>
+							<li><strong><code>&lt;if></code>, <code>&lt;elseif></code>, and <code>&lt;else></code></strong>: Allows content to be conditionally displayed. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Conditional</code><!--</a>--> widget.</li>
+							<li><strong><code>&lt;when></code>, <code>&lt;pending></code>, and <code>&lt;rejected></code></strong>: Allows different content to be displayed while a Promise is being resolved. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Promise</code><!--</a>--> widget.</li>
+							<li><strong><code>&lt;for></code></strong>: Allows simple iteration over an array or <!--<a href="TODO">-->Collection<!--</a>-->. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Iterator</code><!--</a>--> widget.</li>
 						</ul>
 
 						<h4>Conditional display</h4>
@@ -1294,7 +1294,7 @@ app.run();</code></pre>
 	No foo, no bar
 &lt;/if></code></pre>
 
-						<aside class="tip"><p>This mechanism is designed only to show and hide blocks of widgets. Conditional attributes should be handled by creating a specific <a href="TODO">view–model</a> and binding the attribute to a <a href="TODO">computed property</a> on the model.</p></aside>
+						<aside class="tip"><p>This mechanism is designed only to show and hide blocks of widgets. Conditional attributes should be handled by creating a specific <!--<a href="TODO">-->view–model<!--</a>--> and binding the attribute to a <!--<a href="TODO">-->computed property<!--</a>--> on the model.</p></aside>
 
 						<h4>Promise handling</h4>
 
@@ -1312,7 +1312,7 @@ app.run();</code></pre>
 	{item.name}
 &lt;/for></code></pre>
 
-						<aside class="tip"><p>The iterator widget is a dumb widget that will always attempt to fetch and render all items from an array or collection. Use a <a href="TODO"><code>mayhem/ui/ListView</code></a> or <a href="TODO"><code>mayhem/ui/GridView</code></a> when you need to render large collections with full lazy-loading and resource management. TODO: This is not true now, but should be, since dgrid can’t do MultiNodeWidget.</p></aside>
+						<aside class="tip"><p>The iterator widget is a dumb widget that will always attempt to fetch and render all items from an array or collection. Use a <!--<a href="TODO">--><code>mayhem/ui/ListView</code><!--</a>--> or <!--<a href="TODO">--><code>mayhem/ui/GridView</code><!--</a>--> when you need to render large collections with full lazy-loading and resource management. TODO: This is not true now, but should be, since dgrid can’t do MultiNodeWidget.</p></aside>
 
 						<div class="a half" id="cross-platform-views"></div>
 						<h3 data-id="cross-platform-views">Using cross-platform views</h3>
@@ -1326,11 +1326,11 @@ app.run();</code></pre>
 
 						<p>In addition to displaying information to a user interface, the view system is also responsible for receiving input from a user interface that can be used to execute functions within an application in response to interaction. To do this, Mayhem provides an event abstraction system that normalises input from different view implementations into a standard event model.</p>
 
-						<p>The standard event model in Mayhem translates all pointer inputs (mouse, pen, touch, etc.) into standard <a href="TODO"><code>PointerEvent</code></a> objects that closely match the W3C Pointer Events API, and keyboard events into standard <a href="TODO"><code>KeyboardEvent</code></a> objects that closely match the latest DOM 3 Events API:</p>
+						<p>The standard event model in Mayhem translates all pointer inputs (mouse, pen, touch, etc.) into standard <!--<a href="TODO">--><code>PointerEvent</code><!--</a>--> objects that closely match the W3C Pointer Events API, and keyboard events into standard <!--<a href="TODO">--><code>KeyboardEvent</code><!--</a>--> objects that closely match the latest DOM 3 Events API:</p>
 
 						<pre><code class="typescript">TODO: example</code></pre>
 
-						<p>It is possible to easily create custom events, such as gestures, using <a href="TODO">extension events</a> that listen for lower-level events and then dispatch the custom events when the custom event’s criteria are satisfied:</p>
+						<p>It is possible to easily create custom events, such as gestures, using <!--<a href="TODO">-->extension events<!--</a>--> that listen for lower-level events and then dispatch the custom events when the custom event’s criteria are satisfied:</p>
 
 						<pre><code class="typescript">TODO: example</code></pre>
 
@@ -1356,7 +1356,7 @@ app.run();</code></pre>
 
 						<p>Like arrays, collections hold sets of data, but do so with an API that’s suitable for working with data that comes from asynchronous data sources, like remote servers or databases. Mayhem uses <a href="http://dstorejs.io/">dstore</a> to provide a robust collections API for use with Mayhem applications.</p>
 
-						<p>Collections in Mayhem are generated by first creating a <a href="TODO"><code>dstore.Store</code></a> data store, then executing <code>filter</code> and <code>sort</code> calls in order to create a collection representing a subset of the data in the store:</p>
+						<p>Collections in Mayhem are generated by first creating a <a href="https://github.com/SitePen/dstore/blob/master/Store.js"><code>dstore.Store</code></a> data store, then executing <code>filter</code> and <code>sort</code> calls in order to create a collection representing a subset of the data in the store:</p>
 
 						<pre><code class="typescript">import RestStore = require('app/stores/RestStore');
 import Burger = require('app/models/Burger');
@@ -1388,7 +1388,7 @@ burgers.fetchRange({ start: 0, end: 10 }).then(function (firstTenBurgers:Burger[
 
 						<p>Different stores may use different <code>fetchRange</code> arguments; for example, stores based on technologies like DynamoDB, which don’t support integral paging, may require an exclusive start key to be passed instead.</p>
 
-						<aside class="tip"><p>Data-driven components within Mayhem like <a href="TODO"><code>mayhem/ui/ListView</code></a> will automatically manage fetching the correct amount of data for display when passed a collection, so you will only need to do this when interacting with collections in your own code.</p></aside>
+						<aside class="tip"><p>Data-driven components within Mayhem like <!--<a href="TODO">--><code>mayhem/ui/ListView</code><!--</a>--> will automatically manage fetching the correct amount of data for display when passed a collection, so you will only need to do this when interacting with collections in your own code.</p></aside>
 
 						<p>Collections also provide a <code>forEach</code> convenience method for asynchronously iterating over the items in a collection without requiring extra <code>fetch</code> boilerplate:</p>
 
@@ -1486,7 +1486,7 @@ module Burger {
 
 export = Burger;</code></pre>
 
-						<p>In Mayhem, models are normally created as subclasses of <a href="TODO"><code>mayhem/data/Model</code></a>. Models that are designed to be saved and retrieved from a <a href="TODO">data store</a> are subclasses of <a href="TODO"><code>mayhem/data/PersistentModel</code></a>.</p>
+						<p>In Mayhem, models are normally created as subclasses of <!--<a href="TODO">--><code>mayhem/data/Model</code><!--</a>-->. Models that are designed to be saved and retrieved from a <!--<a href="TODO">-->data store<!--</a>--> are subclasses of <!--<a href="TODO">--><code>mayhem/data/PersistentModel</code><!--</a>-->.</p>
 
 						<div class="a half" id="tracking-model-changes"></div>
 						<h3 data-id="tracking-model-changes">Tracking model changes</h3>
@@ -1579,7 +1579,7 @@ export = BurgerUser;</code></pre>
 						<div class="a half" id="persisting-data"></div>
 						<h3 data-id="persisting-data">Persisting data</h3>
 
-						<p>In order to persist data models across page loads, a data model should extend from the <a href="TODO"><code>mayhem/data/PersistentModel</code></a> class. The <code>PersistentModel</code> class TODO</p>
+						<p>In order to persist data models across page loads, a data model should extend from the <!--<a href="TODO">--><code>mayhem/data/PersistentModel</code><!--</a>--> class. The <code>PersistentModel</code> class TODO</p>
 					</article>
 
 					<article>
@@ -1591,7 +1591,7 @@ export = BurgerUser;</code></pre>
 
 						<p>The I18n application component provides all the necessary functionality for internationalising Mayhem applications.</p>
 
-						<p>By default, the locale used by the I18n component is taken from the current environment, using <code>navigator.language</code> in browsers and <code>process.env.LANG</code> in Node.js. The locale can be overridden at startup by setting the <code>locale</code> property, or at runtime by calling <a href="TODO"><code>I18n#switchToLocale</code></a>:</p>
+						<p>By default, the locale used by the I18n component is taken from the current environment, using <code>navigator.language</code> in browsers and <code>process.env.LANG</code> in Node.js. The locale can be overridden at startup by setting the <code>locale</code> property, or at runtime by calling <!--<a href="TODO">--><code>I18n#switchToLocale</code><!--</a>-->:</p>
 
 						<pre><code class="typescript">import Application = require('mayhem/Application');
 
@@ -1623,7 +1623,7 @@ app.run();</code></pre>
                 other {# categories}
 			}.</code></pre>
 
-						<p>Translation dictionaries are created by writing <a href="TODO">NLS bundles</a>. NLS bundles are simply modules placed inside an <code>nls</code> directory, separated by locale:</p>
+						<p>Translation dictionaries are created by writing <!--<a href="TODO">-->NLS bundles<!--</a>-->. NLS bundles are simply modules placed inside an <code>nls</code> directory, separated by locale:</p>
 
 						<pre>app/
 	nls/
@@ -1661,7 +1661,7 @@ export var orderBurders = `Pedir {NUM_BURGERS, plural,
                                    other {# hamburguesas}
                                  }`;</code></pre>
 
-						<p>To load an NLS bundle into I18n at runtime, call <a href="TODO"><code>I18n#loadBundle</code></a>, passing the root bundle’s module ID. It is also possible to preload message bundles at startup by setting the <code>preload</code> property to an array of module IDs:</p>
+						<p>To load an NLS bundle into I18n at runtime, call <!--<a href="TODO">--><code>I18n#loadBundle</code><!--</a>-->, passing the root bundle’s module ID. It is also possible to preload message bundles at startup by setting the <code>preload</code> property to an array of module IDs:</p>
 
 						<pre><code class="typescript">import Application = require('mayhem/Application');
 
@@ -1738,9 +1738,9 @@ app.run().then(function () {
 						<p>The main application component responsible for handling authentication and authorization within a Mayhem application is the User object. This object represents the identity of the current user and encompasses all functionality related to user access control. Using the User object, you can:</p>
 
 						<ul>
-							<li>Log a user in and out (<a href="TODO"><code>User#login</code></a> and <a href="TODO"><code>User#logout</code></a>)</li>
-							<li>Check whether a user is logged in (<a href="TODO"><code>User#isAuthenticated</code></a>)</li>
-							<li>Check whether a user has access to perform an operation (<a href="TODO"><code>User#checkAccess</code></a>)</li>
+							<li>Log a user in and out (<!--<a href="TODO">--><code>User#login</code><!--</a>--> and <!--<a href="TODO">--><code>User#logout</code><!--</a>-->)</li>
+							<li>Check whether a user is logged in (<!--<a href="TODO">--><code>User#isAuthenticated</code><!--</a>-->)</li>
+							<li>Check whether a user has access to perform an operation (<!--<a href="TODO">--><code>User#checkAccess</code><!--</a>-->)</li>
 							<li>Get and set other arbitrary data about the current user (name, email address, etc.)</li>
 						</ul>
 
@@ -1785,7 +1785,7 @@ app.run();</code></pre>
 
 						<p>Mayhem uses role-based access control to authorize users to perform certain actions within an application. RBAC works by describing a set of <i>permissions</i> that the application checks when performing certain actions, then granting those permissions to different <i>roles</i> that can be assigned to users.</p>
 
-						<p>In Mayhem, a <dfn>permission</dfn> is simply a unique string, like <code>'view'</code> or <code>'update'</code>, that describes the permission to be granted. Permissions are granted to roles by calling <a href="TODO"><code>Role#can</code></a>, passing optional business logic that can provide additional runtime restrictions on whether or not the permission is granted:</p>
+						<p>In Mayhem, a <dfn>permission</dfn> is simply a unique string, like <code>'view'</code> or <code>'update'</code>, that describes the permission to be granted. Permissions are granted to roles by calling <!--<a href="TODO">--><code>Role#can</code><!--</a>-->, passing optional business logic that can provide additional runtime restrictions on whether or not the permission is granted:</p>
 
 						<pre><code class="typescript">// TODO: Preliminary APIs, subject to change, no implementation
 // Provide the list of actions, and definitions for each action
@@ -1829,7 +1829,7 @@ user.addRole('normal');</code></pre>
 
 						<p>It is possible to assign a user multiple roles if this makes sense for your role system.</p>
 
-						<p>Finally, in application code, call <a href="TODO"><code>User#checkAccess</code></a> to determine whether or not the user has been granted permission to a particular activity:</p>
+						<p>Finally, in application code, call <!--<a href="TODO">--><code>User#checkAccess</code><!--</a>--> to determine whether or not the user has been granted permission to a particular activity:</p>
 
 						<pre><code class="typescript">// TODO: Improve this example to give surrounding Route code
 return this.get('app').get('user').checkAccess('updateBurger', burger)
