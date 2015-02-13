@@ -59,9 +59,7 @@ class ElementWidget extends Container {
 	on:ElementWidget.Events;
 	set:ElementWidget.Setters;
 
-	// This needs to be tied to the __bindingHandles that exist in templating/html~addBindings for now to avoid breaking
-	// stuff
-	private __bindingHandles:binding.IBindingHandle[];
+	private _bindingHandles:binding.IBindingHandle[];
 
 	/**
 	 * An array of raw content consisting of HTML strings and one of three special objects:
@@ -81,7 +79,7 @@ class ElementWidget extends Container {
 
 	_initialize():void {
 		super._initialize();
-		this.__bindingHandles = [];
+		this._bindingHandles = [];
 		this._placeholders = {};
 	}
 
@@ -178,7 +176,7 @@ class ElementWidget extends Container {
 					var newNode:Text = document.createTextNode('');
 					node.parentNode.replaceChild(newNode, node);
 
-					self.__bindingHandles.push(binder.bind({
+					self._bindingHandles.push(binder.bind({
 						source: model,
 						sourcePath: bindings[Number(result[1])].$bind,
 						target: newNode,
@@ -213,7 +211,7 @@ class ElementWidget extends Container {
 									path: bindings[Number(boundEvent[1])].$bind
 								});
 
-								self.__bindingHandles.push(binding);
+								self._bindingHandles.push(binding);
 							}
 
 							var eventName:string = result[1].toLowerCase().replace(/-(.)/g, function (_:string, character:string):string {
@@ -280,7 +278,7 @@ class ElementWidget extends Container {
 								}
 							}
 
-							self.__bindingHandles.push(binder.bind(kwArgs));
+							self._bindingHandles.push(binder.bind(kwArgs));
 
 							// Since we do not call `exec` until it returns nothing, we are responsible for resetting
 							// the RegExp, otherwise the next match will start from this match’s `lastIndex` and fail
@@ -297,7 +295,7 @@ class ElementWidget extends Container {
 
 							compositeBinding.push(nodeValue.slice(lastIndex));
 
-							self.__bindingHandles.push(binder.bind({
+							self._bindingHandles.push(binder.bind({
 								source: model,
 								// TODO: Loosen restriction on sourcePath in binding interfaces?
 								sourcePath: <any> compositeBinding,
