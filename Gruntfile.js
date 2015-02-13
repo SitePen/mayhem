@@ -17,9 +17,6 @@ module.exports = function (grunt) {
 		clean: {
 			framework: {
 				src: [ 'dist/' ]
-			},
-			parser: {
-				src: [ 'src/templating/html/peg/html.js*' ]
 			}
 		},
 
@@ -188,7 +185,6 @@ module.exports = function (grunt) {
 	grunt.registerTask('test', [ 'ts:tests', 'intern:client' ]);
 	grunt.registerTask('build', [
 		'clean:framework',
-		'clean:parser',
 		'peg:parser',
 		'ts:framework',
 		'copy:typings',

@@ -14,10 +14,9 @@ import parser = require('./html/peg/html');
 import templating = require('./interfaces');
 import util = require('../util');
 import Widget = require('../ui/dom/Widget');
-type WidgetConstructor = typeof Widget;
 
 // TODO: This function typically comes from TypeScript itself so is available everywhere, but its use here is a hack.
-declare function __extends(d:WidgetConstructor, b:WidgetConstructor):WidgetConstructor;
+declare function __extends(d:typeof Widget, b:typeof Widget):typeof Widget;
 
 interface BindingDeclaration {
 	$bind:string;
@@ -30,8 +29,8 @@ interface BindingDeclaration {
  * @param root The AST node to use as the root node for the constructed widget.
  * @returns A constructor that instantiates a composed view tree based on the contents of the AST.
  */
-function createViewConstructor(root:templating.INode):WidgetConstructor {
-	var BaseCtor = require<WidgetConstructor>(root.constructor);
+function createViewConstructor(root:templating.INode):typeof Widget {
+	var BaseCtor = require<typeof Widget>(root.constructor);
 
 	/**
 	 * @constructor
@@ -100,7 +99,7 @@ function createViewConstructor(root:templating.INode):WidgetConstructor {
 		}
 
 		function initializeChild(node:templating.INode) {
-			var WidgetCtor = require<WidgetConstructor>(node.constructor);
+			var WidgetCtor = require<typeof Widget>(node.constructor);
 			var initialState = getInitialStateFromNode(node);
 
 			var childWidget = new WidgetCtor(initialState.kwArgs);
@@ -152,15 +151,15 @@ function createViewConstructor(root:templating.INode):WidgetConstructor {
  * @param template A Mayhem HTML template.
  * @returns A promise that resolves to an BindableWidget constructor.
  */
-export function create(template:string):IPromise<WidgetConstructor> {
+export function create(template:string):IPromise<typeof Widget> {
 	var ast:templating.IParseTree = parser.parse(template);
-	return util.getModules(ast.constructors).then(function ():WidgetConstructor {
+	return util.getModules(ast.constructors).then(function ():typeof Widget {
 		return createViewConstructor(ast.root);
 	});
 }
 
-export function createFromFile(filename:string):IPromise<WidgetConstructor> {
-	return util.getModule('dojo/text!' + filename).then(function (template:string):IPromise<WidgetConstructor> {
+export function createFromFile(filename:string):IPromise<typeof Widget> {
+	return util.getModule('dojo/text!' + filename).then(function (template:string):IPromise<typeof Widget> {
 		return create(template);
 	});
 }
@@ -172,7 +171,7 @@ export function createFromFile(filename:string):IPromise<WidgetConstructor> {
  * @param require Context-specific require.
  * @param load Callback function passed a templated widget constructor.
  */
-export function load(resourceId:string, _:typeof require, load:(value:WidgetConstructor) => void):void {
+export function load(resourceId:string, _:typeof require, load:(value:typeof Widget) => void):void {
 	createFromFile(resourceId).then(load);
 }
 
