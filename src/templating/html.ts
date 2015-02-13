@@ -12,6 +12,7 @@ import binding = require('../binding/interfaces');
 import lang = require('dojo/_base/lang');
 import parser = require('./html/peg/html');
 import templating = require('./interfaces');
+import ui = require('../ui/interfaces');
 import util = require('../util');
 import Widget = require('../ui/dom/Widget');
 
@@ -36,6 +37,7 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 	 * @constructor
 	 */
 	function TemplatedView(kwArgs:HashMap<any> = {}) {
+		var self = this;
 		var app:Application = kwArgs['app'] || this.get('app');
 
 		if (!app) {
@@ -45,8 +47,11 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 			);
 		}
 
-		var model:{} = kwArgs['model'] || this.get('model') || {};
 		var binder = app.get('binder');
+		var model:{} = kwArgs['model'] || this.get('model');
+		// Empty object is used to satisfy the constraint of the current binding system that an object must always
+		// be provided to create a binding
+		var emptyObject = {};
 
 		var handles:binding.IBindingHandle[] = [];
 
@@ -54,7 +59,7 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 			for (var key in bindings) {
 				var declaration = bindings[key];
 				handles.push(binder.bind({
-					source: model,
+					source: model || emptyObject,
 					sourcePath: declaration.$bind,
 					target: widget,
 					targetPath: key,
@@ -63,10 +68,57 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 			}
 		}
 
+		function applyEvents(widget:Widget, events:HashMap<string|BindingDeclaration>) {
+			function bindEvent(eventName:string, eventTarget:BindingDeclaration) {
+				var binding = binder.createBinding<(event:ui.UiEvent) => void>(
+					model || emptyObject,
+					eventTarget.$bind,
+					{ useScheduler: false }
+				);
+
+				widget.on(eventName, function (event:ui.UiEvent) {
+					var listener = binding.get();
+					if (listener) {
+						listener.call(binding.getObject(), event);
+					}
+				});
+
+				handles.push(<binding.IBindingHandle> {
+					setSource(source:{}, sourcePath:string = eventTarget.$bind) {
+						binding.destroy();
+						binding = binder.createBinding<(event:ui.UiEvent) => void>(
+							source || emptyObject,
+							sourcePath,
+							{ useScheduler: false }
+						);
+					},
+					remove() {
+						binding.destroy();
+						binding = null;
+					}
+				});
+			}
+
+			for (var eventName in events) {
+				var eventTarget = events[eventName];
+
+				if (typeof eventTarget === 'string') {
+					widget.on(eventName, function (event:ui.UiEvent) {
+						self[eventTarget] && self[eventTarget].call(this, event);
+					});
+				}
+				else {
+					bindEvent(eventName, eventTarget);
+				}
+			}
+		}
+
 		function getInitialStateFromNode(node:templating.INode) {
 			var kwArgs:HashMap<any> = { app };
 			var bindings:HashMap<BindingDeclaration> = {};
+			var events:HashMap<string|BindingDeclaration> = {};
 
+			// TODO: Events need to be handled separately
 			for (var key in node) {
 				if (key === 'constructor') {
 					continue;
@@ -74,8 +126,12 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 
 				var value:any = node[key];
 
+				// property is an event
+				if (/^on[A-Z]/.test(key)) {
+					events[key.charAt(2).toLowerCase() + key.slice(3)] = value;
+				}
 				// property is a binding
-				if (value && value.$bind) {
+				else if (value && value.$bind) {
 					bindings[key] = value;
 				}
 				// property is a constructor
@@ -86,7 +142,25 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 				else if (value && typeof value.constructor === 'string') {
 					kwArgs[key] = initializeChild(value);
 				}
-				// property is a static value
+				// property is an object that may contain other widgets or bindings as properties
+				else if (util.isObject(value)) {
+					if (value instanceof Array) {
+						kwArgs[key] = value.map(function (value:any) {
+							if (value && typeof value.constructor === 'string') {
+								return initializeChild(value);
+							}
+							else {
+								// TODO: This is not correctly generating sub-widgets of objects in arrays, like what
+								// is generated for the Iterator widget. we need to recurse
+								return value;
+							}
+						});
+					}
+					else {
+						throw new Error('Unhandled object child case');
+					}
+				}
+				// property is a scalar value
 				else {
 					kwArgs[key] = value;
 				}
@@ -94,7 +168,8 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 
 			return {
 				kwArgs,
-				bindings
+				bindings,
+				events
 			};
 		}
 
@@ -104,6 +179,7 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 
 			var childWidget = new WidgetCtor(initialState.kwArgs);
 			applyBindings(childWidget, initialState.bindings);
+			applyEvents(childWidget, initialState.events);
 
 			return childWidget;
 		}
@@ -131,12 +207,13 @@ function createViewConstructor(root:templating.INode):typeof Widget {
 
 		aspect.after(this, '_modelSetter', function (value:{}) {
 			for (var i = 0, handle:binding.IBindingHandle; (handle = handles[i]); ++i) {
-				handle.setSource(value || {});
+				handle.setSource(value || emptyObject);
 			}
 		}, true);
 
 		var initialState = getInitialStateFromNode(root);
 		applyBindings(this, initialState.bindings);
+		applyEvents(this, initialState.events);
 		BaseCtor.call(this, lang.mixin(initialState.kwArgs, kwArgs));
 	}
 

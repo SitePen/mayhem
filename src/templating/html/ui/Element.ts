@@ -81,6 +81,14 @@ class ElementWidget extends Container {
 		super._initialize();
 		this._bindingHandles = [];
 		this._placeholders = {};
+
+		this.observe('model', function (value:{}) {
+			var emptyObject = {};
+			var handle:binding.IBindingHandle;
+			for (var i = 0; (handle = this._bindingHandles[i]); ++i) {
+				handle.setSource(value || emptyObject);
+			}
+		});
 	}
 
 	/**
@@ -119,6 +127,24 @@ class ElementWidget extends Container {
 		for (var key in placeholders) {
 			placeholders[key] && placeholders[key].set('isAttached', value);
 		}
+	}
+
+	protected _model:{};
+	_modelDependencies() {
+		return [ 'parent.model' ];
+	}
+	_modelGetter():{} {
+		if (this._model) {
+			return this._model;
+		}
+
+		var parent = this.get('parent');
+		if (parent) {
+			return <any> parent.get('model');
+		}
+	}
+	_modelSetter(value:{}):void {
+		this._model = value;
 	}
 
 	_render():void {

@@ -31,6 +31,24 @@ class Iterator<T> extends Container {
 		}
 	}
 
+	protected _model:{};
+	_modelDependencies() {
+		return [ 'parent.model' ];
+	}
+	_modelGetter():{} {
+		if (this._model) {
+			return this._model;
+		}
+
+		var parent = this.get('parent');
+		if (parent) {
+			return <any> parent.get('model');
+		}
+	}
+	_modelSetter(value:{}) {
+		this._model = value;
+	}
+
 	_isAttachedGetter():boolean {
 		return this._isAttached;
 	}

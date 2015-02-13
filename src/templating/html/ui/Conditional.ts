@@ -9,8 +9,24 @@ class Conditional extends MultiNodeWidget {
 	private _conditions:Conditional.ICondition[];
 	private _currentView:View;
 
-	// TODO: _model actually comes from the templating engine
-	private _model:Object;
+	protected _model:{};
+	_modelDependencies() {
+		return [ 'parent.model' ];
+	}
+	_modelGetter():{} {
+		if (this._model) {
+			return this._model;
+		}
+
+		var parent = this.get('parent');
+		if (parent) {
+			return <any> parent.get('model');
+		}
+	}
+	_modelSetter(value:{}) {
+		this._model = value;
+	}
+
 	private _modelObserver:IHandle;
 
 	get:Conditional.Getters;
