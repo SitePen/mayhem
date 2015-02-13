@@ -163,8 +163,8 @@ a:hover {
 
 .header {
 	background-color: $mayhemPurple;
-	background-image: linear-gradient(330deg, darken($mayhemPurple, 45%), $mayhemPurple);
-	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+	background-image: linear-gradient(330deg, #7E2383, $mayhemPurple);
+	box-shadow: 0 2px 5px 0 rgba(darken($mayhemPurple, 30%), 0.26);
 	color: $mayhemPurpleInvert;
 	height: $lh * 2;
 	margin-bottom: $lh * 2;
@@ -173,6 +173,7 @@ a:hover {
 	top:0;
 	width: 100%;
 	z-index: 2;
+
 
 	.no-sticky & {
 		position: fixed;
