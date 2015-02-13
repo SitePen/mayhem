@@ -7,6 +7,8 @@ import View = require('../../../ui/View');
 import util = require('../../../util');
 
 class Iterator<T> extends Container {
+	static inheritsModel:boolean = true;
+
 	get:Iterator.Getters<T>;
 	on:Iterator.Events<T>;
 	set:Iterator.Setters<T>;

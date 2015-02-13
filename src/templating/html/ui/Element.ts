@@ -55,6 +55,8 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
  * Element rule.
  */
 class ElementWidget extends Container {
+	static inheritsModel:boolean = true;
+
 	get:ElementWidget.Getters;
 	on:ElementWidget.Events;
 	set:ElementWidget.Setters;
@@ -81,6 +83,15 @@ class ElementWidget extends Container {
 		super._initialize();
 		this._bindingHandles = [];
 		this._placeholders = {};
+
+		var self = this;
+		this.observe('model', function (value:{}) {
+			value = value || {};
+			var handle:binding.IBindingHandle;
+			for (var i = 0; (handle = this._bindingHandles[i]); ++i) {
+				handle.setSource(value);
+			}
+		});
 	}
 
 	/**

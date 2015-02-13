@@ -4,13 +4,13 @@ import util = require('../../../util');
 import View = require('../../../ui/dom/View');
 
 class Conditional extends MultiNodeWidget {
+	static inheritsModel:boolean = true;
+
 	private _conditionBindings:binding.IBinding<boolean>[];
 	private _conditionObserveHandle:IHandle;
 	private _conditions:Conditional.ICondition[];
 	private _currentView:View;
 
-	// TODO: _model actually comes from the templating engine
-	private _model:Object;
 	private _modelObserver:IHandle;
 
 	get:Conditional.Getters;
@@ -82,9 +82,7 @@ class Conditional extends MultiNodeWidget {
 				this._lastNode.parentNode.insertBefore(view.detach(), this._lastNode);
 				view.set({
 					isAttached: this.get('isAttached'),
-					parent: this,
-					// TODO: Why would model be set to something wrong?
-					model: null
+					parent: this
 				});
 				break;
 			}
