@@ -363,7 +363,7 @@
 
 						<h4>View-model</h4>
 
-						<p>The term <dfn>view-model</dfn> refers to a Model object that exposes properties that are required by a specific view. For example, if you had a <em>transaction history view</em> in your application, you would create an associated view-model that exposed a <!--<a href="TODO">-->Collection<!--</a>--> of <code>Transaction</code> objects to display in the list, plus additional properties that could be updated by the view in order to dynamically change the contents of the <code>Transactions</code> collection.</p>
+						<p>The term <dfn>view-model</dfn> refers to a Model object that exposes properties that are required by a specific view. For example, if you had a <em>transaction history view</em> in your application, you would create an associated view-model that exposed a <a href="https://github.com/SitePen/dstore/blob/master/docs/Collection.md">Collection</a> of <code>Transaction</code> objects to display in the list, plus additional properties that could be updated by the view in order to dynamically change the contents of the <code>Transactions</code> collection.</p>
 
 						<p>One of the key differences between an MVVM view-model and an MVC controller is that the view-model is never given a reference to its associated view. Instead, properties are [TODO: should talk about data binding before getting here?] data-bound between the view and the view-model, so that when something in the view changes, a bound property of the view-model is updated, and vice-versa. This approach allows view-models to be decoupled from and reused by multiple different views, and also allows their logic to be tested completely independently from any user interface. It also has the added benefit of preventing any UI-specific code from ending up outside of the view subsystem.</p>
 
@@ -1280,7 +1280,7 @@ app.run();</code></pre>
 						<ul>
 							<li><strong><code>&lt;if></code>, <code>&lt;elseif></code>, and <code>&lt;else></code></strong>: Allows content to be conditionally displayed. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Conditional</code><!--</a>--> widget.</li>
 							<li><strong><code>&lt;when></code>, <code>&lt;pending></code>, and <code>&lt;rejected></code></strong>: Allows different content to be displayed while a Promise is being resolved. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Promise</code><!--</a>--> widget.</li>
-							<li><strong><code>&lt;for></code></strong>: Allows simple iteration over an array or <!--<a href="TODO">-->Collection<!--</a>-->. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Iterator</code><!--</a>--> widget.</li>
+							<li><strong><code>&lt;for></code></strong>: Allows simple iteration over an array or <a href="https://github.com/SitePen/dstore/blob/master/docs/Collection.md">Collection</a>. Internally, creates an instance of the <!--<a href="TODO">--><code>mayhem/templating/html/ui/Iterator</code><!--</a>--> widget.</li>
 						</ul>
 
 						<h4>Conditional display</h4>
