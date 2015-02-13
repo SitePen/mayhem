@@ -319,7 +319,7 @@
 						<h3 data-id="fundamentals-overview">Overview</h3>
 
 						<figure>
-							<img src="http://placekitten.com/1000/608">
+							<embed class="svg-image" src="images/mayhem-subsystems.svg" type="image/svg+xml" height="550" width="100%">
 							<figcaption>The subsystems of Mayhem</figcaption>
 						</figure>
 
@@ -496,7 +496,7 @@ export = Burger;</code></pre>
 							<figcaption>ES5 computed properties in Mayhem</figcaption>
 						</figure>
 
-						<p>Note that the <code>formattedPrice</code> setter in both of these examples has to perform its own notification that the value has changed. This allows computed property setters to control if and when change notifications occur, and matches the behaviour of the EcmaScript 6 <!--<a href="TODO">-->Object.observe<!--</a>--> API.</p>
+						<p>Note that the <code>formattedPrice</code> setter in both of these examples has to perform its own notification that the value has changed. This allows computed property setters to control if and when change notifications occur, and matches the behaviour of the EcmaScript 7 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe">Object.observe</a> API.</p>
 
 						<p>When extending an Observable object, extra interfaces must be created in order to provide accurate typing information for <code>get</code> and <code>set</code> calls:</p>
 
