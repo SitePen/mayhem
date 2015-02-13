@@ -44,7 +44,7 @@ html,
 body {
 	background-color: $backgroundColor;
 	color: $color;
-	font: 16px/$lh $bodyFont;
+	font: 16px/30px $bodyFont;
 	text-rendering: optimizeLegibility;
 }
 
@@ -158,12 +158,14 @@ a:hover {
 
 .header {
 	background-color: $mayhemPurple;
-	background-image: linear-gradient(330deg, #5C2699, #A6474D);
+	background-image: linear-gradient(330deg, darken($mayhemPurple, 45%), $mayhemPurple);
+	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
 	color: $mayhemPurpleInvert;
+	height: $lh * 2;
 	margin-bottom: $lh * 2;
 	position: -webkit-sticky;
 	position: sticky;
-	top: $lh * -1;
+	top:0;
 	width: 100%;
 	z-index: 2;
 
@@ -172,12 +174,16 @@ a:hover {
 	}
 
 	@media (max-width: 920px) {
-		background-image: linear-gradient(330deg, #5C2699, #A6474D);
+
 	}
 
 	@media (max-width: 490px) {
 		background-image: none;
 		top: 0;
+	}
+
+	.wrapper {
+		height: @height;
 	}
 
 	.search {
@@ -256,12 +262,13 @@ a:hover {
 		img {
 			max-height: $lh;
 			vertical-align: middle;
+			margin: ($lh / 2) auto;
 		}
 	}
 
 	@media (max-width: 490px) {
 		.preTitle {
-			display: none;
+			text-align:center;
 		}
 	}
 
@@ -286,6 +293,7 @@ a:hover {
 
 .nav {
 	float: left;
+	font-family: $headingFont;
 	max-width: 12rem;
 	position: -webkit-sticky;
 	position: sticky;
@@ -321,7 +329,7 @@ a:hover {
 
 		a {
 			font-weight: bold;
-			color: $mayhemPurple;
+			color: $mayhemOrange;
 
 			&:hover {
 				color: $color;
@@ -333,6 +341,7 @@ a:hover {
 			overflow: visible;
 
 			a {
+				color: $mayhemPurple;
 				font-weight: normal;
 			}
 		}
@@ -536,7 +545,7 @@ a:hover {
 
 	h3 {
 		font-family: $headingFont;
-		font-size: 1.55rem;
+		font-size: 1.85rem;
 		margin-bottom: $lh * 0.25;
 		padding-top: $lh * 0.75;
 	}
