@@ -184,7 +184,6 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('test', [ 'ts:tests', 'intern:client' ]);
 	grunt.registerTask('build', [
-		'clean:framework',
 		'peg:parser',
 		'ts:framework',
 		'copy:typings',
