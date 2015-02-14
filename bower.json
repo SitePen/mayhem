@@ -1,10 +1,12 @@
 {
   "name": "mayhem",
+  "description": "A framework for rich Internet applications.",
   "version": "0.3.0-pre",
   "homepage": "https://github.com/SitePen/mayhem",
   "moduleType": [
     "amd"
   ],
+  "ignore": [],
   "license": "BSD-3-Clause",
   "dependencies": {
     "dgrid": "0.3.17",
