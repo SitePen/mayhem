@@ -80,7 +80,8 @@ class IteratorList<T> extends OnDemandList {
 
 		var widget:SingleNodeWidget = new Ctor({
 			app: this._app,
-			model: model
+			model: model,
+			parent: this
 		});
 
 		var rowNode:HTMLElement = <HTMLElement> widget.detach();
