@@ -6,5 +6,5 @@ node_modules/
 tests/**/*.js
 !tests/support/reporter.js
 third-party/
-src/*.js
+src/**/*.js
 tscommand-*.tmp.txt
