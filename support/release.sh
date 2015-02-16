@@ -176,6 +176,7 @@ git push origin --tags
 
 cd "$BUILD_DIR"
 npm publish --tag $NPM_TAG
+git push origin master
 git push origin --tags
 
 cd "$ROOT_DIR"
