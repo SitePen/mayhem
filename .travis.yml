@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - "0.10"
+sudo: false
+cache:
+  directories:
+    - node_modules
+    - third-party
+install:
+  - travis_retry npm install bower grunt-cli
+  - travis_retry npm install
+  - travis_retry bower install
+script:
+  - grunt ci
