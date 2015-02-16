@@ -28,6 +28,12 @@ interface TemplatingAwareWidgetConstructor {
 	inheritsModel?:boolean;
 }
 
+interface InstanceArguments {
+	kwArgs:HashMap<any>;
+	bindings:HashMap<BindingDeclaration>;
+	events:HashMap<string|BindingDeclaration>;
+}
+
 /**
  * Creates a BindableWidget constructor from a template AST node.
  *
@@ -118,57 +124,74 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 			}
 		}
 
-		function getInitialStateFromNode(node:templating.INode) {
-			var kwArgs:HashMap<any> = { app };
+		function readNode(node:templating.INode):Widget|{} {
+			if (util.isObject(node)) {
+				if (typeof node.constructor === 'string') {
+					return createWidget(node);
+				}
+				else if (node.$ctor) {
+					return createViewConstructor(node.$ctor, self);
+				}
+				else {
+					var kwArgs:{} = node instanceof Array ? [] : {};
+
+					for (var key in node) {
+						(<any> kwArgs)[key] = readNode(node[key]);
+					}
+
+					return kwArgs;
+				}
+			}
+			else {
+				return node;
+			}
+		}
+
+		function createWidget(node:templating.INode):Widget {
+			var Ctor = require<typeof Widget>(node.constructor);
+			var initialState = getInitialState(node);
+
+			var isModelInheritor =
+				!('model' in initialState.bindings) &&
+				(<TemplatingAwareWidgetConstructor> Ctor).inheritsModel;
+
+			if (isModelInheritor) {
+				initialState.kwArgs['model'] = model;
+			}
+
+			initialState.kwArgs['app'] = app;
+
+			var instance:Widget = new Ctor(initialState.kwArgs);
+			applyBindings(instance, initialState.bindings);
+			applyEvents(instance, initialState.events);
+
+			if (isModelInheritor) {
+				modelInheritors.push(instance);
+			}
+
+			return instance;
+		}
+
+		function getInitialState(node:templating.INode) {
+			var kwArgs:HashMap<any> = {};
 			var bindings:HashMap<BindingDeclaration> = {};
 			var events:HashMap<string|BindingDeclaration> = {};
 
-			function recursivelyInitializeChildren(parent:templating.INode) {
-				for (var key in parent) {
-					var value = parent[key];
-					if (value && typeof value.constructor === 'string') {
-						parent[key] = initializeChild(value);
-					}
-					else if (util.isObject(value)) {
-						recursivelyInitializeChildren(value);
-					}
-				}
-
-				return parent;
-			}
-
-			// TODO: Events need to be handled separately
 			for (var key in node) {
+				var value = node[key];
+
 				if (key === 'constructor') {
 					continue;
 				}
 
-				var value:any = node[key];
-
-				// property is an event
 				if (/^on[A-Z]/.test(key)) {
 					events[key.charAt(2).toLowerCase() + key.slice(3)] = value;
 				}
-				// property is a binding
-				else if (value && value.$bind) {
+				else if (value.$bind) {
 					bindings[key] = value;
 				}
-				// property is a constructor
-				else if (value && value.$ctor) {
-					kwArgs[key] = createViewConstructor(value.$ctor, self);
-				}
-				// property is a widget instance
-				else if (value && typeof value.constructor === 'string') {
-					kwArgs[key] = initializeChild(value);
-				}
-				// property is a value
 				else {
-					// property is an object that may contain other widgets or bindings as properties
-					if (util.isObject(value)) {
-						recursivelyInitializeChildren(value);
-					}
-
-					kwArgs[key] = value;
+					kwArgs[key] = readNode(value);
 				}
 			}
 
@@ -177,31 +200,6 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 				bindings,
 				events
 			};
-		}
-
-		function initializeChild(node:templating.INode) {
-			var WidgetCtor = require<typeof Widget>(node.constructor);
-			var initialState = getInitialStateFromNode(node);
-
-			// The child being initialised expects to always receive the `model` property from this root widget in order
-			// to perform its own additional binding
-			var isModelInheritor =
-				!('model' in initialState.bindings) &&
-				(<TemplatingAwareWidgetConstructor> WidgetCtor).inheritsModel;
-
-			if (isModelInheritor) {
-				initialState.kwArgs['model'] = model;
-			}
-
-			var childWidget = new WidgetCtor(initialState.kwArgs);
-			applyBindings(childWidget, initialState.bindings);
-			applyEvents(childWidget, initialState.events);
-
-			if (isModelInheritor) {
-				modelInheritors.push(childWidget);
-			}
-
-			return childWidget;
 		}
 
 		// TODO: Prevents children from being removed and adopted elsewhere; need to have widgets emit remove events
@@ -229,7 +227,7 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 			};
 		}
 
-		var initialState = getInitialStateFromNode(root);
+		var initialState = getInitialState(root);
 		applyBindings(this, initialState.bindings);
 		applyEvents(this, initialState.events);
 		BaseCtor.call(this, lang.mixin(initialState.kwArgs, kwArgs));
