@@ -45,7 +45,27 @@ class Promise<T> implements IPromise<T> {
 
 		try {
 			initializer(
-				lang.hitch(dfd, 'resolve'),
+				function (value:T|Promise<T>) {
+					if (value && (<Promise<T>> value).then) {
+						var promise = <Promise<T>> value;
+						promise.then(
+							lang.hitch(dfd, 'resolve'),
+							lang.hitch(dfd, 'reject'),
+							lang.hitch(dfd, 'progress')
+						);
+						if (promise.cancel) {
+							canceler = (function (oldCanceler:Promise.ICanceler) {
+								return function (reason:Error) {
+									promise.cancel(reason);
+									oldCanceler && oldCanceler(reason);
+								};
+							})(canceler);
+						}
+					}
+					else {
+						dfd.resolve(value);
+					}
+				},
 				lang.hitch(dfd, 'reject'),
 				lang.hitch(dfd, 'progress'),
 				function (_canceler:Promise.ICanceler):void {
