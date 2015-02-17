@@ -10,8 +10,8 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "dgrid": "0.3.17",
-    "dijit": "1.10.2",
-    "dojo": "1.10.2",
+    "dijit": "1.10.4",
+    "dojo": "1.10.4",
     "dstore": "1.0.1",
     "esprima": "1.2.2",
     "intl": "0.1.4",
