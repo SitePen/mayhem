@@ -554,6 +554,7 @@ declare module 'dijit/form/TextBox' {
 	import _FormValueWidget = require('dijit/form/_FormValueWidget');
 
 	interface TextBox extends _FormValueWidget {
+		textbox:HTMLInputElement;
 	}
 
 	var TextBox:{

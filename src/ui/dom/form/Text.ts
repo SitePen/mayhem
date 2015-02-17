@@ -43,6 +43,28 @@ class Text extends DijitWidget implements IText {
 	 * @set
 	 * @protected
 	 */
+	_isSecureEntry:boolean;
+	_isSecureEntryGetter():boolean {
+		return this._isSecureEntry;
+	}
+	_isSecureEntrySetter(value:boolean):void {
+		if (value === this._isSecureEntry || this._isMultiLine) {
+			return;
+		}
+
+		var htmlType = value ? 'password' : 'text';
+
+		this._isSecureEntry = value;
+		this._widget.set('type', htmlType);
+		// Dijit does not allow programmatic change of the type of an input
+		this._widget.textbox.type = htmlType;
+	}
+
+	/**
+	 * @get
+	 * @set
+	 * @protected
+	 */
 	_placeholder:string;
 
 	/**
@@ -59,10 +81,13 @@ class Text extends DijitWidget implements IText {
 	 */
 	_value:string;
 
+	_widget:DijitText;
+
 	_initialize():void {
 		super._initialize();
 		this._autoCommit = false;
 		this._isMultiLine = false;
+		this._isSecureEntry = false;
 		this._placeholder = '';
 		this._readOnly = false;
 		this._value = '';
@@ -72,9 +97,15 @@ class Text extends DijitWidget implements IText {
 	 * @override
 	 */
 	_render():void {
-		var Ctor = this.get('isMultiLine') ? DijitTextarea : DijitText;
+		var isMultiLine = this.get('isMultiLine');
+		var Ctor = isMultiLine ? DijitTextarea : DijitText;
 
-		var widget = new Ctor();
+		var kwArgs:any = {};
+		if (!isMultiLine) {
+			kwArgs.type = this.get('isSecureEntry') ? 'password' : 'text';
+		}
+
+		var widget = new Ctor(kwArgs);
 
 		if (this._widget) {
 			this._node.parentNode.replaceChild(widget.domNode, this._node);

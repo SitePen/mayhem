@@ -15,6 +15,7 @@ module Text {
 	export interface Getters extends Widget.Getters {
 		(key:'autoCommit'):boolean;
 		(key:'isMultiLine'):boolean;
+		(key:'isSecureEntry'):boolean;
 		(key:'placeholder'):string;
 		(key:'value'):string;
 	}
@@ -22,6 +23,7 @@ module Text {
 	export interface Setters extends Widget.Setters {
 		(key:'autoCommit', value:boolean):void;
 		(key:'isMultiLine', value:boolean):void;
+		(key:'isSecureEntry', value:boolean):void;
 		(key:'placeholder', value:string):void;
 		(key:'value', value:string):void;
 	}
