@@ -128,6 +128,14 @@ class Text extends DijitWidget implements IText {
 
 	_widget:DijitText;
 
+	constructor(kwArgs?:HashMap<any>) {
+		util.deferSetters(this, [ 'isSecureEntry', 'keyboardType' ], '_render');
+		util.deferSetters(this, [ 'isMultiLine' ], '_render', function (_, value) {
+			this._isMultiLine = value;
+		});
+		super(kwArgs);
+	}
+
 	_initialize():void {
 		super._initialize();
 		this._autoCommit = false;
@@ -146,12 +154,7 @@ class Text extends DijitWidget implements IText {
 		var isMultiLine = this.get('isMultiLine');
 		var Ctor = isMultiLine ? DijitTextarea : DijitText;
 
-		var kwArgs:any = {};
-		if (!isMultiLine) {
-			kwArgs.type = this.get('isSecureEntry') ? 'password' : 'text';
-		}
-
-		var widget = new Ctor(kwArgs);
+		var widget = new Ctor();
 
 		if (this._widget) {
 			this._node.parentNode.replaceChild(widget.domNode, this._node);
