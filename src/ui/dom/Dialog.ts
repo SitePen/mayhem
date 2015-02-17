@@ -77,14 +77,17 @@ class Dialog extends DijitWidget implements IDialog {
 	add(child:Widget, position?:AddPosition):IHandle;
 	add(child:Widget, position?:number):IHandle;
 	add(child:Widget, position:any = AddPosition.LAST):IHandle {
+		var children = this._children;
+
 		if (position === AddPosition.LAST) {
-			position = this._children.length;
+			position = children.length;
 		}
 
-		var nextWidget:Widget = this._children[position];
+		var nextWidget:Widget = children[position];
 		var nextNode:Node = nextWidget ? nextWidget.get('firstNode') : null;
 
 		this._containerNode.insertBefore(child.detach(), nextNode);
+		children.splice(position, 0, child);
 		ContainerMixin.prototype.add.call(this, child);
 
 		var self = this;
