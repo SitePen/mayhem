@@ -37,13 +37,13 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 		touch: 40
 	};
 
-	var buttons:{ [buttonId:number]: ButtonState; } = {};
-
-	function resetButton(buttonId:number):void {
-		buttons[buttonId] = null;
-	}
-
 	return function (target:Widget, callback:(event?:ui.ClickEvent) => void):IHandle {
+		var buttons:{ [buttonId:number]: ButtonState; } = {};
+
+		function resetButton(buttonId:number):void {
+			buttons[buttonId] = null;
+		}
+
 		return util.createCompositeHandle(
 			target.on('pointerdown', function (event:ui.PointerEvent):void {
 				if (!event.isPrimary || event.defaultPrevented) {
