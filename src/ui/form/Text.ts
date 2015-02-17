@@ -1,6 +1,7 @@
 /// <amd-dependency path="../dom/form/Text" />
 
 import has = require('../../has');
+import KeyboardType = require('./KeyboardType');
 import Widget = require('../Widget');
 
 interface Text extends Widget {
@@ -16,6 +17,7 @@ module Text {
 		(key:'autoCommit'):boolean;
 		(key:'isMultiLine'):boolean;
 		(key:'isSecureEntry'):boolean;
+		(key:'keyboardType'):KeyboardType;
 		(key:'placeholder'):string;
 		(key:'value'):string;
 	}
@@ -24,6 +26,7 @@ module Text {
 		(key:'autoCommit', value:boolean):void;
 		(key:'isMultiLine', value:boolean):void;
 		(key:'isSecureEntry', value:boolean):void;
+		(key:'keyboardType', value:KeyboardType):void;
 		(key:'placeholder', value:string):void;
 		(key:'value', value:string):void;
 	}

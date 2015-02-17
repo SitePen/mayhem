@@ -2,6 +2,7 @@ import DijitWidget = require('../DijitWidget');
 import DijitText = require('dijit/form/ValidationTextBox');
 import DijitTextarea = require('dijit/form/SimpleTextarea');
 import IText = require('../../form/Text');
+import KeyboardType = require('../../form/KeyboardType');
 import util = require('../../../util');
 
 class Text extends DijitWidget implements IText {
@@ -55,9 +56,53 @@ class Text extends DijitWidget implements IText {
 		var htmlType = value ? 'password' : 'text';
 
 		this._isSecureEntry = value;
-		this._widget.set('type', htmlType);
 		// Dijit does not allow programmatic change of the type of an input
 		this._widget.textbox.type = htmlType;
+	}
+
+	/**
+	* @get
+	* @set
+	* @protected
+	*/
+	_keyboardType:KeyboardType;
+	_keyboardTypeGetter():KeyboardType {
+		return this._keyboardType;
+	}
+	_keyboardTypeSetter(value:KeyboardType):void {
+		if (this._keyboardType === value || this._isMultiLine) {
+			return;
+		}
+
+		this._keyboardType = value;
+
+		var htmlInput:any = this._widget.textbox;
+		var useInputMode:boolean = 'inputMode' in htmlInput;
+		var htmlType:string;
+		switch (value) {
+			case KeyboardType.DEFAULT:
+				htmlType = useInputMode ? null : (this._isSecureEntry ? 'password' : 'text');
+				break;
+			case KeyboardType.URL:
+				htmlType = 'url';
+				break;
+			case KeyboardType.NUMBER:
+				htmlType = useInputMode ? 'numeric' : 'number';
+				break;
+			case KeyboardType.TELEPHONE:
+				htmlType = 'tel';
+				break;
+			case KeyboardType.EMAIL:
+				htmlType = 'email';
+				break;
+		}
+
+		if (useInputMode) {
+			htmlInput.inputMode = htmlType;
+		}
+		else {
+			htmlInput.type = htmlType;
+		}
 	}
 
 	/**
@@ -86,6 +131,7 @@ class Text extends DijitWidget implements IText {
 	_initialize():void {
 		super._initialize();
 		this._autoCommit = false;
+		this._keyboardType = KeyboardType.DEFAULT;
 		this._isMultiLine = false;
 		this._isSecureEntry = false;
 		this._placeholder = '';

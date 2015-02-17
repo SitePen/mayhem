@@ -106,6 +106,7 @@
         "./src/ui/form/CheckboxValue.ts",
         "./src/ui/form/DatePicker.ts",
         "./src/ui/form/Error.ts",
+        "./src/ui/form/KeyboardType.ts",
         "./src/ui/form/RadioButton.ts",
         "./src/ui/form/Text.ts",
         "./src/ui/interfaces.d.ts",
