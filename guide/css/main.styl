@@ -1,6 +1,4 @@
-@import 'fonts/heading';
-@import 'fonts/body';
-@import 'fonts/code';
+@import 'fonts/fonts';
 @import 'nib/reset';
 @import 'nib/vendor';
 @import 'fonts/entypo';
@@ -23,6 +21,9 @@ $mayhemPink = #AA0D91;
 $mayhemPinkInvert = #FFF;
 $mayhemGrey = #A0A0A0;
 $mayhemLightGrey = #F0F0F0;
+$codeFont = 'Source Code Pro', monospace;
+$headingFont = 'Lato', sans-serif;
+$bodyFont = 'Merriweather', serif;
 
 pushout() {
 	margin-left: -2rem;
@@ -82,7 +83,8 @@ em {
 
 code,
 tt {
-	font: 0.92rem/1 $codeFont;
+	background-color:$mayhemLightGrey;
+	font: 0.96rem/1 $codeFont;
 	color:$mayhemPurple;
 }
 
@@ -100,12 +102,12 @@ a {
 	color: $mayhemPink;
 	text-decoration: underline;
 	transition: color 0.25s;
+	&:hover {
+		color: lighten(@color, 10%);
+		text-decoration: none;
+	}
 }
 
-a:hover {
-	color: $color;
-	text-decoration: none;
-}
 
 .content {
 
@@ -327,8 +329,7 @@ a:hover {
 		transition: color 0.25s;
 
 		&:hover {
-			color: $mayhemPurple;
-			text-decoration: underline;
+			color: $mayhemOrange;
 		}
 	}
 
@@ -340,7 +341,7 @@ a:hover {
 			color: $mayhemOrange;
 
 			&:hover {
-				color: $color;
+				color: @color;
 			}
 		}
 
@@ -351,6 +352,9 @@ a:hover {
 			a {
 				color: $mayhemPurple;
 				font-weight: normal;
+				&:hover {
+					color: $mayhemPink;
+				}
 			}
 		}
 	}
@@ -704,8 +708,10 @@ a:hover {
 
 	dfn,
 	.sc {
+		color: $mayhemPink;
 		font-size: 1.1rem;
 		font-variant: small-caps;
+		font-weight:bold;
 		text-transform: lowercase;
 	}
 
@@ -713,6 +719,10 @@ a:hover {
 	code,
 	.abbr {
 		hyphens: manual;
+	}
+
+	kbd {
+		font-family: $codeFont;
 	}
 
 	.m1 { margin-bottom: $lh; }
