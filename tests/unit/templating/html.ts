@@ -52,5 +52,21 @@ registerSuite({
 				assert.strictEqual(root.textContent, 'Hello, Universe');
 			}));
 		}), dfd.reject.bind(dfd));
+	},
+
+	'composite widget binding'() {
+		var dfd = this.async();
+
+		html.create('<widget is="mayhem/ui/Label" text="Hello, {name}" />').then(dfd.callback(function (Ctor:typeof Widget) {
+			var model = { name: 'World' };
+			var view = new Ctor({ app, model });
+
+			app.get('ui').set({
+				root,
+				view
+			});
+
+			assert.strictEqual(root.textContent, 'Hello, World');
+		}), dfd.reject.bind(dfd));
 	}
 });

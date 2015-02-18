@@ -69,9 +69,24 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 		function applyBindings(widget:Widget, bindings:HashMap<BindingDeclaration>) {
 			for (var key in bindings) {
 				var declaration = bindings[key];
+				var sourcePath:any = declaration.$bind;
+
+				// The PEG generates trees with nested `$bind` objects, but the CompositeBinding binder requires
+				// objects with a `path` key instead of `$bind` key
+				if (sourcePath instanceof Array) {
+					sourcePath = sourcePath.map(function (part:string|BindingDeclaration):any {
+						if (typeof part === 'string') {
+							return part;
+						}
+						else {
+							return { path: part.$bind };
+						}
+					});
+				}
+
 				handles.push(binder.bind({
 					source: model || emptyObject,
-					sourcePath: declaration.$bind,
+					sourcePath: sourcePath,
 					target: widget,
 					targetPath: key,
 					direction: declaration.direction
@@ -228,8 +243,6 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 		}
 
 		var initialState = getInitialState(root);
-		applyBindings(this, initialState.bindings);
-		applyEvents(this, initialState.events);
 		BaseCtor.call(this, lang.mixin(initialState.kwArgs, kwArgs));
 
 		this.observe('model', function (value:{}) {
@@ -240,6 +253,9 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 				child.set('model', value);
 			}
 		});
+
+		applyBindings(this, initialState.bindings);
+		applyEvents(this, initialState.events);
 	}
 
 	__extends(<any> TemplatedView, BaseCtor);

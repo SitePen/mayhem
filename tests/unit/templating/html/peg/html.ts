@@ -39,13 +39,14 @@ registerSuite({
 			parser.parse('<widget is></widget>');
 		}, /must be a string/);
 
-		ast = parser.parse('<widget is="Widget" foo={foo} bar={{bar}}></widget>');
+		ast = parser.parse('<widget is="Widget" foo={foo} bar={{bar}} baz="baz {baz}"></widget>');
 		assert.deepEqual(ast, {
 			constructors: [ 'Widget' ],
 			root: {
 				constructor: 'Widget',
 				foo: { $bind: 'foo', direction: 1 },
-				bar: { $bind: 'bar', direction: 2 }
+				bar: { $bind: 'bar', direction: 2 },
+				baz: { $bind: [ 'baz ', { $bind: 'baz', direction: 1 } ], direction: 1 }
 			}
 		});
 	},
