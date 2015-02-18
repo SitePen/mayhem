@@ -71,7 +71,7 @@ class IteratorList<T> extends OnDemandList {
 	insertRow():HTMLElement {
 		var row:HTMLElement = super.insertRow.apply(this, arguments);
 		// TS7017
-		ContainerMixin.prototype.add.call(this._parent, (<any> row)[oidKey]);
+		this._parent.add.call(this._parent, (<any> row)[oidKey]);
 		return row;
 	}
 
@@ -80,7 +80,8 @@ class IteratorList<T> extends OnDemandList {
 
 		var widget:SingleNodeWidget = new Ctor({
 			app: this._app,
-			model: model
+			model: model,
+			parent: this
 		});
 
 		var rowNode:HTMLElement = <HTMLElement> widget.detach();
@@ -129,6 +130,12 @@ class ListView<T> extends SingleNodeWidget {
 	 * @get
 	 * @set
 	 */
+	private _children:Widget[];
+
+	/**
+	 * @get
+	 * @set
+	 */
 	private _collection:dstore.ICollection<T>;
 
 	/**
@@ -146,6 +153,21 @@ class ListView<T> extends SingleNodeWidget {
 	constructor(kwArgs?:HashMap<any>) {
 		util.deferSetters(this, [ 'collection' ], '_render');
 		super(kwArgs);
+	}
+
+	add(child:Widget):void {
+		var currentIndex:number = this.getChildIndex(child);
+		var index:number = (currentIndex === -1) ? this._children.length : currentIndex;
+		this._children[index] = child;
+
+		ContainerMixin.prototype.add.call(this, child);
+	}
+
+	_childrenGetter():Widget[] {
+		return ContainerMixin.prototype._childrenGetter.call(this);
+	}
+	_childrenSetter(children:Widget[]):void {
+		ContainerMixin.prototype._childrenSetter.call(this, children);
 	}
 
 	_collectionGetter():dstore.ICollection<T> {
@@ -166,8 +188,27 @@ class ListView<T> extends SingleNodeWidget {
 			};
 		}
 
+		this._children = [];
 		this._widget.set('store', store);
 		this._collection = value;
+	}
+
+	destroy():void {
+		super.destroy();
+		ContainerMixin.prototype.destroy.call(this);
+	}
+
+	empty():void {
+		ContainerMixin.prototype.empty.call(this);
+	}
+
+	getChildIndex(child:Widget):number {
+		return ContainerMixin.prototype.getChildIndex.call(this, child);
+	}
+
+	_initialize():void {
+		super._initialize();
+		this._children = [];
 	}
 
 	_isAttachedGetter():boolean {
@@ -182,7 +223,6 @@ class ListView<T> extends SingleNodeWidget {
 		this._isAttached = value;
 	}
 
-	// TODO: Implement necessary container interfaces
 	remove(child:Widget):void {
 		child.detach();
 		ContainerMixin.prototype.remove.call(this, child);
@@ -204,10 +244,12 @@ module ListView {
 	export interface Getters<T> extends SingleNodeWidget.Getters {
 		(key:'collection'):dstore.ICollection<T>;
 		(key:'itemConstructor'):ListView.IItemConstructor<T>;
+		(key:'children'):Widget[];
 	}
 	export interface Setters<T> extends SingleNodeWidget.Setters {
 		(key:'collection', value:dstore.ICollection<T>):void;
 		(key:'itemConstructor', value:ListView.IItemConstructor<T>):void;
+		(key:'children', value:Widget[]):void;
 	}
 
 	export interface IItemConstructor<T> {
