@@ -420,6 +420,22 @@ declare module 'dojo/request' {
 	export = request;
 }
 
+declare module 'dojo/request/registry' {
+	var registry:{
+		<T>(url:string, options?:{}):IPromise<T>;
+		del<T>(url:string, options?:{}):IPromise<T>;
+		get<T>(url:string, options?:{}):IPromise<T>;
+		post<T>(url:string, options?:{}):IPromise<T>;
+		put<T>(url:string, options?:{}):IPromise<T>;
+		register<T>(
+			url:string|RegExp|{ (url:string, options?:{}): boolean; },
+			provider:(url:String, options?:{}) => IPromise<T>,
+			first?:boolean
+		):IHandle;
+	};
+	export = registry;
+}
+
 declare module 'dojo/request/util' {
 	var util:{
 		addCommonMethods(provider:any, methods:string[]):void;
