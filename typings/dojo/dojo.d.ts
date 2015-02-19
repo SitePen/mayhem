@@ -255,6 +255,19 @@ declare module 'dojo/errors/create' {
 	export = create;
 }
 
+declare module 'dojo/errors/RequestError' {
+	interface RequestError extends Error {
+		name:string;
+		response:any;
+	}
+	var RequestError:{
+		new (name:string, response:any):RequestError;
+		name:string;
+		response:any
+	}
+	export = RequestError;
+}
+
 declare module 'dojo/Evented' {
 	class Evented implements IEvented {
 		emit(type:string, event?:Event):boolean;
