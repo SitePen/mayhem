@@ -69,6 +69,13 @@ class SNWContainer extends SingleNodeWidget {
 		});
 		this._node.appendChild(document.createTextNode('⬚'));
 	}
+
+	addToNonWidgetElement(widget:Widget) {
+		this._node.querySelector('span').appendChild(widget.detach());
+		widget.set({
+			parent: this
+		});
+	}
 }
 
 var app:WebApplication;
@@ -126,6 +133,10 @@ registerSuite({
 		var childE = new MNW({ app, id: 'e' });
 		var childF = new SNWContainer({ app, id: 'f' });
 		var childG = new MNW({ app, id: 'g' });
+		var childH = new SNWContainer({ app, id: 'h' });
+		var childI = new MNW({ app, id: 'i' });
+
+		childH.addToNonWidgetElement(childI);
 
 		childC.add(childD);
 		childC.add(childE);
@@ -136,6 +147,7 @@ registerSuite({
 		container.add(childB);
 		container.add(childC);
 		container.add(childF);
+		container.add(childH);
 
 		var master = <DomMaster> app.get('ui');
 
@@ -160,6 +172,7 @@ registerSuite({
 		testPoint(35, 65, childF, 'Child F pre');
 		testPoint(50, 65, childG, 'Child G');
 		testPoint(65, 65, childF, 'Child F post G');
+		testPoint(35, 95, childI, 'Child I');
 		testPoint(500, 500, null, 'None of our children');
 	}
 });

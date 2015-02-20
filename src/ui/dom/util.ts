@@ -329,11 +329,17 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
  * @param y The y-coordinate of the pointer, relative to the viewport.
  * @returns The widget at the given point.
  */
-function findWidgetAtPoint(widget:Widget, x:number, y:number):Widget {
+function findWidgetAtPoint(widget:Widget, x:number, y:number, domTarget:Element):Widget {
 	var widgetNode:Node = widget.get('firstNode');
 	var node:Node;
 
-	if (widgetNode.nodeType === Node.COMMENT_NODE) {
+	// If the initial DOM target element does not contain our parent widget’s node, this means that the target DOM
+	// element is somewhere inside of our parent widget and we can avoid all descending node traversal by starting
+	// there instead
+	if (!(<HTMLElement> domTarget).contains(<HTMLElement> widgetNode)) {
+		node = <Node> domTarget.firstChild;
+	}
+	else if (widgetNode.nodeType === Node.COMMENT_NODE) {
 		node = widgetNode.nextSibling;
 	}
 	else {
@@ -349,6 +355,7 @@ function findWidgetAtPoint(widget:Widget, x:number, y:number):Widget {
 	var lastCandidate:Widget;
 
 	do {
+		// Found a child that is a MultiNodeWidget; it might be the innermost widget
 		if (node.nodeType === Node.COMMENT_NODE && (<any> node)['widget']) {
 			var candidateWidget:Widget = (<any> node)['widget'];
 
@@ -380,12 +387,13 @@ function findWidgetAtPoint(widget:Widget, x:number, y:number):Widget {
  * given point.
  */
 export function findWidgetAt(master:Master, x:number, y:number):Widget {
-	var parent:Widget = findNearestParent(master, document.elementFromPoint(x, y));
+	var domTarget:Element = document.elementFromPoint(x, y);
+	var parent:Widget = findNearestParent(master, domTarget);
 
 	// If no parent is found from the element, then there is no widget at all at the given point
 	if (!parent) {
 		return null;
 	}
 
-	return findWidgetAtPoint(parent, x, y);
+	return findWidgetAtPoint(parent, x, y, domTarget);
 }
