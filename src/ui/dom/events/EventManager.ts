@@ -165,8 +165,14 @@ class EventManager {
 		var hasMoved:boolean = changes.clientX || changes.clientY;
 
 		if (hasMoved) {
-			previousTarget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY)
-				|| this._master;
+			if (pointer.lastState.clientX == null || pointer.lastState.clientY == null) {
+				// pointer arrived from somewhere outside the app
+				previousTarget = null;
+			}
+			else {
+				previousTarget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY)
+					|| this._master;
+			}
 		}
 
 		if (hasMoved && target !== previousTarget) {
