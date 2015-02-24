@@ -175,7 +175,7 @@ class EventManager {
 			}
 		}
 
-		if (hasMoved && target !== previousTarget) {
+		if (hasMoved && target !== previousTarget && previousTarget) {
 			if (this._emitPointerEvent('pointerout', pointer, previousTarget, target)) {
 				shouldCancel = true;
 			}
