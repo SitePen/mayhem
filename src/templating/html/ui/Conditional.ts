@@ -98,6 +98,8 @@ class Conditional extends MultiNodeWidget {
 		return this._isAttached;
 	}
 	_isAttachedSetter(value:boolean):void {
+		this._isAttached = value;
+
 		if (value) {
 			this._bindConditions();
 		}
@@ -106,8 +108,6 @@ class Conditional extends MultiNodeWidget {
 			this._modelObserver && this._modelObserver.remove();
 			this._conditionObserveHandle = this._modelObserver = null;
 		}
-
-		this._isAttached = value;
 	}
 }
 
