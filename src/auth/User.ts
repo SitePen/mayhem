@@ -6,6 +6,9 @@ import Observable = require('../Observable');
  * An abstract base class for managing user authentication and authorization.
  */
 class User extends Observable {
+	get:User.Getters;
+	set:User.Setters;
+
 	/**
 	 * Whether or not the current user is authenticated. @protected
 	 */
@@ -76,5 +79,17 @@ class User extends Observable {
 }
 
 User.prototype._isAuthenticated = false;
+
+module User {
+	export interface Getters extends Observable.Getters {
+		(key:'isAuthenticated'):boolean;
+		(key:'state'):Object;
+	}
+
+	export interface Setters extends Observable.Setters {
+		(key:'isAuthenticated', value:boolean):void;
+		(key:'state', value:Object):void;
+	}
+}
 
 export = User;
