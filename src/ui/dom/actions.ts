@@ -39,7 +39,8 @@ function createExtensionEvent(symbol:string, register:Function):ExtensionEvent {
 	};
 }
 
-export var activate:ExtensionEvent = (function () {
+export var activate:(target:Widget, callback:Function) => IHandle = (function () {
+	// TODO: Need to expose this symbol somehow, and preferably make it not need to have a separately prefixed name
 	var ACTIVATE_SYMBOL = 'mayhemActivate';
 
 	function convertEvent(originalEvent:ui.UiEvent):ui.UiEvent {
@@ -95,6 +96,7 @@ interface ButtonState {
 }
 
 export var click:(target:Widget, callback:Function) => IHandle = (function () {
+	// TODO: Need to expose this symbol somehow, and preferably make it not need to have a separately prefixed name
 	var CLICK_SYMBOL = 'mayhemClick';
 	var CLICK_SPEED = 300;
 	var MAX_DISTANCE:HashMap<number> = {
