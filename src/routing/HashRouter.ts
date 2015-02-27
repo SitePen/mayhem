@@ -25,7 +25,7 @@ class HashRouter extends Router {
 	}
 
 	go(routeId:string, kwArgs?:{}):Promise<void> {
-		var newHash = this.createUrl(routeId, kwArgs);
+		var newHash = this.createUrl(routeId, kwArgs).slice(1);
 
 		if (this._oldHash === newHash) {
 			return;
