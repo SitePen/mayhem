@@ -75,16 +75,38 @@ class ElementWidget extends Container {
 	private _content:any[];
 
 	/**
+	 * A map of event names to arrays of event listeners, used to force events to fire on the innermost targets first.
+	 */
+	private _eventQueues:{ [eventName:string]:Array<(event:ui.UiEvent) => void>; };
+
+	/**
 	 * A map of widgets currently assigned to the different placeholder properties within the ElementWidget.
 	 */
 	private _placeholders:{ [id:string]:Widget; };
 
+	// TODO: Now what do we do if someone wants to remove an event listener?
+	_applyEventListeners():void {
+		var queues = this._eventQueues;
+
+		for (var eventName in queues) {
+			this.on(eventName, (event:ui.UiEvent):void => {
+				var listeners = queues[eventName];
+				var i = listeners.length - 1;
+
+				while (i >= 0) {
+					listeners[i](event);
+					i--;
+				}
+			});
+		}
+	}
+
 	_initialize():void {
 		super._initialize();
 		this._bindingHandles = [];
+		this._eventQueues = {};
 		this._placeholders = {};
 
-		var self = this;
 		this.observe('model', function (value:{}) {
 			value = value || {};
 			var handle:binding.IBindingHandle;
@@ -119,6 +141,7 @@ class ElementWidget extends Container {
 			placeholder && placeholder.destroy();
 		}
 
+		this._eventQueues = null;
 		this._placeholders = null;
 		super.destroy();
 	}
@@ -129,6 +152,22 @@ class ElementWidget extends Container {
 		var placeholders:{ [id:string]:Widget; } = this._placeholders;
 		for (var key in placeholders) {
 			placeholders[key] && placeholders[key].set('isAttached', value);
+		}
+	}
+
+	removeEventListener(eventName:string, listener:(event:ui.UiEvent) => void):void {
+		var listeners = this._eventQueues[eventName];
+
+		if (listeners) {
+			var i = listeners.length - 1;
+
+			while (i >= 0) {
+				if (listeners[i] === listener) {
+					listeners.splice(i, 1);
+					break;
+				}
+				i--;
+			}
 		}
 	}
 
@@ -229,7 +268,11 @@ class ElementWidget extends Container {
 								return character.toUpperCase();
 							});
 
-							self.on(eventName, <any> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
+							if (!self._eventQueues[eventName]) {
+								self._eventQueues[eventName] = [];
+							}
+
+							self._eventQueues[eventName].push(<any> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
 								var element:Element;
 
 								if ('key' in event) {
@@ -245,7 +288,8 @@ class ElementWidget extends Container {
 									return;
 								}
 
-								if (element === node) {
+								// TS2339
+								if (element === node || ((<any> node).contains(element) && event.bubbles && !event.propagationStopped)) {
 									if (binding) {
 										return binding.get().call(binding.getObject(), event);
 									}
@@ -353,6 +397,7 @@ class ElementWidget extends Container {
 			node = nextNode;
 		}
 
+		this._applyEventListeners();
 		super._render();
 		this._fragment.insertBefore(content, this._lastNode);
 	}
