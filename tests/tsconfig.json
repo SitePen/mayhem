@@ -45,6 +45,7 @@
         "./unit/templating/html.ts",
         "./unit/templating/html/peg/html.ts",
         "./unit/ui/all.ts",
+        "./unit/ui/dom/actions.ts",
         "./unit/ui/dom/all.ts",
         "./unit/ui/dom/util.ts"
     ]

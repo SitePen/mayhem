@@ -3,33 +3,48 @@ import Event = require('../../Event');
 import Master = require('./Master');
 import ui = require('../interfaces');
 import util = require('../../util');
+import WeakMap = require('../../WeakMap');
 import Widget = require('./Widget');
 
-type ExtensionEvent = (target:Widget, callback:(event?:ui.UiEvent) => void) => IHandle;
+export interface ExtensionEvent {
+	(target:Widget, callback:(event?:ui.UiEvent) => void):IHandle;
+	symbol:string;
+}
+
+interface Registration {
+	handle:IHandle;
+	numActivations:number;
+	unregisterTimer?:IHandle;
+}
 
 function createExtensionEvent(symbol:string, register:Function):ExtensionEvent {
-	var numActivations:number = 0;
-	var registrationHandle:IHandle;
-	var unregisterTimer:IHandle;
+	var registeredUis = new WeakMap<Master, Registration>();
 
-	return function (target:Widget, callback:(event?:ui.ClickEvent) => void): IHandle {
-		if (!registrationHandle) {
-			registrationHandle = register(<Master> target.get('app').get('ui'));
+	var extensionEvent = <ExtensionEvent> function (target:Widget, callback:(event?:ui.ClickEvent) => void):IHandle {
+		var ui = <Master> target.get('app').get('ui');
+
+		var registration = registeredUis.get(ui);
+		if (!registration) {
+			registration = {
+				handle: register(ui),
+				numActivations: 0
+			};
+			registeredUis.set(ui, registration);
+		}
+		else if (registration.unregisterTimer) {
+			registration.unregisterTimer.remove();
+			registration.unregisterTimer = null;
 		}
 
-		if (unregisterTimer) {
-			unregisterTimer.remove();
-			unregisterTimer = null;
-		}
-
-		++numActivations;
+		++registration.numActivations;
 		var handle = target.on(symbol, callback);
 
 		return util.createHandle(function () {
-			if (--numActivations === 0) {
-				unregisterTimer = util.createTimer(function () {
-					registrationHandle.remove();
-					unregisterTimer = registrationHandle = null;
+			if (--registration.numActivations === 0) {
+				registration.unregisterTimer = util.createTimer(function () {
+					registration.handle.remove();
+					registeredUis.delete(ui);
+					registration = null;
 				});
 			}
 
@@ -37,14 +52,19 @@ function createExtensionEvent(symbol:string, register:Function):ExtensionEvent {
 			handle = null;
 		});
 	};
+
+	extensionEvent.symbol = symbol;
+	return extensionEvent;
 }
 
-export var activate:(target:Widget, callback:Function) => IHandle = (function () {
-	// TODO: Need to expose this symbol somehow, and preferably make it not need to have a separately prefixed name
+export var activate:ExtensionEvent = (function () {
+	// TODO: Need to make these actions not need to have a separately prefixed name
 	var ACTIVATE_SYMBOL = 'mayhemActivate';
 
 	function convertEvent(originalEvent:ui.UiEvent):ui.UiEvent {
 		return <ui.UiEvent> new Event({
+			bubbles: true,
+			cancelable: true,
 			target: originalEvent.target,
 			type: ACTIVATE_SYMBOL,
 			view: originalEvent.view
@@ -95,8 +115,8 @@ interface ButtonState {
 	resetAfterDelay():void;
 }
 
-export var click:(target:Widget, callback:Function) => IHandle = (function () {
-	// TODO: Need to expose this symbol somehow, and preferably make it not need to have a separately prefixed name
+export var click:ExtensionEvent = (function () {
+	// TODO: Need to make these actions not need to have a separately prefixed name
 	var CLICK_SYMBOL = 'mayhemClick';
 	var CLICK_SPEED = 300;
 	var MAX_DISTANCE:HashMap<number> = {
@@ -165,8 +185,8 @@ export var click:(target:Widget, callback:Function) => IHandle = (function () {
 					// The timestamp is checked just in case the browser event loop somehow gets us to receive the event
 					// before the debounced reset function fires but after the click event heuristic has expired
 					event.timestamp - buttonState.lastTimestamp < CLICK_SPEED &&
-					event.clientX - buttonState.lastX < MAX_DISTANCE[event.pointerType] &&
-					event.clientY - buttonState.lastY < MAX_DISTANCE[event.pointerType]
+					Math.abs(event.clientX - buttonState.lastX) < MAX_DISTANCE[event.pointerType] &&
+					Math.abs(event.clientY - buttonState.lastY) < MAX_DISTANCE[event.pointerType]
 				) {
 					++buttonState.numClicks;
 					var newEvent:ui.ClickEvent = <any> new Event(event);
