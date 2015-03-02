@@ -1,10 +1,12 @@
 import core = require('../../interfaces');
 import ContainerMixin = require('../common/Container');
 import DstoreAdapter = require('dstore/legacy/DstoreAdapter');
+import Event = require('../../Event');
 import has = require('../../has');
 import OnDemandList = require('dgrid/OnDemandList');
 import QueryResults = require('dojo/store/util/QueryResults');
 import SingleNodeWidget = require('./SingleNodeWidget');
+import ui = require('../interfaces');
 import util = require('../../util');
 import Widget = require('./Widget');
 
@@ -196,6 +198,23 @@ class ListView<T> extends SingleNodeWidget {
 		});
 
 		this._node = this._widget.domNode;
+
+		this.on('activate', (event:ui.ClickEvent):void => {
+			var Ctor = this._itemConstructor;
+			var target = event.target;
+
+			do {
+				if (target instanceof Ctor) {
+					this.emit(new Event({
+						bubbles: true,
+						cancelable: false,
+						target: target,
+						type: 'rowActivate'
+					}));
+					break;
+				}
+			} while (target = target.get('parent'));
+		});
 	}
 }
 
