@@ -62,13 +62,20 @@ export var activate:ExtensionEvent = (function () {
 	var ACTIVATE_SYMBOL = 'mayhemActivate';
 
 	function convertEvent(originalEvent:ui.UiEvent):ui.UiEvent {
-		return <ui.UiEvent> new Event({
+		var kwArgs:any = {
 			bubbles: true,
 			cancelable: true,
 			target: originalEvent.target,
 			type: ACTIVATE_SYMBOL,
 			view: originalEvent.view
-		});
+		};
+
+		if ('clientX' in originalEvent) {
+			kwArgs.clientX = (<ui.PointerEvent> originalEvent).clientX;
+			kwArgs.clientY = (<ui.PointerEvent> originalEvent).clientY;
+		}
+
+		return <ui.UiEvent> new Event(kwArgs);
 	}
 
 	function register(ui:Master):IHandle {
