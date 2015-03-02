@@ -85,6 +85,9 @@ class ElementWidget extends Container {
 	private _placeholders:{ [id:string]:Widget; };
 
 	private _applyEventListeners():void {
+		// TODO: Put listeners on the event queue in the correct (reverse) order instead of walking in reverse order
+		// here, so that users inspecting the event listeners will not be confused about why they are executing in
+		// the 'wrong' order
 		var queues = this._eventQueues;
 
 		for (var eventName in queues) {
@@ -256,6 +259,8 @@ class ElementWidget extends Container {
 							}
 
 							self._eventQueues[eventName].push(<any> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
+								// TODO: This is inefficient, the actual event handler should look up the element just
+								// once
 								var element:Element;
 
 								if ('key' in event) {
