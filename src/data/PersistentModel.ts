@@ -1,52 +1,85 @@
 import Model = require('./Model');
 import data = require('./interfaces');
 import Promise = require('../Promise');
+import util = require('../util');
 
-class PersistentModel extends Model implements data.IPersistentModel {
+class PersistentModel extends Model {
+	protected static nonDataKeys: HashMap<boolean> = util.deepCreate(Model.nonDataKeys, {
+		autoSave: true,
+		store: true
+	});
+
 	/**
-	 * @get
-	 * @set
+	 * The default data store for this type of model.
 	 */
-	_store:dstore.ICollection<data.IModel>;
-
-	get:PersistentModel.Getters;
-	set:PersistentModel.Setters;
-
-	static store:dstore.ICollection<data.IPersistentModel>;
-	static setDefaultStore(store:dstore.ICollection<data.IPersistentModel>):void {
+	static get store(): dstore.ICollection<PersistentModel> {
+		return this.prototype.store;
+	}
+	static set store(store: dstore.ICollection<PersistentModel>) {
 		store.Model = this;
-		this.prototype._store = this.store = store;
+		this.prototype.store = store;
 	}
 
-	static findAll(query:any):dstore.ICollection<data.IPersistentModel> {
+	/**
+	 * Finds all objects matching the given filtering query from the underlying default data store.
+	 */
+	static findAll(query: any): dstore.ICollection<PersistentModel> {
 		return this.store.filter(query);
 	}
 
-	static get(id:any):Promise<data.IPersistentModel> {
+	/**
+	 * Gets the object with the specified ID from the underlying default data store.
+	 */
+	static get(id: any): Promise<PersistentModel> {
 		return this.store.get(id);
 	}
 
-	remove():IPromise<any> {
-		var store = this._store;
+	/**
+	 * Causes the model to save every time a property is set.
+	 */
+	autoSave: boolean;
+
+	get autoValidate(): boolean {
+		// If autoSave is enabled, validation will be performed when the save call occurs,
+		// so ignore the autoValidate setting
+		return this.autoSave ? false : this._autoValidate;
+	}
+	set autoValidate(value: boolean) {
+		this._autoValidate = value;
+	}
+	private _autoValidate: boolean;
+
+	/**
+	 * The data store that this model belongs to.
+	 */
+	store: dstore.ICollection<PersistentModel>;
+
+	protected initialize(): void {
+		super.initialize();
+		this.autoSave = false;
+	}
+
+	delete(): Promise<any> {
+		var store = this.store;
 		var self = this;
-		return store.remove(store.getIdentity(this)).then(function <T>(returnValue:T):T {
-			self.set('scenario', 'insert');
+		return store.remove(store.getIdentity(this)).then(function <T>(returnValue: T): T {
+			self.scenario = 'insert';
 			return returnValue;
 		});
 	}
 
-	// TODO: dstore interface?
-	_restore(Ctor:new (...args:any[]) => Model):Model {
+	// Required by dstore interface
+	_restore(Ctor: new (...args: any[]) => PersistentModel): PersistentModel {
 		return new Ctor(this);
 	}
 
-	save(skipValidation?:boolean):IPromise<void> {
+	save(skipValidation?: boolean): Promise<void> {
 		var self = this;
 
-		function save():IPromise<void> {
-			return self._store.put(self).then(function (model:PersistentModel):void {
+		function save() {
+			return self.store.put(self).then(function () {
 				self.commit();
-				self.set('scenario', 'update');
+				self.scenario = 'update';
 			});
 		}
 
@@ -54,7 +87,7 @@ class PersistentModel extends Model implements data.IPersistentModel {
 			return save();
 		}
 		else {
-			return this.validate().then(function (isValid:boolean):IPromise<void> {
+			return this.validate().then(function (isValid) {
 				if (isValid) {
 					return save();
 				}
@@ -64,13 +97,20 @@ class PersistentModel extends Model implements data.IPersistentModel {
 			});
 		}
 	}
+
+	setValues(values: {}): void {
+		super.setValues(values);
+
+		if (this.autoSave) {
+			this.save();
+		}
+	}
 }
 
 module PersistentModel {
-	export interface Getters extends Model.Getters, data.IPersistentModel.Getters {}
-	export interface Setters extends Model.Setters, data.IPersistentModel.Setters {}
+	export interface KwArgs extends Model.KwArgs {
+		autoSave?: boolean;
+	}
 }
-
-PersistentModel.prototype._scenario = 'insert';
 
 export = PersistentModel;
