@@ -1,12 +1,10 @@
 import Application = require('./Application');
+import binding = require('./binding/interfaces');
 import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 type ApplicationFactory = (object: Base) => Application;
-type Observer = (change: ChangeRecord) => void;
-type LegacyHandle = { remove: () => void; };
-type Handle = { destroy: () => void; };
 
 class Base {
 	static app: string | Application | ApplicationFactory;
@@ -63,7 +61,17 @@ class Base {
 
 	protected initialize(): void {}
 
-	observe(key: string, observer: Observer): Handle {
+	protected notify(key: string, oldValue?: any) {
+		var self: any = this;
+/*		this.app.binder.notify(self, key, {
+			oldValue: oldValue,
+			get value() {
+				return self[key];
+			}
+		});*/
+	}
+
+	observe<T>(key: string, observer: binding.IObserver<T>): IHandle {
 		var binding = this.app.binder.createBinding(this, key);
 		binding.observe(observer);
 		return util.createHandle(function () {

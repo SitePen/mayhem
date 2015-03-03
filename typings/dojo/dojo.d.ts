@@ -582,3 +582,7 @@ declare module 'dojo/when' {
 	};
 	export = when;
 }
+
+declare module 'module' {
+	export var id: string;
+}
