@@ -130,7 +130,7 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 
 				if (typeof eventTarget === 'string') {
 					widget.on(eventName, function (event:ui.UiEvent) {
-						self[eventTarget] && self[eventTarget].call(this, event);
+						self[eventTarget] && self[eventTarget](event);
 					});
 				}
 				else {
