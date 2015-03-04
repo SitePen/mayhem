@@ -26,9 +26,10 @@ var config:intern.Config = {
 	suites: [
 		'tests/unit/core/all',
 		'tests/unit/binding/all',
+		'tests/unit/data/all',
 		'tests/unit/routing/all',
-		'tests/unit/ui/all',
-		'tests/unit/templating/all'
+		'tests/unit/templating/all',
+		'tests/unit/ui/all'
 	]
 };
 

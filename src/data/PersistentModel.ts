@@ -31,7 +31,7 @@ class PersistentModel extends Model {
 	 * Gets the object with the specified ID from the underlying default data store.
 	 */
 	static get(id: any): Promise<PersistentModel> {
-		return this.store.get(id);
+		return Promise.resolve(this.store.get(id));
 	}
 
 	/**
@@ -54,15 +54,26 @@ class PersistentModel extends Model {
 	 */
 	store: dstore.ICollection<PersistentModel>;
 
+	set values(values: {}) {
+		this.superSet('values', values);
+
+		if (this.autoSave) {
+			this.save();
+		}
+	}
+
 	protected initialize(): void {
 		super.initialize();
 		this.autoSave = false;
 	}
 
+	/**
+	 * Deletes the object from its data store.
+	 */
 	delete(): Promise<any> {
 		var store = this.store;
 		var self = this;
-		return store.remove(store.getIdentity(this)).then(function <T>(returnValue: T): T {
+		return Promise.resolve(store.remove(store.getIdentity(this))).then(function <T>(returnValue: T): T {
 			self.scenario = 'insert';
 			return returnValue;
 		});
@@ -73,11 +84,14 @@ class PersistentModel extends Model {
 		return new Ctor(this);
 	}
 
+	/**
+	 * Saves the object to its data store.
+	 */
 	save(skipValidation?: boolean): Promise<void> {
 		var self = this;
 
 		function save() {
-			return self.store.put(self).then(function () {
+			return Promise.resolve(self.store.put(self)).then(function () {
 				self.commit();
 				self.scenario = 'update';
 			});
@@ -95,14 +109,6 @@ class PersistentModel extends Model {
 					throw new Error('Could not save model; validation failed');
 				}
 			});
-		}
-	}
-
-	setValues(values: {}): void {
-		super.setValues(values);
-
-		if (this.autoSave) {
-			this.save();
 		}
 	}
 }

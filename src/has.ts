@@ -4,12 +4,11 @@ import has = require('dojo/has');
 
 has.add('debug', true);
 
-// Pragmatically, it is not really necessary to check for every individual ES5 interface, since with the exception of
-// Function#bind in Safari 5.1.3-, all the supported ES5-compliant browsers implement all the ES5 features we need
-// to branch for.
-has.add('es5', Boolean(Object.create && Object.create.toString().indexOf('[native code]') > -1));
+// TODO: Remove all non-es5 code branches
+has.add('es5', true);
 has.add('es6-weak-map', typeof WeakMap !== 'undefined');
 has.add('es7-object-observe', 'observe' in Object);
+has.add('set-immediate', typeof setImmediate !== 'undefined');
 
 has.add('raf', typeof requestAnimationFrame === 'function');
 has.add('intl', typeof Intl !== 'undefined');

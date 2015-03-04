@@ -1,4 +1,5 @@
 import core = require('../interfaces');
+import Promise = require('../Promise');
 import ValidationError = require('../validation/ValidationError');
 import Validator = require('../validation/Validator');
 
@@ -31,7 +32,7 @@ export interface IModel extends core.IObservable {
 	 * `Model#getMetadata('errors')` (for all model errors) or `Model#property(key).getMetadata('errors')` for a
 	 * specific field.
 	 */
-	validate(keys?:string[]):IPromise<boolean>;
+	validate(keys?:string[]): Promise<boolean>;
 }
 
 export declare module IModel {
@@ -62,8 +63,8 @@ export interface IPersistentModel extends IModel {
 	get:IPersistentModel.Getters;
 	set:IPersistentModel.Setters;
 
-	remove():IPromise<void>;
-	save(skipValidation?:boolean):IPromise<void>;
+	remove(): Promise<void>;
+	save(skipValidation?:boolean): Promise<void>;
 }
 
 export declare module IPersistentModel {

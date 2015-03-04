@@ -4,10 +4,8 @@ import has = require('./has');
 import lang = require('dojo/_base/lang');
 import util = require('./util');
 
-type ApplicationFactory = (object: Base) => Application;
-
 class Base {
-	static app: string | Application | ApplicationFactory;
+	static app: string | Application | Base.ApplicationFactory;
 
 	app: Application;
 
@@ -35,7 +33,7 @@ class Base {
 				this.app = require<Application>(defaultApp);
 			}
 			else if (typeof defaultApp === 'function') {
-				this.app = (<ApplicationFactory> defaultApp)(this);
+				this.app = (<Base.ApplicationFactory> defaultApp)(this);
 			}
 			else if (typeof defaultApp === 'object' && defaultApp !== null) {
 				this.app = <Application> defaultApp;
@@ -94,11 +92,35 @@ class Base {
 			}
 		}
 	}
+
+	/**
+	 * Convenience function for calling the accessor of a parent class computed property.
+	 */
+	protected superGet(property: string) {
+		var descriptor = util.getPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(this)), property);
+		if (descriptor && descriptor.get) {
+			return descriptor.get.call(this);
+		}
+	}
+
+	/**
+	 * Convenience function for calling the accessor of a parent class computed property.
+	 */
+	protected superSet(property: string, value: any) {
+		var descriptor = util.getPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(this)), property);
+		if (descriptor && descriptor.set) {
+			descriptor.set.call(this, value);
+		}
+	}
 }
 
 module Base {
 	export interface KwArgs {
 		app?: Application;
+	}
+
+	export interface ApplicationFactory {
+		(object: Base): Application;
 	}
 }
 

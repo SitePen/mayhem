@@ -216,6 +216,7 @@ declare module 'dojo/Deferred' {
 		when<T, U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
 		when<T, U>(valueOrPromise:T, callback?:(value:T) => U):IPromise<U>;
 	};
+	interface Deferred<T> extends IDeferred<T> {}
 	export = Deferred;
 }
 
@@ -400,6 +401,7 @@ declare module 'dojo/promise/Promise' {
 	var Promise:{
 		new <T>():IPromise<T>;
 	};
+	interface Promise<T> extends IPromise<T> {}
 	export = Promise;
 }
 

@@ -61,17 +61,11 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			});
 		}
 
-		if (!this._value.isResolved()) {
-			this._fulfilled.detach();
-		}
-		if (this._rejected && !this._value.isRejected()) {
-			this._rejected.detach();
-		}
-		if (!this._value.isFulfilled() && this._pending) {
+		if (this._pending) {
 			attach(this._pending);
 		}
 
-		this._value.always(function (value:T) {
+		this._value.finally(function (value:T):T {
 			if (self._pending) {
 				self._pending.detach();
 			}

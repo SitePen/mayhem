@@ -4,23 +4,6 @@ import has = require('../../has');
 import util = require('../../util');
 
 /**
- * Retrieves a property descriptor from the given object or any of its inherited prototypes.
- *
- * @param object The object on which to look for the property.
- * @param property The name of the property.
- * @returns The property descriptor.
- * @private
- */
-function getAnyPropertyDescriptor(object:Object, property:string):PropertyDescriptor {
-	var descriptor:PropertyDescriptor;
-	do {
-		descriptor = Object.getOwnPropertyDescriptor(object, property);
-	} while (!descriptor && (object = Object.getPrototypeOf(object)));
-
-	return descriptor;
-}
-
-/**
  * The Es5Binding class enables two-way binding directly to properties of plain JavaScript objects in EcmaScript 5+
  * environments.
  */
@@ -71,7 +54,7 @@ class Es5Binding<T> extends Binding<T> {
 		// TODO: Improve efficiency by adding a notification overlay to the object so these functions only ever get
 		// attached once and additional binding observers can just reuse the same generated data
 		var value = object[property];
-		var descriptor = this._originalDescriptor = getAnyPropertyDescriptor(object, property);
+		var descriptor = this._originalDescriptor = util.getPropertyDescriptor(object, property);
 		var newDescriptor:PropertyDescriptor = {
 			enumerable: descriptor ? descriptor.enumerable : true,
 			configurable: descriptor ? descriptor.configurable : true
