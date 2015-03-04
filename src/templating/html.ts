@@ -11,6 +11,7 @@ import BindDirection = require('../binding/BindDirection');
 import binding = require('../binding/interfaces');
 import lang = require('dojo/_base/lang');
 import parser = require('./html/peg/html');
+import Promise = require('../Promise');
 import templating = require('./interfaces');
 import ui = require('../ui/interfaces');
 import util = require('../util');
@@ -63,7 +64,7 @@ function createViewConstructor(root:templating.INode, parent?:Widget, eventRoot?
 			);
 		}
 
-		var binder = app.get('binder');
+		var binder: binding.IBinder = app.get('binder');
 		var model:{} = kwArgs['model'] || this.get('model') || (parent && parent.get('model'));
 		// Empty object is used to satisfy the constraint of the current binding system that an object must always
 		// be provided to create a binding
@@ -274,15 +275,15 @@ function createViewConstructor(root:templating.INode, parent?:Widget, eventRoot?
  * @param template A Mayhem HTML template.
  * @returns A promise that resolves to an BindableWidget constructor.
  */
-export function create(template:string):IPromise<typeof Widget> {
+export function create(template:string): Promise<typeof Widget> {
 	var ast:templating.IParseTree = parser.parse(template);
 	return util.getModules(ast.constructors).then(function ():typeof Widget {
 		return createViewConstructor(ast.root);
 	});
 }
 
-export function createFromFile(filename:string):IPromise<typeof Widget> {
-	return util.getModule('dojo/text!' + filename).then(function (template:string):IPromise<typeof Widget> {
+export function createFromFile(filename:string): Promise<typeof Widget> {
+	return util.getModule('dojo/text!' + filename).then(function (template:string): Promise<typeof Widget> {
 		return create(template);
 	});
 }

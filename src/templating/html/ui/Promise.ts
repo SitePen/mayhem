@@ -79,7 +79,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			attach(this._pending);
 		}
 
-		this._value.always(function (value:T) {
+		this._value.finally(function (value:T):T {
 			if (self._pending) {
 				self._pending.detach();
 				self._attachedView = null;

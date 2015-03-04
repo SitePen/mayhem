@@ -253,7 +253,7 @@ class Binder implements binding.IBinder {
 		// This is needed because bindings can be set up in the configuration of the app
 		var constructors = this._constructors;
 
-		function loadConstructor(index:number, moduleId:string):IPromise<void> {
+		function loadConstructor(index:number, moduleId:string):Promise<void> {
 			return util.getModule(moduleId).then(function (Binding:binding.IBindingConstructor):void {
 				constructors.splice(index, 1, Binding);
 			});

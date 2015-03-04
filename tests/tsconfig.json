@@ -39,6 +39,8 @@
         "./unit/core/WeakMap.ts",
         "./unit/core/all.ts",
         "./unit/core/util.ts",
+        "./unit/data/Model.ts",
+        "./unit/data/all.ts",
         "./unit/routing/UrlRule.ts",
         "./unit/routing/all.ts",
         "./unit/templating/all.ts",

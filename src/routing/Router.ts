@@ -90,7 +90,7 @@ class Router extends Observable {
 						self.set('currentRoute', newRoute);
 					});
 			})
-			.otherwise(function (error) {
+			.catch(function (error) {
 				self._routeInProgress = null;
 				if (error.name !== 'CancelError') {
 					throw error;

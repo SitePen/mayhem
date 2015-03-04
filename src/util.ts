@@ -1,9 +1,8 @@
 import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
-import Deferred = require('dojo/Deferred');
 import has = require('./has');
+import Promise = require('./Promise');
 import requestUtil = require('dojo/request/util');
-import whenAll = require('dojo/promise/all');
 
 declare var process:any;
 
@@ -222,7 +221,7 @@ export function escapeXml(text:string, forAttribute:boolean = true):string {
 	return text;
 }
 
-export function getModule<T>(moduleId:string):IPromise<T> {
+export function getModule<T>(moduleId:string): Promise<T> {
 	return getModules([ moduleId ]).then(function (modules:T[]):T {
 		return modules[0];
 	});
@@ -233,8 +232,24 @@ export interface RequireError extends Error {
 	originalError:Error;
 }
 
-export function getModules<T>(moduleIds:string[]):IPromise<T[]> {
-	var dfd = new Deferred<T[]>();
+/**
+ * Retrieves a property descriptor from the given object or any of its inherited prototypes.
+ *
+ * @param object The object on which to look for the property.
+ * @param property The name of the property.
+ * @returns The property descriptor.
+ */
+export function getPropertyDescriptor(object:Object, property:string):PropertyDescriptor {
+	var descriptor:PropertyDescriptor;
+	do {
+		descriptor = Object.getOwnPropertyDescriptor(object, property);
+	} while (!descriptor && (object = Object.getPrototypeOf(object)));
+
+	return descriptor;
+}
+
+export function getModules<T>(moduleIds: string[]): Promise<T[]> {
+	var dfd = new Promise.Deferred<T[]>();
 	var handle:IHandle;
 
 	if (require.on) {
@@ -334,10 +349,10 @@ export function spliceMatch<T>(haystack:T[], needle:T):boolean {
 	return false;
 }
 
-export function spread<T, U>(values:IPromise<T>[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void):IPromise<U>;
-export function spread<T, U>(values:T[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void):IPromise<U>;
-export function spread(values:any[], resolved:(...args:any[]) => any, rejected?:(error:Error) => void):IPromise<any> {
-	return whenAll(values).then(function (values:any):any {
+export function spread<T, U>(values:Promise.Thenable<T>[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void): Promise<U>;
+export function spread<T, U>(values:T[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void): Promise<U>;
+export function spread(values:any[], resolved:(...args:any[]) => any, rejected?:(error:Error) => void): Promise<any> {
+	return Promise.all(values).then(function (values:any):any {
 		return resolved.apply(undefined, values);
 	}, rejected);
 }

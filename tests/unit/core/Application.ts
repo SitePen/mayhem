@@ -2,7 +2,7 @@ import Application = require('mayhem/Application');
 import arrayUtil = require('dojo/_base/array');
 import assert = require('intern/chai!assert');
 import has = require('mayhem/has');
-import LogLevel = require('mayhem/LogLevel');
+import LogLevel = require('mayhem/logging/LogLevel');
 import registerSuite = require('intern!object');
 
 var app:Application;

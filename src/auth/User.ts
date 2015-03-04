@@ -1,6 +1,7 @@
 import lang = require('dojo/_base/lang');
 import has = require('../has');
 import Observable = require('../Observable');
+import Promise = require('../Promise');
 
 /**
  * An abstract base class for managing user authentication and authorization.
@@ -28,7 +29,7 @@ class User extends Observable {
 	 *
 	 * @returns a Promise that resolves with an object containing the user information.
 	 */
-	login(kwArgs:Object):IPromise<Object> {
+	login(kwArgs:Object): Promise<Object> {
 		return this.authenticate.apply(this, arguments).then((userData:Object):Object => {
 			this.set({
 				isAuthenticated: true,
@@ -46,7 +47,7 @@ class User extends Observable {
 	 * @returns a Promise that resolves with an object containing user information when authentication is successful, or
 	 * rejects with an appropriate error message when authentication is unsuccessful.
 	 */
-	authenticate(kwArgs:Object):IPromise<Object> {
+	authenticate(kwArgs:Object): Promise<Object> {
 		if (has('debug')) {
 			throw new Error('Abstract method "authenticate" not implemented');
 		}

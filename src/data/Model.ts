@@ -2,7 +2,7 @@ import Base = require('../Base');
 import core = require('../interfaces');
 import data = require('./interfaces');
 import has = require('../has');
-import LogLevel = require('../LogLevel');
+import LogLevel = require('../logging/LogLevel');
 import module = require('module');
 import Promise = require('../Promise');
 import util = require('../util');
@@ -15,14 +15,16 @@ class Model extends Base {
 	protected static nonDataKeys: HashMap<boolean> = {
 		app: true,
 		autoValidate: true,
+		committedValues: true,
 		currentScenarioKeys: true,
-		dirtyProperties: true,
 		errors: true,
-		initializing: true,
 		isDirty: true,
+		_isDirty: true,
 		isValid: true,
 		scenario: true,
+		_scenario: true,
 		scenarios: true,
+		suppressNotifications: true,
 		validatorInProgress: true,
 		validators: true
 	};
@@ -44,13 +46,9 @@ class Model extends Base {
 
 	/**
 	 * A map of errors associated with this model.
+	 * @type { [modelKey: string]: ValidationError[]; }
 	 */
-	errors: { [modelKey: string]: ValidationError[] };
-
-	/**
-	 * Whether or not the model is currently initialising.
-	 */
-	private initializing: boolean;
+	errors: {};
 
 	/**
 	 * Whether or not this model has uncommitted changes.
@@ -87,14 +85,7 @@ class Model extends Base {
 			return false;
 		}
 
-		var errors = this.errors;
-		for (var key in errors) {
-			if (errors[key] && errors[key].length) {
-				return false;
-			}
-		}
-
-		return true;
+		return !this.hasErrors();
 	}
 
 	/**
@@ -104,7 +95,7 @@ class Model extends Base {
 		return this._scenario;
 	}
 	set scenario(value: string) {
-		var scenarios = this.scenarios;
+		var scenarios = <HashMap<string[]>> this.scenarios;
 		if (scenarios && !scenarios[value]) {
 			throw new Error('Invalid scenario "' + value + '"');
 		}
@@ -128,8 +119,15 @@ class Model extends Base {
 
 	/**
 	 * A list of valid scenarios for this object, and the keys that are valid for each scenario.
+	 * @type { [scenario: string]: string[]; }
 	 */
-	scenarios: { [scenario: string]: string[]; };
+	scenarios: {};
+
+	/**
+	 * Whether or not to suppress notifications that would normally be dispatched for computed properties in response
+	 * to a property change.
+	 */
+	private suppressNotifications: boolean;
 
 	/**
 	 * A promise for the validation currently in progress for this model.
@@ -138,13 +136,52 @@ class Model extends Base {
 
 	/**
 	 * A list of validators for each field on this model.
+	 * @type { [modelKey: string]: Validator[]; }
 	 */
-	validators: { [modelKey: string]: Validator[]; };
+	validators: {};
+
+	/**
+	 * Mass assigns values on the model, preventing assignment of keys not defined by the current scenario
+	 * or keys that are used for the internal metadata of the model itself.
+	 */
+	get values(): {} {
+		return this.toJSON();
+	}
+	set values(data: {}) {
+		var nonDataKeys = (<typeof Model> this.constructor).nonDataKeys;
+
+		this.suppressNotifications = true;
+		try {
+			for (var key in data) {
+				var value: any = (<any> data)[key];
+
+				if (this.currentScenarioKeys ? !this.currentScenarioKeys[key] : nonDataKeys[key]) {
+					this.app.log(
+						'Not setting key "' + key + '" because it is not valid for the current scenario',
+						LogLevel.WARN,
+						module.id
+					);
+					continue;
+				}
+
+				(<any> this)[key] = value;
+			}
+		}
+		finally {
+			this.suppressNotifications = false;
+		}
+
+		this.notify('isDirty');
+
+		if (this.autoValidate) {
+			this.validate();
+		}
+	}
 
 	constructor(kwArgs?: Model.KwArgs) {
-		this.initializing = true;
+		this.suppressNotifications = true;
 		super(kwArgs);
-		this.initializing = false;
+		this.suppressNotifications = false;
 
 		// Mass-assigned properties from the constructor are initial state and should not cause the model to become
 		// dirty
@@ -155,22 +192,33 @@ class Model extends Base {
 	protected initialize(): void {
 		super.initialize();
 		this.autoValidate = false;
+		this.committedValues = {};
 		this.errors = {};
 		this.scenario = 'default';
 	}
 
+	/**
+	 * Adds an error to the object.
+	 */
 	addError(key: string, error: ValidationError): void {
 		var wasValid:boolean = this.isValid;
 
-		var errors:ValidationError[] = this.errors[key] || (this.errors[key] = []);
+		var allErrors = <HashMap<ValidationError[]>> this.errors;
+
+		var errors:ValidationError[] = allErrors[key] || (allErrors[key] = []);
 		errors.push(error);
 
-		this.notify('isValid', wasValid);
+		if (wasValid) {
+			this.notify('isValid', wasValid);
+		}
 	}
 
+	/**
+	 * Clears errors currently set on the object.
+	 */
 	clearErrors(key?: string): void {
 		var wasValid = this.isValid;
-		var errors = this.errors;
+		var errors = <HashMap<ValidationError[]>> this.errors;
 
 		if (key) {
 			errors[key] && errors[key].splice(0, Infinity);
@@ -181,20 +229,27 @@ class Model extends Base {
 			}
 		}
 
-		this.notify('isValid', wasValid);
+		if (!wasValid) {
+			this.notify('isValid', wasValid);
+		}
 	}
 
+	/**
+	 * Commits the current values set on the model.
+	 */
 	commit(): void {
 		var wasDirty = this.isDirty;
 
 		if (wasDirty) {
 			var committedValues: HashMap<any> = this.committedValues = {};
+			var nonDataKeys = (<typeof Model> this.constructor).nonDataKeys;
 			for (var key in this) {
-				if (hasOwnProperty.call(this, key)) {
+				if (hasOwnProperty.call(this, key) && !nonDataKeys[key]) {
 					committedValues[key] = (<any> this)[key];
 				}
 			}
 
+			this._isDirty = false;
 			this.notify('isDirty', wasDirty);
 		}
 	}
@@ -205,83 +260,103 @@ class Model extends Base {
 		super.destroy();
 	}
 
+	/**
+	 * Calculates whether or not the current model has any errors.
+	 */
+	protected hasErrors(key?: string): boolean {
+		var errors = <HashMap<ValidationError[]>> this.errors;
+
+		if (key) {
+			if (errors[key] && errors[key].length) {
+				return true;
+			}
+		}
+		else {
+			for (key in errors) {
+				if (errors[key] && errors[key].length) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Adds mutators to all known properties for this model that allow the dirty state of the model to be updated in
+	 * response to a property change.
+	 */
 	protected initializePropertyTraps(): void {
-		var scenarios = this.scenarios;
-
-		if (!scenarios) {
-			this.app.log('Model has no defined scenarios, so dirty properties may not be found', LogLevel.WARN, module.id);
-			return;
-		}
-
-		var allKeys: HashMap<boolean> = {};
-
-		for (var scenarioName in scenarios) {
-			scenarios[scenarioName].forEach(function (key) {
-				allKeys[key] = true;
-			});
-		}
-
-		for (var key in allKeys) {
-			(function (self: Model) {
-				var value: any = (<any> self)[key];
-
-				Object.defineProperty(this, key, {
-					get: function () {
-						return value;
-					},
-					set: function (_value: any) {
-						value = _value;
+		// TODO: autoValidate, or move autoSave/autoValidate stuff to somewhere else like the view system
+		if (has('es7-object-observe')) {
+			var self = this;
+			var nonDataKeys = (<typeof Model> this.constructor).nonDataKeys;
+			(<any> Object).observe(this, function (changes: Array<{ name: string; object: Model; type: string; oldValue: any; }>) {
+				changes.some(function (change) {
+					if (!nonDataKeys[change.name]) {
 						self.notify('isDirty');
+						return true;
 					}
 				});
-			})(key);
+			});
+		}
+		else {
+			var scenarios = <HashMap<string[]>> this.scenarios;
+
+			if (!scenarios) {
+				this.app.log('Model has no defined scenarios, so isDirty will not notify', LogLevel.WARN, module.id);
+				return;
+			}
+
+			var definedScenarioKeys: HashMap<boolean> = {};
+
+			for (var scenarioName in scenarios) {
+				scenarios[scenarioName].forEach(function (key) {
+					definedScenarioKeys[key] = true;
+				});
+			}
+
+			for (var key in definedScenarioKeys) {
+				this.observe(key, () => {
+					if (!this.suppressNotifications) {
+						this.notify('isDirty');
+					}
+				});
+			}
 		}
 	}
 
+	/**
+	 * Reverts the current values set on the model to the previously committed values.
+	 */
 	revert(keysToRevert?: string[]): void {
 		var wasDirty = this.isDirty;
 		var committedValues = this.committedValues;
 
 		if (wasDirty) {
-			if (keysToRevert) {
-				for (var i = 0, j = keysToRevert.length; i < j; ++i) {
-					if (key in committedValues) {
-						(<any> this)[key] = committedValues[key];
+			this.suppressNotifications = true;
+			try {
+				if (keysToRevert) {
+					for (var i = 0, j = keysToRevert.length; i < j; ++i) {
+						if (hasOwnProperty.call(committedValues, key)) {
+							(<any> this)[key] = committedValues[key];
+						}
+					}
+				}
+				else {
+					for (var key in committedValues) {
+						if (hasOwnProperty.call(committedValues, key)) {
+							(<any> this)[key] = committedValues[key];
+						}
 					}
 				}
 			}
-			else {
-				for (var key in committedValues) {
-					(<any> this)[key] = committedValues[key];
-				}
-			}
-		}
-
-		this.notify('isDirty', wasDirty);
-	}
-
-	setValues(data: {}): void {
-		var nonDataKeys = (<typeof Model> this.constructor).nonDataKeys;
-
-		for (var key in data) {
-			var value: any = (<any> data)[key];
-
-			if (this.currentScenarioKeys ? !this.currentScenarioKeys[key] : nonDataKeys[key]) {
-				this.app.log(
-					'Not setting key "' + key + '" because it is not valid for the current scenario',
-					LogLevel.WARN,
-					module.id
-				);
-				continue;
+			finally {
+				this.suppressNotifications = false;
 			}
 
-			(<any> this)[key] = value;
-		}
-
-		this.notify('isDirty');
-
-		if (this.autoValidate) {
-			this.validate();
+			this._isDirty = false;
+			this.notify('isDirty', wasDirty);
 		}
 	}
 
@@ -290,7 +365,7 @@ class Model extends Base {
 		var serialization: HashMap<any> = {};
 
 		for (var key in this) {
-			if (!hasOwnProperty.call(this, key) || key in nonDataKeys) {
+			if (!hasOwnProperty.call(this, key) || nonDataKeys[key]) {
 				continue;
 			}
 
@@ -300,6 +375,9 @@ class Model extends Base {
 		return serialization;
 	}
 
+	/**
+	 * Validates the model according to the current scenario.
+	 */
 	validate(keysToValidate?: string[]): Promise<boolean> {
 		if (this.validatorInProgress) {
 			this.validatorInProgress.cancel(new Error('Validation restarted'));
@@ -310,10 +388,10 @@ class Model extends Base {
 
 		var self = this;
 		var promise = this.validatorInProgress = new Promise<boolean>(function (resolve, reject, progress, setCanceler) {
-			var validators = self.validators;
+			var validators = <HashMap<Validator[]>> self.validators;
 
 			if (!validators) {
-				resolve(self.isValid);
+				resolve(!self.hasErrors());
 				return;
 			}
 
@@ -332,9 +410,8 @@ class Model extends Base {
 
 				if (!key) {
 					// all fields have been validated
-					self.validatorInProgress = currentValidator = null;
-					this.notify('isValid');
-					resolve(self.isValid);
+					currentValidator = null;
+					resolve(!self.hasErrors());
 				}
 				else if (keysToValidate && keysToValidate.indexOf(key) === -1) {
 					validateNextField();
@@ -345,8 +422,8 @@ class Model extends Base {
 					(function runNextValidator() {
 						var validator = fieldValidators[j++];
 						if (validator) {
-							currentValidator = Promise
-								.resolve(validator.validate(self, key, (<any> self)[key]))
+							// TODO: Remove cast to <any> as soon as possible
+							currentValidator = Promise.resolve(validator.validate(<any> self, key, (<any> self)[key]))
 								.then(runNextValidator, reject);
 						}
 						else {
@@ -355,9 +432,16 @@ class Model extends Base {
 					})();
 				}
 			})();
+		}).then(function (isValid) {
+			self.validatorInProgress = null;
+			self.notify('isValid');
+			return isValid;
+		}, function (error): any {
+			self.validatorInProgress = null;
+			self.notify('isValid');
+			throw error;
 		});
 
-		this.notify('isValid');
 		return promise;
 	}
 }

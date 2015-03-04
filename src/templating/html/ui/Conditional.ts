@@ -43,7 +43,7 @@ class Conditional extends MultiNodeWidget {
 			return;
 		}
 
-		var binder = this.get('app').get('binder');
+		var binder: binding.IBinder = this.get('app').get('binder');
 		for (var i:number = 0, condition:Conditional.ICondition; (condition = this._conditions[i]); ++i) {
 			if (condition.condition.$bind !== undefined) {
 				this._conditionBindings[i] = binder.createBinding<boolean>(model, condition.condition.$bind);

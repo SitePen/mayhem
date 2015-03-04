@@ -1,11 +1,12 @@
 import binding = require('./binding/interfaces');
 import ObservableEvented = require('./ObservableEvented');
+import Promise = require('./Promise');
 
 export interface IApplication extends ObservableEvented {
 	get:IApplication.Getters;
 	on:IApplication.Events;
 	set:IApplication.Setters;
-	run():IPromise<IApplication>;
+	run():Promise<IApplication>;
 }
 
 export declare module IApplication {
@@ -19,7 +20,7 @@ export declare module IApplication {
 ////
 
 export interface IApplicationComponent {
-	run?():IPromise<void>;
+	run?(): Promise.Thenable<void>;
 }
 
 ////

@@ -25,7 +25,7 @@ import util = require('./util');
  * ```
  */
 class WebApplication extends Application {
-	static _defaultConfig = util.deepCreate(Application._defaultConfig, {
+	static _defaultConfig = util.deepCreate(Application.defaultConfig, {
 		components: {
 			router: {
 				constructor: require.toAbsMid('./routing/HashRouter')
@@ -37,49 +37,22 @@ class WebApplication extends Application {
 		}
 	});
 
-	get:WebApplication.Getters;
-	on:WebApplication.Events;
-	set:WebApplication.Setters;
-
 	/**
 	 * The human-readable name of your application.
-	 *
-	 * @get
-	 * @set
 	 */
-	private _name:string;
+	name: string;
 
 	/**
 	 * The router component.
-	 *
-	 * @get
-	 * @set
 	 * @default module:mayhem/routing/HashRouter
 	 */
-	private _router:Router;
+	router: Router;
 
 	/**
 	 * The user interface component.
-	 *
-	 * @get
-	 * @set
 	 * @default module:mayhem/ui/Master
 	 */
-	private _ui:Master;
-}
-
-module WebApplication {
-	export interface Events extends Application.Events {}
-	export interface Getters extends Application.Getters {
-		(key:'name'):string;
-		(key:'router'):Router;
-		(key:'ui'):Master;
-	}
-	export interface Setters extends Application.Setters {
-		(key:'name', value:string):void;
-		(key:'router', value:Router):void;
-		(key:'ui', value:Master):void;
-	}
+	ui: Master;
 }
 
 export = WebApplication;

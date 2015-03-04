@@ -5,19 +5,16 @@ import ErrorHandler = require('./ErrorHandler');
 import has = require('./has');
 import I18n = require('./I18n');
 import lang = require('dojo/_base/lang');
-import LogLevel = require('./LogLevel');
+import Logger = require('./logging/Logger');
+import LogLevel = require('./logging/LogLevel');
 import ObservableEvented = require('./ObservableEvented');
 import Promise = require('./Promise');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
 
-// TODO: External interface
 type ApplicationComponent = { run?(): Promise<any> | void; };
 type Constructor = string | ComponentConstructor;
 type Destroyable = { destroy(): void; };
-
-// TODO: External module
-type Logger = { log(message: string, level?: LogLevel, category?: string ): void; };
 
 var resolve:(moduleId:string) => string = (<any> require).toAbsMid || (<any> require).resolve;
 
