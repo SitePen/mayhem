@@ -17,6 +17,8 @@ function createSetter(property:string):(value:View) => void {
 }
 
 class PromiseWidget<T> extends MultiNodeWidget {
+	static inheritsModel:boolean = true;
+
 	private _as:string;
 	private _fulfilled:View;
 	private _pending:View;
@@ -54,7 +56,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		function setModel(view:View, as:string, value:any):void {
 			var kwArgs:HashMap<any> = {
 				app: self._app,
-				model: self.get('model')
+				target: self.get('model')
 			};
 			kwArgs[as] = value;
 			var proxy = new Proxy(kwArgs);
