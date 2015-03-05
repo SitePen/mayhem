@@ -41,14 +41,15 @@ registerSuite({
 	},
 
 	'cancel'() {
+		var expected = new Error('reason');
 		var dfd = this.async();
 		var promise = new Promise(function (resolve, reject, progress, setCanceler) {
-			setCanceler(dfd.callback(function (reason:string) {
-				assert.strictEqual(reason, 'reason');
+			setCanceler(dfd.callback(function (reason: Error) {
+				assert.strictEqual(reason, expected);
 			}));
 		});
 
-		promise.cancel('reason');
+		promise.cancel(expected);
 	},
 
 	'error in initializer'() {

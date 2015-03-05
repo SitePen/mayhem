@@ -116,7 +116,7 @@ class Application extends Base {
 				constructor: resolve('./ErrorHandler')
 			},
 			i18n: {
-				constructor: resolve('./I18n')
+				constructor: resolve('./i18n/I18n')
 			},
 			scheduler: {
 				constructor: resolve('./Scheduler')
@@ -148,7 +148,7 @@ class Application extends Base {
 
 	/**
 	 * The internationalisation component.
-	 * @default module:mayhem/I18n
+	 * @default module:mayhem/i18n/I18n
 	 */
 	i18n: I18n;
 

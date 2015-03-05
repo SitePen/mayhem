@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd" />
-
 import createError = require('dojo/errors/create');
 import lang = require('dojo/_base/lang');
 

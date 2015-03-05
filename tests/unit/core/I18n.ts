@@ -1,19 +1,13 @@
 import Application = require('mayhem/Application');
-import aspect = require('dojo/aspect');
 import assert = require('intern/chai!assert');
-import I18n = require('mayhem/I18n');
-import has = require('mayhem/has');
+import I18n = require('mayhem/i18n/I18n');
 import registerSuite = require('intern!object');
 
-var app:Application;
-var handle:IHandle;
-var globalListener:any;
-var i18n:I18n;
-
-declare var process:any;
+var app: Application;
+var i18n: I18n;
 
 registerSuite({
-	name: 'mayhem/I18n',
+	name: 'mayhem/i18n/I18n',
 
 	setup() {
 		app = new Application({

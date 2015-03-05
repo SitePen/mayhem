@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd" />
-
 import ioQuery = require('dojo/io-query');
 
 class Request {
