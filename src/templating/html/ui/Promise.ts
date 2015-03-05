@@ -61,12 +61,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			kwArgs[as] = value;
 			var proxy = new Proxy(kwArgs);
 
-			var oldModel:{ destroy:() => void } = <any>view.get('model');
 			view.set('model', proxy);
-
-			if (oldModel && oldModel.destroy) {
-				oldModel.destroy();
-			}
 		}
 
 		function attach(view:View):void {
