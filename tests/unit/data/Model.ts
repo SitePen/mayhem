@@ -18,7 +18,7 @@ class TestModel extends Model {
 		return {
 			'foo': [
 				{
-					validate(model: Model, key: string, value: string) {
+					validate(model: TestModel, key: string, value: string) {
 						if (value !== 'foo') {
 							model.addError(key, new ValidationError('foo is not foo'));
 						}

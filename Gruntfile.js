@@ -135,7 +135,7 @@ module.exports = function (grunt) {
 				}
 			},
 			tests: {
-				src: [ 'tests/**/*.ts' ]
+				src: [ 'tests/**/*.ts', '!tests/mayhem/**/*.ts' ]
 			}
 		},
 
