@@ -7,6 +7,7 @@ import Application = require('./Application');
 import aspect = require('dojo/aspect');
 import Base = require('./Base');
 import has = require('./has');
+import lang = require('dojo/_base/lang');
 import util = require('./util');
 import View = require('./ui/View');
 import WebApplication = require('./WebApplication');
@@ -74,7 +75,9 @@ class ErrorHandler extends Base {
 				});
 			}
 			else if (has('host-node')) {
-				var listener = this.handleError.bind(this);
+				// Using late binding for the listener in order to allow it to be replaced at runtime if necessary,
+				// for e.g. testing
+				var listener = lang.hitch(this, 'handleError');
 				process.on('uncaughtException', listener);
 				this._handle = util.createHandle(function () {
 					process.removeListener('uncaughtException', listener);

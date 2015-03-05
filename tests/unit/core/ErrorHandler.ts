@@ -6,12 +6,12 @@ import has = require('mayhem/has');
 import MockWebApplication = require('../../support/MockWebApplication');
 import registerSuite = require('intern!object');
 
-var app:MockWebApplication;
-var errorHandler:ErrorHandler;
-var handle:IHandle;
-var globalListener:any;
+var app: MockWebApplication;
+var errorHandler: ErrorHandler;
+var handle: IHandle;
+var globalListener: any;
 
-declare var process:any;
+declare var process: any;
 
 registerSuite({
 	name: 'mayhem/ErrorHandler',
@@ -47,7 +47,7 @@ registerSuite({
 
 	beforeEach() {
 		errorHandler = new ErrorHandler({
-			app: app
+			app
 		});
 		return errorHandler.run();
 	},
@@ -68,10 +68,10 @@ registerSuite({
 	},
 
 	'defaults'() {
-		assert.isTrue(errorHandler.get('handleGlobalErrors'));
+		assert.isTrue(errorHandler.handleGlobalErrors);
 
 		if (has('host-browser')) {
-			assert.notOk(app.get('ui').get('view'));
+			assert.notOk(app.ui.get('view'));
 		}
 	},
 
@@ -79,30 +79,30 @@ registerSuite({
 		var dfd = this.async(500);
 		var expected = new Error('Oops');
 
-		errorHandler.handleError = dfd.callback(function (actual:Error):void {
+		errorHandler.handleError = dfd.callback(function (actual: Error) {
 			assert.strictEqual(actual.message, expected.message);
 		});
 
-		setTimeout(function ():void {
+		setTimeout(function () {
 			throw expected;
 		}, 0);
 	},
 
 	'#handleError'() {
 		if (has('host-node')) {
-			var loggedMessage:string;
-			handle = aspect.before(app, 'log', function ():void {
-				loggedMessage = arguments[0];
+			var loggedMessage: string;
+			handle = aspect.before(app, 'log', function (message: string) {
+				loggedMessage = message;
 			});
 		}
 
 		errorHandler.handleError(new Error('Oops'));
 
 		if (has('host-browser')) {
-			assert.ok(app.get('ui').get('view'), 'Uncaught error should cause the UI view to change to the error view');
-			assert.instanceOf(app.get('ui').get('view').get('model'), Error,
+			assert.ok(app.ui.get('view'), 'Uncaught error should cause the UI view to change to the error view');
+			assert.instanceOf(app.ui.get('view').get('model'), Error,
 				'The uncaught error should be set as the model for the view');
-			assert.strictEqual((<Error> app.get('ui').get('view').get('model')).message, 'Oops');
+			assert.strictEqual((<Error> app.ui.get('view').get('model')).message, 'Oops');
 		}
 		else if (has('host-node')) {
 			assert.include(loggedMessage, 'Oops');
