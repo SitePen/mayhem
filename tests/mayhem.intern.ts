@@ -4,7 +4,7 @@ import intern = require('intern');
 var config: intern.Config = {
 	excludeInstrumentation: intern.args.fast ?
 		/./ :
-		/(?:^|[\/\\])(?:(?:html-report|nls|node_modules|tests[\w.]*|third-party)[\/\\]|(?:Gruntfile|package)\.js$)/,
+		/(?:^|[\/\\])(?:node_modules|tests|third-party)[\/\\]/,
 	loader: {
 		packages: [
 			{ name: 'dgrid', location: 'third-party/dgrid' },

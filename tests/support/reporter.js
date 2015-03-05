@@ -69,7 +69,7 @@ define([
 
 				var coverage = {};
 				globule.find({
-					src: [ '**/*.js' ],
+					src: [ 'dist/**/*.js' ],
 					filter: function (filepath) {
 						return !main.config.excludeInstrumentation.test(filepath) && !collected[path.resolve(filepath)];
 					}
