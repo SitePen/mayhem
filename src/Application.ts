@@ -176,6 +176,12 @@ class Application extends Base {
 	destroy(): void {
 		for (var key in this) {
 			var component: Destroyable = (<any> this)[key];
+
+			// The 'app' key
+			if (component === this) {
+				continue;
+			}
+
 			component.destroy && component.destroy();
 		}
 
