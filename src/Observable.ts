@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd" />
-
 import arrayUtil = require('dojo/_base/array');
 import core = require('./interfaces');
 import has = require('./has');

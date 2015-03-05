@@ -2,7 +2,7 @@ import util = require('mayhem/util');
 import WebApplication = require('mayhem/WebApplication');
 
 class MockWebApplication extends WebApplication {
-	static _defaultConfig = util.deepCreate(WebApplication._defaultConfig, {
+	protected static defaultConfig = util.deepCreate(WebApplication.defaultConfig, {
 		components: {
 			router: null,
 			ui: {

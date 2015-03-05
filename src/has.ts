@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd" />
-
 import has = require('dojo/has');
 
 has.add('debug', true);
