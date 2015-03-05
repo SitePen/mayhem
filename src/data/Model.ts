@@ -46,9 +46,8 @@ class Model extends Base {
 
 	/**
 	 * A map of errors associated with this model.
-	 * @type { [modelKey: string]: ValidationError[]; }
 	 */
-	errors: {};
+	errors: { [modelKey: string]: ValidationError[]; };
 
 	/**
 	 * Whether or not this model has uncommitted changes.
@@ -115,7 +114,7 @@ class Model extends Base {
 			this.currentScenarioKeys = null;
 		}
 	}
-	private _scenario: string;
+	protected _scenario: string;
 
 	/**
 	 * A list of valid scenarios for this object, and the keys that are valid for each scenario.
@@ -194,7 +193,9 @@ class Model extends Base {
 		this.autoValidate = false;
 		this.committedValues = {};
 		this.errors = {};
-		this.scenario = 'default';
+		// Avoiding the mutator because subclasses may have a different default scenario and hitting the mutator
+		// in that case would trigger an "invalid scenario" error
+		this._scenario = 'default';
 	}
 
 	/**
@@ -203,9 +204,9 @@ class Model extends Base {
 	addError(key: string, error: ValidationError): void {
 		var wasValid:boolean = this.isValid;
 
-		var allErrors = <HashMap<ValidationError[]>> this.errors;
+		var allErrors = this.errors;
 
-		var errors:ValidationError[] = allErrors[key] || (allErrors[key] = []);
+		var errors = allErrors[key] || (allErrors[key] = []);
 		errors.push(error);
 
 		if (wasValid) {
@@ -218,7 +219,7 @@ class Model extends Base {
 	 */
 	clearErrors(key?: string): void {
 		var wasValid = this.isValid;
-		var errors = <HashMap<ValidationError[]>> this.errors;
+		var errors = this.errors;
 
 		if (key) {
 			errors[key] && errors[key].splice(0, Infinity);
@@ -264,7 +265,7 @@ class Model extends Base {
 	 * Calculates whether or not the current model has any errors.
 	 */
 	protected hasErrors(key?: string): boolean {
-		var errors = <HashMap<ValidationError[]>> this.errors;
+		var errors = this.errors;
 
 		if (key) {
 			if (errors[key] && errors[key].length) {

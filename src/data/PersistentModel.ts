@@ -10,12 +10,10 @@ class PersistentModel extends Model {
 	});
 
 	/**
-	 * The default data store for this type of model.
+	 * Sets the default data store for this type of model.
 	 */
-	static get store(): dstore.ICollection<PersistentModel> {
-		return this.prototype.store;
-	}
-	static set store(store: dstore.ICollection<PersistentModel>) {
+	static setDefaultStore(store: dstore.ICollection<PersistentModel>) {
+		// This function isn't just a property mutator due to TS#1520
 		store.Model = this;
 		this.prototype.store = store;
 	}
@@ -24,14 +22,14 @@ class PersistentModel extends Model {
 	 * Finds all objects matching the given filtering query from the underlying default data store.
 	 */
 	static findAll(query: any): dstore.ICollection<PersistentModel> {
-		return this.store.filter(query);
+		return this.prototype.store.filter(query);
 	}
 
 	/**
 	 * Gets the object with the specified ID from the underlying default data store.
 	 */
 	static get(id: any): Promise<PersistentModel> {
-		return Promise.resolve(this.store.get(id));
+		return Promise.resolve(this.prototype.store.get(id));
 	}
 
 	/**
@@ -65,6 +63,7 @@ class PersistentModel extends Model {
 	protected initialize(): void {
 		super.initialize();
 		this.autoSave = false;
+		this._scenario = 'insert';
 	}
 
 	/**
