@@ -180,6 +180,12 @@ class Model extends Base {
 		super(kwArgs);
 		this.suppressNotifications = false;
 
+		// The scenario in `initialize` was set by bypassing the setter, but now we need to to make sure
+		// `currentScenarioKeys` is set up correctly if no scenario override was provided at startup
+		if (!('scenario' in kwArgs)) {
+			this.scenario = this._scenario;
+		}
+
 		// Mass-assigned properties from the constructor are initial state and should not cause the model to become
 		// dirty
 		this.commit();
