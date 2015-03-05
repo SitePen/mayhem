@@ -364,7 +364,14 @@ class PointerManager {
 						pointer.buttons = event.buttons;
 					}
 					else {
-						pointer.buttons = isButtonPressed ? Math.pow(2, event.button) : 0;
+						// `buttons` API: 1 = LMB, 2 = *R*MB, 4 = *M*MB, ...
+						// `button` API:  0 = LMB, 1 = *M*MB, 2 = *R*MB, ...
+						// So, we need to reverse MMB and RMB
+						var buttonMap: HashMap<number> = {
+							1: 2,
+							2: 1
+						};
+						pointer.buttons = isButtonPressed ? Math.pow(2, buttonMap[event.button] || event.button) : 0;
 					}
 
 					pointer.clientX = event.clientX;
