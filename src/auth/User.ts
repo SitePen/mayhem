@@ -1,21 +1,27 @@
-import lang = require('dojo/_base/lang');
+import Base = require('../Base');
 import has = require('../has');
-import Observable = require('../Observable');
+import lang = require('dojo/_base/lang');
 import Promise = require('../Promise');
 
 /**
  * An abstract base class for managing user authentication and authorization.
  */
-class User extends Observable {
+class User extends Base {
 	/**
-	 * Whether or not the current user is authenticated. @protected
+	 * Whether or not the current user is authenticated.
 	 */
-	_isAuthenticated:boolean;
+	isAuthenticated: boolean;
 
 	/**
-	 * User-specific data about the currently authenticated user. @protected
+	 * User-specific data about the currently authenticated user.
 	 */
-	_state:Object;
+	state: {};
+
+	protected initialize() {
+		super.initialize();
+		this.isAuthenticated = false;
+		this.state = null;
+	}
 
 	/**
 	 * Performs a login for the current user. If successful, the user object is set to authenticated and its state
@@ -26,12 +32,13 @@ class User extends Observable {
 	 *
 	 * @returns a Promise that resolves with an object containing the user information.
 	 */
-	login(kwArgs:Object): Promise<Object> {
-		return this.authenticate.apply(this, arguments).then((userData:Object):Object => {
+	login(...args: any[]): Promise<{}> {
+		return this.authenticate.apply(this, arguments).then((userData: {}) => {
 			this.set({
 				isAuthenticated: true,
 				state: userData
 			});
+
 			return userData;
 		});
 	}
@@ -44,7 +51,7 @@ class User extends Observable {
 	 * @returns a Promise that resolves with an object containing user information when authentication is successful, or
 	 * rejects with an appropriate error message when authentication is unsuccessful.
 	 */
-	authenticate(kwArgs:Object): Promise<Object> {
+	authenticate(...args: any[]): Promise<{}> {
 		if (has('debug')) {
 			throw new Error('Abstract method "authenticate" not implemented');
 		}
@@ -54,7 +61,7 @@ class User extends Observable {
 	/**
 	 * Performs a logout of the current user by clearing the authenticated flag and state information.
 	 */
-	logout():void {
+	logout(): void {
 		this.set({
 			isAuthenticated: false,
 			state: null
@@ -67,15 +74,24 @@ class User extends Observable {
 	 * @param operation The name of the operation.
 	 * @param kwArgs Additional parameters used to validate the operation.
 	 *
-	 * @returns A boolean corresponding to whether or not the user is authorized to complete the given operation. If
-	 * asynchronous access control checks are required, the method should return a Promise instead that resolves to a
-	 * boolean true or false.
+	 * @returns A Promise instead that resolves to a boolean true or false depending upon whether the user is
+	 * authorised to perform the given action.
 	 */
-	checkAccess(operation:string, kwArgs?:Object):any {
+	checkAccess(operation: string, kwArgs?: {}): Promise<boolean> {
+		return Promise.resolve(true);
+	}
+
+	/**
+	 * Checks whether or not the current user has access to perform the given operation.
+	 *
+	 * @param operation The name of the operation.
+	 * @param kwArgs Additional parameters used to validate the operation.
+	 *
+	 * @returns A boolean corresponding to whether or not the user is authorized to complete the given operation.
+	 */
+	checkAccessSync(operation: string, kwArgs?: {}): boolean {
 		return true;
 	}
 }
-
-User.prototype._isAuthenticated = false;
 
 export = User;

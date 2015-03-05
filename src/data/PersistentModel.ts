@@ -1,5 +1,4 @@
 import Model = require('./Model');
-import data = require('./interfaces');
 import Promise = require('../Promise');
 import util = require('../util');
 
@@ -60,7 +59,7 @@ class PersistentModel extends Model {
 		}
 	}
 
-	protected initialize(): void {
+	protected initialize() {
 		super.initialize();
 		this.autoSave = false;
 		this._scenario = 'insert';
@@ -115,6 +114,7 @@ class PersistentModel extends Model {
 module PersistentModel {
 	export interface KwArgs extends Model.KwArgs {
 		autoSave?: boolean;
+		store?: dstore.ICollection<PersistentModel>;
 	}
 }
 

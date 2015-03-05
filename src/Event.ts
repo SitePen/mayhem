@@ -5,41 +5,41 @@ import core = require('./interfaces');
  * API, but includes corrections and extensions in order to function better.
  */
 class Event implements core.IEvent {
-	bubbles:boolean;
-	cancelable:boolean;
-	currentTarget:any;
-	defaultPrevented:boolean;
-	immediatePropagationStopped:boolean;
-	propagationStopped:boolean;
-	target:any;
-	timestamp:number = +new Date();
-	type:string;
+	bubbles: boolean;
+	cancelable: boolean;
+	currentTarget: any;
+	defaultPrevented: boolean;
+	immediatePropagationStopped: boolean;
+	propagationStopped: boolean;
+	target: any;
+	timestamp: number = +new Date();
+	type: string;
 
-	constructor(kwArgs?:any) {
+	constructor(kwArgs?: {}) {
 		if (kwArgs) {
 			for (var k in kwArgs) {
 				if (k === 'constructor') {
 					continue;
 				}
-				// TS7017
-				(<any> this)[k] = kwArgs[k];
+
+				(<any> this)[k] = (<any> kwArgs)[k];
 			}
 		}
 	}
 
-	preventDefault():void {
+	preventDefault(): void {
 		if (this.cancelable) {
 			this.defaultPrevented = true;
 		}
 	}
 
-	stopImmediatePropagation():void {
+	stopImmediatePropagation(): void {
 		if (this.bubbles) {
 			this.immediatePropagationStopped = true;
 		}
 	}
 
-	stopPropagation():void {
+	stopPropagation(): void {
 		if (this.bubbles) {
 			this.propagationStopped = true;
 		}

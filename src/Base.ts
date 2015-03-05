@@ -1,7 +1,6 @@
 import Application = require('./Application');
 import binding = require('./binding/interfaces');
 import has = require('./has');
-import lang = require('dojo/_base/lang');
 import util = require('./util');
 
 class Base {

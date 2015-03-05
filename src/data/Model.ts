@@ -1,6 +1,4 @@
 import Base = require('../Base');
-import core = require('../interfaces');
-import data = require('./interfaces');
 import has = require('../has');
 import LogLevel = require('../logging/LogLevel');
 import module = require('module');
@@ -188,7 +186,7 @@ class Model extends Base {
 		this.initializePropertyTraps();
 	}
 
-	protected initialize(): void {
+	protected initialize() {
 		super.initialize();
 		this.autoValidate = false;
 		this.committedValues = {};
@@ -202,8 +200,7 @@ class Model extends Base {
 	 * Adds an error to the object.
 	 */
 	addError(key: string, error: ValidationError): void {
-		var wasValid:boolean = this.isValid;
-
+		var wasValid = this.isValid;
 		var allErrors = this.errors;
 
 		var errors = allErrors[key] || (allErrors[key] = []);
@@ -449,6 +446,7 @@ class Model extends Base {
 
 module Model {
 	export interface KwArgs extends Base.KwArgs {
+		autoValidate?: boolean;
 		scenario?: string;
 	}
 }

@@ -1,13 +1,11 @@
 import Base = require('./Base');
 import binding = require('./binding/interfaces');
-import core = require('./interfaces');
 import ErrorHandler = require('./ErrorHandler');
 import has = require('./has');
-import I18n = require('./I18n');
+import I18n = require('./i18n/I18n');
 import lang = require('dojo/_base/lang');
 import Logger = require('./logging/Logger');
 import LogLevel = require('./logging/LogLevel');
-import ObservableEvented = require('./ObservableEvented');
 import Promise = require('./Promise');
 import Scheduler = require('./Scheduler');
 import util = require('./util');
@@ -16,9 +14,9 @@ type ApplicationComponent = { run?(): Promise<any> | void; };
 type Constructor = string | ComponentConstructor;
 type Destroyable = { destroy(): void; };
 
-var resolve:(moduleId:string) => string = (<any> require).toAbsMid || (<any> require).resolve;
+var resolve: (moduleId: string) => string = (<any> require).toAbsMid || (<any> require).resolve;
 
-var defaultBindings:string[] = [
+var defaultBindings: string[] = [
 	resolve('./binding/bindings/CompositeBinding'),
 	resolve('./binding/bindings/ObjectMethodBinding'),
 	resolve('./binding/bindings/NestedBinding'),
@@ -41,7 +39,7 @@ else {
 }
 
 interface ComponentConstructor {
-	new (kwArgs?:{}): ApplicationComponent;
+	new (kwArgs?: {}): ApplicationComponent;
 	prototype: ApplicationComponent;
 }
 
@@ -212,6 +210,7 @@ class Application extends Base {
 	 * @returns A promise that is resolved once all application components have loaded and started.
 	 */
 	run(): Promise<Application> {
+		// TODO: Add two-phase startup. Phase 1 logging & error reporting, phase 2 everything else.
 		var self = this;
 		var components: HashMap<any> = <any> this.components;
 
