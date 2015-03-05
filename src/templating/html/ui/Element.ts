@@ -91,7 +91,7 @@ class ElementWidget extends Container {
 		var queues = this._eventQueues;
 
 		for (var eventName in queues) {
-			this.on(eventName, function (event:ui.UiEvent):void {
+			this.on(eventName, <any> lang.partial(function (eventName:string, event:ui.UiEvent) {
 				var listeners = queues[eventName];
 				var i = listeners.length - 1;
 
@@ -99,7 +99,7 @@ class ElementWidget extends Container {
 					listeners[i](event);
 					--i;
 				}
-			});
+			}, eventName));
 		}
 	}
 
