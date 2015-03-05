@@ -1,12 +1,14 @@
-import array = require('dojo/_base/array');
 import aspect = require('dojo/aspect');
 import has = require('./has');
 import Promise = require('./Promise');
 import requestUtil = require('dojo/request/util');
 
-declare var process:any;
+// TODO: Use node.d.ts
+declare var process: any;
 
-export function addUnloadCallback(callback:() => void):IHandle {
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+export function addUnloadCallback(callback: () => void): IHandle {
 	if (has('host-node')) {
 		process.on('exit', callback);
 		return createHandle(function () {
@@ -22,15 +24,15 @@ export function addUnloadCallback(callback:() => void):IHandle {
 	}
 }
 
-export function createCompositeHandle(...handles:IHandle[]):IHandle {
+export function createCompositeHandle(...handles: IHandle[]): IHandle {
 	return createHandle(function () {
-		for (var i = 0, handle:IHandle; (handle = handles[i]); ++i) {
+		for (var i = 0, handle: IHandle; (handle = handles[i]); ++i) {
 			handle.remove();
 		}
 	});
 }
 
-export function createHandle(destructor:() => void):IHandle {
+export function createHandle(destructor: () => void): IHandle {
 	return {
 		remove: function () {
 			this.remove = function () {};
@@ -39,8 +41,8 @@ export function createHandle(destructor:() => void):IHandle {
 	};
 }
 
-export function createTimer(callback:(...args:any[]) => void, delay:number = 0):IHandle {
-	var timerId:number;
+export function createTimer(callback: (...args: any[]) => void, delay: number = 0): IHandle {
+	var timerId: number;
 	if (has('raf') && delay === 0) {
 		timerId = requestAnimationFrame(callback);
 		return createHandle(function () {
@@ -57,16 +59,16 @@ export function createTimer(callback:(...args:any[]) => void, delay:number = 0):
 	}
 }
 
-export function debounce<T extends (...args:any[]) => void>(callback:T, delay:number = 0):T {
-	var timer:IHandle;
+export function debounce<T extends (...args: any[]) => void>(callback: T, delay: number = 0): T {
+	var timer: IHandle;
 
-	return <any>function ():void {
+	return <T> function () {
 		timer && timer.remove();
 
-		var self:any = this,
-			args:IArguments = arguments;
+		var self = this;
+		var args = arguments;
 
-		timer = createTimer(function ():void {
+		timer = createTimer(function () {
 			callback.apply(self, args);
 			self = args = timer = null;
 		}, delay);
@@ -77,26 +79,26 @@ export var deepCopy = requestUtil.deepCopy;
 export var deepCreate = requestUtil.deepCreate;
 
 interface DeferredCall {
-	original:Function;
-	args:IArguments;
+	original: Function;
+	args: IArguments;
 }
 
 // TODO: Not sure if `instead` is a good idea; talk to Bryan
 export function deferMethods(
-	target:{},
-	methods:string[],
-	untilMethod:string,
-	instead?:(method:string, args:IArguments) => any
-):void {
+	target: {},
+	methods: string[],
+	untilMethod: string,
+	instead?: (method: string, args: IArguments) => any
+): void {
 	// Avoid TS7017 but still allow the method signature to be typed properly
-	var _target:any = target;
-	var waiting:HashMap<DeferredCall> = {};
-	var untilHandle = aspect.after(target, untilMethod, function ():void {
+	var _target: any = target;
+	var waiting: HashMap<DeferredCall> = {};
+	var untilHandle = aspect.after(target, untilMethod, function () {
 		untilHandle.remove();
 		untilHandle = null;
 
 		for (var method in waiting) {
-			var info:DeferredCall = waiting[method];
+			var info: DeferredCall = waiting[method];
 
 			_target[method] = info.original;
 			info.args && _target[method].apply(_target, info.args);
@@ -105,29 +107,29 @@ export function deferMethods(
 		_target = waiting = null;
 	}, true);
 
-	array.forEach(methods, function (method:string):void {
-		var info:DeferredCall = waiting[method] = {
+	methods.forEach(function (method: string) {
+		var info: DeferredCall = waiting[method] = {
 			original: _target[method],
 			args: null
 		};
 
-		_target[method] = function ():void {
+		_target[method] = function () {
 			info.args = instead && instead.call(target, method, arguments) || arguments;
 		};
 	});
 }
 
 export function deferSetters(
-	target:Object,
-	properties:string[],
-	untilMethod:string,
-	instead?:(setter:string, value:any) => any
-):void {
+	target: {},
+	properties: string[],
+	untilMethod: string,
+	instead?: (setter: string, value: any) => any
+): void {
 	deferMethods(
 		target,
-		array.map(properties, property => '_' + property + 'Setter'),
+		properties.map(property => '_' + property + 'Setter'),
 		untilMethod,
-		instead ? function (method:string, args:IArguments):any[] {
+		instead ? function (method: string, args: IArguments) {
 			return instead.call(this, method.slice(1, -6), args[0]);
 		} : undefined
 	);
@@ -142,8 +144,8 @@ export function deferSetters(
  * @param position The index to start the search.
  * @returns The position of the search string, or -1 if the string is not found.
  */
-export function escapedIndexOf(source:string, searchString:string, position?:number):number {
-	var index:number;
+export function escapedIndexOf(source: string, searchString: string, position?: number): number {
+	var index: number;
 
 	if (source === '' || searchString === '' || position < 0) {
 		return -1;
@@ -170,9 +172,9 @@ export function escapedIndexOf(source:string, searchString:string, position?:num
  * @param separator The separator to split on.
  * @returns The split string.
  */
-export function escapedSplit(source:string, separator:string):string[] {
-	var result:string[] = [];
-	var part:string = '';
+export function escapedSplit(source: string, separator: string): string[] {
+	var result: string[] = [];
+	var part = '';
 
 	if (separator === '') {
 		result.push(source);
@@ -211,7 +213,7 @@ export function escapedSplit(source:string, separator:string):string[] {
 /**
  * Escapes a string of text for injection into a serialization of HTML or XML.
  */
-export function escapeXml(text:string, forAttribute:boolean = true):string {
+export function escapeXml(text: string, forAttribute: boolean = true): string {
 	text = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 	if (forAttribute) {
@@ -221,15 +223,15 @@ export function escapeXml(text:string, forAttribute:boolean = true):string {
 	return text;
 }
 
-export function getModule<T>(moduleId:string): Promise<T> {
-	return getModules([ moduleId ]).then(function (modules:T[]):T {
+export function getModule<T>(moduleId: string): Promise<T> {
+	return getModules([ moduleId ]).then(function (modules: T[]): T {
 		return modules[0];
 	});
 }
 
 export interface RequireError extends Error {
-	url:string;
-	originalError:Error;
+	url: string;
+	originalError: Error;
 }
 
 /**
@@ -239,8 +241,8 @@ export interface RequireError extends Error {
  * @param property The name of the property.
  * @returns The property descriptor.
  */
-export function getPropertyDescriptor(object:Object, property:string):PropertyDescriptor {
-	var descriptor:PropertyDescriptor;
+export function getPropertyDescriptor(object: Object, property: string): PropertyDescriptor {
+	var descriptor: PropertyDescriptor;
 	do {
 		descriptor = Object.getOwnPropertyDescriptor(object, property);
 	} while (!descriptor && (object = Object.getPrototypeOf(object)));
@@ -250,15 +252,15 @@ export function getPropertyDescriptor(object:Object, property:string):PropertyDe
 
 export function getModules<T>(moduleIds: string[]): Promise<T[]> {
 	var dfd = new Promise.Deferred<T[]>();
-	var handle:IHandle;
+	var handle: IHandle;
 
 	if (require.on) {
-		var moduleUrls:HashMap<string> = {};
+		var moduleUrls: HashMap<string> = {};
 		for (var i = 0; i < moduleIds.length; i++) {
 			moduleUrls[require.toUrl(moduleIds[i])] = moduleIds[i];
 		}
 
-		handle = require.on('error', function (error:{ message: string; info:any[]; }):void {
+		handle = require.on('error', function (error: { message: string; info: any[]; }) {
 			// TODO: handle plugins correctly
 			if (error.message === 'scriptError') {
 				var moduleUrl = error.info[0].slice(0, -3);
@@ -266,7 +268,7 @@ export function getModules<T>(moduleIds: string[]): Promise<T[]> {
 					handle && handle.remove();
 					handle = null;
 
-					var reportedError:RequireError = <any> new Error('Couldn\'t load ' + moduleUrls[moduleUrl] + ' from ' + error.info[0]);
+					var reportedError: RequireError = <any> new Error('Couldn\'t load ' + moduleUrls[moduleUrl] + ' from ' + error.info[0]);
 					reportedError.url = error.info[0];
 					reportedError.originalError = error.info[1];
 					dfd.reject(reportedError);
@@ -282,15 +284,15 @@ export function getModules<T>(moduleIds: string[]): Promise<T[]> {
 		});
 	}
 
-	require(moduleIds, function (...modules:T[]):void {
+	require(moduleIds, function (...modules: T[]) {
 		handle && handle.remove();
 		handle = null;
 
 		// require does not emit an 'error' event in some environments (IE8, Node.js), instead the module is
 		// not resolved ('not-a-module'). This improves behavior in IE8, but it's still broken in Node.js.
-		array.every(modules, function (module:T, index:number, modules:T[]):boolean {
-			if (<any> module === 'not-a-module') {
-				var reportedError:RequireError = <any> new Error('Couldn\'t load module ' + moduleIds[index]);
+		modules.every(function (module: T | string, index: number, modules: T[]) {
+			if (<string> module === 'not-a-module') {
+				var reportedError: RequireError = <any> new Error('Couldn\'t load module ' + moduleIds[index]);
 				dfd.reject(reportedError);
 
 				return false;
@@ -308,13 +310,13 @@ export function getModules<T>(moduleIds: string[]): Promise<T[]> {
 /**
  * Retrieves all enumerable keys from an object.
  */
-export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):string[] {
-	var keys:string[] = [],
-		hasOwnProperty = Object.prototype.hasOwnProperty;
+export var getObjectKeys = has('es5') ? Object.keys : function (object: {}): string[] {
+	var keys: string[] = [];
 
 	for (var key in object) {
 		hasOwnProperty.call(object, key) && keys.push(key);
 	}
+
 	return keys;
 };
 
@@ -322,7 +324,7 @@ export var getObjectKeys = has('es5') ? Object.keys : function (object:Object):s
  * Determines whether two values are strictly equal, also treating
  * NaN as equal to NaN.
  */
-export function isEqual(a:any, b:any):boolean {
+export function isEqual(a: any, b: any): boolean {
 	return a === b || /* both values are NaN */ (a !== a && b !== b);
 }
 
@@ -330,15 +332,15 @@ export function isEqual(a:any, b:any):boolean {
  * Determines whether or not a value is an Object, in the EcmaScript specification
  * sense of an Object.
  */
-export function isObject(object:any):boolean {
-	var type:string = typeof object;
+export function isObject(object: any): boolean {
+	var type = typeof object;
 	return object != null && (type === 'object' || type === 'function');
 }
 
 /**
  * Finds and removes `needle` from `haystack`, if it exists.
  */
-export function spliceMatch<T>(haystack:T[], needle:T):boolean {
+export function spliceMatch<T>(haystack: T[], needle: T): boolean {
 	for (var i = 0; i < haystack.length; ++i) {
 		if (haystack[i] === needle) {
 			haystack.splice(i, 1);
@@ -349,46 +351,8 @@ export function spliceMatch<T>(haystack:T[], needle:T):boolean {
 	return false;
 }
 
-export function spread<T, U>(values:Promise.Thenable<T>[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void): Promise<U>;
-export function spread<T, U>(values:T[], resolved:(...args:T[]) => U, rejected?:(error:Error) => void): Promise<U>;
-export function spread(values:any[], resolved:(...args:any[]) => any, rejected?:(error:Error) => void): Promise<any> {
-	return Promise.all(values).then(function (values:any):any {
-		return resolved.apply(undefined, values);
-	}, rejected);
-}
-
-// TODO: Remove if unused
-export function deepMixin<T extends Object>(target:T, source:any):T;
-export function deepMixin<T extends Object>(target:any, source:any):T;
-export function deepMixin(target:any, source:any):any {
-	if (typeof source === 'object' && source !== null) {
-		if (source instanceof Array) {
-			target.length = source.length;
-		}
-
-		for (var name in source) {
-			var targetValue = target[name];
-			var sourceValue = source[name];
-
-			if (targetValue !== sourceValue) {
-				if (typeof sourceValue === 'object' && sourceValue !== null) {
-					if (targetValue === null || typeof targetValue !== 'object') {
-						target[name] = targetValue = (sourceValue instanceof Array) ? [] : {};
-					}
-					deepMixin(targetValue, sourceValue);
-				}
-				else {
-					target[name] = sourceValue;
-				}
-			}
-		}
-	}
-
-	return target;
-}
-
-export function unescapeXml(text:string):string {
-	var entityMap:HashMap<string> = {
+export function unescapeXml(text: string): string {
+	var entityMap: HashMap<string> = {
 		lt: '<',
 		gt: '>',
 		amp: '&',
@@ -396,7 +360,7 @@ export function unescapeXml(text:string):string {
 		apos: '\''
 	};
 
-	return text.replace(/&([^;]+);/g, function (_:string, entity:string):string {
+	return text.replace(/&([^;]+);/g, function (_: string, entity: string) {
 		if (entityMap[entity]) {
 			return entityMap[entity];
 		}

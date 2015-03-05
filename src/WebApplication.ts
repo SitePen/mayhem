@@ -25,7 +25,7 @@ import util = require('./util');
  * ```
  */
 class WebApplication extends Application {
-	static _defaultConfig = util.deepCreate(Application.defaultConfig, {
+	protected static defaultConfig = util.deepCreate(Application.defaultConfig, {
 		components: {
 			router: {
 				constructor: require.toAbsMid('./routing/HashRouter')

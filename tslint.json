@@ -37,17 +37,16 @@
 		"radix": true,
 		"semicolon": true,
 		"triple-equals": [ true, "allow-null-check" ],
-		"typedef": [ true, "call-signature", "index-signature", "parameter", "property-signature" ],
+		"typedef": false,
 		"typedef-whitespace": [ true, {
-			"call-signature": "nospace",
 			"catch-clause": "nospace",
 			"index-signature": "nospace",
 			"parameter": "nospace",
 			"property-signature": "nospace",
 			"variable-declarator": "nospace"
-		}],
+		} ],
 		"use-strict": false,
 		"variable-name": false,
-		"whitespace": [ true, "check-branch", "check-decl", "check-operator", "check-separator" ]
+		"whitespace": [ true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type", "check-typecast" ]
 	}
 }

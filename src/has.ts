@@ -42,7 +42,7 @@ if (has('dom')) {
 
 	// IE8: incomplete DOM implementation
 	has.add('dom-node-interface', typeof Node !== 'undefined');
-	has.add('dom-bad-expandos', function ():boolean {
+	has.add('dom-bad-expandos', function () {
 		try {
 			return ((<any> document.createTextNode('')).foo = true) !== true;
 		}
@@ -52,15 +52,15 @@ if (has('dom')) {
 	});
 
 	// IE8: https://social.msdn.microsoft.com/Forums/ie/en-US/33fd33f7-e857-4f6f-978e-fd486eba7174/how-to-inject-style-into-a-page
-	has.add('dom-firstchild-empty-bug', function ():boolean {
-		var element:HTMLElement = arguments[2];
+	has.add('dom-firstchild-empty-bug', function () {
+		var element: HTMLElement = arguments[2];
 		element.innerHTML = '<!--foo-->';
 		return element.childNodes.length === 0;
 	});
 
 	// Chrome: https://code.google.com/p/chromium/issues/detail?id=43394
-	has.add('webidl-bad-descriptors', function ():boolean {
-		var element:HTMLDivElement = arguments[2];
+	has.add('webidl-bad-descriptors', function () {
+		var element: HTMLDivElement = arguments[2];
 		return Boolean(element && Object.getOwnPropertyDescriptor(element, 'nodeValue') != null);
 	});
 }

@@ -1,4 +1,5 @@
 import has = require('./has');
+type Callback = (...args: any[]) => void;
 
 // TODO: use node.d.ts
 declare var process: any;
@@ -20,8 +21,8 @@ function isPromise(value: any): boolean {
 	return value && typeof value.then === 'function';
 }
 
-function runCallbacks(callbacks: Array<(...args: any[]) => void>, ...args: any[]): void {
-	for (var i = 0, callback:(...args: any[]) => void; callback = callbacks[i]; ++i) {
+function runCallbacks(callbacks: Array<Callback>, ...args: any[]): void {
+	for (var i = 0, callback: Callback; callback = callbacks[i]; ++i) {
 		callback.apply(null, args);
 	}
 }
@@ -69,11 +70,11 @@ class Promise<T> {
 	 *   value.bar === 'bar'; // true
 	 * });
 	 */
-	static all<T>(iterable: { [key: string]: Promise.Thenable<T> | T; }): Promise<{ [key:string]: T; }>;
+	static all<T>(iterable: { [key: string]: Promise.Thenable<T> | T; }): Promise<{ [key: string]: T; }>;
 	static all<T>(iterable: Array<Promise.Thenable<T> | T>): Promise<T[]>;
 	static all(iterable: any): Promise<any> {
 		return new this(function (resolve, reject, progress, setCanceler) {
-			setCanceler(function (reason: Error):void {
+			setCanceler(function (reason: Error) {
 				walkIterable(function (key: string, value: any) {
 					if (value && value.cancel) {
 						value.cancel(reason);
@@ -176,7 +177,7 @@ class Promise<T> {
 	 * the canceler function to the `setCanceler` function.
 	 */
 	constructor(
-		initializer:(
+		initializer: (
 			resolve?: (value?: Promise.Thenable<T> | T) => void,
 			reject?: (error?: Error) => void,
 			progress?: (data?: any) => void,
@@ -213,7 +214,7 @@ class Promise<T> {
 		/**
 		 * Callbacks that should be invoked once the asynchronous operation has completed.
 		 */
-		var callbacks:Array<() => void> = [];
+		var callbacks: Array<() => void> = [];
 		var whenFinished = function (callback: () => void) {
 			callbacks.push(callback);
 		};
@@ -240,13 +241,13 @@ class Promise<T> {
 		 * @method
 		 * @param callback The callback to execute on the next turn through the event loop.
 		 */
-		var enqueue: (callback: (...args:any[]) => any) => void = (function () {
+		var enqueue = (function () {
 			function originalSchedule() {
 				schedule = function () {};
 
 				nextTick(function run() {
 					try {
-						var callback: (...args: any[]) => void;
+						var callback: Callback;
 						while ((callback = queue.shift())) {
 							callback();
 						}
@@ -264,10 +265,10 @@ class Promise<T> {
 				});
 			}
 
-			var queue:Array<(...args: any[]) => void> = [];
+			var queue: Array<Callback> = [];
 			var schedule = originalSchedule;
 
-			return function (callback: (...args: any[]) => void):void {
+			return function (callback: Callback) {
 				queue.push(callback);
 				schedule();
 			};
@@ -341,7 +342,7 @@ class Promise<T> {
 			onFulfilled?: (value?: T) => Promise.Thenable<U> | U,
 			onRejected?: (error?: Error) => Promise.Thenable<U> | U,
 			onProgress?: (data?: any) => any
-		):Promise<U> {
+		): Promise<U> {
 			return new Promise<U>(function (resolve, reject, progress, setCanceler) {
 				setCanceler(function (reason) {
 					if (canceler) {
