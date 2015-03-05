@@ -65,7 +65,8 @@ module.exports = function (grunt) {
 						'../xstyle/xstyle.d.ts'
 					],
 					out: 'dist/_typings/mayhem/mayhem.d.ts'
-				}
+				},
+				src: [ '<%= ignoreDefinitions %>' ]
 			}
 		},
 
@@ -135,7 +136,7 @@ module.exports = function (grunt) {
 				}
 			},
 			tests: {
-				src: [ 'tests/**/*.ts', 'typings/tsd.d.ts', '!tests/mayhem/**/*.ts' ]
+				src: [ 'tests/**/*.ts', 'dist/_typings/mayhem/mayhem.d.ts', '!tests/mayhem/**/*.ts' ]
 			}
 		},
 
@@ -155,14 +156,24 @@ module.exports = function (grunt) {
 		var done = this.async();
 		var onProgress = grunt.verbose.writeln.bind(grunt.verbose);
 
-		dtsGenerator.generate(this.options(), onProgress).then(done, done);
+		var kwArgs = this.options();
+		var path = require('path');
+		kwArgs.files = this.filesSrc.map(function (filename) {
+			return path.relative(kwArgs.baseDir, filename);
+		});
+
+		dtsGenerator.generate(kwArgs, onProgress).then(function () {
+			grunt.log.writeln('Generated d.ts bundle at \x1b[36m' + kwArgs.out + '\x1b[39;49m');
+			done();
+		}, done);
 	});
 
 	grunt.registerMultiTask('rewriteSourceMapSources', function () {
 		var find = this.options().find;
 		var replace = this.options().replace;
 
-		grunt.log.writeln('Replacing ' + find + ' with ' + replace + ' in ' + this.filesSrc.length + ' files');
+		grunt.log.writeln('Replacing \x1b[36m' + find + '\x1b[39;49m with \x1b[36m' +
+			replace + '\x1b[39;49m in ' + this.filesSrc.length + ' files');
 
 		this.filesSrc.forEach(function (file) {
 			var map = JSON.parse(grunt.file.read(file));
@@ -179,7 +190,7 @@ module.exports = function (grunt) {
 			require('fs').renameSync(file.src[0], file.dest);
 			grunt.verbose.writeln('Renamed ' + file.src[0] + ' to ' + file.dest);
 		});
-		grunt.log.writeln('Moved ' + this.files.length + ' files');
+		grunt.log.writeln('Moved \x1b[36m' + this.files.length + '\x1b[39;49m files');
 	});
 
 	grunt.registerTask('test', [ 'ts:tests', 'intern:client' ]);
