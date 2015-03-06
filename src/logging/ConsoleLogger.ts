@@ -1,4 +1,4 @@
-import LogLevel = require('./LogLevel');
+import LogLevel from './LogLevel';
 
 class ConsoleLogger {
 	log(message: string, level?: LogLevel, category?: string ): void {

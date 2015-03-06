@@ -1,14 +1,14 @@
-import Base = require('./Base');
-import binding = require('./binding/interfaces');
-import ErrorHandler = require('./ErrorHandler');
-import has = require('./has');
-import I18n = require('./i18n/I18n');
-import lang = require('dojo/_base/lang');
-import Logger = require('./logging/Logger');
-import LogLevel = require('./logging/LogLevel');
-import Promise = require('./Promise');
-import Scheduler = require('./Scheduler');
-import util = require('./util');
+import Base from './Base';
+import * as binding from './binding/interfaces';
+import { deepCreate, getModule } from './util';
+import ErrorHandler from './ErrorHandler';
+import has from './has';
+import I18n from './i18n/I18n';
+import Logger from './logging/Logger';
+import LogLevel from './logging/LogLevel';
+import { mixin } from 'dojo/_base/lang';
+import Promise from './Promise';
+import Scheduler from './Scheduler';
 
 type ApplicationComponent = { run?(): Promise<any> | void; };
 type Constructor = string | ComponentConstructor;
@@ -165,7 +165,7 @@ class Application extends Base {
 
 	constructor(kwArgs?: {}) {
 		// TODO: more robust configuration merging
-		kwArgs = <any> util.deepCreate((<typeof Application> this.constructor).defaultConfig, kwArgs);
+		kwArgs = <any> deepCreate((<typeof Application> this.constructor).defaultConfig, kwArgs);
 		super(kwArgs);
 	}
 
@@ -233,7 +233,7 @@ class Application extends Base {
 					var ctor: Constructor = components[key].constructor;
 
 					if (typeof ctor === 'string') {
-						util.getModule(ctor).then(resolve, reject);
+						getModule(ctor).then(resolve, reject);
 					}
 					else if (typeof ctor === 'function') {
 						resolve(ctor);
@@ -253,7 +253,7 @@ class Application extends Base {
 			var startups: Array<void | Promise<any>> = [];
 
 			for (var key in ctors) {
-				instance = new ctors[key](<any> lang.mixin({ app: self }, components[key], { constructor: undefined }));
+				instance = new ctors[key](<any> mixin({ app: self }, components[key], { constructor: undefined }));
 				(<any> self)[key] = instance;
 				instances.push(instance);
 			}

@@ -1,4 +1,4 @@
-import core = require('./interfaces');
+import * as core from './interfaces';
 
 /**
  * The Event class is the base class for all Mayhem events. It provides an interface that is similar to the W3C event

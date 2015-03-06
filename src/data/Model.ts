@@ -1,11 +1,11 @@
-import Base = require('../Base');
-import has = require('../has');
-import LogLevel = require('../logging/LogLevel');
-import module = require('module');
-import Promise = require('../Promise');
-import util = require('../util');
-import ValidationError = require('../validation/ValidationError');
-import Validator = require('../validation/Validator');
+import Base from '../Base';
+import has from '../has';
+import { getObjectKeys } from '../util';
+import LogLevel from '../logging/LogLevel';
+import * as module from 'module';
+import Promise from '../Promise';
+import ValidationError from '../validation/ValidationError';
+import Validator from '../validation/Validator';
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -399,7 +399,7 @@ class Model extends Base {
 				return;
 			}
 
-			var propertiesKeys = util.getObjectKeys(validators);
+			var propertiesKeys = getObjectKeys(validators);
 			var i = 0;
 			var currentValidator: Promise<void>;
 

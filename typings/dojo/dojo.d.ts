@@ -1,51 +1,51 @@
-declare var define:{
-	(dependencies:string[], callback?:Function):void;
+declare var define: {
+	(dependencies: string[], factory?: (...args: any[]) => any): void;
 };
 
-declare var require:{
-	(config:{}, dependencies:string[], callback?:Function):void;
-	(dependencies:string[], callback?:Function):void;
-	<T>(moduleId:string):T;
-	undef(moduleId:string):void;
-	config(config:{}):void;
-	toUrl(moduleId:string):string;
-	toAbsMid(moduleId:string):string;
-	on(eventName:string, listener:(...args:any[]) => any):IHandle;
+declare var require: {
+	(config: {}, dependencies: string[], callback?: (...args: any[]) => void): void;
+	(dependencies: string[], callback?: (...args: any[]) => void): void;
+	<T>(moduleId: string): T;
+	undef(moduleId: string): void;
+	config(config: {}): void;
+	toUrl(moduleId: string): string;
+	toAbsMid(moduleId: string): string;
+	on(eventName: string, listener: (...args: any[]) => any): IHandle;
 };
 
 interface HashMap<T> {
-	[key:string]:T;
+	[key: string]: T;
 }
 
 interface IDeferred<T> extends IPromise<T> {
-	progress<U>(update:U, strict?:boolean):IPromise<U>;
-	promise:IPromise<T>;
-	reject<U>(reason:U, strict?:boolean):IPromise<U>;
-	resolve<U>(value:U, strict?:boolean):IPromise<U>;
+	progress<U>(update: U, strict?: boolean): IPromise<U>;
+	promise: IPromise<T>;
+	reject<U>(reason: U, strict?: boolean): IPromise<U>;
+	resolve<U>(value: U, strict?: boolean): IPromise<U>;
 }
 
 interface IEvented {
-	emit(type:string, event?:Event):boolean;
-	on(type:IExtensionEvent, listener:EventListener):IHandle;
-	on(type:string, listener:EventListener):IHandle;
+	emit(type: string, event?: Event): boolean;
+	on(type: IExtensionEvent, listener: EventListener): IHandle;
+	on(type: string, listener: EventListener): IHandle;
 }
 
 interface IExtensionEvent {
-	(target:{}, callback:EventListener):IHandle;
+	(target: {}, callback: EventListener): IHandle;
 }
 
 interface IHandle {
-	remove:() => void;
+	remove: () => void;
 }
 
 interface ILoaderPlugin {
-	load(resourceId:string, contextRequire:typeof require, load:(...modules:any[]) => void):void;
-	normalize?(resourceId:string, normalize:(id:string) => string):string;
+	load(resourceId: string, contextRequire: typeof require, load: (...modules: any[]) => void): void;
+	normalize?(resourceId: string, normalize:(id: string) => string): string;
 }
 
 interface IPausableHandle extends IHandle {
-	pause:() => void;
-	resume:() => void;
+	pause: () => void;
+	resume: () => void;
 }
 
 interface IPromise<T> {
@@ -76,16 +76,13 @@ interface IStore<T> {
 }
 
 declare module 'dojo/_base/array' {
-	var array:{
-		every<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
-		filter<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):T[];
-		forEach<T>(array:T[], callback:(value:T, index:number, array:T[]) => void, thisArg?:any): void;
-		indexOf<T>(array:T[], value:T, fromIndex?:number, findLast?:boolean):number;
-		lastIndexOf<T>(array:T[], value:T, fromIndex?:number):number;
-		map<T, U>(array:T[], callback:(value:T, index:number, array:T[]) => U, thisArg?:any):U[];
-		some<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
-	};
-	export = array;
+	export function every<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
+	export function filter<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):T[];
+	export function forEach<T>(array:T[], callback:(value:T, index:number, array:T[]) => void, thisArg?:any): void;
+	export function indexOf<T>(array:T[], value:T, fromIndex?:number, findLast?:boolean):number;
+	export function lastIndexOf<T>(array:T[], value:T, fromIndex?:number):number;
+	export function map<T, U>(array:T[], callback:(value:T, index:number, array:T[]) => U, thisArg?:any):U[];
+	export function some<T>(array:T[], callback:(value:T, index:number, array:T[]) => boolean, thisArg?:any):boolean;
 }
 
 declare module 'dojo/_base/declare' {
@@ -99,28 +96,22 @@ declare module 'dojo/_base/declare' {
 }
 
 declare module 'dojo/_base/lang' {
-	var lang:{
-		delegate<T>(object:T, properties?:{}):T;
-		getObject(key:string, create?:boolean, context?:{}):any;
-		hitch(context:{}, property:string, ...prefixedArgs:{}[]):(...args:any[]) => any;
-		hitch(context:{}, fn:Function, ...prefixedArgs:{}[]):(...args:any[]) => any;
-		mixin<T>(target:T, ...source:{}[]):T;
-		partial<T>(fn:T):T;
-		partial(fn:Function, ...prefixedArgs:any[]):Function;
-		replace(template:string, kwArgs:{}, pattern?:RegExp):string;
-		setObject(key:string, value:any, context?:{}):any;
-		trim(string:string):string;
-		isArray(it:any):boolean;
-		clone(object:any):any;
-	};
-	export = lang;
+	export function clone(object:any):any;
+	export function delegate<T>(object:T, properties?:{}):T;
+	export function getObject(key:string, create?:boolean, context?:{}):any;
+	export function hitch(context:{}, property:string, ...prefixedArgs:{}[]):(...args:any[]) => any;
+	export function hitch(context:{}, fn:Function, ...prefixedArgs:{}[]):(...args:any[]) => any;
+	export function isArray(it:any):boolean;
+	export function mixin<T>(target:T, ...source:{}[]):T;
+	export function partial<T>(fn:T):T;
+	export function partial(fn:Function, ...prefixedArgs:any[]):Function;
+	export function replace(template:string, kwArgs:{}, pattern?:RegExp):string;
+	export function setObject(key:string, value:any, context?:{}):any;
+	export function trim(string:string):string;
 }
 
 declare module 'dojo/_base/window' {
-	var window:{
-		body(document?:HTMLDocument):HTMLBodyElement;
-	};
-	export = window;
+	export function body(document?:HTMLDocument):HTMLBodyElement;
 }
 
 declare module 'dojo/AdapterRegistry' {
@@ -140,12 +131,9 @@ declare module 'dojo/AdapterRegistry' {
 }
 
 declare module 'dojo/aspect' {
-	var aspect:{
-		after(target:{}, methodName:string, advice:(...args:any[]) => any, receiveArguments?:boolean):IHandle;
-		around(target:{}, methodName:string, advice:(...args:any[]) => any):IHandle;
-		before(target:{}, methodName:string, advice:(...args:any[]) => any):IHandle;
-	};
-	export = aspect;
+	export function after(target:{}, methodName:string, advice:(...args:any[]) => any, receiveArguments?:boolean):IHandle;
+	export function around(target:{}, methodName:string, advice:(...args:any[]) => any):IHandle;
+	export function before(target:{}, methodName:string, advice:(...args:any[]) => any):IHandle;
 }
 
 declare module 'dojo/currency' {
@@ -211,6 +199,7 @@ declare module 'dojo/date/stamp' {
 declare module 'dojo/Deferred' {
 	var Deferred:{
 		new <T>(canceler?:(reason:any) => any):IDeferred<T>;
+		prototype:IDeferred<any>;
 		when<T>(value:T):IPromise<T>;
 		when<T>(value:IPromise<T>):IPromise<T>;
 		when<T, U>(valueOrPromise:T, callback?:(value:T) => IPromise<U>):IPromise<U>;
@@ -221,32 +210,26 @@ declare module 'dojo/Deferred' {
 }
 
 declare module 'dojo/dom-class' {
-	var domClass:{
-		contains(node:Element, classStr:string):boolean;
-		add(node:Element, classStr:string):void;
-		remove(node:Element, classStr:string):void;
-		replace(node:Element, addClassStr:string, removeClassStr?:string):void;
-		toggle(node:Element, classStr:string, condition?:boolean):void;
-	}
-
-	export = domClass;
+	export function contains(node:Element, classStr:string):boolean;
+	export function add(node:Element, classStr:string):void;
+	export function remove(node:Element, classStr:string):void;
+	export function replace(node:Element, addClassStr:string, removeClassStr?:string):void;
+	export function toggle(node:Element, classStr:string, condition?:boolean):void;
 }
 
 declare module 'dojo/dom-construct' {
-	var domConstruct:{
-		toDom(html:string):Node;
-		place<T extends Element>(node:T, refNode:Node, position?:string):T;
-		place<T extends Element>(node:T, refNode:Node, position?:number):T;
-		create(tag:'div', attrs:{}, refNode?:Node, position?:string):HTMLDivElement;
-		create(tag:'li', attrs:{}, refNode?:Node, position?:string):HTMLLIElement;
-		create(tag:'ol', attrs:{}, refNode?:Node, position?:string):HTMLOListElement;
-		create(tag:'p', attrs:{}, refNode?:Node, position?:string):HTMLParagraphElement;
-		create(tag:'ul', attrs:{}, refNode?:Node, position?:string):HTMLUListElement;
-		create(tag:string, attrs:{}, refNode?:Node, position?:string):Element;
-		destroy(node:Node):void;
-		empty(node:Element):void;
-	};
-	export = domConstruct;
+	export function toDom(html:string):Node;
+	export function place<T extends Element>(node:T, refNode:Node, position?:string):T;
+	export function place<T extends Element>(node:T, refNode:Node, position?:number):T;
+	export function create(tag:'div', attrs:{}, refNode?:Node, position?:string):HTMLDivElement;
+	export function create(tag:'li', attrs:{}, refNode?:Node, position?:string):HTMLLIElement;
+	export function create(tag:'ol', attrs:{}, refNode?:Node, position?:string):HTMLOListElement;
+	export function create(tag:'p', attrs:{}, refNode?:Node, position?:string):HTMLParagraphElement;
+	export function create(tag:'ul', attrs:{}, refNode?:Node, position?:string):HTMLUListElement;
+	export function create(tag:'span', attrs:{}, refNode?:Node, position?:string):HTMLSpanElement;
+	export function create(tag:string, attrs:{}, refNode?:Node, position?:string):Element;
+	export function destroy(node:Node):void;
+	export function empty(node:Element):void;
 }
 
 declare module 'dojo/errors/create' {
@@ -307,20 +290,14 @@ declare module 'dojo/keys' {
 }
 
 declare module 'dojo/io-query' {
-	var ioQuery:{
-		objectToQuery(map:any):string;
-		queryToObject(str:string):any;
-	};
-	export = ioQuery;
+	export function objectToQuery(map:any):string;
+	export function queryToObject(str:string):any;
 }
 
 declare module 'dojo/mouse' {
-	var mouse:{
-		enter:IExtensionEvent;
-		leave:IExtensionEvent;
-		wheel:IExtensionEvent;
-	};
-	export = mouse;
+	export var enter:IExtensionEvent;
+	export var leave:IExtensionEvent;
+	export var wheel:IExtensionEvent;
 }
 
 declare module 'dojo/NodeList' {
@@ -387,12 +364,12 @@ declare module 'dojo/number' {
 }
 
 declare module 'dojo/on' {
-	var on:{
-		(target:Node, type:string, listener:EventListener, dontFix?:boolean):IHandle;
+	var on: {
+		(target: Node, type: string, listener: EventListener, dontFix?: boolean): IHandle;
 
-		parse(target:any, type:string, listener:EventListener, addListener:Function, dontFix?:boolean, matchesTarget?:any):IHandle;
-		parse(target:any, type:IExtensionEvent, listener:EventListener, addListener:Function, dontFix?:boolean, matchesTarget?:any):IHandle;
-		pausable(target:Node, type:string, listener:EventListener, dontFix?:boolean):IPausableHandle;
+		parse(target: any, type: string, listener: EventListener, addListener: Function, dontFix?: boolean, matchesTarget?: any): IHandle;
+		parse(target: any, type: IExtensionEvent, listener: EventListener, addListener: Function, dontFix?: boolean, matchesTarget?: any): IHandle;
+		pausable(target: Node, type: string, listener: EventListener, dontFix?: boolean): IPausableHandle;
 	};
 	export = on;
 }
@@ -400,6 +377,7 @@ declare module 'dojo/on' {
 declare module 'dojo/promise/Promise' {
 	var Promise:{
 		new <T>():IPromise<T>;
+		prototype:IPromise<any>;
 	};
 	interface Promise<T> extends IPromise<T> {}
 	export = Promise;
@@ -450,15 +428,12 @@ declare module 'dojo/request/registry' {
 }
 
 declare module 'dojo/request/util' {
-	var util:{
-		addCommonMethods(provider:any, methods:string[]):void;
-		checkStatus(status:number):boolean;
-		deepCopy<T>(target:T, source:{}):T;
-		deepCreate<T>(source:T, properties:{}):T;
-		deferred(response:{} /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function):void;
-		parseArgs(url:any, options:any, skipData:any):{ url:string; options:string; getHeader:(name:string) => string; };
-	};
-	export = util;
+	export function addCommonMethods(provider:any, methods:string[]):void;
+	export function checkStatus(status:number):boolean;
+	export function deepCopy<T>(target:T, source:{}):T;
+	export function deepCreate<T>(source:T, properties:{}):T;
+	export function deferred(response:{} /*IResponseObject*/, cancel:Function /*Canceller*/, isValid:boolean, isReady:boolean, handleResponse:any, last:Function):void;
+	export function parseArgs(url:any, options:any, skipData:any):{ url:string; options:string; getHeader:(name:string) => string; };
 }
 
 declare module 'dojo/Stateful' {
@@ -516,6 +491,7 @@ declare module 'dojo/store/util/QueryResults' {
 	var QueryResults:{
 		new <T>(results:any):QueryResults<T>;
 		<T>(results:any):QueryResults<T>;
+		prototype:QueryResults<any>;
 	};
 	interface QueryResults<T> {
 		total:any;
@@ -545,34 +521,25 @@ declare module 'dojo/store/util/QueryResults' {
 }
 
 declare module 'dojo/text' {
-	var text:{
-		dynamic:boolean;
-		normalize(id:string, toAbsMid:(url:string) => string):string;
-		load(id:string, require:Function, load:(text:string) => void):void;
-	};
-	export = text;
+	export var dynamic:boolean;
+	export function normalize(id:string, toAbsMid:(url:string) => string):string;
+	export function load(id:string, require:Function, load:(text:string) => void):void;
 }
 
 declare module 'dojo/topic' {
-	var topic:{
-		publish(topic:string, event:{}):void;
-		subscribe(topic:string, listener:(...args:any[]) => void):IHandle;
-	};
-	export = topic;
+	export function publish(topic:string, event:{}):void;
+	export function subscribe(topic:string, listener:(...args:any[]) => void):IHandle;
 }
 
 declare module 'dojo/touch' {
-	var touch:{
-		cancel:IExtensionEvent;
-		enter:IExtensionEvent;
-		leave:IExtensionEvent;
-		move:IExtensionEvent;
-		press:IExtensionEvent;
-		release:IExtensionEvent;
-		out:IExtensionEvent;
-		over:IExtensionEvent;
-	};
-	export = touch;
+	export var cancel:IExtensionEvent;
+	export var enter:IExtensionEvent;
+	export var leave:IExtensionEvent;
+	export var move:IExtensionEvent;
+	export var press:IExtensionEvent;
+	export var release:IExtensionEvent;
+	export var out:IExtensionEvent;
+	export var over:IExtensionEvent;
 }
 
 declare module 'dojo/when' {

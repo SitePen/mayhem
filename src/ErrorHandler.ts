@@ -3,14 +3,14 @@
 // TODO: Use node.d.ts
 declare var process: any;
 
-import Application = require('./Application');
-import aspect = require('dojo/aspect');
-import Base = require('./Base');
-import has = require('./has');
-import lang = require('dojo/_base/lang');
-import util = require('./util');
-import View = require('./ui/View');
-import WebApplication = require('./WebApplication');
+import Application from './Application';
+import { before as aspectBefore } from 'dojo/aspect';
+import Base from './Base';
+import { createHandle } from './util';
+import has from './has';
+import { hitch } from 'dojo/_base/lang';
+import View from './ui/View';
+import WebApplication from './WebApplication';
 
 interface ErrorWithStack extends Error {
 	stack: string;
@@ -59,7 +59,7 @@ class ErrorHandler extends Base {
 		var self = this;
 		if (this.handleGlobalErrors) {
 			if (has('host-browser')) {
-				this._handle = aspect.before(window, 'onerror', function (
+				this._handle = aspectBefore(window, 'onerror', function (
 					message: string,
 					url: string,
 					lineNumber: number,
@@ -77,9 +77,9 @@ class ErrorHandler extends Base {
 			else if (has('host-node')) {
 				// Using late binding for the listener in order to allow it to be replaced at runtime if necessary,
 				// for e.g. testing
-				var listener = lang.hitch(this, 'handleError');
+				var listener = hitch(this, 'handleError');
 				process.on('uncaughtException', listener);
-				this._handle = util.createHandle(function () {
+				this._handle = createHandle(function () {
 					process.removeListener('uncaughtException', listener);
 				});
 			}

@@ -1,11 +1,11 @@
-import Base = require('../Base');
-import currencyFormatter = require('dojo/currency');
-import dateFormatter = require('dojo/date/locale');
-import has = require('../has');
-import IntlMessageFormat = require('./IntlMessageFormat');
-import numberFormatter = require('dojo/number');
-import Promise = require('../Promise');
-import util = require('../util');
+import Base from '../Base';
+import currencyFormatter from 'dojo/currency';
+import dateFormatter from 'dojo/date/locale';
+import { getModule, getModules } from '../util';
+import has from '../has';
+import IntlMessageFormat from './IntlMessageFormat';
+import numberFormatter from 'dojo/number';
+import Promise from '../Promise';
 
 type MessageFunction = (kwArgs: {}) => string;
 type Bundle = HashMap<string | MessageFunction | IntlMessageFormat<{}>>;
@@ -132,7 +132,7 @@ class I18n extends Base {
 		var bundleId = 'dojo/i18n!' + id.replace('/nls/', '/nls/' + locale + '/');
 
 		var self = this;
-		return util.getModule(bundleId).then(function (bundle: Bundle) {
+		return getModule(bundleId).then(function (bundle: Bundle) {
 			mergeBundle(locale, bundleId, self.messages, bundle);
 		});
 	}
@@ -190,7 +190,7 @@ class I18n extends Base {
 		});
 
 		var self = this;
-		return util.getModules(bundleIds.concat([
+		return getModules(bundleIds.concat([
 			'dojo/i18n!dojo/cldr/nls/' + locale + '/gregorian',
 			'dojo/i18n!dojo/cldr/nls/' + locale + '/currency',
 			'dojo/i18n!dojo/cldr/nls/' + locale + '/number'

@@ -1,7 +1,6 @@
-import Base = require('../Base');
-import has = require('../has');
-import lang = require('dojo/_base/lang');
-import Promise = require('../Promise');
+import Base from '../Base';
+import has from '../has';
+import Promise from '../Promise';
 
 /**
  * An abstract base class for managing user authentication and authorization.

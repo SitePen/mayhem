@@ -1,7 +1,7 @@
-import Application = require('./Application');
-import binding = require('./binding/interfaces');
-import has = require('./has');
-import util = require('./util');
+import Application from './Application';
+import * as binding from './binding/interfaces';
+import { createHandle, getPropertyDescriptor } from './util';
+import has from './has';
 
 class Base {
 	static app: string | Application | Base.ApplicationFactory;
@@ -71,7 +71,7 @@ class Base {
 	observe<T>(key: string, observer: binding.IObserver<T>): IHandle {
 		var binding = this.app.binder.createBinding(this, key);
 		binding.observe(observer);
-		return util.createHandle(function () {
+		return createHandle(function () {
 			binding.destroy();
 		});
 	}
@@ -96,7 +96,7 @@ class Base {
 	 * Convenience function for calling the accessor of a parent class computed property.
 	 */
 	protected superGet(property: string) {
-		var descriptor = util.getPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(this)), property);
+		var descriptor = getPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(this)), property);
 		if (descriptor && descriptor.get) {
 			return descriptor.get.call(this);
 		}
@@ -106,7 +106,7 @@ class Base {
 	 * Convenience function for calling the accessor of a parent class computed property.
 	 */
 	protected superSet(property: string, value: any) {
-		var descriptor = util.getPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(this)), property);
+		var descriptor = getPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(this)), property);
 		if (descriptor && descriptor.set) {
 			descriptor.set.call(this, value);
 		}

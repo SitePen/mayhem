@@ -1,4 +1,4 @@
-import has = require('./has');
+import has from './has';
 
 var Ctor: typeof WeakMap;
 interface Ctor<K, V> extends WeakMap<K, V> {}

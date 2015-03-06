@@ -1,9 +1,9 @@
-import Model = require('./Model');
-import Promise = require('../Promise');
-import util = require('../util');
+import { deepCreate } from '../util';
+import Model from './Model';
+import Promise from '../Promise';
 
 class PersistentModel extends Model {
-	protected static nonDataKeys: HashMap<boolean> = util.deepCreate(Model.nonDataKeys, {
+	protected static nonDataKeys: HashMap<boolean> = deepCreate(Model.nonDataKeys, {
 		autoSave: true,
 		store: true
 	});
