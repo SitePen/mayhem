@@ -1,7 +1,7 @@
-import aspect = require('dojo/aspect');
-import has = require('./has');
-import Promise = require('./Promise');
-import requestUtil = require('dojo/request/util');
+import { after as aspectAfter, before as aspectBefore } from 'dojo/aspect';
+import has from './has';
+import Promise from './Promise';
+export { deepCopy, deepCreate } from 'dojo/request/util';
 
 // TODO: Use node.d.ts
 declare var process: any;
@@ -16,7 +16,7 @@ export function addUnloadCallback(callback: () => void): IHandle {
 		});
 	}
 	else if (has('host-browser')) {
-		return aspect.before(window, 'onbeforeunload', callback);
+		return aspectBefore(window, 'onbeforeunload', callback);
 	}
 	/* istanbul ignore next */
 	else {
@@ -75,9 +75,6 @@ export function debounce<T extends (...args: any[]) => void>(callback: T, delay:
 	};
 }
 
-export var deepCopy = requestUtil.deepCopy;
-export var deepCreate = requestUtil.deepCreate;
-
 interface DeferredCall {
 	original: Function;
 	args: IArguments;
@@ -93,7 +90,7 @@ export function deferMethods(
 	// Avoid TS7017 but still allow the method signature to be typed properly
 	var _target: any = target;
 	var waiting: HashMap<DeferredCall> = {};
-	var untilHandle = aspect.after(target, untilMethod, function () {
+	var untilHandle = aspectAfter(target, untilMethod, function () {
 		untilHandle.remove();
 		untilHandle = null;
 

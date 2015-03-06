@@ -3,8 +3,7 @@
 // This file is a hack because Yahoo removed AMD support from intl-messageformat and everything they do relies on
 // globals and inadequate client-side API
 
-import has = require('../has');
-import ImportedIntlMessageFormat = require('intl-messageformat');
+import ImportedIntlMessageFormat from 'intl-messageformat';
 
 var out: typeof IntlMessageFormat;
 

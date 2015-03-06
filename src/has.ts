@@ -1,4 +1,4 @@
-import has = require('dojo/has');
+import has from 'dojo/has';
 
 has.add('debug', true);
 

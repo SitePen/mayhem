@@ -1,4 +1,5 @@
-import has = require('./has');
+import has from './has';
+
 type Callback = (...args: any[]) => void;
 
 // TODO: use node.d.ts

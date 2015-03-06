@@ -1,7 +1,7 @@
-import Application = require('./Application');
-import Master = require('./ui/Master');
-import Router = require('./routing/Router');
-import util = require('./util');
+import Application from './Application';
+import { deepCreate } from './util';
+import Master from './ui/Master';
+import Router from './routing/Router';
 
 /**
  * The WebApplication class provides a set of default components that are suitable for use when creating a client-side
@@ -25,7 +25,7 @@ import util = require('./util');
  * ```
  */
 class WebApplication extends Application {
-	protected static defaultConfig = util.deepCreate(Application.defaultConfig, {
+	protected static defaultConfig = deepCreate(Application.defaultConfig, {
 		components: {
 			router: {
 				constructor: require.toAbsMid('./routing/HashRouter')

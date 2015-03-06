@@ -1,5 +1,5 @@
-import BindDirection = require('./BindDirection');
-import core = require('../interfaces');
+import BindDirection from './BindDirection';
+import * as core from '../interfaces';
 
 /**
  * The keyword arguments object for the high-level data binding API.
