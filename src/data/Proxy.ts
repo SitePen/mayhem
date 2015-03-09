@@ -1,17 +1,15 @@
-import binding = require('../binding/interfaces');
-import core = require('../interfaces');
-import data = require('./interfaces');
-import has = require('../has');
-import Observable = require('../Observable');
-import util = require('../util');
-import WeakMap = require('../WeakMap');
+import Base from '../Base';
+import { hitch } from 'dojo/_base/lang';
+import { isObject } from '../util';
 
-class Proxy<T> extends Observable {
-	static forCollection<T extends data.IModel>(collection:dstore.ISyncCollection<T>):dstore.ISyncCollection<Proxy<T>>;
-	static forCollection<T extends data.IModel>(collection:dstore.ICollection<T>):dstore.ICollection<Proxy<T>>;
-	static forCollection<T extends Proxy<data.IModel>>(collection:dstore.ISyncCollection<T>):dstore.ISyncCollection<Proxy<T>>;
-	static forCollection<T extends Proxy<data.IModel>>(collection:dstore.ICollection<T>):dstore.ICollection<Proxy<T>>;
-	static forCollection<T>(collection:dstore.ISyncCollection<T>|dstore.ICollection<T>):any {
+class Proxy<T> extends Base {
+	/**
+	 * Creates a new dstore collection of proxy objects. The new collection will mirror all changes to the original
+	 * collection, and vice-versa.
+	 */
+	static forCollection<T extends Base>(collection: dstore.ISyncCollection<T>): dstore.ISyncCollection<Proxy<T>>;
+	static forCollection<T extends Base>(collection: dstore.ICollection<T>): dstore.ICollection<Proxy<T>>;
+	static forCollection<T extends Base>(collection: dstore.ISyncCollection<T> | dstore.ICollection<T>): any {
 		var Ctor = this;
 
 		var proxies = new WeakMap<T, Proxy<T>>();
@@ -22,10 +20,10 @@ class Proxy<T> extends Observable {
 		var models = new WeakMap<Proxy<T>, T>();
 
 		function createProxy(item: T) {
-			var proxy:Proxy<T> = proxies.get(item);
+			var proxy: Proxy<T> = proxies.get(item);
 
 			if (!proxy) {
-				proxy = new Ctor<T>({ app: (<any> item).get('app'), target: item });
+				proxy = new Ctor<T>({ app: item.app, target: item });
 				proxies.set(item, proxy);
 				models.set(proxy, item);
 			}
@@ -33,12 +31,12 @@ class Proxy<T> extends Observable {
 			return proxy;
 		}
 
-		function wrapCollection(collection:dstore.ISyncCollection<T>) {
+		function wrapCollection(collection: dstore.ISyncCollection<T>) {
 			var wrapperCollection = Object.create(collection);
 
 			[ 'add', 'addSync', 'put', 'putSync', 'remove', 'removeSync' ].forEach(function (method) {
 				if ((<any> collection)[method]) {
-					wrapperCollection[method] = function (object:Proxy<T>|T):any {
+					wrapperCollection[method] = function (object: Proxy<T> | T): any {
 						// Either the proxy *or* the original object can be passed to any of the setter methods
 						object = models.get(<Proxy<T>> object) || object;
 
@@ -55,7 +53,7 @@ class Proxy<T> extends Observable {
 			if (collection.getSync) {
 				wrapperCollection.getSync = function () {
 					return createProxy(collection.getSync.apply(collection, arguments));
-				}
+				};
 			}
 
 			// TODO: Sort and filter should not need to be wrapped, _createSubCollection should be enough?
@@ -104,7 +102,7 @@ class Proxy<T> extends Observable {
 				};
 			}
 
-			wrapperCollection._createSubCollection = function (kwArgs:any) {
+			wrapperCollection._createSubCollection = function (kwArgs: any) {
 				// TODO: Model _createSubCollection in d.ts?
 				var newCollection = (<any> collection)._createSubCollection(kwArgs);
 				return wrapCollection(newCollection);
@@ -131,139 +129,93 @@ class Proxy<T> extends Observable {
 		return wrapCollection(<dstore.ISyncCollection<T>> collection);
 	}
 
-	/**
-	 * @protected
-	 */
-	_app:core.IApplication;
+	protected ownProperties: HashMap<boolean>;
 
-	/**
-	 * @protected
-	 */
-	_target:T;
-
-	// Properties from kwArgs should always go to the Proxy
-	private _initializing:boolean;
-	private _targetHandles:HashMap<binding.IBinding<any>>;
-
-	get:Proxy.Getters;
-	set:Proxy.Setters;
-
-	constructor(kwArgs:HashMap<any>) {
-		// TS7017
-		var _kwArgs:{ [key:string]:any; app?:core.IApplication; target?:any; } = kwArgs;
-
-		// TODO: Bad idea?
-		if (_kwArgs.target && !_kwArgs.app) {
-			this._app = _kwArgs.target.get ? _kwArgs.target.get('app') : _kwArgs.target.app;
-		}
-
-		this._initializing = true;
-		super(_kwArgs);
-		this._initializing = false;
-	}
-
-	_initialize():void {
-		this._targetHandles = has('es5') ? Object.create(null) : {};
-	}
-
-	private _createTargetBinding(key:string):void {
-		var self = this;
-		var binding = this._targetHandles[key] = this._app.get('binder').createBinding(this._target, key, { useScheduler: false });
-		binding.observe(function (change:binding.IChangeRecord<any>):void {
-			self._notify(key, change.value, change.oldValue);
-		});
-	}
-
-	destroy():void {
-		var handles = this._targetHandles;
-
-		for (var key in handles) {
-			handles[key] && handles[key].destroy();
-		}
-
-		this._targetHandles = this._target = null;
-		super.destroy();
-	}
-
-	observe(key:any, observer:core.IObserver<any>):IHandle {
-		var privateKey:string = '_' + key;
-		var getter:string = privateKey + 'Getter';
-		// TS7017
-		var hasOwnKey:boolean = (privateKey in this) || typeof (<any> this)[getter] === 'function';
-
-		if (!this._targetHandles[key] && this._target && !hasOwnKey) {
-			this._createTargetBinding(key);
-		}
-
-		return super.observe(key, observer);
-	}
-
-	_targetGetter():T {
+	get target(): T {
 		return this._target;
 	}
-	_targetSetter(target:T):void {
-		this._target = target;
+	set target(target: T) {
+		function bind(target: T, source: Proxy<T>, key: string) {
+			Object.defineProperty(source, key, {
+				get() {
+					return (<any> target)[key];
+				},
+				set(value: any) {
+					(<any> target)[key] = value;
+				},
+				configurable: true,
+				enumerable: true,
+				writable: true
+			});
+			return source.app.binder.observe(target, key, () => {
+				source.notify(key);
+			});
+		}
 
-		var handles:HashMap<binding.IBinding<any>> = this._targetHandles;
-		for (var key in handles) {
-			handles[key] && handles[key].destroy();
-
-			if (target) {
-				this._createTargetBinding(key);
-				// TS7017
-				this._notify(key, (<any> target).get ? (<any> target).get(key) : (<any> target)[key], undefined);
+		var ownProperties = this.ownProperties;
+		var oldDescriptors = this._targetDescriptors;
+		for (var key in oldDescriptors) {
+			if (!(key in target) && !(key in ownProperties)) {
+				Object.defineProperty(this, key, {
+					value: undefined,
+					configurable: true,
+					enumerable: false,
+					writable: true
+				});
 			}
 		}
+
+		var newDescriptors: HashMap<IHandle> = {};
+		for (key in target) {
+			if (!(key in ownProperties)) {
+				newDescriptors[key] = bind(target, this, key);
+				this.notify(key);
+			}
+		}
+
+		this._target = target;
+		this._targetDescriptors = newDescriptors;
+	}
+	private _target: T;
+	private _targetDescriptors: HashMap<IHandle>;
+
+	constructor(kwArgs?: Proxy.KwArgs<T>) {
+		var key: string;
+
+		var initialProperties: any = {};
+		for (key in kwArgs) {
+			if (key !== 'target') {
+				initialProperties[key] = (<any> kwArgs)[key];
+			}
+		}
+
+		super(initialProperties);
+
+		// properties that should never be proxied to the target object
+		var ownProperties: HashMap<boolean> = this.ownProperties = {};
+		for (key in this) {
+			ownProperties[key] = true;
+		}
+
+		this.target = kwArgs.target;
+	}
+
+	destroy(): void {
+		var handles = this._targetDescriptors;
+
+		for (var key in handles) {
+			handles[key] && handles[key].remove();
+		}
+
+		this._targetDescriptors = this._target = null;
+		super.destroy();
 	}
 }
 
 module Proxy {
-	export interface Getters extends Observable.Getters {
-		(key:'target'):Observable;
-	}
-	export interface Setters extends Observable.Setters {
-		(key:'target', value:Observable):void;
+	export interface KwArgs<T> extends Base.KwArgs {
+		target: T;
 	}
 }
-
-Proxy.prototype.get = function (key:string):any {
-	var value:any = Observable.prototype.get.apply(this, arguments);
-	var target:any = this._target;
-	if (value === undefined && target) {
-		value = target.get ? target.get(key) : target[key];
-
-		if (typeof value === 'function') {
-			var originalFn:(...args:any[]) => any = value;
-			var self = this;
-			value = function ():any {
-				var thisArg:{} = this === self ? target : this;
-				return originalFn.apply(thisArg, arguments);
-			};
-		}
-	}
-
-	return value;
-};
-
-Proxy.prototype.set = function (key:any, value?:any):void {
-	if (util.isObject(key)) {
-		Observable.prototype.set.apply(this, arguments);
-		return;
-	}
-
-	// TODO: Remove prefix
-	var privateKey:string = '_' + key;
-	var setter:string = privateKey + 'Setter';
-
-	if (typeof this[setter] === 'function' || (privateKey in this) || this._initializing) {
-		Observable.prototype.set.apply(this, arguments);
-	}
-	else if (this._target) {
-		return this._target.set ? this._target.set(key, value) : (this._target[key] = value);
-	}
-	else {
-		return undefined;
-	}
-};
 
 export = Proxy;
