@@ -13,6 +13,11 @@ declare var require: {
 	on(eventName: string, listener: (...args: any[]) => any): IHandle;
 };
 
+interface DeclaredClass {
+	createSubclass<T>(props: {}): { new (...args: any[]): T; prototype: T; };
+	createSubclass<T>(mixins: Function | Function[], props?: {}): { new (...args: any[]): T; prototype: T; };
+}
+
 interface HashMap<T> {
 	[key: string]: T;
 }
@@ -86,11 +91,15 @@ declare module 'dojo/_base/array' {
 }
 
 declare module 'dojo/_base/declare' {
-	var decl:{
-		<T>(superclass:any, properties?:{}):new (...args:any[]) => T;
-		<T>(superclass:any[], properties?:{}):new (...args:any[]) => T;
-		safeMixin<T>(target:T, source:{}):T;
-	};
+	function decl<T>(superclass: Function | Function[], properties?: {}): { new (...args: any[]): T; prototype: T; };
+
+	module decl {
+		export function safeMixin<T>(target: T, source: {}): T;
+		export class Base {
+			static createSubclass<T>(mixins: Function | Function[], properties?: {}): T;
+			static createSubclass<T>(properties: {}): T;
+		}
+	}
 
 	export = decl;
 }
@@ -241,37 +250,36 @@ declare module 'dojo/errors/create' {
 
 declare module 'dojo/errors/RequestError' {
 	interface RequestError extends Error {
-		response:any;
+		response: any;
 	}
-	var RequestError:{
-		new (message:string, response?:any):RequestError;
-		prototype:RequestError;
-	}
+	var RequestError: {
+		new (message: string, response?: any): RequestError;
+		prototype: RequestError;
+	};
 	export = RequestError;
 }
 
 declare module 'dojo/Evented' {
-	class Evented implements IEvented {
-		emit(type:string, event?:Event):boolean;
-		on(type:(target:any, listener:(event:Event) => void) => void, listener:(event:Event) => void):IHandle;
-		on(type:string, listener:(event:Event) => void):IHandle;
+	import decl = require('dojo/_base/declare');
+	class Evented extends decl.Base implements IEvented {
+		emit(type: string, event?: Event): boolean;
+		on(type: (target: any, listener: (event: Event) => void) => void, listener: (event: Event) => void): IHandle;
+		on(type: string, listener: (event: Event) => void): IHandle;
 	}
 
 	export = Evented;
 }
 
 declare module 'dojo/has' {
-	var has:{
-		(feature:string):any;
-		add(feature:string, value:any, now?:boolean, force?:boolean):void;
+	var has: {
+		(feature: string): any;
+		add(feature: string, value: any, now?: boolean, force?: boolean): void;
 	};
 	export = has;
 }
 
 declare module 'dojo/hash' {
-	var hash:{
-		(value?:string, replace?:boolean):string;
-	};
+	function hash(value?: string, replace?: boolean): string;
 	export = hash;
 }
 

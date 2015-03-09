@@ -17,8 +17,7 @@
 
 * Follows the [dojo2-core guidelines](https://github.com/csnover/dojo2-core#code-conventions) for all JavaScript
   syntaxes
-* For type hints, there MUST NOT be whitespace between the identifier and its type (to differentiate between types
-  and object literal keys)
+* Follows established TypeScript conventions for whitespace
 * Imports should be ordered alphabetically, case-insensitive, by identifier
 * Class properties should be ordered alphabetically, case-insensitive, ignoring leading underscores, in the following
   order:
