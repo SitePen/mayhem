@@ -131,6 +131,7 @@
         "./unit/binding/BindingError.ts",
         "./unit/binding/all.ts",
         "./unit/binding/bindings/ArrayBinding.ts",
+        "./unit/binding/bindings/CollectionBinding.ts",
         "./unit/binding/bindings/CollectionLengthBinding.ts",
         "./unit/binding/bindings/CompositeBinding.ts",
         "./unit/binding/bindings/DomInputBinding.ts",

@@ -2,6 +2,8 @@ import binding = require('../interfaces');
 import Binding = require('../Binding');
 import core = require('../../interfaces');
 
+// TODO: Deprecated; remove
+
 /**
  * The ObservableBinding class enables binding to {@link module:mayhem/Observable} objects.
  */
