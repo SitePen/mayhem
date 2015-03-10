@@ -1,34 +1,35 @@
-import binding = require('../interfaces');
-import Binding = require('../Binding');
-import esprima = require('esprima');
-import util = require('../../util');
+import * as binding from '../interfaces';
+import Binding from '../Binding';
+import esprima from 'esprima';
 import es = esprima.Syntax;
+import { isObject } from '../../util';
 
+// TODO: Move to templating?
 class ObjectMethodBinding<T> extends Binding<T> {
-	static test(kwArgs:binding.IBindingArguments):boolean {
-		return util.isObject(kwArgs.object) && typeof kwArgs.path === 'string' && kwArgs.path.indexOf('(') > -1;
+	static test(kwArgs: binding.IBindingArguments): boolean {
+		return isObject(kwArgs.object) && typeof kwArgs.path === 'string' && kwArgs.path.indexOf('(') > -1;
 	}
 
-	private _args:any[];
-	private _callee:binding.IBinding<(...args:any[]) => T>;
-	private _dependencies:binding.IBinding<any>[];
-	private _object:{};
+	private _args: any[];
+	private _callee: binding.IBinding<(...args: any[]) => T>;
+	private _dependencies: binding.IBinding<any>[];
+	private _object: {};
 
-	constructor(kwArgs:binding.IBindingArguments) {
+	constructor(kwArgs: binding.IBindingArguments) {
 		super(kwArgs);
 
 		var root = this._object = kwArgs.object;
 		var path = kwArgs.path;
 		var binder = kwArgs.binder;
-		var dependencies:binding.IBinding<any>[] = [];
+		var dependencies: binding.IBinding<any>[] = [];
 
-		function createBinding(path:string) {
+		function createBinding(path: string) {
 			var binding = binder.createBinding(root, path);
 			dependencies.push(binding);
 			return binding;
 		}
 
-		function getKey(node:es.Identifier | es.Literal | es.ThisExpression): string {
+		function getKey(node: es.Identifier | es.Literal | es.ThisExpression): string {
 			switch (node.type) {
 				case 'Identifier':
 					return (<es.Identifier> node).name;
@@ -41,7 +42,7 @@ class ObjectMethodBinding<T> extends Binding<T> {
 			}
 		}
 
-		function visit(node:es.Node):any {
+		function visit(node: es.Node): any {
 			if (!node) {
 				return undefined;
 			}
@@ -58,7 +59,7 @@ class ObjectMethodBinding<T> extends Binding<T> {
 				case 'CallExpression':
 					return {
 						callee: visit((<es.CallExpression> node).callee),
-						args: (<es.CallExpression> node).arguments.map(function (argument:es.Node) {
+						args: (<es.CallExpression> node).arguments.map(function (argument: es.Node) {
 							return visit(argument);
 						})
 					};
@@ -73,7 +74,7 @@ class ObjectMethodBinding<T> extends Binding<T> {
 				case 'ObjectExpression':
 					return visitObjectExpression(<es.ObjectExpression> node);
 				case 'ArrayExpression':
-					return (<es.ArrayExpression> node).elements.map(function (element:es.Node) {
+					return (<es.ArrayExpression> node).elements.map(function (element: es.Node) {
 						return visit(element);
 					});
 				default:
@@ -81,8 +82,8 @@ class ObjectMethodBinding<T> extends Binding<T> {
 			}
 		}
 
-		function visitMemberExpression(expression:es.MemberExpression) {
-			function visitObject(node:es.MemberExpression | es.Identifier | es.ThisExpression | es.Literal):string {
+		function visitMemberExpression(expression: es.MemberExpression) {
+			function visitObject(node: es.MemberExpression | es.Identifier | es.ThisExpression | es.Literal): string {
 				switch (node.type) {
 					case 'MemberExpression':
 						return visitObject((<es.MemberExpression> node).object) + '.' +
@@ -99,19 +100,19 @@ class ObjectMethodBinding<T> extends Binding<T> {
 			return createBinding(visitObject(expression));
 		}
 
-		function visitObjectExpression(expression:es.ObjectExpression):{} {
-			var obj:HashMap<any> = {};
+		function visitObjectExpression(expression:es.ObjectExpression): {} {
+			var obj: HashMap<any> = {};
 
-			expression.properties.forEach(function (property:es.Property) {
+			expression.properties.forEach(function (property: es.Property) {
 				obj[getKey(property.key)] = visit(property.value);
 			});
 
 			return obj;
 		}
 
-		var ast:{
-			callee:binding.IBinding<(...args:any[]) => T>;
-			args:any[];
+		var ast: {
+			callee: binding.IBinding<(...args: any[]) => T>;
+			args: any[];
 		} = visit(esprima.parse(path));
 
 		this._dependencies = dependencies;
@@ -120,17 +121,17 @@ class ObjectMethodBinding<T> extends Binding<T> {
 
 		var self = this;
 		// TODO: Store dependency values when they change to avoid requesting all values every time a call is made
-		dependencies.forEach(function (dependency:binding.IBinding<any>) {
+		dependencies.forEach(function (dependency: binding.IBinding<any>) {
 			dependency.observe(function () {
 				self.notify({ value: self.get() });
 			});
 		});
 	}
 
-	destroy():void {
+	destroy(): void {
 		super.destroy();
 
-		var dependency:binding.IBinding<any>;
+		var dependency: binding.IBinding<any>;
 		while ((dependency = this._dependencies.pop())) {
 			dependency.destroy();
 		}
@@ -140,8 +141,8 @@ class ObjectMethodBinding<T> extends Binding<T> {
 		this._dependencies = this._object = this._callee = this._args = null;
 	}
 
-	get():T {
-		function readItem(item:any):any {
+	get(): T {
+		function readItem(item: any): any {
 			if (item instanceof Binding) {
 				return item.get();
 			}
@@ -153,12 +154,12 @@ class ObjectMethodBinding<T> extends Binding<T> {
 			}
 		}
 
-		function compileObject(object:any) {
+		function compileObject(object: any) {
 			if (object instanceof Array) {
 				return object.map(readItem);
 			}
-			else if (util.isObject(object)) {
-				var compiledObject:HashMap<any> = {};
+			else if (isObject(object)) {
+				var compiledObject: HashMap<any> = {};
 				for (var key in object) {
 					compiledObject[key] = readItem(object[key]);
 				}
@@ -180,7 +181,7 @@ class ObjectMethodBinding<T> extends Binding<T> {
 		return undefined;
 	}
 
-	getObject():{} {
+	getObject(): {} {
 		return this._object;
 	}
 }

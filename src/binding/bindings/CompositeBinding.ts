@@ -1,13 +1,13 @@
-import arrayUtil = require('dojo/_base/array');
-import binding = require('../interfaces');
-import Binding = require('../Binding');
-import util = require('../../util');
+import * as binding from '../interfaces';
+import Binding from '../Binding';
+import { isObject } from '../../util';
 
 interface Part {
-	destroy?():void;
-	get():string;
+	destroy?(): void;
+	get(): string;
 }
 
+// TODO: Move into templating system
 /**
  * The CompositeBinding class enables source-only bindings composed of multiple data-binding sources plus static
  * strings.
@@ -30,45 +30,45 @@ interface Part {
  * ```
  */
 class CompositeBinding extends Binding<string> {
-	static test(kwArgs:binding.IBindingArguments):boolean {
+	static test(kwArgs: binding.IBindingArguments): boolean {
 		// TODO: Make path generic instead of string?
 		// TODO: Add hinting for source/target?
-		return util.isObject(kwArgs.object) && (<any> kwArgs.path) instanceof Array;
+		return isObject(kwArgs.object) && (<any> kwArgs.path) instanceof Array;
 	}
 
 	/**
 	 * The decomposed parts of the source binding.
 	 */
-	private _parts:Part[];
+	private _parts: Part[];
 
-	constructor(kwArgs:binding.IBindingArguments) {
+	constructor(kwArgs: binding.IBindingArguments) {
 		super(kwArgs);
 
-		var parts:Part[] = this._parts = [];
+		var parts: Part[] = this._parts = [];
 
 		var self = this;
-		arrayUtil.forEach(<any> kwArgs.path, function (path:any):void {
-			if (path.path) {
-				var binding:binding.IBinding<string> = kwArgs.binder.createBinding<string>(path.object || kwArgs.object, path.path, { useScheduler: false });
-				binding.observe(function ():void {
-					self.notify({ value: self.get() });
-				});
-				parts.push(binding);
-			}
-			else {
+		(<Array<string | { object?: {}; path: string; }>> <any> kwArgs.path).forEach(function (path) {
+			if (typeof path === 'string') {
 				parts.push({
-					get: function ():string {
+					get: function () {
 						return path;
 					}
 				});
 			}
+			else {
+				var binding = kwArgs.binder.createBinding<string>(path.object || kwArgs.object, path.path, { useScheduler: false });
+				binding.observe(function () {
+					self.notify({ value: self.get() });
+				});
+				parts.push(binding);
+			}
 		});
 	}
 
-	destroy():void {
+	destroy(): void {
 		super.destroy();
 
-		var part:Part;
+		var part: Part;
 		while ((part = this._parts.pop())) {
 			part.destroy && part.destroy();
 		}
@@ -76,9 +76,10 @@ class CompositeBinding extends Binding<string> {
 		this._parts = null;
 	}
 
-	get():string {
-		var result:string[] = [];
-		for (var i = 0, part:Part; (part = this._parts[i]); ++i) {
+	get(): string {
+		var result: string[] = [];
+		var parts = this._parts;
+		for (var i = 0, part: Part; (part = parts[i]); ++i) {
 			result.push(part.get());
 		}
 

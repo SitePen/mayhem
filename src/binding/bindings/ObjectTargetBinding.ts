@@ -1,6 +1,6 @@
-import binding = require('../interfaces');
-import Binding = require('../Binding');
-import util = require('../../util');
+import * as binding from '../interfaces';
+import Binding from '../Binding';
+import { isEqual, isObject } from '../../util';
 
 /**
  * The ObjectTargetBinding enables the use of any object as the target of a binding in all EcmaScript environments.
@@ -8,46 +8,43 @@ import util = require('../../util');
  * to a host object in WebKit browsers impacted by https://code.google.com/p/chromium/issues/detail?id=43394.
  */
 class ObjectTargetBinding<T> extends Binding<T> {
-	static test(kwArgs:binding.IBindingArguments):boolean {
-		return util.isObject(kwArgs.object) && typeof kwArgs.path === 'string';
+	static test(kwArgs: binding.IBindingArguments): boolean {
+		return isObject(kwArgs.object) && typeof kwArgs.path === 'string';
 	}
 
 	/**
 	 * The object containing the final property to be bound.
-	 * @protected
 	 */
-	// Uses `any` type since this code uses arbitrary properties
-	_object:any;
+	protected object: {};
 
 	/**
 	 * The key for the final property to be bound.
-	 * @protected
 	 */
-	_property:string;
+	protected property: string;
 
-	constructor(kwArgs:binding.IBindingArguments) {
+	constructor(kwArgs: binding.IBindingArguments) {
 		super(kwArgs);
 
-		this._object = kwArgs.object;
-		this._property = kwArgs.path;
+		this.object = kwArgs.object;
+		this.property = kwArgs.path;
 	}
 
-	destroy():void {
+	destroy(): void {
 		super.destroy();
-		this._object = this._property = null;
+		this.object = this.property = null;
 	}
 
-	get():T {
-		return this._object ? this._object[this._property] : undefined;
+	get(): T {
+		return this.object ? (<any> this.object)[this.property] : undefined;
 	}
 
-	getObject():{} {
-		return this._object;
+	getObject(): {} {
+		return this.object;
 	}
 
-	set(value:T):void {
-		if (this._object && !util.isEqual(this.get(), value)) {
-			this._object[this._property] = value;
+	set(value: T): void {
+		if (this.object && !isEqual(this.get(), value)) {
+			(<any> this.object)[this.property] = value;
 		}
 	}
 }

@@ -1,10 +1,9 @@
-import array = require('dojo/_base/array');
-import binding = require('../interfaces');
-import Binding = require('../Binding');
-import lang = require('dojo/_base/lang');
-import util = require('../../util');
+import * as binding from '../interfaces';
+import Binding from '../Binding';
+import { escapedIndexOf, escapedSplit } from '../../util';
+import { partial } from 'dojo/_base/lang';
 
-var SEPARATOR:string = '.';
+var SEPARATOR: string = '.';
 
 /**
  * The NestedBinding class enables binding to arbitrarily deep children of a source object. It can bind to properties
@@ -12,77 +11,79 @@ var SEPARATOR:string = '.';
  * lifetime of the root object.
  */
 class NestedBinding<T> extends Binding<T> {
-	static test(kwArgs:binding.IBindingArguments):boolean {
-		return kwArgs.object != null && kwArgs.path && util.escapedIndexOf(kwArgs.path, SEPARATOR) > -1;
+	static test(kwArgs: binding.IBindingArguments): boolean {
+		return kwArgs.object != null && kwArgs.path && escapedIndexOf(kwArgs.path, SEPARATOR) > -1;
 	}
+
+	private _binder: binding.IBinder;
 
 	/**
 	 * The string that identifies the sub-property to be bound.
 	 */
-	private _path:string[];
+	private _path: string[];
 
 	/**
 	 * The watch handles for each binding.
 	 */
-	private _bindings:binding.IBinding<any>[] = [];
+	private _bindings: binding.IBinding<any>[] = [];
 
 	/**
 	 * The property at the end of the bound chain of properties.
 	 */
-	private _source:binding.IBinding<T>;
+	private _source: binding.IBinding<T>;
 
-	constructor(kwArgs:binding.IBindingArguments) {
+	constructor(kwArgs: binding.IBindingArguments) {
 		super(kwArgs);
 
 		this._binder = kwArgs.binder;
-		this._path = util.escapedSplit(kwArgs.path, SEPARATOR);
+		this._path = escapedSplit(kwArgs.path, SEPARATOR);
 		this._rebind(kwArgs.object, 0);
 	}
 
-	destroy():void {
+	destroy(): void {
 		super.destroy();
 
 		var bindings = this._bindings;
-		for (var i = 0, binding:binding.IBinding<any>; (binding = bindings[i]); ++i) {
+		for (var i = 0, binding: binding.IBinding<any>; (binding = bindings[i]); ++i) {
 			binding.destroy();
 		}
 
 		this._source = this._bindings = this._path = null;
 	}
 
-	get():T {
+	get(): T {
 		return this._source && this._source.get ? this._source.get() : undefined;
 	}
 
-	getObject():{} {
+	getObject(): {} {
 		return this._source ? this._source.getObject() : undefined;
 	}
 
 	/**
 	 * Removes and rebinds to all objects in the object chain.
 	 */
-	private _rebind(fromObject:Object, fromIndex:number):void {
+	private _rebind(fromObject: {}, fromIndex: number) {
 		var bindings = this._bindings;
 
 		// Stop watching objects that are no longer part of this binding's object chain because a parent object
 		// was replaced
-		array.forEach(bindings.splice(fromIndex), function (binding:binding.IBinding<any>):void {
+		bindings.splice(fromIndex).forEach(function (binding) {
 			binding.destroy();
 		});
 
 		var self = this;
-		var path:string;
-		var index:number = fromIndex;
-		var object:any = fromObject;
-		var binding:binding.IBinding<any>;
-		var length:number = this._path.length;
+		var path: string;
+		var index: number = fromIndex;
+		var object: any = fromObject;
+		var binding: binding.IBinding<any>;
+		var length: number = this._path.length;
 
 		// If any of the intermediate objects between `object` and the property we are actually binding
 		// change, we need to rebind the entire object chain starting from the changed object
 		for (; index < length - 1 && object; ++index) {
 			path = this._path[index];
 			binding = this._binder.createBinding(object, path, { useScheduler: false });
-			binding.observe(<binding.IObserver<any>> lang.partial(function (index:number, change:binding.IChangeRecord<T>):void {
+			binding.observe(<binding.IObserver<any>> partial(function (index: number, change: binding.IChangeRecord<T>) {
 				self._rebind(change.value, index + 1);
 			}, index));
 			bindings.push(binding);
@@ -95,7 +96,7 @@ class NestedBinding<T> extends Binding<T> {
 			// If object is a promise resolve it and rebind
 			// TODO: Should probably use an explicit syntax for resolving promises instead of doing it implicitly
 			if (typeof object.then === 'function') {
-				object.then(function (value:any):void {
+				object.then(function (value: any) {
 					self._rebind(value, index + 1);
 				});
 				return;
@@ -104,12 +105,12 @@ class NestedBinding<T> extends Binding<T> {
 
 		// If `object` exists, it will be the final object in the chain, the one on which we are actually looking
 		// for values
-		var value:any;
+		var value: any;
 		if (object) {
 			// If the values on this final object change we only need to update the value, not rebind
 			// any intermediate objects
 			binding = this._binder.createBinding(object, this._path[index], { useScheduler: false });
-			binding.observe(function (change:binding.IChangeRecord<T>):void {
+			binding.observe(function (change: binding.IChangeRecord<T>) {
 				self.notify(change);
 			});
 			bindings.push(binding);
@@ -123,7 +124,7 @@ class NestedBinding<T> extends Binding<T> {
 		this.notify({ value: value });
 	}
 
-	set(value:T):void {
+	set(value: T): void {
 		this._source && this._source.set && this._source.set(value);
 	}
 }
