@@ -24,7 +24,7 @@ interface BindingDeclaration {
 	direction:BindDirection;
 }
 
-interface TemplatingAwareWidgetConstructor {
+export interface TemplatingAwareWidgetConstructor {
 	inheritsModel?:boolean;
 }
 

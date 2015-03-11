@@ -44,6 +44,7 @@
         "./unit/templating/all.ts",
         "./unit/templating/html.ts",
         "./unit/templating/html/peg/html.ts",
+        "./unit/templating/html/ui/Conditional.ts",
         "./unit/ui/all.ts",
         "./unit/ui/dom/actions.ts",
         "./unit/ui/dom/all.ts",

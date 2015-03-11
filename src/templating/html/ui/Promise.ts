@@ -1,3 +1,4 @@
+import html = require('../../html');
 import MultiNodeWidget = require('../../../ui/dom/MultiNodeWidget');
 import Promise = require('../../../Promise');
 import Proxy = require('../../../data/Proxy');
@@ -54,13 +55,16 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		var self = this;
 
 		function setModel(view:View, as:string, value:any):void {
+			if (!(<html.TemplatingAwareWidgetConstructor> view.constructor).inheritsModel) {
+				return;
+			}
+
 			var kwArgs:HashMap<any> = {
 				app: self._app,
 				target: self.get('model')
 			};
 			kwArgs[as] = value;
 			var proxy = new Proxy(kwArgs);
-
 			view.set('model', proxy);
 		}
 

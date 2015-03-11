@@ -1,4 +1,5 @@
 import binding = require('../../../binding/interfaces');
+import html = require('../../html');
 import MultiNodeWidget = require('../../../ui/dom/MultiNodeWidget');
 import util = require('../../../util');
 import View = require('../../../ui/dom/View');
@@ -84,11 +85,24 @@ class Conditional extends MultiNodeWidget {
 					isAttached: this.get('isAttached'),
 					parent: this
 				});
+				if ((<html.TemplatingAwareWidgetConstructor> view.constructor).inheritsModel) {
+					view.set('model', this.get('model'));
+				}
 				break;
 			}
 		}
 
 		this._conditionObserveHandle = util.createCompositeHandle.apply(undefined, handles);
+	}
+
+	_conditionsGetter():Conditional.ICondition[] {
+		return this._conditions;
+	}
+	_conditionsSetter(value:Conditional.ICondition[]) {
+		this._conditions = value;
+		if (this.get('isAttached')) {
+			this._bindConditions();
+		}
 	}
 
 	/**
