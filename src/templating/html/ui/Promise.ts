@@ -1,4 +1,3 @@
-import html = require('../../html');
 import MultiNodeWidget = require('../../../ui/dom/MultiNodeWidget');
 import Promise = require('../../../Promise');
 import Proxy = require('../../../data/Proxy');
@@ -72,7 +71,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			attach(this._pending);
 		}
 
-		this._value.always(function (value:T):T {
+		this._value.always(function (value:T) {
 			if (self._pending) {
 				self._pending.detach();
 			}
