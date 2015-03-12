@@ -19,7 +19,7 @@ class Promise<T> implements IPromise<T> {
 	static resolve<U>(value:IPromise<U>):IPromise<U>;
 	static resolve<U>(value:U):IPromise<U>;
 	static resolve<U>(value:U):IPromise<U> {
-		if (value instanceof DojoPromise) {
+		if (value instanceof DojoPromise || value instanceof Promise) {
 			return <any> value;
 		}
 
@@ -27,9 +27,9 @@ class Promise<T> implements IPromise<T> {
 			return <any> (<any> value).promise;
 		}
 
-		var dfd:IDeferred<U> = new Deferred();
-		dfd.resolve(value);
-		return dfd.promise;
+		return new Promise(function (resolve) {
+			resolve(value);
+		});
 	}
 
 	constructor(initializer:(
