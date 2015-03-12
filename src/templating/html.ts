@@ -26,6 +26,8 @@ interface BindingDeclaration {
 
 export interface TemplatingAwareWidgetConstructor {
 	inheritsModel?:boolean;
+	new (kwArgs?:{}):Widget;
+	prototype:Widget;
 }
 
 interface InstanceArguments {
@@ -163,26 +165,26 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 		}
 
 		function createWidget(node:templating.INode):Widget {
-			var Ctor = require<typeof Widget>(node.constructor);
-			var initialState = getInitialState(node);
+			var Ctor = <TemplatingAwareWidgetConstructor> require(node.constructor);
 
-			var isModelInheritor =
-				!('model' in initialState.bindings) &&
-				(<TemplatingAwareWidgetConstructor> Ctor).inheritsModel;
-
-			if (isModelInheritor) {
-				initialState.kwArgs['model'] = model;
+			// Templating-aware widget types with `inheritsModel` need to have all interior bindings apply to their own
+			// model, not the one from this parent widget; at the moment, the easiest way to do this is just to create
+			// a new templated view constructor wrapping the original constructor, though it should be possible to do
+			// this more efficiently by changing the target of `applyBindings` and `applyEvents`
+			if (Ctor.inheritsModel) {
+				Ctor = createViewConstructor(node, self);
+				instance = new Ctor({ app, model });
+				modelInheritors.push(instance);
+				return instance;
 			}
 
+			var initialState = getInitialState(node);
 			initialState.kwArgs['app'] = app;
 
 			var instance:Widget = new Ctor(initialState.kwArgs);
+
 			applyBindings(instance, initialState.bindings);
 			applyEvents(instance, initialState.events);
-
-			if (isModelInheritor) {
-				modelInheritors.push(instance);
-			}
 
 			return instance;
 		}

@@ -54,20 +54,6 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		this._value = Promise.resolve<T>(value);
 		var self = this;
 
-		function setModel(view:View, as:string, value:any):void {
-			if (!(<html.TemplatingAwareWidgetConstructor> view.constructor).inheritsModel) {
-				return;
-			}
-
-			var kwArgs:HashMap<any> = {
-				app: self._app,
-				target: self.get('model')
-			};
-			kwArgs[as] = value;
-			var proxy = new Proxy(kwArgs);
-			view.set('model', proxy);
-		}
-
 		function attach(view:View):void {
 			self._lastNode.parentNode.insertBefore(view.detach(), self._lastNode);
 			view.set({
@@ -90,29 +76,24 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			if (self._pending) {
 				self._pending.detach();
 			}
+		});
 
-			if (value instanceof Error) {
-				throw value;
-			}
-			else {
-				return value;
-			}
-		}).then(
+		this._value.then(
 			function (value:T):void {
 				if (self._fulfilled) {
-					setModel(self._fulfilled, self._as, value);
+					self._model.set(self._as, value);
 					attach(self._fulfilled);
 				}
 			},
 			function (error:Error):void {
 				if (self._rejected) {
-					setModel(self._rejected, self._rejectedAs, error);
+					self._model.set(self._rejectedAs, error);
 					attach(self._rejected);
 				}
 			},
-			this._value.isFulfilled() ? null : function (progress:any):void {
+			function (progress:any):void {
 				if (self._pending) {
-					setModel(self._pending, self._pendingAs, progress);
+					self._model.set(self._pendingAs, progress);
 				}
 			}
 		);
@@ -133,12 +114,30 @@ class PromiseWidget<T> extends MultiNodeWidget {
 	}
 	_fulfilledSetter:(value:View) => void;
 
+	_model:Proxy<{}>;
+	_modelGetter():{} {
+		return this._model && this._model.get('target');
+	}
+	_modelSetter(value:{}) {
+		if (this._model) {
+			this._model.set('target', value);
+		}
+		else {
+			var kwArgs:HashMap<any> = {
+				app: this._app,
+				target: value
+			};
+			this._model = new Proxy(kwArgs);
+		}
+	}
+
 	destroy():void {
 		this._fulfilled && this._fulfilled.destroy();
 		this._pending && this._pending.destroy();
 		this._rejected && this._rejected.destroy();
+		this._model && this._model.destroy();
 
-		this._fulfilled = this._pending = this._rejected = null;
+		this._fulfilled = this._pending = this._rejected = this._model = null;
 
 		super.destroy();
 	}

@@ -357,7 +357,168 @@ registerSuite({
 	},
 
 	'When'() {
-		this.skip('TODO');
+		var ast:templating.IParseTree;
+
+		ast = parser.parse('<when value={foo}><widget is="Widget" /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget'
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				}
+			}
+		});
+
+		ast = parser.parse('<when value={foo} as="bar"><widget is="Widget" success /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget',
+					success: true
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				},
+				as: 'bar'
+			}
+		});
+
+		ast = parser.parse('<when value={foo}><widget is="Widget" success /><rejected><widget is="Widget" reject /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget',
+					success: true
+				},
+				rejected: {
+					constructor: 'Widget',
+					reject: true
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				}
+			}
+		});
+
+		ast = parser.parse('<when value={foo} as="bar"><widget is="Widget" success /><rejected as="erm"><widget is="Widget" reject /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget',
+					success: true
+				},
+				rejected: {
+					constructor: 'Widget',
+					reject: true
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				},
+				as: 'bar',
+				rejectedAs: 'erm'
+			}
+		});
+
+		ast = parser.parse('<when value={foo}><widget is="Widget" success /><rejected><widget is="Widget" reject /><pending><widget is="Widget" pending /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget',
+					success: true
+				},
+				rejected: {
+					constructor: 'Widget',
+					reject: true
+				},
+				pending: {
+					constructor: 'Widget',
+					pending: true
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				}
+			}
+		});
+
+		ast = parser.parse('<when value={foo}><widget is="Widget" success /><pending><widget is="Widget" pending /><rejected><widget is="Widget" reject /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget',
+					success: true
+				},
+				rejected: {
+					constructor: 'Widget',
+					reject: true
+				},
+				pending: {
+					constructor: 'Widget',
+					pending: true
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				}
+			}
+		}, '<pending> and <rejected> should work in either order');
+
+		ast = parser.parse('<when value={foo} as="bar"><widget is="Widget" success /><rejected as="erm"><widget is="Widget" reject /><pending as="pend"><widget is="Widget" pending /></when>');
+		assert.deepEqual(ast, {
+			constructors: [ prefix('templating/html/ui/Promise'), 'Widget' ],
+			root: {
+				constructor: prefix('templating/html/ui/Promise'),
+				fulfilled: {
+					constructor: 'Widget',
+					success: true
+				},
+				rejected: {
+					constructor: 'Widget',
+					reject: true
+				},
+				pending: {
+					constructor: 'Widget',
+					pending: true
+				},
+				value: {
+					'$bind': 'foo',
+					direction: 1
+				},
+				as: 'bar',
+				rejectedAs: 'erm',
+				pendingAs: 'pend'
+			}
+		});
+
+		assert.throws(function () {
+			parser.parse('<when></when>');
+		}, /missing required attribute "value"/i);
+
+		assert.throws(function () {
+			parser.parse('<when value={foo}><rejected><rejected></when>');
+		});
+
+		assert.throws(function () {
+			parser.parse('<when value={foo}><pending><pending></when>');
+		});
 	},
 
 	'Placeholder'() {

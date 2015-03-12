@@ -170,8 +170,12 @@ class Proxy<T> extends Observable {
 }
 
 module Proxy {
-	export interface Getters extends Observable.Getters {}
-	export interface Setters extends Observable.Setters {}
+	export interface Getters extends Observable.Getters {
+		(key:'target'):{};
+	}
+	export interface Setters extends Observable.Setters {
+		(key:'target', value:{}):void;
+	}
 }
 
 Proxy.prototype.get = function (key:string):any {

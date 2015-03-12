@@ -68,5 +68,27 @@ registerSuite({
 
 			assert.strictEqual(root.textContent, 'Hello, World');
 		}), dfd.reject.bind(dfd));
+	},
+
+	'model inheritance'() {
+		var dfd = this.async();
+
+		html.create('<when value={promise} as="value"><widget is="mayhem/ui/Label" text="Hello, {value.name}" /><rejected as="error">{error.message}</when>').then(dfd.rejectOnError(function (Ctor:typeof Widget) {
+			var model = { promise: Promise.resolve({ name: 'World' }) };
+			var view = new Ctor({ app, model });
+
+			app.get('ui').set({
+				root,
+				view
+			});
+
+			setTimeout(dfd.rejectOnError(function () {
+				assert.strictEqual(root.textContent, 'Hello, World');
+				model.promise = Promise.reject(new Error('Oops'));
+				setTimeout(dfd.callback(function () {
+					assert.strictEqual(root.textContent, 'Oops');
+				}), 0);
+			}), 0);
+		}), dfd.reject.bind(dfd));
 	}
 });
