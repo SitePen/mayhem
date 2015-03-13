@@ -58,16 +58,41 @@ class Proxy<T> extends Observable {
 				}
 			}
 
-			wrapperCollection.fetch = function () {
-				return collection.fetch.apply(collection, arguments).then(function (items: T[]) {
-					return items.map(createProxy);
-				});
-			};
+			[ 'fetch', 'fetchRange' ].forEach(function (method) {
+				wrapperCollection[method] = function () {
+					var promise = (<any> collection)[method].apply(collection, arguments);
 
-			if (collection.fetchSync) {
-				wrapperCollection.fetchSync = function () {
-					return collection.fetchSync.apply(collection, arguments);
+					var proxiedPromise = promise.then(function (items: T[]) {
+						return items.map(createProxy);
+					});
+					// TODO: Remove thawing code in 0.4, it is not necessary there
+					if (Object.isFrozen(proxiedPromise)) {
+						proxiedPromise = Object.create(proxiedPromise);
+					}
+					if ('totalLength' in promise) {
+						proxiedPromise.totalLength = promise.totalLength;
+					}
+					return proxiedPromise;
+				};
+			});
+
+			[ 'fetchSync', 'fetchRangeSync' ].forEach(function (method) {
+				if ((<any> collection)[method]) {
+					wrapperCollection[method] = function () {
+						var data = (<any> collection)[method].apply(collection, arguments);
+						var proxiedData = data.map(createProxy);
+						if ('totalLength' in data) {
+							proxiedData.totalLength = data.totalLength;
+						}
+						return proxiedData;
+					};
 				}
+			});
+
+			if (collection.track) {
+				wrapperCollection.track = function () {
+					return wrapCollection(collection.track.apply(collection, arguments));
+				};
 			}
 
 			wrapperCollection._createSubCollection = function (kwArgs:any) {
