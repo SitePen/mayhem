@@ -79,7 +79,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			attach(this._pending);
 		}
 
-		this._value.finally(function (value:T):T {
+		this._value.finally(function (value:T) {
 			if (self._pending) {
 				self._pending.detach();
 				self._attachedView = null;
@@ -131,7 +131,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			this._model.set('target', value);
 		}
 		else {
-			var kwArgs:HashMap<any> = {
+			var kwArgs = {
 				app: this._app,
 				target: value
 			};

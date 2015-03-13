@@ -71,7 +71,7 @@ class ProxyBinding<T> extends Binding<T> {
 			this._source.destroy();
 		}
 
-		this._source = this._binder.createBinding<T>(this._object, this._path, { useScheduler: false });
+		this._source = this.binder.createBinding<T>(this._object, this._path, { useScheduler: false });
 		this._source.observe(lang.hitch(this, 'notify'));
 		this.notify({ oldValue: oldValue, value: this._source.get() });
 	}
