@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>ConditionalInsidePromise</title>
+<body>
+<script>
+(function (global) {
+	/*jshint -W060 */
+	var basePath = location.pathname.replace(/\/tests\/.*$/, '');
+	global.dojoConfig = {
+		async: true,
+		baseUrl: basePath,
+		packages: [
+			{ name: 'dgrid', location: 'third-party/dgrid' },
+			{ name: 'dstore', location: 'third-party/dstore' },
+			{ name: 'dojo', location: 'third-party/dojo' },
+			{ name: 'dijit', location: 'third-party/dijit' },
+			{ name: 'esprima', location: 'third-party/esprima', main: 'esprima' },
+			{ name: 'intl', location: 'third-party/intl', main: 'Intl.complete' },
+			{ name: 'intl-messageformat', location: 'third-party/intl-messageformat/dist', main: 'intl-messageformat-with-locales' },
+			{ name: 'mayhem', location: 'dist' },
+			{ name: 'put-selector', location: 'third-party/put-selector' },
+			{ name: 'tests', location: 'tests' },
+			{ name: 'xstyle', location: 'third-party/xstyle' }
+		]
+	};
+
+	document.write('<script src="' + basePath + '/third-party/dojo/dojo.js"><\/script>');
+})(this);
+</script>
+<script>
+require([
+	'mayhem/templating/html',
+	'mayhem/data/Model',
+	'mayhem/Promise',
+	'mayhem/WebApplication'
+], function (html, Model, Promise, WebApplication) {
+	var global = (function () { return this; })();
+
+	html.create('<when value={promised} as="items">\n\t{items.length}\n\t<if condition={items.length}>\n\t\tLength: {items.length}\n\t<else>\n\t\twtf, mates?\n\t</if></when>').then(function (View) {
+		var app = new WebApplication({
+			components: {
+				router: null,
+				ui: { view: null }
+			}
+		});
+
+		global.app = app;
+		app.run().then(function () {
+			var model = { promised: Promise.resolve({ length: 6 }) };
+
+			var view = new View({
+				app: app,
+				model: model
+			});
+
+			global.view = view;
+
+			app.get('ui').set('view', view);
+
+			// var c = document.createElement('div');
+			// var b;
+			// b = document.createElement('button');
+			// b.onclick = function () {
+			// 	model.promised = new Promise(function (resolve) {
+			// 		setTimeout(function () {
+			// 			resolve({ length: 6 });
+			// 		}, 1000);
+			// 	});
+			// };
+			// b.innerHTML = 'Add lengthy promise to viewmodel (1s delay)';
+			// c.appendChild(b);
+			//
+			// b = document.createElement('button');
+			// b.onclick = function () {
+			// 	model.promised = new Promise(function (resolve) {
+			// 		setTimeout(function () {
+			// 			resolve({ length: 0 });
+			// 		}, 1000);
+			// 	});
+			// };
+			// b.innerHTML = 'Add null-length promise to viewmodel (1s delay)';
+			// c.appendChild(b);
+			//
+			// b = document.createElement('button');
+			// b.onclick = function () {
+			// 	model.promised = new Promise(function (resolve) {
+			// 		setTimeout(function () {
+			// 			resolve(null);
+			// 		}, 1000);
+			// 	});
+			// };
+			// b.innerHTML = 'Add null promise to viewmodel (1s delay)';
+			// c.appendChild(b);
+			//
+			// b = document.createElement('button');
+			// b.onclick = function () {
+			// 	model.promised = Promise.reject(new Error('Oops'));
+			// };
+			// b.innerHTML = 'Add rejected promise to viewmodel (1s delay)';
+			// c.appendChild(b);
+			//
+			// document.body.appendChild(c);
+		});
+	});
+});
+</script>
+</body>

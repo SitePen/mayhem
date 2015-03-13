@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+<script src="../../support/dojoConfig.js"></script>
+<script>
+require([ 'mayhem/templating/html', 'mayhem/Promise', 'mayhem/WebApplication' ], function (html, Promise, WebApplication) {
+	var global = (function () { return this; })();
+
+	html.create('<div>Welcome to the new stuff<div id="outer" style="padding:10px;border:1px solid green;" on-pointerover={pointerover} on-pointerout={pointerout} on-pointerenter={pointerenter} on-pointerleave={pointerleave}>outer<div id="inner" style="padding:10px;border:1px solid blue" on-pointerover={innerpointerover} on-pointerout={pointerout} on-pointerenter={pointerenter} on-pointerleave={pointerleave}>inner</div></div></div>').then(function (View) {
+		var app = new WebApplication({
+			components: {
+				router: null,
+				ui: { view: null }
+			}
+		});
+
+		global.app = app;
+		app.run().then(function () {
+			var model = {
+				innerpointerover: function (event) {
+					event.stopPropagation();
+				},
+				pointerover: function (event) {
+					console.log('over', event.currentTargetNode.id);
+				},
+				pointerout: function (event) {
+					console.log('out', event.currentTargetNode.id);
+				},
+				pointerenter: function (event) {
+					console.log('enter', event.currentTargetNode.id);
+				},
+				pointerleave: function (event) {
+					console.log('leave', event.currentTargetNode.id);
+				}
+			};
+
+			var view = new View({
+				app: app,
+				model: model
+			});
+
+			global.view = view;
+
+			app.get('ui').set('view', view);
+		});
+	});
+});
+</script>
+</body>
