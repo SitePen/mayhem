@@ -16,7 +16,9 @@ class Proxy<T> extends Observable {
 
 		var proxies = new WeakMap<T, Proxy<T>>();
 
-		// Tracking model mapping here to avoid accidentally grabbing the source of an object
+		// Proxy-to-model map is tracked here, instead of using `Proxy#get('target')`, so that collections of proxies
+		// can be correctly proxied. If we just used `Proxy#get('target')`, we would accidentally grab the wrong object
+		// if someone passed the original (non-proxied) object to the proxied collection.
 		var models = new WeakMap<Proxy<T>, T>();
 
 		function createProxy(item: T) {
