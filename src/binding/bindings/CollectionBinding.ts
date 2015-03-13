@@ -26,13 +26,13 @@ class CollectionBinding extends Binding<dstore.ICollection<any>> {
 		collection.fetchRange({ start: 0, length: 0 });
 
 		this._handle = util.createCompositeHandle(
-			collection.on('add', function (event:dstore.ChangeEvent):void {
+			collection.on('add', function (event:dstore.ChangeEvent<any>):void {
 				// undefined index means that the add event doesn't match our filtered collection
 				if (event.index !== undefined) {
 					self.notify({ index: event.index, added: [ event.target ] });
 				}
 			}),
-			collection.on('update', function (event:dstore.ChangeEvent):void {
+			collection.on('update', function (event:dstore.ChangeEvent<any>):void {
 				if (event.index !== event.previousIndex) {
 					if (event.previousIndex !== undefined) {
 						self.notify({ index: event.previousIndex, removed: [ event.target ] });
@@ -43,7 +43,7 @@ class CollectionBinding extends Binding<dstore.ICollection<any>> {
 					}
 				}
 			}),
-			collection.on('delete', function (event:dstore.ChangeEvent):void {
+			collection.on('delete', function (event:dstore.ChangeEvent<any>):void {
 				// undefined index means that the delete event doesn't match our filtered collection
 				if (event.previousIndex !== undefined) {
 					self.notify({ index: event.previousIndex, removed: [ event.target ] });

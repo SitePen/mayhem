@@ -1,86 +1,98 @@
 import binding = require('../binding/interfaces');
 import core = require('../interfaces');
 import data = require('./interfaces');
-import declare = require('dojo/_base/declare');
 import has = require('../has');
-import lang = require('dojo/_base/lang');
-import MemoryStore = require('dstore/Memory');
 import Observable = require('../Observable');
-import TrackableStore = require('dstore/Trackable');
 import util = require('../util');
+import WeakMap = require('../WeakMap');
 
 class Proxy<T> extends Observable {
-	static forCollection(collection:dstore.ICollection<data.IModel>):dstore.ICollection<Proxy<data.IModel>> {
-		var Store:typeof MemoryStore = <any> declare([ MemoryStore, TrackableStore ], {
-			Model: null
-		});
-		var wrapperCollection:MemoryStore<Proxy<data.IModel>> = new Store<Proxy<data.IModel>>();
+	static forCollection<T extends data.IModel>(collection:dstore.ISyncCollection<T>):dstore.ISyncCollection<Proxy<T>>;
+	static forCollection<T extends data.IModel>(collection:dstore.ICollection<T>):dstore.ICollection<Proxy<T>>;
+	static forCollection<T extends Proxy<data.IModel>>(collection:dstore.ISyncCollection<T>):dstore.ISyncCollection<Proxy<T>>;
+	static forCollection<T extends Proxy<data.IModel>>(collection:dstore.ICollection<T>):dstore.ICollection<Proxy<T>>;
+	static forCollection<T>(collection:dstore.ISyncCollection<T>|dstore.ICollection<T>):any {
 		var Ctor = this;
 
-		collection = collection.track();
-		collection.fetch().then(function (initialData:data.IModel[]):void {
-			var wrappedData:Proxy<data.IModel>[] = new Array(initialData.length);
-			for (var i = 0; i < initialData.length; ++i) {
-				wrappedData[i] = new Ctor<data.IModel>({ target: initialData[i] });
+		var proxies = new WeakMap<T, Proxy<T>>();
+
+		// Tracking model mapping here to avoid accidentally grabbing the source of an object
+		var models = new WeakMap<Proxy<T>, T>();
+
+		function createProxy(item: T) {
+			var proxy:Proxy<T> = proxies.get(item);
+
+			if (!proxy) {
+				proxy = new Ctor<T>({ app: (<any> item).get('app'), target: item });
+				proxies.set(item, proxy);
+				models.set(proxy, item);
 			}
-			wrapperCollection.setData(wrappedData);
-		});
-		// TODO: Hack(?) to make indexes show up
-		wrapperCollection.fetch();
 
-		function wrapSetter(method:string):(object:any, options?:Object) => any {
-			return function (object:any, options?:Object):any {
-				// TODO: Better duck typing
-				if (object.setTarget) {
-					object = object.get('target');
-				}
-
-				// TS7017
-				return (<any> collection)[method](object, options);
-			};
+			return proxy;
 		}
 
-		var put = wrapperCollection.putSync;
-		var remove = wrapperCollection.removeSync;
+		function wrapCollection(collection:dstore.ISyncCollection<T>) {
+			var wrapperCollection = Object.create(collection);
 
-		wrapperCollection.add = wrapSetter('add');
-		wrapperCollection.addSync = wrapSetter('addSync');
-		wrapperCollection.put = wrapSetter('put');
-		wrapperCollection.putSync = wrapSetter('putSync');
-		wrapperCollection.remove = lang.hitch(collection, 'remove');
-		wrapperCollection.removeSync = lang.hitch(collection, 'removeSync');
+			[ 'add', 'addSync', 'put', 'putSync', 'remove', 'removeSync' ].forEach(function (method) {
+				if ((<any> collection)[method]) {
+					wrapperCollection[method] = function (object:Proxy<T>|T):any {
+						// Either the proxy *or* the original object can be passed to any of the setter methods
+						object = models.get(<Proxy<T>> object) || object;
 
-		collection.on('add', function (event:dstore.ChangeEvent):void {
-			// undefined index means that the add event doesn't match our filtered collection, so should not be put
-			// in the wrapper collection either
-			if (event.index !== undefined) {
-				put.call(wrapperCollection, new Ctor({
-					app: event.target.get('app'),
-					target: event.target
-				}), { index: event.index });
-			}
-		});
-		collection.on('update', function (event:dstore.ChangeEvent):void {
-			var id = collection.getIdentity(event.target);
+						// TS7017
+						return (<any> collection)[method].apply(collection, arguments);
+					};
+				}
+			});
 
-			if (event.index === undefined) {
-				remove.call(wrapperCollection, id);
-			}
-			else if (event.previousIndex === undefined) {
-				put.call(wrapperCollection, new Ctor({
-					app: event.target.get('app'),
-					target: event.target
-				}), { index: event.index });
-			}
-			else {
-				put.call(wrapperCollection, wrapperCollection.getSync(id), { index: event.index });
-			}
-		});
-		collection.on('delete', function (event:dstore.ChangeEvent):void {
-			remove.call(wrapperCollection, event.id);
-		});
+			wrapperCollection.get = function () {
+				return collection.get.apply(collection, arguments).then(createProxy);
+			};
 
-		return wrapperCollection;
+			if (collection.getSync) {
+				wrapperCollection.getSync = function () {
+					return createProxy(collection.getSync.apply(collection, arguments));
+				}
+			}
+
+			wrapperCollection.fetch = function () {
+				return collection.fetch.apply(collection, arguments).then(function (items: T[]) {
+					return items.map(createProxy);
+				});
+			};
+
+			if (collection.fetchSync) {
+				wrapperCollection.fetchSync = function () {
+					return collection.fetchSync.apply(collection, arguments);
+				}
+			}
+
+			wrapperCollection._createSubCollection = function (kwArgs:any) {
+				// TODO: Model _createSubCollection in d.ts?
+				var newCollection = (<any> collection)._createSubCollection(kwArgs);
+				return wrapCollection(newCollection);
+			};
+
+			wrapperCollection.emit = function (eventName: string, event: dstore.ChangeEvent<Proxy<T>>) {
+				var newEvent: dstore.ChangeEvent<T> = Object.create(event);
+				// Either the proxy *or* the original object can be emitted from the wrapped collection
+				newEvent.target = models.get(event.target) || <any> event.target;
+				return collection.emit(eventName, newEvent);
+			};
+
+			wrapperCollection.on = function (eventName: string, listener: (event: dstore.ChangeEvent<T>) => void) {
+				return collection.on(eventName, function (event) {
+					var newEvent: dstore.ChangeEvent<Proxy<T>> = Object.create(event);
+					newEvent.target = createProxy(event.target);
+					return listener.call(wrapperCollection, newEvent);
+				});
+			};
+
+			return wrapperCollection;
+		}
+
+		return wrapCollection(<dstore.ISyncCollection<T>> collection);
 	}
 
 	/**
@@ -171,10 +183,10 @@ class Proxy<T> extends Observable {
 
 module Proxy {
 	export interface Getters extends Observable.Getters {
-		(key:'target'):{};
+		(key:'target'):Observable;
 	}
 	export interface Setters extends Observable.Setters {
-		(key:'target', value:{}):void;
+		(key:'target', value:Observable):void;
 	}
 }
 
