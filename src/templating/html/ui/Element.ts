@@ -3,7 +3,6 @@ import binding = require('../../../binding/interfaces');
 import Container = require('../../../ui/dom/Container');
 import domConstruct = require('dojo/dom-construct');
 import has = require('../../../has');
-import lang = require('dojo/_base/lang');
 import ProxyBinding = require('../binding/ProxyBinding');
 import ui = require('../../../ui/interfaces');
 import Widget = require('../../../ui/dom/Widget');
@@ -47,6 +46,11 @@ function createPlaceholderSetter(property:string, placeholderNode:Node):(value:W
 	};
 }
 
+interface ElementListener {
+	node: Element;
+	listener: (event: ui.UiEvent) => void;
+}
+
 // TODO: This is using Container to manage some of the children lifecycle but the actual container APIs aren’t generally
 // applicable, so it should probably be extending MultiNodeWidget and using Container like a mixin
 /**
@@ -77,31 +81,12 @@ class ElementWidget extends Container {
 	/**
 	 * A map of event names to arrays of event listeners, used to force events to fire on the innermost targets first.
 	 */
-	private _eventQueues:{ [eventName:string]:Array<(event:ui.UiEvent) => void>; };
+	private _eventQueues:HashMap<ElementListener[]>;
 
 	/**
 	 * A map of widgets currently assigned to the different placeholder properties within the ElementWidget.
 	 */
 	private _placeholders:{ [id:string]:Widget; };
-
-	private _applyEventListeners():void {
-		// TODO: Put listeners on the event queue in the correct (reverse) order instead of walking in reverse order
-		// here, so that users inspecting the event listeners will not be confused about why they are executing in
-		// the 'wrong' order
-		var queues = this._eventQueues;
-
-		for (var eventName in queues) {
-			this.on(eventName, <any> lang.partial(function (eventName:string, event:ui.UiEvent) {
-				var listeners = queues[eventName];
-				var i = listeners.length - 1;
-
-				while (i >= 0) {
-					listeners[i](event);
-					--i;
-				}
-			}, eventName));
-		}
-	}
 
 	_initialize():void {
 		super._initialize();
@@ -162,6 +147,133 @@ class ElementWidget extends Container {
 		var binder:binding.IBinder = this._app.get('binder');
 		var model = this.get('model') || {};
 		var bindings:Array<{ $bind:any; direction:number; }> = [];
+
+		function addEvent(node:Node, eventName:string, listener:(event:ui.UiEvent) => void) {
+			function getElement(event: ui.UiEvent) {
+				if ('key' in event) {
+					return document.activeElement;
+				}
+				else if ('clientX' in event) {
+					return document.elementFromPoint(
+						(<ui.PointerEvent> event).clientX,
+						(<ui.PointerEvent> event).clientY
+					);
+				}
+			}
+
+			function runListeners(target:Element, event:ui.UiEvent) {
+				var newEvent:ElementWidget.ElementPointerEvent;
+				newEvent = Object.create(event);
+				newEvent.preventDefault = function () {
+					event.preventDefault();
+				};
+				newEvent.stopPropagation = function () {
+					event.stopPropagation();
+				};
+				newEvent.targetNode = target;
+				newEvent.bubbles = (eventName !== 'pointerenter' && eventName !== 'pointerleave');
+				newEvent.type = eventName;
+
+				var currentListeners = listeners.slice(0);
+				for (var i = 0, entry:ElementListener; (entry = currentListeners[i]); ++i) {
+					if (
+						target === entry.node ||
+						(newEvent.bubbles && !newEvent.propagationStopped && (<HTMLElement> entry.node).contains(<HTMLElement> target))
+					) {
+						newEvent.currentTargetNode = entry.node;
+						entry.listener.call(self, newEvent);
+					}
+				}
+			}
+
+			var listeners = self._eventQueues[eventName];
+
+			if (!listeners) {
+				listeners = self._eventQueues[eventName] = [];
+
+				if (
+					eventName === 'pointerout' ||
+					eventName === 'pointerleave' ||
+					eventName === 'pointerover' ||
+					eventName === 'pointerenter'
+				) {
+					var lastElement: Element;
+
+					if (eventName === 'pointerleave') {
+						self.on('pointermove', function (event:ui.PointerEvent) {
+							var newElement = getElement(event);
+							if (lastElement && !(<HTMLElement> lastElement).contains(<HTMLElement> newElement)) {
+								runListeners(lastElement, event);
+							}
+
+							lastElement = newElement;
+						});
+					}
+					else if (eventName === 'pointerout') {
+						self.on('pointermove', function (event:ui.PointerEvent) {
+							var newElement = getElement(event);
+							if (lastElement && !(<HTMLElement> lastElement).contains(<HTMLElement> newElement)) {
+								runListeners(lastElement, event);
+							}
+
+							lastElement = newElement;
+						});
+					}
+					else if (eventName === 'pointerenter') {
+						self.on('pointermove', function (event:ui.PointerEvent) {
+							var newElement = getElement(event);
+							if (newElement && !(<HTMLElement> newElement).contains(<HTMLElement> lastElement)) {
+								runListeners(newElement, event);
+							}
+
+							lastElement = newElement;
+						});
+					}
+					else if (eventName === 'pointerover') {
+						self.on('pointermove', function (event:ui.PointerEvent) {
+							var newElement = getElement(event);
+							if (newElement && !(<HTMLElement> newElement).contains(<HTMLElement> lastElement)) {
+								runListeners(newElement, event);
+							}
+
+							lastElement = newElement;
+						});
+					}
+
+					if (eventName === 'pointerout' || eventName === 'pointerleave') {
+						self.on('pointerleave', function (event:ui.PointerEvent) {
+							if (lastElement) {
+								runListeners(lastElement, event);
+								lastElement = null;
+							}
+						});
+					}
+					else {
+						self.on('pointerenter', function (event:ui.PointerEvent) {
+							var newElement = getElement(event);
+							if (newElement) {
+								runListeners(newElement, event);
+								lastElement = newElement;
+							}
+						});
+					}
+				}
+				else {
+					self.on(eventName, function (event:ui.PointerEvent) {
+						var target = getElement(event);
+						if (!target) {
+							return;
+						}
+
+						runListeners(target, event);
+					});
+				}
+			}
+
+			// the parser adds events in descending order, but event listeners need to be called in lowest-to-highest
+			// order (to match bubbling), so the listeners are unshifted here instead of pushed
+			listeners.unshift({ node: <Element> node, listener });
+		}
 
 		function generateContent(source:any[]):Node {
 			var htmlContent:string = '';
@@ -236,7 +348,7 @@ class ElementWidget extends Container {
 				for (var i:number = 0, attribute:Attr; (attribute = node.attributes[i]); ++i) {
 					var nodeValue:string = attribute.value;
 					if ((result = EVENT_ATTRIBUTE.exec(attribute.name))) {
-						(function ():void {
+						(function (nodeValue:string):void {
 							var boundEvent:RegExpExecArray = BIND_ATTRIBUTE.exec(nodeValue);
 							// Since we do not call `exec` until it returns nothing, we are responsible for resetting
 							// the RegExp, otherwise the next match will start from this match’s `lastIndex` and fail
@@ -264,44 +376,17 @@ class ElementWidget extends Container {
 								return character.toUpperCase();
 							});
 
-							if (!self._eventQueues[eventName]) {
-								self._eventQueues[eventName] = [];
-							}
-
-							self._eventQueues[eventName].push(<any> lang.partial(function (node:Node, method:string, event:ui.UiEvent):void {
-								// TODO: This is inefficient, the actual event handler should look up the element just
-								// once
-								var element:Element;
-
-								if ('key' in event) {
-									element = document.activeElement;
-								}
-								else if ('clientX' in event) {
-									element = document.elementFromPoint(
-										(<ui.PointerEvent> event).clientX,
-										(<ui.PointerEvent> event).clientY
-									);
+							addEvent(node, eventName, function (event:ui.UiEvent) {
+								if (binding) {
+									return binding.get().call(binding.getObject(), event);
 								}
 								else {
-									return;
+									// TODO: Use `get`?
+									// TS7017
+									return (<any> self)[nodeValue](event);
 								}
-
-								if (
-									element === node ||
-									// TS2339
-									((<any> node).contains(element) && event.bubbles && !event.propagationStopped)
-								) {
-									if (binding) {
-										return binding.get().call(binding.getObject(), event);
-									}
-									else {
-										// TODO: Use `get`?
-										// TS7017
-										return (<any> self)[method](event);
-									}
-								}
-							}, node, nodeValue));
-						})();
+							});
+						})(nodeValue);
 					}
 					else if ((result = BIND_ATTRIBUTE.exec(nodeValue))) {
 						var lastIndex:number = 0;
@@ -398,7 +483,6 @@ class ElementWidget extends Container {
 			node = nextNode;
 		}
 
-		this._applyEventListeners();
 		super._render();
 		this._fragment.insertBefore(content, this._lastNode);
 	}
@@ -411,6 +495,11 @@ module ElementWidget {
 	}
 	export interface Setters extends Container.Setters {
 		(key:'model', value:Object):void;
+	}
+
+	export interface ElementPointerEvent extends ui.PointerEvent {
+		currentTargetNode: Element;
+		targetNode: Element;
 	}
 }
 
