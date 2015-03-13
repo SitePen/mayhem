@@ -20,6 +20,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 	static inheritsModel:boolean = true;
 
 	private _as:string;
+	private _attachedView:View;
 	private _fulfilled:View;
 	private _pending:View;
 	private _pendingAs:string;
@@ -44,6 +45,14 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		this._rejectedAs = 'error';
 	}
 
+	_isAttachedGetter():boolean {
+		return this._isAttached;
+	}
+	_isAttachedSetter(value:boolean):void {
+		this._attachedView && this._attachedView.set('isAttached', value);
+		this._isAttached = value;
+	}
+
 	_valueGetter():Promise<T> {
 		return this._value;
 	}
@@ -54,26 +63,25 @@ class PromiseWidget<T> extends MultiNodeWidget {
 		var self = this;
 
 		function attach(view:View):void {
+			if (self._attachedView) {
+				self._attachedView.detach();
+			}
 			self._lastNode.parentNode.insertBefore(view.detach(), self._lastNode);
+			self._attachedView = view;
 			view.set({
 				isAttached: self.get('isAttached'),
 				parent: self
 			});
 		}
 
-		if (!this._value.isResolved()) {
-			this._fulfilled.detach();
-		}
-		if (this._rejected && !this._value.isRejected()) {
-			this._rejected.detach();
-		}
-		if (!this._value.isFulfilled() && this._pending) {
+		if (this._pending) {
 			attach(this._pending);
 		}
 
 		this._value.always(function (value:T) {
 			if (self._pending) {
 				self._pending.detach();
+				self._attachedView = null;
 			}
 		});
 
