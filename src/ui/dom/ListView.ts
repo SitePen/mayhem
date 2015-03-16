@@ -178,8 +178,8 @@ class ListView<T> extends SingleNodeWidget {
 			return;
 		}
 
-		this._widget.set('isAttached', value);
 		this._isAttached = value;
+		this._widget.set('isAttached', value);
 	}
 
 	// TODO: Implement necessary container interfaces
