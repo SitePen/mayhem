@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../third-party/dijit/themes/claro/claro.css" />
+<title>BindInheritedModel</title>
+<body class="claro">
+<script src="../../support/dojoConfig.js"></script>
+<script>
+require([
+	'mayhem/templating/html',
+	'mayhem/WebApplication'
+], function (html, WebApplication) {
+	var global = (function () { return this; })();
+
+	html.create('<when value={promised} as="items">\n\t<widget is="mayhem/ui/form/Button" on-activate="doAction" label="Test" /></when>').then(function (View) {
+		View.prototype.doAction = function () {
+			console.log('action happened');
+		};
+
+		var app = new WebApplication({
+			components: {
+				router: null,
+				ui: { view: null }
+			}
+		});
+
+		global.app = app;
+		app.run().then(function () {
+			var model = { promised: Promise.resolve({ length: 6 }) };
+
+			var view = new View({
+				app: app,
+				model: model
+			});
+
+			global.view = view;
+
+			app.get('ui').set('view', view);
+		});
+	});
+});
+</script>
+</body>
