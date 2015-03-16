@@ -40,9 +40,13 @@ interface InstanceArguments {
  * Creates a BindableWidget constructor from a template AST node.
  *
  * @param root The AST node to use as the root node for the constructed widget.
+ * @param parent The direct parent for the new view, as in the case where the view constructor is created due to the
+ * $ctor flag.
+ * @param eventRoot The top-most widget to use as the target for string-based event names when encountering a widget
+ * with inheritsModel. Kind of a hack.
  * @returns A constructor that instantiates a composed view tree based on the contents of the AST.
  */
-function createViewConstructor(root:templating.INode, parent?:Widget):typeof Widget {
+function createViewConstructor(root:templating.INode, parent?:Widget, eventRoot?:Widget):typeof Widget {
 	var BaseCtor = require<typeof Widget>(root.constructor);
 
 	/**
@@ -132,7 +136,7 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 
 				if (typeof eventTarget === 'string') {
 					widget.on(eventName, function (event:ui.UiEvent) {
-						self[eventTarget] && self[eventTarget](event);
+						(<any> eventRoot || self)[eventTarget] && (<any> eventRoot || self)[eventTarget](event);
 					});
 				}
 				else {
@@ -172,7 +176,7 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 			// a new templated view constructor wrapping the original constructor, though it should be possible to do
 			// this more efficiently by changing the target of `applyBindings` and `applyEvents`
 			if (Ctor.inheritsModel) {
-				Ctor = createViewConstructor(node, self);
+				Ctor = createViewConstructor(node, self, parent || self);
 				instance = new Ctor({ app, model });
 				modelInheritors.push(instance);
 				return instance;
@@ -228,7 +232,6 @@ function createViewConstructor(root:templating.INode, parent?:Widget):typeof Wid
 			}
 		});
 
-		var model:{};
 		if (!('_modelGetter' in this)) {
 			this._modelGetter = function () {
 				return model;
