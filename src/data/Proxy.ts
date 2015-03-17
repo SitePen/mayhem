@@ -56,6 +56,14 @@ class Proxy<T> extends Base {
 				};
 			}
 
+			wrapperCollection.sort = function () {
+				return wrapCollection(collection.sort.apply(collection, arguments));
+			};
+
+			wrapperCollection.filter = function () {
+				return wrapCollection(collection.filter.apply(collection, arguments));
+			};
+
 			wrapperCollection.fetch = function () {
 				return collection.fetch.apply(collection, arguments).then(function (items: T[]) {
 					return items.map(createProxy);
