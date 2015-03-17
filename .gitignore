@@ -4,6 +4,7 @@ dist/
 html-report/
 node_modules/
 tests/**/*.js
+!tests/support/dojoConfig.js
 !tests/support/reporter.js
 third-party/
 src/**/*.js
