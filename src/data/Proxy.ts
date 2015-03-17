@@ -58,6 +58,15 @@ class Proxy<T> extends Observable {
 				}
 			}
 
+			// TODO: Sort and filter should not need to be wrapped, _createSubCollection should be enough?
+			wrapperCollection.sort = function () {
+				return wrapCollection(collection.sort.apply(collection, arguments));
+			};
+
+			wrapperCollection.filter = function () {
+				return wrapCollection(collection.filter.apply(collection, arguments));
+			};
+
 			[ 'fetch', 'fetchRange' ].forEach(function (method) {
 				wrapperCollection[method] = function () {
 					var promise = (<any> collection)[method].apply(collection, arguments);
