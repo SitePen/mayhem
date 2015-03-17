@@ -247,6 +247,22 @@ class ElementWidget extends Container {
 								lastElement = null;
 							}
 						});
+
+						// Need to watch for Mayhem’s own pointerout events since they may be caused by widgets and we
+						// want to know about that
+						if (eventName === 'pointerout') {
+							self.on('pointerout', function (event:ui.PointerEvent) {
+								var oldNode = event.target && (<Widget> event.target).get('firstNode');
+
+								if (
+									oldNode &&
+									// Only multi-node widgets need to be triggered here
+									oldNode.nodeType === Node.COMMENT_NODE
+								) {
+									runListeners(<Element> oldNode, event);
+								}
+							});
+						}
 					}
 					else {
 						self.on('pointerenter', function (event:ui.PointerEvent) {
@@ -256,6 +272,22 @@ class ElementWidget extends Container {
 								lastElement = newElement;
 							}
 						});
+
+						// Need to watch for Mayhem’s own pointerover events since they may be caused by widgets and we
+						// want to know about that
+						if (eventName === 'pointerover') {
+							self.on('pointerover', function (event:ui.PointerEvent) {
+								var newNode = event.target && (<Widget> event.target).get('firstNode');
+
+								if (
+									newNode &&
+									// Only multi-node widgets need to be triggered here
+									newNode.nodeType === Node.COMMENT_NODE
+								) {
+									runListeners(<Element> newNode, event);
+								}
+							});
+						}
 					}
 				}
 				else {
