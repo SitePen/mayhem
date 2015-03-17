@@ -316,7 +316,7 @@ Model.prototype.set = function (key:any, value?:any):void {
 		return;
 	}
 
-	if (!NON_DATA_KEYS[key] && this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
+	if (!this._initializing && !NON_DATA_KEYS[key] && this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
 		// TODO: use the logger service, not console
 		has('debug') && console.warn('Not setting key "' + key + '" because it is not defined in the current scenario and the model is not extensible');
 		return;
