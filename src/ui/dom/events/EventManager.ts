@@ -158,6 +158,17 @@ class EventManager {
 	}
 
 	private _handlePointerChange(pointer:PointerManager.Pointer):boolean {
+		function contains(maybeParent:Widget, child:Widget) {
+			var parent:Widget = child;
+			do {
+				if (parent === maybeParent) {
+					return true;
+				}
+			} while ((parent = parent.get('parent')));
+
+			return false;
+		}
+
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY) || this._master;
 		var previousTarget:Widget;
 		var changes:PointerManager.Changes = pointer.lastChanged;
@@ -175,7 +186,7 @@ class EventManager {
 			}
 		}
 
-		if (hasMoved && target !== previousTarget && previousTarget) {
+		if (hasMoved && !contains(previousTarget, target)) {
 			if (this._emitPointerEvent('pointerout', pointer, previousTarget, target)) {
 				shouldCancel = true;
 			}
@@ -187,7 +198,7 @@ class EventManager {
 			shouldCancel = true;
 		}
 
-		if (hasMoved && target !== previousTarget) {
+		if (hasMoved && !contains(target, previousTarget)) {
 			if (this._emitPointerEvent('pointerover', pointer, target, previousTarget)) {
 				shouldCancel = true;
 			}
