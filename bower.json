@@ -1,7 +1,7 @@
 {
   "name": "mayhem",
   "description": "A framework for rich Internet applications.",
-  "version": "0.3.0-pre",
+  "version": "0.3.0-alpha.23",
   "homepage": "https://github.com/SitePen/mayhem",
   "moduleType": [
     "amd"

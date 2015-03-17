@@ -1,6 +1,6 @@
 {
   "name": "mayhem",
-  "version": "0.3.0-pre",
+  "version": "0.3.0-alpha.23",
   "description": "A framework for rich Internet applications.",
   "bugs": {
     "url": "https://github.com/SitePen/mayhem/issues"
