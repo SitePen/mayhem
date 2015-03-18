@@ -159,6 +159,10 @@ class EventManager {
 
 	private _handlePointerChange(pointer:PointerManager.Pointer):boolean {
 		function contains(maybeParent:Widget, child:Widget) {
+			if (!maybeParent || !child) {
+				return false;
+			}
+
 			var parent:Widget = child;
 			do {
 				if (parent === maybeParent) {
