@@ -134,6 +134,12 @@ class PromiseWidget<T> extends MultiNodeWidget {
 				app: this._app,
 				target: value
 			};
+
+			// TODO: If as/rejectedAs/pendingAs are changed at runtime, it will stop setting these values on the proxy.
+			kwArgs[this._as] = null;
+			kwArgs[this._rejectedAs] = null;
+			kwArgs[this._pendingAs] = null;
+
 			this._model = new Proxy(kwArgs);
 		}
 	}
