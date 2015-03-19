@@ -70,6 +70,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			self._attachedView = view;
 			view.set({
 				isAttached: self.get('isAttached'),
+				model: self._model,
 				parent: self
 			});
 		}
@@ -136,9 +137,9 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			};
 
 			// TODO: If as/rejectedAs/pendingAs are changed at runtime, it will stop setting these values on the proxy.
-			kwArgs[this._as] = null;
-			kwArgs[this._rejectedAs] = null;
-			kwArgs[this._pendingAs] = null;
+			kwArgs[this._as] = undefined;
+			kwArgs[this._rejectedAs] = undefined;
+			kwArgs[this._pendingAs] = undefined;
 
 			this._model = new Proxy(kwArgs);
 		}
