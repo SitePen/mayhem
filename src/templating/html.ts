@@ -176,7 +176,7 @@ function createViewConstructor(root:templating.INode, parent?:Widget, eventRoot?
 			// a new templated view constructor wrapping the original constructor, though it should be possible to do
 			// this more efficiently by changing the target of `applyBindings` and `applyEvents`
 			if (Ctor.inheritsModel) {
-				Ctor = createViewConstructor(node, self, parent || self);
+				Ctor = createViewConstructor(node, self, eventRoot || parent || self);
 				instance = new Ctor({ app, model });
 				modelInheritors.push(instance);
 				return instance;
