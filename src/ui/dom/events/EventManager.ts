@@ -240,6 +240,8 @@ class EventManager {
 			shouldCancel = true;
 		}
 
+		this._emitPointerEvent('pointerleave', pointer, target);
+
 		return shouldCancel;
 	}
 }

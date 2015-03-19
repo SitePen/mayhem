@@ -19,20 +19,20 @@ require([ 'mayhem/templating/html', 'mayhem/Promise', 'mayhem/WebApplication' ],
 		app.run().then(function () {
 			var model = {
 				innerpointerover: function (event) {
-					console.log('inner over', event.currentTargetNode.id);
+					console.log('inner over', event.currentTargetNode.id, event.target, event.relatedTarget);
 					event.stopPropagation();
 				},
 				pointerover: function (event) {
-					console.log('over', event.currentTargetNode.id);
+					console.log('over', event.currentTargetNode.id, event.relatedTarget);
 				},
 				pointerout: function (event) {
-					console.log('out', event.currentTargetNode.id);
+					console.log('out', event.currentTargetNode.id, event.target, event.relatedTarget);
 				},
 				pointerenter: function (event) {
-					console.log('enter', event.currentTargetNode.id);
+					console.log('enter', event.currentTargetNode.id, event.relatedTarget);
 				},
 				pointerleave: function (event) {
-					console.log('leave', event.currentTargetNode.id);
+					console.log('leave', event.currentTargetNode.id, event.relatedTarget);
 				}
 			};
 

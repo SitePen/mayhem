@@ -212,7 +212,14 @@ class ElementWidget extends Container {
 					else if (eventName === 'pointerout') {
 						self.on('pointermove', function (event:ui.PointerEvent) {
 							var newElement = getElement(event);
-							if (lastElement && !(<HTMLElement> lastElement).contains(<HTMLElement> newElement)) {
+							if (
+								lastElement &&
+								!(<HTMLElement> lastElement).contains(<HTMLElement> newElement) &&
+								// Pointer movements across interior widget boundaries will be picked up by the
+								// listeners for pointerover and pointerout on this widget, so should not be dispatched
+								// by this pointermove handler
+								!(<any> lastElement)['widget']
+							) {
 								runListeners(lastElement, event);
 							}
 
@@ -232,7 +239,14 @@ class ElementWidget extends Container {
 					else if (eventName === 'pointerover') {
 						self.on('pointermove', function (event:ui.PointerEvent) {
 							var newElement = getElement(event);
-							if (newElement && !(<HTMLElement> newElement).contains(<HTMLElement> lastElement)) {
+							if (
+								newElement &&
+								!(<HTMLElement> newElement).contains(<HTMLElement> lastElement) &&
+								// Pointer movements across interior widget boundaries will be picked up by the
+								// listeners for pointerover and pointerout on this widget, so should not be dispatched
+								// by this pointermove handler
+								!(<any> newElement)['widget']
+							) {
 								runListeners(newElement, event);
 							}
 
@@ -252,13 +266,11 @@ class ElementWidget extends Container {
 						// want to know about that
 						if (eventName === 'pointerout') {
 							self.on('pointerout', function (event:ui.PointerEvent) {
+								// TODO: It would seem to be a bug if we receive an event with no target or a target
+								// with no firstNode, so the defensiveness of this method is probably not so necessary.
 								var oldNode = event.target && (<Widget> event.target).get('firstNode');
 
-								if (
-									oldNode &&
-									// Only multi-node widgets need to be triggered here
-									oldNode.nodeType === Node.COMMENT_NODE
-								) {
+								if (oldNode) {
 									runListeners(<Element> oldNode, event);
 								}
 							});
@@ -277,13 +289,11 @@ class ElementWidget extends Container {
 						// want to know about that
 						if (eventName === 'pointerover') {
 							self.on('pointerover', function (event:ui.PointerEvent) {
+								// TODO: It would seem to be a bug if we receive an event with no target or a target
+								// with no firstNode, so the defensiveness of this method is probably not so necessary.
 								var newNode = event.target && (<Widget> event.target).get('firstNode');
 
-								if (
-									newNode &&
-									// Only multi-node widgets need to be triggered here
-									newNode.nodeType === Node.COMMENT_NODE
-								) {
+								if (newNode) {
 									runListeners(<Element> newNode, event);
 								}
 							});
