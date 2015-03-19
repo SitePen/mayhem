@@ -316,6 +316,8 @@ Model.prototype.set = function (key:any, value?:any):void {
 		return;
 	}
 
+	// All properties are allowed to be set during initialisation because they are usually the initial state of a model
+	// passed from a server, so represent the last known good state of a model from its data source.
 	if (!this._initializing && !NON_DATA_KEYS[key] && this._currentScenarioKeys && !this._currentScenarioKeys[key] && !this._isExtensible) {
 		// TODO: use the logger service, not console
 		has('debug') && console.warn('Not setting key "' + key + '" because it is not defined in the current scenario and the model is not extensible');
