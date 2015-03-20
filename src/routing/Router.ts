@@ -136,7 +136,7 @@ class Router extends Observable {
 		return Promise.resolve(route);
 	}
 
-	protected _parseRequest(request:Request) {
+	protected _parseRequest(request:Request):Router.RouteInfo {
 		var rules:UrlRule[] = this.get('rules');
 		var routeInfo:Router.RouteInfo;
 

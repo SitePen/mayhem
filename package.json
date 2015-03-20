@@ -1,6 +1,6 @@
 {
   "name": "mayhem",
-  "version": "0.3.0-pre",
+  "version": "0.4.0-pre",
   "description": "A framework for rich Internet applications.",
   "bugs": {
     "url": "https://github.com/SitePen/mayhem/issues"
@@ -11,11 +11,11 @@
     "url": "https://github.com/SitePen/mayhem.git"
   },
   "dependencies": {
-    "dojo": "1.10.2",
+    "dojo": "1.10.4",
     "esprima": "1.2.2"
   },
   "devDependencies": {
-    "dts-generator": "SitePen/dts-generator#1.1.0",
+    "dts-generator": "SitePen/dts-generator#1.2.0",
     "globule": "0.2.0",
     "grunt": "0.4.5",
     "grunt-contrib-clean": "0.5.0",
@@ -24,6 +24,6 @@
     "grunt-peg": "1.5.0",
     "grunt-ts": "3.0.0",
     "intern-geezer": "2.2.2",
-    "typescript": "1.4.1"
+    "typescript": "Arnavion/typescript-github#2015-03-18-3e7e9f43ca9b508b33752f747c82da7cad0353e3"
   }
 }

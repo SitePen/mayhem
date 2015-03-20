@@ -131,7 +131,7 @@ class PromiseWidget<T> extends MultiNodeWidget {
 			this._model.set('target', value);
 		}
 		else {
-			var kwArgs = {
+			var kwArgs: any = {
 				app: this._app,
 				target: value
 			};
