@@ -1,16 +1,16 @@
-import createError = require('dojo/errors/create');
-import Request = require('./Request');
+import createError from 'dojo/errors/create';
+import Request from './Request';
 
 interface RoutingError extends Error {
-	request:Request;
+	request: Request;
 }
 
-var RoutingError:{
-	new (message:string, request?:Request):RoutingError;
-	prototype:RoutingError;
+var RoutingError: {
+	new (message: string, request?: Request): RoutingError;
+	prototype: RoutingError;
 };
 
-function Ctor(message:string, request?:Request):void {
+function Ctor(message: string, request?: Request) {
 	this.request = request;
 }
 

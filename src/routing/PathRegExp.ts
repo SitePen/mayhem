@@ -1,39 +1,34 @@
+
 class PathRegExp {
-	static escape(string:string):string {
+	static escape(string: string): string {
 		return string.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 	}
 
 	/**
 	 * The JavaScript-compatible regular expression to match the path.
-	 *
-	 * @type {RegExp}
 	 */
-	protected _expression:RegExp;
+	protected expression: RegExp;
 
 	/**
 	 * A map of parameter key position to parameter key name, to translate match indexes from the JavaScript RegExp
 	 * object into named properties.
-	 *
-	 * @type {string[]}
 	 */
-	protected _keys:string[];
+	protected keys: string[];
 
 	/**
 	 * The list of all parts that constitute a complete parameterized expression. Used to generate strings that will
 	 * match the parameterized expression (reverse routing).
-	 *
-	 * @type {any[]}
 	 */
-	protected _parts:any[];
+	protected parts: Array<string | PathRegExp.Part>;
 
 	constructor(
-		path:string,
-		partSeparator?:string,
-		separatorDirection:PathRegExp.Direction = PathRegExp.Direction.LEFT,
-		isCaseSensitive:boolean = true,
-		defaults:{} = {}
+		path: string,
+		partSeparator?: string,
+		separatorDirection: PathRegExp.Direction = PathRegExp.Direction.LEFT,
+		isCaseSensitive: boolean = true,
+		defaults: {} = {}
 	) {
-		function checkForSeparatorAt(index:number, length:number):boolean {
+		function checkForSeparatorAt(index: number, length: number): boolean {
 			// This parameter is at the start of the path, so cannot have a leading separator
 			if (separatorDirection === PathRegExp.Direction.LEFT && index < partSeparator.length) {
 				return false;
@@ -59,11 +54,11 @@ class PathRegExp {
 		/**
 		 * Converts regular expression capturing groups in an expression string to non-capturing groups.
 		 */
-		function convertCaptureGroups(expression:string):string {
-			var lastIndex:number;
-			var index:number;
-			var nonCapturingGroups:HashMap<boolean> = {
-				'?:': true,
+		function convertCaptureGroups(expression: string): string {
+			var lastIndex: number;
+			var index: number;
+			var nonCapturingGroups: HashMap<boolean> = {
+				'?: ': true,
 				'?=': true,
 				'?!': true
 			};
@@ -83,7 +78,7 @@ class PathRegExp {
 					// The group is not a look-ahead or non-capturing group
 					!nonCapturingGroups[expression.slice(lastIndex + 1, lastIndex + 3)]
 				) {
-					expression = expression.slice(0, lastIndex + 1) + '?:' + expression.slice(lastIndex + 1);
+					expression = expression.slice(0, lastIndex + 1) + '?: ' + expression.slice(lastIndex + 1);
 				}
 
 				++lastIndex;
@@ -92,18 +87,18 @@ class PathRegExp {
 			return expression;
 		}
 
-		var parameterPattern:RegExp = /<([^:]+):([^>]+)>/g;
+		var parameterPattern = /<([^: ]+): ([^>]+)>/g;
 
-		var expression:string = '^';
-		var keys:string[] = [];
-		var parts:any[] = [];
+		var expression = '^';
+		var keys: string[] = [];
+		var parts: Array<string | PathRegExp.Part> = [];
 
-		var lastIndex:number = 0;
-		var match:RegExpExecArray;
-		var partIsOptional:boolean;
-		var regExpFlags:string = isCaseSensitive ? '' : 'i';
-		var staticPart:string;
-		var valueExpression:string;
+		var lastIndex = 0;
+		var match: RegExpExecArray;
+		var partIsOptional: boolean;
+		var regExpFlags = isCaseSensitive ? '' : 'i';
+		var staticPart: string;
+		var valueExpression: string;
 
 		while ((match = parameterPattern.exec(path))) {
 			keys.push(match[1]);
@@ -117,11 +112,11 @@ class PathRegExp {
 			if (partSeparator && match[1] in defaults && checkForSeparatorAt(match.index, match[0].length)) {
 				if (separatorDirection === PathRegExp.Direction.LEFT) {
 					expression += PathRegExp.escape(staticPart.slice(0, -partSeparator.length));
-					expression += '(?:' + PathRegExp.escape(partSeparator) + valueExpression + ')?';
+					expression += '(?: ' + PathRegExp.escape(partSeparator) + valueExpression + ')?';
 				}
 				else {
 					expression += PathRegExp.escape(staticPart);
-					expression += '(?:' + valueExpression + PathRegExp.escape(partSeparator) + ')?';
+					expression += '(?: ' + valueExpression + PathRegExp.escape(partSeparator) + ')?';
 				}
 
 				partIsOptional = true;
@@ -147,9 +142,9 @@ class PathRegExp {
 		parts.push(staticPart);
 		expression += PathRegExp.escape(staticPart) + '$';
 
-		this._expression = new RegExp(expression, regExpFlags);
-		this._keys = keys;
-		this._parts = parts;
+		this.expression = new RegExp(expression, regExpFlags);
+		this.keys = keys;
+		this.parts = parts;
 	}
 
 	/**
@@ -159,12 +154,12 @@ class PathRegExp {
 	 * @param kwArgs
 	 * @returns {string} [description]
 	 */
-	consume(kwArgs:{}):string {
-		var serialization:string = '';
+	consume(kwArgs: {}): string {
+		var serialization = '';
 
-		var key:string;
-		for (var i:number = 0, j:number = this._parts.length; i < j; ++i) {
-			var part:any = this._parts[i];
+		var key: string;
+		for (var i = 0, j = this.parts.length; i < j; ++i) {
+			var part = this.parts[i];
 
 			if (typeof part === 'string') {
 				serialization += part;
@@ -181,8 +176,8 @@ class PathRegExp {
 					}
 				}
 
-				var value:any = (<any> kwArgs)[key];
-				var expression:RegExp = part.expression;
+				var value: any = (<any> kwArgs)[key];
+				var expression = part.expression;
 
 				if (value instanceof Array) {
 					value = value.shift();
@@ -209,17 +204,17 @@ class PathRegExp {
 	 * @param value A string to match.
 	 * @returns A hash map of parameters extracted from the string.
 	 */
-	exec(string:string, options:{ coerce?:boolean; } = {}):HashMap<string> {
-		var key:string;
-		var match:RegExpExecArray;
+	exec(string: string, options: { coerce?: boolean; } = {}): HashMap<string> {
+		var key: string;
+		var match: RegExpExecArray;
 
-		if ((match = this._expression.exec(string))) {
-			var kwArgs:HashMap<any> = {};
+		if ((match = this.expression.exec(string))) {
+			var kwArgs: HashMap<any> = {};
 
-			for (var i = 0, j = this._keys.length; i < j; ++i) {
-				key = this._keys[i];
+			for (var i = 0, j = this.keys.length; i < j; ++i) {
+				key = this.keys[i];
 
-				var value:any = match[i + 1];
+				var value: any = match[i + 1];
 
 				// Optional matches that did not match should not be added to the map of extracted parameters
 				if (value === undefined) {
@@ -252,20 +247,20 @@ class PathRegExp {
 	/**
 	 * Tests whether or not the given string matches this path expression.
 	 */
-	test(value:string):boolean {
-		return this._expression.test(value);
+	test(value: string): boolean {
+		return this.expression.test(value);
 	}
 
 	/**
 	 * Tests whether or not the given arguments can be successfully consumed by this path expression and converted into
 	 * a path string.
 	 */
-	testConsumability(kwArgs:{}):boolean {
-		for (var i = 0, j = this._parts.length; i < j; ++i) {
-			var part:any = this._parts[i];
+	testConsumability(kwArgs: {}): boolean {
+		for (var i = 0, j = this.parts.length; i < j; ++i) {
+			var part: any = this.parts[i];
 
 			if (typeof part !== 'string') {
-				var key:string = part.key;
+				var key = part.key;
 
 				if (!(key in kwArgs) && !part.isOptional) {
 					return false;
@@ -288,9 +283,9 @@ module PathRegExp {
 	}
 
 	export interface Part {
-		key:string;
-		expression:RegExp;
-		isOptional:boolean;
+		key: string;
+		expression: RegExp;
+		isOptional: boolean;
 	}
 }
 

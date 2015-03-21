@@ -1,52 +1,55 @@
-import hash = require('dojo/hash');
-import ioQuery = require('dojo/io-query');
-import lang = require('dojo/_base/lang');
-import Promise = require('../Promise');
-import Request = require('./Request');
-import Router = require('./Router');
-import topic = require('dojo/topic');
+import hash from 'dojo/hash';
+import { hitch } from 'dojo/_base/lang';
+import { queryToObject } from 'dojo/io-query';
+import Promise from '../Promise';
+import Request from './Request';
+import Router from './Router';
+import * as topic from 'dojo/topic';
 
 class HashRouter extends Router {
-	protected _handle:IHandle;
-	protected _oldHash:string;
-	protected _prefix:string;
+	protected hashListenerHandle: IHandle;
 
-	get:HashRouter.Getters;
-	set:HashRouter.Setters;
+	protected oldHash: string;
 
-	createUrl(routeId:string, kwArgs?:{}):string {
-		return '#' + this.get('prefix') + super.createUrl(routeId, kwArgs);
+	prefix: string;
+
+	constructor(kwArgs?: HashRouter.KwArgs) {
+		super(kwArgs);
 	}
 
-	destroy():void {
+	createUrl(routeId: string, kwArgs?: {}): string {
+		return '#' + this.prefix + super.createUrl(routeId, kwArgs);
+	}
+
+	destroy(): void {
 		super.destroy();
-		this._handle && this._handle.remove();
-		this._handle = null;
+		this.hashListenerHandle && this.hashListenerHandle.remove();
+		this.hashListenerHandle = null;
 	}
 
-	go(routeId:string, kwArgs?:{}):Promise<void> {
+	go(routeId: string, kwArgs?: {}): Promise<void> {
 		var newHash = this.createUrl(routeId, kwArgs).slice(1);
 
-		if (this._oldHash === newHash) {
+		if (this.oldHash === newHash) {
 			return;
 		}
 
-		this._handle.remove();
+		this.hashListenerHandle.remove();
 		hash(newHash);
-		this._listen();
+		this.listen();
 
-		return this._handleHashChange(newHash);
+		return this.handleHashChange(newHash);
 	}
 
-	protected _handleHashChange(newHash:string) {
-		var prefix = this.get('prefix');
+	protected handleHashChange(newHash: string) {
+		var prefix = this.prefix;
 
-		if (this._oldHash === newHash || (newHash.length && newHash.slice(0, prefix.length) !== prefix)) {
+		if (this.oldHash === newHash || (newHash.length && newHash.slice(0, prefix.length) !== prefix)) {
 			return;
 		}
 
-		if (!newHash && this.get('defaultRoute')) {
-			var defaultRoute = this.get('defaultRoute');
+		if (!newHash && this.defaultRoute) {
+			var defaultRoute = this.defaultRoute;
 			return this.go(defaultRoute.routeId, defaultRoute.kwArgs);
 		}
 
@@ -58,41 +61,38 @@ class HashRouter extends Router {
 			method: 'GET',
 			path: newHash.slice(prefix.length, searchIndex > -1 ? searchIndex : Infinity),
 			protocol: location.protocol,
-			vars: searchIndex > -1 ? ioQuery.queryToObject(newHash.slice(searchIndex + 1)) : {}
+			vars: searchIndex > -1 ? queryToObject(newHash.slice(searchIndex + 1)) : {}
 		});
 
-		return this._handleRequest(request).then(function () {
-			self._oldHash = newHash;
-		}, function (error:Error) {
-			self._oldHash && hash(self._oldHash, true);
+		return this.handleRequest(request).then(function () {
+			self.oldHash = newHash;
+		}, function (error: Error) {
+			self.oldHash && hash(self.oldHash, true);
 			self.get('app').handleError(error);
 		});
 	}
 
-	_initialize() {
-		super._initialize();
-		this._prefix = '!';
+	protected initialize(): void {
+		super.initialize();
+		this.prefix = '!';
 	}
 
-	protected _listen() {
-		this._handle = topic.subscribe('/dojo/hashchange', lang.hitch(this, '_handleHashChange'));
+	protected listen(): void {
+		this.hashListenerHandle = topic.subscribe('/dojo/hashchange', hitch(this, '_handleHashChange'));
 	}
 
-	run() {
+	run(): void {
 		var self = this;
 		this.get('app').run().then(function () {
-			self._listen();
-			self._handleHashChange(hash());
+			self.listen();
+			self.handleHashChange(hash());
 		});
 	}
 }
 
 module HashRouter {
-	export interface Getters extends Router.Getters {
-		(key:'prefix'):string;
-	}
-	export interface Setters extends Router.Setters {
-		(key:'prefix', value:string):void;
+	export interface KwArgs extends Router.KwArgs {
+		prefix?: string;
 	}
 }
 

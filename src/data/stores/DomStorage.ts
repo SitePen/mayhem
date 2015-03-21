@@ -1,84 +1,86 @@
-import declare = require('dojo/_base/declare');
-import Memory = require('dstore/Memory');
-import util = require('../../util');
+import Memory from 'dstore/Memory';
+import Store from 'dstore/Store';
+import { addUnloadCallback, debounce } from '../../util';
 
 interface DomStorage<T> extends Memory<T> {
-	key:string;
-	storage:Storage;
-	filter(query:string):DomStorage<T>;
-	filter(query:{}):DomStorage<T>;
-	filter(query:(item:T, index:number) => boolean):DomStorage<T>;
-	sort(property:string, descending?:boolean):DomStorage<T>;
-	sort(property:(a:T, b:T) => number, descending?:boolean):DomStorage<T>;
-	track():DomStorage<T>;
+	key: string;
+	target: Storage;
+	filter(query: string | {} | { (item: T, index: number): boolean; }): DomStorage<T>;
+	sort(property: string | { (a: T, b: T): number; }, descending?: boolean): DomStorage<T>;
+	track(): DomStorage<T>;
 }
 
-var DomStorage = declare<DomStorage<any>>(Memory, {
+var DomStorage: {
+	new <T>(kwArgs?: DomStorage.KwArgs): DomStorage<T>;
+	prototype: DomStorage<any>;
+} = Memory.createSubclass<any>({
 	key: 'dstore',
 	target: null,
 
-	constructor: function (kwArgs:HashMap<any>):void {
+	constructor(kwArgs?: DomStorage.KwArgs) {
 		if (!this.target && typeof localStorage === 'undefined') {
 			throw new Error('No storage is available in the current environment');
 		}
 
 		this.setTarget(this.key, this.target || localStorage);
 		var self = this;
-		this._unloadHandle = util.addUnloadCallback(function ():void {
+		this._unloadHandle = addUnloadCallback(function () {
 			self._persist();
 		});
 	},
 
-	destroy: function ():void {
-		this.destroy = function ():void {};
+	_bouncePersist: debounce(function () {
+		this._persist();
+	}, 1000),
+
+	destroy(): void {
+		this.destroy = function () {};
 		this._persist();
 		this._unloadHandle.remove();
 	},
 
-	fetchSync: function <T>():dstore.FetchArray<T> {
+	fetchSync(): dstore.FetchArray<any> {
 		this.storage._loaded || this._load();
 		return this.inherited(arguments);
 	},
 
-	_load: function ():void {
+	getSync<T>(id: any): T {
+		this.storage._loaded || this._load();
+		return this.inherited(arguments);
+	},
+
+	_load(): void {
 		this.storage._loaded = true;
 		Memory.prototype.setData.call(this, JSON.parse(this.target.getItem(this.key)) || []);
 	},
 
-	_bouncePersist: util.debounce(function ():void {
-		this._persist();
-	}, 1000),
-
-	_persist: function ():void {
+	_persist(): void {
 		this.target.setItem(this.key, JSON.stringify(this.storage.fullData));
 	},
 
-	getSync: function <T>(id:any):T {
+	putSync<T>(object: T): T {
 		this.storage._loaded || this._load();
-		return this.inherited(arguments);
-	},
-
-	putSync: function <T>(object:T):T {
-		this.storage._loaded || this._load();
-		var putObject:T = this.inherited(arguments);
+		var putObject: T = this.inherited(arguments);
 		this._bouncePersist();
 		return putObject;
 	},
 
-	removeSync: function ():boolean {
+	removeSync(): boolean {
 		this.storage._loaded || this._load();
-		var isRemoved:boolean = this.inherited(arguments);
+		var isRemoved: boolean = this.inherited(arguments);
 		this._bouncePersist();
 		return isRemoved;
 	},
 
-	setData: function ():void {
+	setData(): void {
 		this.inherited(arguments);
 		this._bouncePersist();
 	},
 
-	setTarget: function (key:string, target:Storage = this.target):void {
-		this.target = target;
+	setTarget(key: string, target?: Storage): void {
+		if (target) {
+			this.target = target;
+		}
 		this.key = key;
 
 		// Reload the data immediately if the target changes after it has already been loaded once since any
@@ -86,5 +88,12 @@ var DomStorage = declare<DomStorage<any>>(Memory, {
 		this.storage._loaded && this._load();
 	}
 });
+
+module DomStorage {
+	export interface KwArgs extends Store.KwArgs {
+		key?: string;
+		target?: string;
+	}
+}
 
 export = DomStorage;

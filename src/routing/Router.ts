@@ -1,41 +1,55 @@
-import Application = require('../Application');
-import arrayUtil = require('dojo/_base/array');
-import Observable = require('../Observable');
-import Promise = require('../Promise');
-import Request = require('./Request');
-import RoutingError = require('./RoutingError');
-import UrlRule = require('./UrlRule');
-import util = require('../util');
+import Application from '../Application';
+import Base from '../Base';
+import { getModule } from '../util';
+import Promise from '../Promise';
+import Request from './Request';
+import RoutingError from './RoutingError';
+import UrlRule from './UrlRule';
 
-class Router extends Observable {
-	get:Router.Getters;
-	set:Router.Setters;
+class Router extends Base {
+	/**
+	 * @readonly
+	 */
+	currentRoute: Router.Route;
 
-	protected _routeInProgress:Promise<void>;
+	defaultRoute: Router.RouteInfo;
 
-	protected _rules:UrlRule[];
-	protected _rulesGetter() {
+	routes: HashMap<string | Router.Route>;
+
+	private _rules: UrlRule[];
+	get rules(): Array<UrlRule | UrlRule.KwArgs> {
 		return this._rules;
 	}
-	protected _rulesSetter(value:any[]) {
-		this._rules = arrayUtil.map(value, function (rule:any):UrlRule {
+	set rules(value: Array<UrlRule | UrlRule.KwArgs>) {
+		this._rules = value.map(function (rule: UrlRule | UrlRule.KwArgs): UrlRule {
 			if (rule.constructor === Object) {
 				return new UrlRule(rule);
 			}
 
-			return rule;
+			return <UrlRule> rule;
 		});
 
 		// The empty default rule allows links to any valid route without each needing their own URL rule
 		this._rules.push(new UrlRule());
 	}
 
-	createUrl(routeId:string, kwArgs?:{}) {
-		var rules:UrlRule[] = this.get('rules');
-		var serialized:string;
+	protected routeInProgress: Promise<void>;
 
-		if (this.get('routes')[routeId]) {
-			for (var i = 0, rule:UrlRule; (rule = rules[i]); ++i) {
+	constructor(kwArgs?: Router.KwArgs) {
+		super(kwArgs);
+	}
+
+	protected initialize() {
+		super.initialize();
+		this._rules = [ new UrlRule() ];
+	}
+
+	createUrl(routeId: string, kwArgs?: {}) {
+		var rules = <UrlRule[]> this.rules;
+		var serialized: string;
+
+		if (this.routes[routeId]) {
+			for (var i = 0, rule: UrlRule; (rule = rules[i]); ++i) {
 				serialized = rule.serialize(routeId, kwArgs);
 				if (serialized) {
 					return serialized;
@@ -49,26 +63,26 @@ class Router extends Observable {
 	destroy() {
 		super.destroy();
 
-		var currentRoute = this.get('currentRoute');
+		var currentRoute = this.currentRoute;
 		if (currentRoute) {
 			currentRoute.destroy();
 		}
 	}
 
-	go(routeId:string, kwArgs?:{}):Promise<void> {
-		return this._goToRoute({
-			routeId: routeId,
-			kwArgs: kwArgs
+	go(routeId: string, kwArgs?: {}): Promise<void> {
+		return this.goToRoute({
+			routeId,
+			kwArgs
 		});
 	}
 
-	protected _goToRoute(routeInfo:Router.RouteInfo) {
+	protected goToRoute(routeInfo: Router.RouteInfo) {
 		var self = this;
-		var oldRoute:Router.Route = this.get('currentRoute');
+		var oldRoute = this.currentRoute;
 
-		this._routeInProgress && this._routeInProgress.cancel();
+		this.routeInProgress && this.routeInProgress.cancel();
 		var promise = this
-			._loadRoute(routeInfo.routeId)
+			.loadRoute(routeInfo.routeId)
 			.then(function (newRoute) {
 				if (newRoute === oldRoute) {
 					return newRoute.update && newRoute.update(routeInfo.kwArgs);
@@ -82,52 +96,48 @@ class Router extends Observable {
 						return oldRoute && oldRoute.exit && oldRoute.exit(routeInfo.kwArgs);
 					})
 					.then(function () {
-						self.set('currentRoute', null);
+						self.currentRoute = null;
 						return newRoute.enter(routeInfo.kwArgs);
 					})
 					.then(function () {
-						self._routeInProgress = null;
-						self.set('currentRoute', newRoute);
+						self.routeInProgress = null;
+						self.currentRoute = newRoute;
 					});
 			})
 			.catch(function (error) {
-				self._routeInProgress = null;
+				self.routeInProgress = null;
 				if (error.name !== 'CancelError') {
 					throw error;
 				}
 			});
 
-		this._routeInProgress = promise;
+		this.routeInProgress = promise;
 		return promise;
 	}
 
-	protected _handleRequest(request:Request):Promise<void> {
+	protected handleRequest(request: Request): Promise<void> {
 		var self = this;
 
-		// Wrapped in a promise for automatic rejection if _parseRequest throws
+		// Wrapped in a promise for automatic rejection if parseRequest throws
 		return new Promise<void>(function (resolve) {
-			var routeInfo:Router.RouteInfo = self._parseRequest(request);
-			resolve(self._goToRoute(routeInfo));
+			var routeInfo = self.parseRequest(request);
+			resolve(self.goToRoute(routeInfo));
 		});
 	}
 
-	_initialize() {
-		super._initialize();
-		this._rules = [ new UrlRule() ];
-	}
-
-	protected _loadRoute(routeId:string):Promise<Router.Route> {
+	protected loadRoute(routeId: string): Promise<Router.Route> {
 		var self = this;
-		var routes:HashMap<any> = this.get('routes');
-		var route:any = routes[routeId];
+		var routes = this.routes;
+		var route: string | Router.Route = routes[routeId];
+
 		if (!route) {
 			throw new Error('Invalid route ID "' + routeId + '"');
 		}
 
 		if (typeof route === 'string') {
-			return util.getModule(route).then(function (Ctor:{ new (...args:any[]):Router.Route; }) {
+			return getModule(route).then(function (Ctor: { new (...args: any[]): Router.Route; }) {
 				routes[routeId] = new Ctor({
-					app: self.get('app')
+					app: self.app
 				});
 				return routes[routeId];
 			});
@@ -136,11 +146,11 @@ class Router extends Observable {
 		return Promise.resolve(route);
 	}
 
-	protected _parseRequest(request:Request):Router.RouteInfo {
-		var rules:UrlRule[] = this.get('rules');
-		var routeInfo:Router.RouteInfo;
+	protected parseRequest(request: Request): Router.RouteInfo {
+		var rules = <UrlRule[]> this.rules;
+		var routeInfo: Router.RouteInfo;
 
-		for (var i = 0, rule:UrlRule; (rule = rules[i]); ++i) {
+		for (var i = 0, rule: UrlRule; (rule = rules[i]); ++i) {
 			routeInfo = rule.parse(request);
 			if (routeInfo) {
 				return routeInfo;
@@ -152,37 +162,24 @@ class Router extends Observable {
 }
 
 module Router {
-	export interface Getters extends Observable.Getters {
-		(key:'app'):Application;
-		(key:'currentRoute'):Route;
-		(key:'defaultRoute'):RouteInfo;
-		(key:'routes'):HashMap<any>;
-		(key:'rules'):UrlRule[];
+	export interface KwArgs extends Base.KwArgs {
+		defaultRoute?: typeof Router.prototype.defaultRoute;
+		routes?: typeof Router.prototype.routes;
+		rules?: typeof Router.prototype.rules;
 	}
 
 	export interface RouteInfo {
-		routeId:string;
-		kwArgs?:{};
+		routeId: string;
+		kwArgs?: {};
 	}
 
 	export interface Route {
-		beforeEnter?(kwArgs:{}):Promise<void>;
-		beforeEnter?(kwArgs:{}):void;
-		beforeExit?(kwArgs:{}):Promise<void>;
-		beforeExit?(kwArgs:{}):void;
-		destroy():void;
-		enter(kwArgs:{}):Promise<void>;
-		enter(kwArgs:{}):void;
-		exit?(kwArgs:{}):Promise<void>;
-		exit?(kwArgs:{}):void;
-		update?(kwArgs:{}):Promise<void>;
-		update?(kwArgs:{}):void;
-	}
-
-	export interface Setters extends Observable.Setters {
-		(key:'defaultRoute', value:RouteInfo):void;
-		(key:'routes', value:HashMap<any>):void;
-		(key:'rules', value:UrlRule[]):void;
+		beforeEnter?(kwArgs: {}): Promise<void> | void;
+		beforeExit?(kwArgs: {}): Promise<void> | void;
+		destroy(): void;
+		enter(kwArgs: {}): Promise<void> | void;
+		exit?(kwArgs: {}): Promise<void> | void;
+		update?(kwArgs: {}): Promise<void> | void;
 	}
 }
 
