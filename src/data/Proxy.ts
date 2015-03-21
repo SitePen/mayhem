@@ -66,21 +66,23 @@ class Proxy<T> extends Base {
 			};
 
 			[ 'fetch', 'fetchRange' ].forEach(function (method) {
-				wrapperCollection[method] = function () {
-					var promise = (<any> collection)[method].apply(collection, arguments);
+				if ((<any> collection)[method]) {
+					wrapperCollection[method] = function () {
+						var promise = (<any> collection)[method].apply(collection, arguments);
 
-					var proxiedPromise = promise.then(function (items: T[]) {
-						return items.map(createProxy);
-					});
-					// TODO: Remove thawing code in 0.4, it is not necessary there
-					if (Object.isFrozen(proxiedPromise)) {
-						proxiedPromise = Object.create(proxiedPromise);
-					}
-					if ('totalLength' in promise) {
-						proxiedPromise.totalLength = promise.totalLength;
-					}
-					return proxiedPromise;
-				};
+						var proxiedPromise = promise.then(function (items: T[]) {
+							return items.map(createProxy);
+						});
+						// TODO: Remove thawing code in 0.4, it is not necessary there
+						if (Object.isFrozen(proxiedPromise)) {
+							proxiedPromise = Object.create(proxiedPromise);
+						}
+						if ('totalLength' in promise) {
+							proxiedPromise.totalLength = promise.totalLength;
+						}
+						return proxiedPromise;
+					};
+				}
 			});
 
 			[ 'fetchSync', 'fetchRangeSync' ].forEach(function (method) {
