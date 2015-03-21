@@ -68,7 +68,7 @@ class HashRouter extends Router {
 			self.oldHash = newHash;
 		}, function (error: Error) {
 			self.oldHash && hash(self.oldHash, true);
-			self.get('app').handleError(error);
+			self.app.handleError(error);
 		});
 	}
 
@@ -83,7 +83,7 @@ class HashRouter extends Router {
 
 	run(): void {
 		var self = this;
-		this.get('app').run().then(function () {
+		this.app.run().then(function () {
 			self.listen();
 			self.handleHashChange(hash());
 		});
