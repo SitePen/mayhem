@@ -9,6 +9,18 @@ import SingleNodeWidget = require('mayhem/ui/dom/SingleNodeWidget');
 import WebApplication = require('../../../support/MockWebApplication');
 import Widget = require('mayhem/ui/dom/Widget');
 
+function createTestPointFunction(master:DomMaster) {
+	return function (x:number, y:number, child:Widget, message:string) {
+		try {
+			assert.strictEqual(domUtil.findWidgetAt(master, x, y), child, message);
+		}
+		catch (error) {
+			showFailurePoint(x, y);
+			throw error;
+		}
+	};
+}
+
 function showFailurePoint(x:number, y:number) {
 	var parentNode = document.createElement('div');
 	var s = parentNode.style;
@@ -153,15 +165,7 @@ registerSuite({
 
 		master.set('view', container);
 
-		function testPoint(x:number, y:number, child:Widget, message:string) {
-			try {
-				assert.strictEqual(domUtil.findWidgetAt(master, x, y), child, message);
-			}
-			catch (error) {
-				showFailurePoint(x, y);
-				throw error;
-			}
-		}
+		var testPoint = createTestPointFunction(master);
 
 		testPoint(5, 5, childA, 'Child A');
 		testPoint(5, 20, childB, 'Child B');
@@ -173,6 +177,24 @@ registerSuite({
 		testPoint(50, 65, childG, 'Child G');
 		testPoint(65, 65, childF, 'Child F post G');
 		testPoint(35, 95, childI, 'Child I');
-		testPoint(500, 500, null, 'None of our children');
+		testPoint(65, 5, container, 'Container');
+		testPoint(500, 5, null, 'None of our children');
+	},
+
+	'SingleNodeWidget as Master UI view'() {
+		if (!has('host-browser')) {
+			this.skip('DOM-only test');
+		}
+
+		var master = <DomMaster> app.get('ui');
+		var view = new SNW({ app });
+
+		master.set('view', view);
+
+		var testPoint = createTestPointFunction(master);
+
+		rootNode.style.paddingRight = '30px';
+		testPoint(5, 5, view, 'Inside view');
+		testPoint(45, 5, null, 'Outside view but inside root node');
 	}
 });

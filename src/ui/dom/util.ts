@@ -314,7 +314,13 @@ export function findNearestParent(master:Master, searchNode:Node):Widget {
 	// node *is* the master view. without checking the coordinates, it is impossible to know, so return the root view
 	// and let the next step decide
 	if (node === root) {
-		return <any> master.get('view');
+		var masterView = <Widget> master.get('view');
+		if (masterView.get('firstNode').nodeType === Node.COMMENT_NODE) {
+			return masterView;
+		}
+		else {
+			return null;
+		}
 	}
 
 	// TS7017
