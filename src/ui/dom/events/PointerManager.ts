@@ -334,11 +334,6 @@ class PointerManager {
 						return;
 					}
 
-					// Since we are listening on capture phase we need to discard child events that do not belong to us
-					if (event.type === 'mouseenter' && event.target !== root) {
-						return;
-					}
-
 					if (!has('dom-mouse-buttons')) {
 						if (event.type === 'mousedown') {
 							isButtonPressed = true;
@@ -351,6 +346,11 @@ class PointerManager {
 					var pointer:PointerManager.Pointer = pointers[NaN];
 					if (!pointer) {
 						pointer = pointers[NaN] = <any> { lastChanged: [], lastState: {} };
+					}
+
+					// If the pointer is already active it should never be activated again
+					if (event.type === 'mouseenter' && pointer.isActive) {
+						return;
 					}
 
 					if (!pointer.isActive) {

@@ -24,11 +24,27 @@ var CANCELABLE:HashMap<boolean> = {
 	pointerup: true
 };
 
+function contains(maybeParent:Widget, child:Widget) {
+	if (!maybeParent || !child) {
+		return false;
+	}
+
+	var parent:Widget = child;
+	do {
+		if (parent === maybeParent) {
+			return true;
+		}
+	} while ((parent = parent.get('parent')));
+
+	return false;
+}
+
 class EventManager {
 	private _handles:IHandle[];
 	private _master:Master;
 	private _keyboardManager:KeyboardManager;
 	private _pointerManager:PointerManager;
+	private _targets:HashMap<Widget>;
 
 	constructor(master:Master) {
 		this._master = master;
@@ -44,12 +60,14 @@ class EventManager {
 			this._keyboardManager.on('repeat', lang.hitch(this, '_emitKeyboardEvent', 'keyrepeat')),
 			this._keyboardManager.on('up', lang.hitch(this, '_emitKeyboardEvent', 'keyup'))
 		];
+		this._targets = {};
 	}
 
 	destroy() {
 		this.destroy = function () {};
 		this._pointerManager.destroy();
 		this._keyboardManager.destroy();
+		this._targets = null;
 	}
 
 	private _emitKeyboardEvent(type:string, keyInfo:KeyboardManager.KeyInfo):boolean {
@@ -88,11 +106,7 @@ class EventManager {
 		return !event.currentTarget.emit(event);
 	}
 
-	private _emitPointerEvent(type:string, pointer:PointerManager.Pointer, target?:Widget, relatedTarget?:Widget):boolean {
-		if (!target) {
-			target = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
-		}
-
+	private _emitPointerEvent(type:string, pointer:PointerManager.Pointer, target:Widget, relatedTarget?:Widget):boolean {
 		var event:ui.PointerEvent = <any> new Event({
 			bubbles: BUBBLES[type],
 			button: pointer.lastState.buttons ^ pointer.buttons,
@@ -119,16 +133,37 @@ class EventManager {
 		return !event.currentTarget.emit(event);
 	}
 
-	private _handlePointerAdd(pointer:PointerManager.Pointer):boolean {
-		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY);
+	private _emitEnter(pointer:PointerManager.Pointer, target:Widget, relatedTarget?:Widget):void {
+		// Collect targets first so they are dispatched from parent to child
+		var targets:Widget[] = [];
 
-		if (!target) {
-			target = this._master;
+		do {
+			targets.unshift(target);
 		}
+		// if target becomes relatedTarget then do not dispatch enter because the pointer already entered it once before
+		// and is still inside
+		while ((target = target.get('parent')) && relatedTarget !== target);
+
+		while ((target = targets.pop())) {
+			this._emitPointerEvent('pointerenter', pointer, target, relatedTarget);
+		}
+	}
+
+	private _emitLeave(pointer:PointerManager.Pointer, target:Widget, relatedTarget?:Widget):void {
+		do {
+			this._emitPointerEvent('pointerleave', pointer, target, relatedTarget);
+		}
+		// if target contains relatedTarget, this pointer change was a move from one of its children to another
+		// child, so do not dispatch any more leave events because the pointer is still inside the target
+		while ((target = target.get('parent')) && !contains(target, relatedTarget));
+	}
+
+	private _handlePointerAdd(pointer:PointerManager.Pointer):boolean {
+		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY) || this._master;
 
 		var shouldCancel:boolean = this._emitPointerEvent('pointerover', pointer, target);
 
-		this._emitPointerEvent('pointerenter', pointer, target);
+		this._emitEnter(pointer, target);
 
 		if (pointer.pointerType === 'touch') {
 			if (this._emitPointerEvent('pointerdown', pointer, target)) {
@@ -136,15 +171,13 @@ class EventManager {
 			}
 		}
 
+		this._targets[pointer.pointerId] = target;
+
 		return shouldCancel;
 	}
 
 	private _handlePointerCancel(pointer:PointerManager.Pointer):boolean {
-		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY);
-
-		if (!target) {
-			target = this._master;
-		}
+		var target:Widget = this._targets[pointer.pointerId] || this._master;
 
 		var shouldCancel:boolean = this._emitPointerEvent('pointercancel', pointer, target);
 
@@ -152,27 +185,12 @@ class EventManager {
 			shouldCancel = true;
 		}
 
-		this._emitPointerEvent('pointerleave', pointer, target);
+		this._emitLeave(pointer, target);
 
 		return shouldCancel;
 	}
 
 	private _handlePointerChange(pointer:PointerManager.Pointer):boolean {
-		function contains(maybeParent:Widget, child:Widget) {
-			if (!maybeParent || !child) {
-				return false;
-			}
-
-			var parent:Widget = child;
-			do {
-				if (parent === maybeParent) {
-					return true;
-				}
-			} while ((parent = parent.get('parent')));
-
-			return false;
-		}
-
 		var target:Widget = domUtil.findWidgetAt(this._master, pointer.clientX, pointer.clientY) || this._master;
 		var previousTarget:Widget;
 		var changes:PointerManager.Changes = pointer.lastChanged;
@@ -185,29 +203,30 @@ class EventManager {
 				previousTarget = null;
 			}
 			else {
-				previousTarget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY)
-					|| this._master;
+				previousTarget = this._targets[pointer.pointerId] || this._master;
 			}
 		}
 
-		if (hasMoved && !contains(previousTarget, target) && previousTarget) {
+		// use contains because pointerout events should not fire when a parent is exited to its child
+		if (hasMoved && previousTarget && !contains(previousTarget, target)) {
 			if (this._emitPointerEvent('pointerout', pointer, previousTarget, target)) {
 				shouldCancel = true;
 			}
 
-			this._emitPointerEvent('pointerleave', pointer, previousTarget, target);
+			this._emitLeave(pointer, previousTarget, target);
 		}
 
 		if (this._emitPointerEvent('pointermove', pointer, target)) {
 			shouldCancel = true;
 		}
 
+		// use contains because pointerover events should not fire when a child is exited to its parent
 		if (hasMoved && !contains(target, previousTarget)) {
 			if (this._emitPointerEvent('pointerover', pointer, target, previousTarget)) {
 				shouldCancel = true;
 			}
 
-			this._emitPointerEvent('pointerenter', pointer, target, previousTarget);
+			this._emitEnter(pointer, target, previousTarget);
 		}
 
 		if (changes.buttons) {
@@ -223,12 +242,13 @@ class EventManager {
 			}
 		}
 
+		this._targets[pointer.pointerId] = target;
+
 		return shouldCancel;
 	}
 
 	private _handlePointerRemove(pointer:PointerManager.Pointer):boolean {
-		var target:Widget = domUtil.findWidgetAt(this._master, pointer.lastState.clientX, pointer.lastState.clientY)
-			|| this._master;
+		var target:Widget = this._targets[pointer.pointerId] || this._master;
 
 		var shouldCancel:boolean = false;
 
@@ -240,7 +260,8 @@ class EventManager {
 			shouldCancel = true;
 		}
 
-		this._emitPointerEvent('pointerleave', pointer, target);
+		this._emitLeave(pointer, target);
+		this._targets[pointer.pointerId] = undefined;
 
 		return shouldCancel;
 	}
