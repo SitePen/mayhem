@@ -55,7 +55,7 @@ class DijitWidget extends SingleNodeWidget {
 		return this._isFocused;
 	}
 	_isFocusedSetter(value:boolean):void {
-		value && this._widget.domNode.focus();
+		value && (this._widget.focusNode || this._widget.domNode).focus();
 		this._isFocused = value;
 	}
 
