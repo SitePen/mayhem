@@ -457,4 +457,4 @@ module Model {
 	}
 }
 
-export = Model;
+export default Model;

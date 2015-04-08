@@ -173,7 +173,7 @@ declare module 'dstore/Rest' {
 }
 
 declare module 'dstore/Store' {
-	import decl from 'dojo/_base/declare';
+	import decl = require('dojo/_base/declare');
 	class Store<T> extends decl.Base implements dstore.ICollection<T> {
 		idProperty: string;
 		Model: { new (...args: any[]): T; };

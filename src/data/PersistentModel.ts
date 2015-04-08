@@ -118,4 +118,4 @@ module PersistentModel {
 	}
 }
 
-export = PersistentModel;
+export default PersistentModel;

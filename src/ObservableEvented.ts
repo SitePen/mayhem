@@ -1,4 +1,4 @@
-import core = require('./interfaces');
+import * as core from './interfaces';
 import Evented = require('dojo/Evented');
 import Observable = require('./Observable');
 
@@ -48,4 +48,4 @@ module ObservableEvented {
 	export interface Setters extends Observable.Setters {}
 }
 
-export = ObservableEvented;
+export default ObservableEvented;

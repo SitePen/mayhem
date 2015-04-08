@@ -1,6 +1,6 @@
 import Application from './Application';
 import { deepCreate } from './util';
-import Master from './ui/Master';
+import Master = require('./ui/Master');
 import Router from './routing/Router';
 
 /**
@@ -55,4 +55,4 @@ class WebApplication extends Application {
 	ui: Master;
 }
 
-export = WebApplication;
+export default WebApplication;

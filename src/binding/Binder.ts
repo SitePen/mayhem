@@ -244,7 +244,7 @@ class Binder implements binding.IBinder {
 		var constructors = this.constructors;
 
 		function loadConstructor(index: number, moduleId: string) {
-			return getModule(moduleId).then(function (Binding: binding.IBindingConstructor) {
+			return getModule(moduleId, true).then(function (Binding: binding.IBindingConstructor) {
 				constructors.splice(index, 1, Binding);
 			});
 		}
@@ -309,4 +309,4 @@ module Binder {
 	}
 }
 
-export = Binder;
+export default Binder;

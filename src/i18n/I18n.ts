@@ -1,10 +1,10 @@
 import Base from '../Base';
-import currencyFormatter from 'dojo/currency';
-import dateFormatter from 'dojo/date/locale';
+import * as currencyFormatter from 'dojo/currency';
+import dateFormatter = require('dojo/date/locale');
 import { getModule, getModules } from '../util';
 import has from '../has';
 import IntlMessageFormat from './IntlMessageFormat';
-import numberFormatter from 'dojo/number';
+import numberFormatter = require('dojo/number');
 import Promise from '../Promise';
 
 type MessageFunction = (kwArgs: {}) => string;
@@ -211,4 +211,4 @@ module I18n {
 	export type Dictionary = HashMap<(values: {}) => string>;
 }
 
-export = I18n;
+export default I18n;

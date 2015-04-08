@@ -146,4 +146,4 @@ class Es5Binding<T> extends Binding<T> {
 	}
 }
 
-export = Es5Binding;
+export default Es5Binding;

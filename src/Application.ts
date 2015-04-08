@@ -233,7 +233,7 @@ class Application extends Base {
 					var ctor: Constructor = components[key].constructor;
 
 					if (typeof ctor === 'string') {
-						getModule(ctor).then(resolve, reject);
+						getModule(ctor, true).then(resolve, reject);
 					}
 					else if (typeof ctor === 'function') {
 						resolve(ctor);
@@ -289,4 +289,4 @@ module Application {
 	}
 }
 
-export = Application;
+export default Application;

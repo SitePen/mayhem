@@ -1,6 +1,6 @@
-import binding = require('./binding/interfaces');
-import ObservableEvented = require('./ObservableEvented');
-import Promise = require('./Promise');
+import * as binding from './binding/interfaces';
+import ObservableEvented from './ObservableEvented';
+import Promise from './Promise';
 
 export interface IApplication extends ObservableEvented {
 	get:IApplication.Getters;

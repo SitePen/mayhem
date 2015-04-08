@@ -46,4 +46,4 @@ class Event implements core.IEvent {
 	}
 }
 
-export = Event;
+export default Event;

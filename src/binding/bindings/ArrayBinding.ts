@@ -80,4 +80,4 @@ class ArrayBinding<T> extends Binding<T> {
 	}
 }
 
-export = ArrayBinding;
+export default ArrayBinding;

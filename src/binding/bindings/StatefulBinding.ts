@@ -1,6 +1,6 @@
 import * as binding from '../interfaces';
 import Binding from '../Binding';
-import Stateful from 'dojo/Stateful';
+import Stateful = require('dojo/Stateful');
 import { isEqual } from '../../util';
 
 /**
@@ -70,4 +70,4 @@ class StatefulBinding<T> extends Binding<T> {
 	}
 }
 
-export = StatefulBinding;
+export default StatefulBinding;

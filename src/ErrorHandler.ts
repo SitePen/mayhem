@@ -9,7 +9,7 @@ import Base from './Base';
 import { createHandle } from './util';
 import has from './has';
 import { hitch } from 'dojo/_base/lang';
-import View from './ui/View';
+import * as View from './ui/View';
 import WebApplication from './WebApplication';
 
 interface ErrorWithStack extends Error {
@@ -87,4 +87,4 @@ class ErrorHandler extends Base {
 	}
 }
 
-export = ErrorHandler;
+export default ErrorHandler;

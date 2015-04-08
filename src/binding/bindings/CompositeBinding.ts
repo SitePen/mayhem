@@ -87,4 +87,4 @@ class CompositeBinding extends Binding<string> {
 	}
 }
 
-export = CompositeBinding;
+export default CompositeBinding;

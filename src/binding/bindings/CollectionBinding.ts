@@ -1,6 +1,6 @@
-import Binding = require('../Binding');
-import binding = require('../interfaces');
-import util = require('../../util');
+import Binding from '../Binding';
+import * as binding from '../interfaces';
+import { createCompositeHandle } from '../../util';
 
 class CollectionBinding<T> extends Binding<T> {
 	static test(kwArgs: binding.IBindingArguments): boolean {
@@ -27,7 +27,7 @@ class CollectionBinding<T> extends Binding<T> {
 		// TODO: Hack(?) to make indexes show up
 		collection.fetchRange({ start: 0, length: 0 });
 
-		this._handle = util.createCompositeHandle(
+		this._handle = createCompositeHandle(
 			collection.on('add', function (event: dstore.ChangeEvent<T>) {
 				// undefined index means that the add event doesn't match our filtered collection
 				if (event.index !== undefined) {
@@ -67,4 +67,4 @@ class CollectionBinding<T> extends Binding<T> {
 	}
 }
 
-export = CollectionBinding;
+export default CollectionBinding;

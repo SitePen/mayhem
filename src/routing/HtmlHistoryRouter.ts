@@ -1,5 +1,5 @@
 import { createCompositeHandle } from '../util';
-import DomMaster from '../ui/dom/Master';
+import * as DomMaster from '../ui/dom/Master';
 import { on } from '../ui/dom/util';
 import { queryToObject } from 'dojo/io-query';
 import Request from './Request';
@@ -117,4 +117,4 @@ class HtmlHistoryRouter extends Router {
 	}
 }
 
-export = HtmlHistoryRouter;
+export default HtmlHistoryRouter;

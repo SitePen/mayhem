@@ -7,4 +7,4 @@ class ConsoleLogger {
 	}
 }
 
-export = ConsoleLogger;
+export default ConsoleLogger;

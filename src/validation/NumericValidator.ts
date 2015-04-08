@@ -1,6 +1,6 @@
-import data = require('../data/interfaces');
-import ValidationError = require('./ValidationError');
-import Validator = require('./Validator');
+import * as data from '../data/interfaces';
+import ValidationError from './ValidationError';
+import Validator from './Validator';
 
 // TODO
 var i18n = {
@@ -14,9 +14,9 @@ var i18n = {
  * Ensures that the value is a valid number.
  */
 class NumericValidator extends Validator {
-	options:NumericValidator.IOptions;
+	options: NumericValidator.Options;
 
-	validate(model:data.IModel, key:string, value:any):void {
+	validate(model: data.IModel, key: string, value: any): void {
 		var options = this.options;
 
 		value = Number(value);
@@ -41,22 +41,22 @@ class NumericValidator extends Validator {
 }
 
 module NumericValidator {
-	export interface IOptions extends Validator.IOptions {
+	export interface Options extends Validator.Options {
 		/**
 		 * If provided, the value must be greater or equal to this number.
 		 */
-		min?:number;
+		min?: number;
 
 		/**
 		 * If provided, the value must be smaller or equal to this number.
 		 */
-		max?:number;
+		max?: number;
 
 		/**
 		 * If `true`, the value must be an integer.
 		 */
-		integerOnly?:boolean;
+		integerOnly?: boolean;
 	}
 }
 
-export = NumericValidator;
+export default NumericValidator;

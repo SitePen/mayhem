@@ -1,6 +1,6 @@
 import * as binding from '../interfaces';
 import ObjectTargetBinding from './ObjectTargetBinding';
-import on from 'dojo/on';
+import on = require('dojo/on');
 
 /**
  * Enables reactive binding to DOM input elements.
@@ -61,4 +61,4 @@ class DomInputBinding<T> extends ObjectTargetBinding<T> {
 	}
 }
 
-export = DomInputBinding;
+export default DomInputBinding;

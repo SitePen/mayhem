@@ -42,4 +42,4 @@ class Binding<T> implements binding.IBinding<T> {
 	}
 }
 
-export = Binding;
+export default Binding;

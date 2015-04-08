@@ -1,7 +1,7 @@
-import core = require('../interfaces');
-import Promise = require('../Promise');
-import ValidationError = require('../validation/ValidationError');
-import Validator = require('../validation/Validator');
+import * as core from '../interfaces';
+import Promise from '../Promise';
+import ValidationError from '../validation/ValidationError';
+import Validator from '../validation/Validator';
 
 export interface IModel extends core.IObservable {
 	/**

@@ -1,7 +1,7 @@
 import arrayUtil = require('dojo/_base/array');
-import core = require('./interfaces');
-import has = require('./has');
-import util = require('./util');
+import * as core from './interfaces';
+import has from './has';
+import * as util from './util';
 
 /**
  * The Observable class is a base object class that provides the ability to use computed properties and observe

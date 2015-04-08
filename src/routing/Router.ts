@@ -135,7 +135,7 @@ class Router extends Base {
 		}
 
 		if (typeof route === 'string') {
-			return getModule(route).then(function (Ctor: { new (...args: any[]): Router.Route; }) {
+			return getModule(route, true).then(function (Ctor: { new (...args: any[]): Router.Route; }) {
 				routes[routeId] = new Ctor({
 					app: self.app
 				});
@@ -183,4 +183,4 @@ module Router {
 	}
 }
 
-export = Router;
+export default Router;

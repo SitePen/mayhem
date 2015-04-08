@@ -56,4 +56,4 @@ module Request {
 	}
 }
 
-export = Request;
+export default Request;

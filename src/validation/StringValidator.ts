@@ -1,6 +1,6 @@
-import data = require('../data/interfaces');
-import ValidationError = require('./ValidationError');
-import Validator = require('./Validator');
+import * as data from '../data/interfaces';
+import ValidationError from './ValidationError';
+import Validator from './Validator';
 
 // TODO
 var i18n = {
@@ -13,9 +13,9 @@ var i18n = {
  * A validator that ensure that a valid is a valid string.
  */
 class StringValidator extends Validator {
-	options:StringValidator.IOptions;
+	options: StringValidator.Options;
 
-	validate(model:data.IModel, key:string, value:any):void {
+	validate(model: data.IModel, key: string, value: any): void {
 		var options = this.options;
 
 		value = String(value);
@@ -35,28 +35,28 @@ class StringValidator extends Validator {
 }
 
 module StringValidator {
-	export interface IOptions extends Validator.IOptions {
+	export interface Options extends Validator.Options {
 		/**
 		 * If provided, the value must be at least this many characters long.
 		 */
-		minLength?:number;
+		minLength?: number;
 
 		/**
 		 * If provided, the value must be no more than this many characters long.
 		 */
-		maxLength?:number;
+		maxLength?: number;
 
 		/**
 		 * If provided, the value must match this regular expression.
 		 */
-		regExp?:RegExp;
+		regExp?: RegExp;
 
 		/**
 		 * If provided, this will be used in place of the normal regular expression failure message so a more
 		 * human-friendly error can be used.
 		 */
-		regExpFailureMessage?:string;
+		regExpFailureMessage?: string;
 	}
 }
 
-export = StringValidator;
+export default StringValidator;

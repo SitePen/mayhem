@@ -129,4 +129,4 @@ class NestedBinding<T> extends Binding<T> {
 	}
 }
 
-export = NestedBinding;
+export default NestedBinding;

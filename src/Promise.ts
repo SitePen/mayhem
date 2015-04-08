@@ -525,4 +525,4 @@ module Promise {
 	}
 }
 
-export = Promise;
+export default Promise;

@@ -1,4 +1,3 @@
-
 class PathRegExp {
 	static escape(string: string): string {
 		return string.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
@@ -289,4 +288,4 @@ module PathRegExp {
 	}
 }
 
-export = PathRegExp;
+export default PathRegExp;

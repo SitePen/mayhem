@@ -1,7 +1,6 @@
 import * as binding from '../interfaces';
 import Binding from '../Binding';
-import esprima from 'esprima';
-import es = esprima.Syntax;
+import { Syntax as es } from 'esprima';
 import { isObject } from '../../util';
 
 // TODO: Move to templating?
@@ -186,4 +185,4 @@ class ObjectMethodBinding<T> extends Binding<T> {
 	}
 }
 
-export = ObjectMethodBinding;
+export default ObjectMethodBinding;

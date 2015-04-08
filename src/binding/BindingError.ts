@@ -1,5 +1,5 @@
 import * as binding from './interfaces';
-import createError from 'dojo/errors/create';
+import createError = require('dojo/errors/create');
 import { replace } from 'dojo/_base/lang';
 
 interface BindingError extends Error {
@@ -22,4 +22,4 @@ function Ctor(message: string, kwArgs: binding.IBindingArguments) {
 
 BindingError = createError('BindingError', Ctor, Error, {});
 
-export = BindingError;
+export default BindingError;

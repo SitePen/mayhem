@@ -220,9 +220,10 @@ export function escapeXml(text: string, forAttribute: boolean = true): string {
 	return text;
 }
 
-export function getModule<T>(moduleId: string): Promise<T> {
+export function getModule<T>(moduleId: string, returnDefault: boolean = false): Promise<T> {
 	return getModules([ moduleId ]).then(function (modules: T[]): T {
-		return modules[0];
+		var value = modules[0];
+		return returnDefault && value && 'default' in value ? (<any> value).default : value;
 	});
 }
 

@@ -15,7 +15,7 @@
     "esprima": "1.2.2"
   },
   "devDependencies": {
-    "dts-generator": "SitePen/dts-generator#1.2.0",
+    "dts-generator": "1.3.0",
     "globule": "0.2.0",
     "grunt": "0.4.5",
     "grunt-contrib-clean": "0.5.0",
@@ -24,6 +24,6 @@
     "grunt-peg": "1.5.0",
     "grunt-ts": "3.0.0",
     "intern-geezer": "2.2.2",
-    "typescript": "Arnavion/typescript-github#2015-03-18-3e7e9f43ca9b508b33752f747c82da7cad0353e3"
+    "typescript": "1.5.0-alpha"
   }
 }

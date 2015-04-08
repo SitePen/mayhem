@@ -220,4 +220,4 @@ module Proxy {
 	}
 }
 
-export = Proxy;
+export default Proxy;

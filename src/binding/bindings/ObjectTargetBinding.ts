@@ -49,4 +49,4 @@ class ObjectTargetBinding<T> extends Binding<T> {
 	}
 }
 
-export = ObjectTargetBinding;
+export default ObjectTargetBinding;

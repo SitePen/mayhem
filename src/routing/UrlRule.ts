@@ -248,4 +248,4 @@ module UrlRule {
 	}
 }
 
-export = UrlRule;
+export default UrlRule;

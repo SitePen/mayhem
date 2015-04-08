@@ -1,4 +1,4 @@
-import has from 'dojo/has';
+import has = require('dojo/has');
 
 has.add('debug', true);
 
@@ -63,4 +63,4 @@ if (has('dom')) {
 	});
 }
 
-export = has;
+export default has;

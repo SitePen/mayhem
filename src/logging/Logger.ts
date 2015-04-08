@@ -4,4 +4,4 @@ interface Logger {
 	log(message: string, level?: LogLevel, category?: string ): void;
 }
 
-export = Logger;
+export default Logger;

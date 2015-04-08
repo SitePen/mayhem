@@ -93,4 +93,4 @@ class User extends Base {
 	}
 }
 
-export = User;
+export default User;

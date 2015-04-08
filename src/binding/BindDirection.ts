@@ -14,4 +14,4 @@ enum DataBindingDirection {
 	TWO_WAY = 2
 }
 
-export = DataBindingDirection;
+export default DataBindingDirection;

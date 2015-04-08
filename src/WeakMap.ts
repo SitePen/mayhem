@@ -41,4 +41,4 @@ else {
 	Ctor = <any> FakeWeakMap;
 }
 
-export = Ctor;
+export default Ctor;

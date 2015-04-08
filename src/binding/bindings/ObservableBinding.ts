@@ -1,6 +1,6 @@
-import binding = require('../interfaces');
-import Binding = require('../Binding');
-import core = require('../../interfaces');
+import * as binding from '../interfaces';
+import Binding from '../Binding';
+import * as core from '../../interfaces';
 
 // TODO: Deprecated; remove
 
@@ -62,4 +62,4 @@ class ObservableBinding<T> extends Binding<T> {
 	}
 }
 
-export = ObservableBinding;
+export default ObservableBinding;

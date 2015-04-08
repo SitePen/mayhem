@@ -6,4 +6,4 @@ enum LogLevel {
 	DEBUG
 }
 
-export = LogLevel;
+export default LogLevel;

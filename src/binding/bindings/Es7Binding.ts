@@ -69,4 +69,4 @@ class Es7Binding<T> extends Binding<T> {
 	}
 }
 
-export = Es7Binding;
+export default Es7Binding;

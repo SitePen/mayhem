@@ -1,10 +1,10 @@
-import hash from 'dojo/hash';
+import hash = require('dojo/hash');
 import { hitch } from 'dojo/_base/lang';
 import { queryToObject } from 'dojo/io-query';
 import Promise from '../Promise';
 import Request from './Request';
 import Router from './Router';
-import * as topic from 'dojo/topic';
+import topic = require('dojo/topic');
 
 class HashRouter extends Router {
 	protected hashListenerHandle: IHandle;
@@ -96,4 +96,4 @@ module HashRouter {
 	}
 }
 
-export = HashRouter;
+export default HashRouter;

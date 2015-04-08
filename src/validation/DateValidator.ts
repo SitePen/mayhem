@@ -1,7 +1,7 @@
-import data = require('../data/interfaces');
+import * as data from '../data/interfaces';
 import locale = require('dojo/date/locale');
-import ValidationError = require('./ValidationError');
-import Validator = require('./Validator');
+import ValidationError from './ValidationError';
+import Validator from './Validator';
 
 // TODO
 var i18n = {
@@ -14,9 +14,9 @@ var i18n = {
  * Ensures that the value is a valid date.
  */
 class DateValidator extends Validator {
-	options:DateValidator.IOptions;
+	options: DateValidator.Options;
 
-	validate(model:data.IModel, key:string, value:any):void {
+	validate(model: data.IModel, key: string, value: any): void {
 		var options = this.options;
 
 		if (!(value instanceof Date)) {
@@ -42,17 +42,17 @@ class DateValidator extends Validator {
 }
 
 module DateValidator {
-	export interface IOptions extends Validator.IOptions {
+	export interface Options extends Validator.Options {
 		/**
 		 * If provided, the value must be on or after this Date.
 		 */
-		min?:Date;
+		min?: Date;
 
 		/**
 		 * If provided, the value must be on or before this Date.
 		 */
-		max?:Date;
+		max?: Date;
 	}
 }
 
-export = DateValidator;
+export default DateValidator;

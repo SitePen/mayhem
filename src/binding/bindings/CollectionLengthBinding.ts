@@ -51,4 +51,4 @@ class CollectionLengthBinding extends Binding<number> {
 	}
 }
 
-export = CollectionLengthBinding;
+export default CollectionLengthBinding;

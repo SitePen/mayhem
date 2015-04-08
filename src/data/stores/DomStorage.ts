@@ -1,5 +1,5 @@
-import Memory from 'dstore/Memory';
-import Store from 'dstore/Store';
+import Memory = require('dstore/Memory');
+import Store = require('dstore/Store');
 import { addUnloadCallback, debounce } from '../../util';
 
 interface DomStorage<T> extends Memory<T> {
@@ -96,4 +96,4 @@ module DomStorage {
 	}
 }
 
-export = DomStorage;
+export default DomStorage;
