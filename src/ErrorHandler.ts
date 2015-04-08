@@ -9,7 +9,7 @@ import Base from './Base';
 import { createHandle } from './util';
 import has from './has';
 import { hitch } from 'dojo/_base/lang';
-import * as View from './ui/View';
+import View = require('./ui/View');
 import WebApplication from './WebApplication';
 
 interface ErrorWithStack extends Error {
