@@ -36,12 +36,21 @@ class Proxy<T> extends Observable {
 		function wrapCollection(collection:dstore.ISyncCollection<T>) {
 			var wrapperCollection = Object.create(collection);
 
-			[ 'add', 'addSync', 'put', 'putSync', 'remove', 'removeSync' ].forEach(function (method) {
+			[ 'add', 'addSync', 'put', 'putSync' ].forEach(function (method) {
 				if ((<any> collection)[method]) {
 					wrapperCollection[method] = function (object:Proxy<T>|T):any {
 						// Either the proxy *or* the original object can be passed to any of the setter methods
 						object = models.get(<Proxy<T>> object) || object;
 
+						// TS7017
+						return (<any> collection)[method].apply(collection, arguments);
+					};
+				}
+			});
+
+			[ 'remove', 'removeSync' ].forEach(function (method) {
+				if ((<any> collection)[method]) {
+					wrapperCollection[method] = function (id:any):any {
 						// TS7017
 						return (<any> collection)[method].apply(collection, arguments);
 					};
@@ -55,7 +64,7 @@ class Proxy<T> extends Observable {
 			if (collection.getSync) {
 				wrapperCollection.getSync = function () {
 					return createProxy(collection.getSync.apply(collection, arguments));
-				}
+				};
 			}
 
 			// TODO: Sort and filter should not need to be wrapped, _createSubCollection should be enough?
