@@ -1,5 +1,3 @@
-/// <reference path="./intern" />
-
 import intern = require('intern');
 
 var config:intern.Config = {

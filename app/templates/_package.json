@@ -6,11 +6,11 @@
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "0.6.0",
     "grunt-contrib-watch": "0.6.1",
-    "grunt-ts": "1.12.1",<% if (stylus) { %>
+    "grunt-ts": "3.0.0",<% if (stylus) { %>
     "stylus": "0.49.3",<% if (nib) { %>
     "nib": "1.0.4",<% } %>
     "grunt-contrib-stylus": "0.20.0",<% } %>
-    "intern<% if (oldBrowsers) { %>-geezer<% } %>": "2.1.1",
-    "typescript": "1.3.0"
+    "intern<% if (oldBrowsers) { %>-geezer<% } %>": "2.2.2",
+    "typescript": "1.4.1"
   }
 }

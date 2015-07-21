@@ -17,7 +17,10 @@
     "test": "intern-client config=tests/generator.intern"
   },
   "files": [
-    "app"
+    "app",
+    "common",
+    "model",
+    "tests"
   ],
   "keywords": [
     "yeoman-generator",
@@ -25,6 +28,7 @@
     "mayhem"
   ],
   "dependencies": {
+    "gruntfile-editor": "^1.0.0",
     "yeoman-generator": "^0.17.7"
   },
   "peerDependencies": {

@@ -1,4 +1,4 @@
-/// <reference path="../../../mayhem/dstore" />
+/// <reference path="../../../mayhem/_typings/dstore/dstore" />
 
 import declare = require('dojo/_base/declare');
 import Memory = require('dstore/Memory');

@@ -4,6 +4,7 @@
 import ImportsFile = require('../common/ImportsFile');
 import path = require('path');
 import yeoman = require('yeoman-generator');
+var GruntfileEditor = require('gruntfile-editor');
 
 interface IAnswers {
 	appTitle:string;
@@ -81,10 +82,43 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 		this.copy('_bowerrc', '.bowerrc');
 		this.copy('_bower.json', 'bower.json');
 		this.copy('_gitignore', '.gitignore');
-		this.copy('_Gruntfile.js', 'Gruntfile.js');
 		this.copy('_jshintrc', '.jshintrc');
 		this.copy('_package.json', 'package.json');
 		this.copy('_tslint.json', 'tslint.json');
+
+		var gruntFileEditor = new GruntfileEditor(this.read('_Gruntfile.js'));
+
+		if (this.stylus) {
+			gruntFileEditor.loadNpmTasks('grunt-contrib-stylus');
+			if (this.nib) {
+				gruntFileEditor.insertConfig('stylus', '{ \
+					app: { \
+						options: { \
+							compress: false, \
+							"resolve url": true, \
+							use: [ \
+								require("nib") \
+							] \
+						}, \
+						files: { "src/app/resources/main.css": "src/app/resources/main.styl" } \
+					}\
+				}');
+			}
+			else {
+				gruntFileEditor.insertConfig('stylus', '{ \
+					app: { \
+						options: { \
+							compress: false, \
+							"resolve url": true \
+						}, \
+						files: { "src/app/resources/main.css": "src/app/resources/main.styl" } \
+					}\
+				}');
+			}
+			gruntFileEditor.registerTask('build', 'stylus:app');
+			gruntFileEditor.registerTask('default', 'stylus:app');
+		}
+		this.write('Gruntfile.js', gruntFileEditor.toString());
 	},
 
 	writing: {
@@ -103,6 +137,7 @@ var MayhemGenerator = yeoman.generators.Base.extend({
 			this.copy('src/app/_main.ts', 'src/app/main.ts');
 			this.directory('src/app/viewModels', 'src/app/viewModels');
 			this.directory('src/app/views', 'src/app/views');
+			this.directory('src/app/routes', 'src/app/routes');
 		},
 		tests():void {
 			this.directory('src/app/tests', 'src/app/tests');

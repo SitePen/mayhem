@@ -1,15 +1,20 @@
+/// <reference path="../mayhem/_typings/mayhem/mayhem.d.ts" />
+
 import WebApplication = require('mayhem/WebApplication');
 
 var app:WebApplication = new WebApplication({
 	name: '<%= appTitle %>',
 	components: {
 		router: {
-			routes: {
-				'index': {
-					model: 'app/viewModels/Index',
-					path: 'index',
-					view: 'app/views/Index.html'
+			defaultRoute: { routeId: 'index' },
+			rules: [
+				{
+					routeId: 'index',
+					path: 'index'
 				}
+			],
+			routes: {
+				index: 'app/routes/Index'
 			}
 		}
 	}
