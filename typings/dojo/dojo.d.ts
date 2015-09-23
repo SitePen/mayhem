@@ -17,11 +17,11 @@ interface HashMap<T> {
 	[key: string]: T;
 }
 
-interface IDeferred<T> extends IPromise<T> {
-	progress<U>(update: U, strict?: boolean): IPromise<U>;
-	promise: IPromise<T>;
-	reject<U>(reason: U, strict?: boolean): IPromise<U>;
-	resolve<U>(value: U, strict?: boolean): IPromise<U>;
+interface IDeferred<T, E> extends IPromise<T, E> {
+	progress<U>(update: U, strict?: boolean): IPromise<T, E>;
+	promise: IPromise<T, E>;
+	reject(reason: E, strict?: boolean): IPromise<T, E>;
+	resolve(value: T, strict?: boolean): IPromise<T, E>;
 }
 
 interface IEvented {
@@ -48,15 +48,15 @@ interface IPausableHandle extends IHandle {
 	resume: () => void;
 }
 
-interface IPromise<T> {
-	always<U>(callback: (valueOrError: any) => U): IPromise<U>;
+interface IPromise<T, E> {
+	always<U, F>(callback?: (valueOrError: T | E) => IPromise<U, F> | U | void): IPromise<U, E | F>;
 	cancel<U>(reason?: U, strict?: boolean): U;
 	isCanceled(): boolean;
 	isFulfilled(): boolean;
 	isRejected(): boolean;
 	isResolved(): boolean;
-	otherwise<U>(errback: (reason: any) => IPromise<U> | U): IPromise<U>;
-	then<U>(callback: (value: T) => IPromise<U> | U, errback?: (reason: any) => IPromise<U> | U, progback?: (update: any) => IPromise<U> | U): IPromise<U>;
+	otherwise<U, F>(errback?: (reason: E) => IPromise<U, F> | U | void): IPromise<U, E | F>;
+	then<U, F>(callback?: (value: T) => IPromise<U, F> | U | void, errback?: (reason: E) => IPromise<U, F> | U | void, progback?: (update: any) => IPromise<U, F> | U | void): IPromise<U, E | F>;
 }
 
 interface IStore<T> {
@@ -65,6 +65,10 @@ interface IStore<T> {
 	put?(object: T, options?: {}): any;
 	remove?(id: any): any;
 	query?(query: any, options?: {}): any;
+}
+
+interface IRequestError extends Error {
+		response: any;
 }
 
 declare module 'dojo/_base/array' {
@@ -194,12 +198,12 @@ declare module 'dojo/date/stamp' {
 
 declare module 'dojo/Deferred' {
 	var Deferred: {
-		new <T>(canceler?: (reason: any) => any): IDeferred<T>;
-		prototype: IDeferred<any>;
-		when<T>(value: IPromise<T> | T): IPromise<T>;
-		when<T, U>(valueOrPromise: T, callback?: (value: T) => IPromise<U> | U): IPromise<U>;
+		new <T, E>(canceler?: (reason: any) => any): IDeferred<T, E>;
+		prototype: IDeferred<any, any>;
+		when<T, E>(value: IPromise<T, E> | T): IPromise<T, E>;
+		when<T, U, F>(valueOrPromise: T, callback?: (value: T) => IPromise<U, F> | U): IPromise<U, F>;
 	};
-	interface Deferred<T> extends IDeferred<T> {}
+	interface Deferred<T, E> extends IDeferred<T, E> {}
 	export = Deferred;
 }
 
@@ -234,12 +238,9 @@ declare module 'dojo/errors/create' {
 }
 
 declare module 'dojo/errors/RequestError' {
-	interface RequestError extends Error {
-		response: any;
-	}
 	var RequestError: {
-		new (message: string, response?: any): RequestError;
-		prototype: RequestError;
+		new (message: string, response?: any): IRequestError;
+		prototype: IRequestError;
 	};
 	export = RequestError;
 }
@@ -367,16 +368,16 @@ declare module 'dojo/on' {
 
 declare module 'dojo/promise/Promise' {
 	var Promise: {
-		new <T>(): IPromise<T>;
-		prototype: IPromise<any>;
+		new <T, E>(): IPromise<T, E>;
+		prototype: IPromise<any, any>;
 	};
-	interface Promise<T> extends IPromise<T> {}
+	interface Promise<T, E> extends IPromise<T, E> {}
 	export = Promise;
 }
 
 declare module 'dojo/promise/all' {
-	function all<T>(array: Array<IPromise<T> | T>): IPromise<T[]>;
-	function all(object: {}): IPromise<{}>;
+	function all<T, E>(array: Array<IPromise<T, E> | T>): IPromise<T[], E>;
+	function all(object: {}): IPromise<{}, any>;
 	export = all;
 }
 
@@ -387,26 +388,26 @@ declare module 'dojo/query' {
 }
 
 declare module 'dojo/request' {
-	function request<T>(url: string, options?: {}): IPromise<T>;
+	function request<T>(url: string, options?: {}): IPromise<T, IRequestError>;
 	module request {
-		function del<T>(url: string, options?: {}): IPromise<T>;
-		function get<T>(url: string, options?: {}): IPromise<T>;
-		function post<T>(url: string, options?: {}): IPromise<T>;
-		function put<T>(url: string, options?: {}): IPromise<T>;
+		function del<T>(url: string, options?: {}): IPromise<T, IRequestError>;
+		function get<T>(url: string, options?: {}): IPromise<T, IRequestError>;
+		function post<T>(url: string, options?: {}): IPromise<T, IRequestError>;
+		function put<T>(url: string, options?: {}): IPromise<T, IRequestError>;
 	}
 	export = request;
 }
 
 declare module 'dojo/request/registry' {
 	var registry: {
-		<T>(url: string, options?: {}): IPromise<T>;
-		del<T>(url: string, options?: {}): IPromise<T>;
-		get<T>(url: string, options?: {}): IPromise<T>;
-		post<T>(url: string, options?: {}): IPromise<T>;
-		put<T>(url: string, options?: {}): IPromise<T>;
-		register<T>(
+		<T, E>(url: string, options?: {}): IPromise<T, E>;
+		del<T, E>(url: string, options?: {}): IPromise<T, E>;
+		get<T, E>(url: string, options?: {}): IPromise<T, E>;
+		post<T, E>(url: string, options?: {}): IPromise<T, E>;
+		put<T, E>(url: string, options?: {}): IPromise<T, E>;
+		register<T, E>(
 			url: string|RegExp|{ (url: string, options?: {}): boolean; },
-			provider: (url: String, options?: {}) => IPromise<T>,
+			provider: (url: String, options?: {}) => IPromise<T, E>,
 			first?: boolean
 		): IHandle;
 	};
@@ -485,14 +486,14 @@ declare module 'dojo/store/util/QueryResults' {
 		filter(callback: (value: T, index: number, array: T[]) => boolean, thisArg?: any): QueryResults<T>;
 		map<U>(callback: (value: T, index: number, array: T[]) => U, thisArg?: any): QueryResults<T>;
 		observe?(callback: (object: {}, removedFrom: number, insertedInto: number) => void, includeObjectUpdates?: boolean): IHandle;
-		always?<U>(callback: (valueOrError: any) => U): IPromise<U>;
+		always?<U, E>(callback: (valueOrError: any) => U): IPromise<U, E>;
 		cancel?<U>(reason?: U, strict?: boolean): U;
 		isCanceled?(): boolean;
 		isFulfilled?(): boolean;
 		isRejected?(): boolean;
 		isResolved?(): boolean;
-		otherwise?<U>(errback: (reason: any) => IPromise<U> | U): IPromise<U>;
-		then?<U>(callback: (value: T) => IPromise<U> | U, errback?: (reason: any) => IPromise<U> | U, progback?: (update: any) => IPromise<U> | U): IPromise<U>;
+		otherwise?<U, E>(errback: (reason: any) => IPromise<U, E> | U): IPromise<U, E>;
+		then?<U, E>(callback: (value: T) => IPromise<U, E> | U, errback?: (reason: any) => IPromise<U, E> | U, progback?: (update: any) => IPromise<U, E> | U): IPromise<U, E>;
 	}
 
 	export = QueryResults;
@@ -522,8 +523,8 @@ declare module 'dojo/touch' {
 
 declare module 'dojo/when' {
 	var when: {
-		<T>(value: IPromise<T> | T): IPromise<T>;
-		<T, U>(valueOrPromise: T, callback?: (value: T) => IPromise<U> | U): IPromise<U>;
+		<T, E>(value: IPromise<T, E> | T): IPromise<T, E>;
+		<T, U, E>(valueOrPromise: T, callback?: (value: T) => IPromise<U, E> | U): IPromise<U, E>;
 	};
 	export = when;
 }
